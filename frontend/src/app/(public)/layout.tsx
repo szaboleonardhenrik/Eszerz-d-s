@@ -38,6 +38,9 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                 <Link href="/landing#gyik" className="text-sm text-gray-600 hover:text-brand-teal-dark transition font-medium">
                   GYIK
                 </Link>
+                <Link href="/blog" className="text-sm text-gray-600 hover:text-brand-teal-dark transition font-medium">
+                  Blog
+                </Link>
               </div>
             </div>
             <div className="hidden md:flex items-center gap-3">
@@ -74,6 +77,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                 { href: "/landing#arak", label: "Árak" },
                 { href: "/landing#velemenyek", label: "Vélemények" },
                 { href: "/landing#gyik", label: "GYIK" },
+                { href: "/blog", label: "Blog" },
               ].map((item) => (
                 <Link
                   key={item.href}
@@ -118,23 +122,23 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                 <li><Link href="/landing#funkciok" className="hover:text-white transition">Funkciók</Link></li>
                 <li><Link href="/landing#arak" className="hover:text-white transition">Árazás</Link></li>
                 <li><Link href="/landing#sablonok" className="hover:text-white transition">Sablonok</Link></li>
-                <li><span className="text-gray-500">API dokumentáció</span></li>
+                <li><Link href="/blog" className="hover:text-white transition">Blog</Link></li>
+                <li><Link href="/api/docs" target="_blank" className="hover:text-white transition">API dokumentáció</Link></li>
               </ul>
             </div>
             <div>
               <h3 className="text-white font-semibold mb-4">Jogi</h3>
               <ul className="space-y-2.5 text-sm">
-                <li><span className="cursor-default">Adatvédelmi tájékoztató</span></li>
-                <li><span className="cursor-default">ÁSZF</span></li>
+                <li><Link href="/adatvedelem" className="hover:text-white transition">Adatvédelmi tájékoztató</Link></li>
+                <li><Link href="/aszf" className="hover:text-white transition">ÁSZF</Link></li>
                 <li><span className="cursor-default">Cookie szabályzat</span></li>
-                <li><span className="cursor-default">GDPR megfelelőség</span></li>
+                <li><Link href="/adatvedelem" className="hover:text-white transition">GDPR megfelelőség</Link></li>
               </ul>
             </div>
             <div>
               <h3 className="text-white font-semibold mb-4">Kapcsolat</h3>
               <ul className="space-y-2.5 text-sm">
-                <li><span className="cursor-default">hello@szerzodesportal.hu</span></li>
-                <li><span className="cursor-default">+36 1 234 5678</span></li>
+                <li><a href="mailto:hello@szerzodes.cegverzum.hu" className="hover:text-white transition">hello@szerzodes.cegverzum.hu</a></li>
                 <li><span className="cursor-default">Budapest, Magyarország</span></li>
               </ul>
             </div>

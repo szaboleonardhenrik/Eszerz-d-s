@@ -8,6 +8,7 @@ const tabs = [
   { href: "/settings/security", label: "Biztonság" },
   { href: "/settings/team", label: "Csapat" },
   { href: "/settings/api", label: "API kulcsok" },
+  { href: "/settings/tags", label: "Címkék" },
   { href: "/settings/notifications", label: "Értesítések" },
   { href: "/settings/webhooks", label: "Webhookok" },
   { href: "/settings/billing", label: "Előfizetés" },
