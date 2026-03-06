@@ -1,0 +1,173 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Body,
+  Query,
+  UseGuards,
+  Req,
+  Res,
+} from '@nestjs/common';
+import type { Response } from 'express';
+import { ContractsService } from './contracts.service';
+import { CreateContractDto } from './dto/create-contract.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { ApiResponse } from '../common/api-response';
+
+@Controller('contracts')
+@UseGuards(JwtAuthGuard)
+export class ContractsController {
+  constructor(private readonly contractsService: ContractsService) {}
+
+  @Post()
+  async create(@Body() dto: CreateContractDto, @Req() req: any) {
+    const contract = await this.contractsService.create(dto, req.user.userId);
+    return ApiResponse.ok(contract);
+  }
+
+  @Post('bulk-send')
+  async bulkSend(
+    @Body() body: { contractIds: string[] },
+    @Req() req: any,
+  ) {
+    const result = await this.contractsService.bulkSend(
+      body.contractIds,
+      req.user.userId,
+    );
+    return ApiResponse.ok(result);
+  }
+
+  @Post(':id/duplicate')
+  async duplicate(@Param('id') id: string, @Req() req: any) {
+    const contract = await this.contractsService.duplicate(id, req.user.userId);
+    return ApiResponse.ok(contract);
+  }
+
+  @Post(':id/send')
+  async sendForSigning(@Param('id') id: string, @Req() req: any) {
+    const result = await this.contractsService.sendForSigning(
+      id,
+      req.user.userId,
+    );
+    return ApiResponse.ok(result);
+  }
+
+  @Get()
+  async findAll(
+    @Req() req: any,
+    @Query('status') status?: string,
+    @Query('search') search?: string,
+  ) {
+    const contracts = await this.contractsService.findAllByUser(
+      req.user.userId,
+      status,
+      search,
+    );
+    return ApiResponse.ok(contracts);
+  }
+
+  @Get('export')
+  async exportContracts(
+    @Req() req: any,
+    @Res() res: Response,
+    @Query('format') format?: string,
+    @Query('status') status?: string,
+  ) {
+    const contracts = await this.contractsService.exportContracts(
+      req.user.userId,
+      status,
+    );
+
+    const statusLabels: Record<string, string> = {
+      draft: 'Piszkozat',
+      sent: 'Elküldve',
+      partially_signed: 'Részben aláírt',
+      completed: 'Teljesítve',
+      declined: 'Visszautasítva',
+      expired: 'Lejárt',
+      cancelled: 'Visszavonva',
+    };
+
+    const rows = contracts.map((c: any) => ({
+      cim: c.title,
+      statusz: statusLabels[c.status] ?? c.status,
+      sablon: c.template?.name ?? '-',
+      alairok: c.signers.map((s: any) => `${s.name} <${s.email}>`).join('; '),
+      letrehozva: new Date(c.createdAt).toLocaleDateString('hu-HU'),
+      lejarat: c.expiresAt
+        ? new Date(c.expiresAt).toLocaleDateString('hu-HU')
+        : '-',
+      pdf: c.pdfUrl ?? '-',
+    }));
+
+    if (format === 'json') {
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      res.setHeader(
+        'Content-Disposition',
+        'attachment; filename="szerzodesek.json"',
+      );
+      return res.send(JSON.stringify(rows, null, 2));
+    }
+
+    // CSV with UTF-8 BOM for Hungarian Excel support
+    const BOM = '\uFEFF';
+    const headers = ['Cím', 'Státusz', 'Sablon', 'Aláírók', 'Létrehozva', 'Lejárat', 'PDF'];
+    const csvLines = [
+      headers.join(','),
+      ...rows.map((r: any) =>
+        [r.cim, r.statusz, r.sablon, r.alairok, r.letrehozva, r.lejarat, r.pdf]
+          .map((v: string) => `"${v.replace(/"/g, '""')}"`)
+          .join(','),
+      ),
+    ];
+    const csvContent = BOM + csvLines.join('\r\n');
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename="szerzodesek.csv"',
+    );
+    return res.send(csvContent);
+  }
+
+  @Get('analytics')
+  async getAnalytics(@Req() req: any) {
+    const analytics = await this.contractsService.getAnalytics(
+      req.user.userId,
+    );
+    return ApiResponse.ok(analytics);
+  }
+
+  @Get('stats')
+  async getStats(@Req() req: any) {
+    const stats = await this.contractsService.getDashboardStats(
+      req.user.userId,
+    );
+    return ApiResponse.ok(stats);
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: string, @Req() req: any) {
+    const contract = await this.contractsService.findOneWithDetails(
+      id,
+      req.user.userId,
+    );
+    return ApiResponse.ok(contract);
+  }
+
+  @Get(':id/download')
+  async download(@Param('id') id: string, @Req() req: any) {
+    const result = await this.contractsService.getDownloadUrl(
+      id,
+      req.user.userId,
+    );
+    return ApiResponse.ok(result);
+  }
+
+  @Post(':id/cancel')
+  async cancel(@Param('id') id: string, @Req() req: any) {
+    const result = await this.contractsService.cancel(id, req.user.userId);
+    return ApiResponse.ok(result);
+  }
+}

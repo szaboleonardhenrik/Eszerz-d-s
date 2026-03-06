@@ -1,0 +1,421 @@
+"use client";
+
+import { useEffect, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import api from "@/lib/api";
+import toast from "react-hot-toast";
+
+interface TemplateVar {
+  name: string;
+  label: string;
+  type: string;
+  required: boolean;
+}
+
+interface Template {
+  id: string;
+  name: string;
+  category: string;
+  variables: TemplateVar[];
+  contentHtml: string;
+}
+
+interface Signer {
+  name: string;
+  email: string;
+  role: string;
+  signingOrder: number;
+}
+
+function CreateWizardInner() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const templateIdParam = searchParams.get("templateId");
+
+  const [step, setStep] = useState(1);
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
+  const [variables, setVariables] = useState<Record<string, string>>({});
+  const [signers, setSigners] = useState<Signer[]>([
+    { name: "", email: "", role: "", signingOrder: 1 },
+  ]);
+  const [title, setTitle] = useState("");
+  const [expiresAt, setExpiresAt] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    api.get("/templates").then((res) => {
+      setTemplates(res.data.data);
+      if (templateIdParam) {
+        const t = res.data.data.find(
+          (t: Template) => t.id === templateIdParam
+        );
+        if (t) {
+          setSelectedTemplate(t);
+          setTitle(t.name);
+          setStep(2);
+        }
+      }
+    });
+  }, [templateIdParam]);
+
+  const selectTemplate = (t: Template) => {
+    setSelectedTemplate(t);
+    setTitle(t.name);
+    const defaults: Record<string, string> = {};
+    t.variables.forEach((v) => (defaults[v.name] = ""));
+    setVariables(defaults);
+    setStep(2);
+  };
+
+  const updateSigner = (index: number, field: keyof Signer, value: string | number) => {
+    setSigners((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+  };
+
+  const addSigner = () => {
+    setSigners((prev) => [
+      ...prev,
+      { name: "", email: "", role: "", signingOrder: prev.length + 1 },
+    ]);
+  };
+
+  const removeSigner = (index: number) => {
+    if (signers.length <= 1) return;
+    setSigners((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedTemplate) return;
+    setLoading(true);
+    try {
+      const res = await api.post("/contracts", {
+        title,
+        templateId: selectedTemplate.id,
+        variables,
+        signers: signers.filter((s) => s.name && s.email),
+        expiresAt: expiresAt || undefined,
+      });
+      toast.success("Szerződés létrehozva!");
+      router.push(`/contracts/${res.data.data.id}`);
+    } catch (err: any) {
+      toast.error(
+        err.response?.data?.error?.message ?? "Hiba a szerződés létrehozásakor"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <h1 className="text-2xl font-bold text-gray-900 mb-2">
+        Új szerződés létrehozása
+      </h1>
+
+      {/* Step indicator */}
+      <div className="flex gap-2 mb-8">
+        {["Sablon", "Kitöltés", "Aláírók", "Összegzés"].map((label, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                step > i + 1
+                  ? "bg-green-100 text-green-700"
+                  : step === i + 1
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 text-gray-400"
+              }`}
+            >
+              {step > i + 1 ? "\u2713" : i + 1}
+            </div>
+            <span
+              className={`text-sm hidden sm:inline ${
+                step === i + 1 ? "text-gray-900 font-medium" : "text-gray-400"
+              }`}
+            >
+              {label}
+            </span>
+            {i < 3 && (
+              <div className="w-8 h-px bg-gray-200 hidden sm:block" />
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Step 1: Template selection */}
+      {step === 1 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {templates.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => selectTemplate(t)}
+              className="bg-white rounded-xl border p-5 text-left hover:border-blue-300 hover:shadow-sm transition"
+            >
+              <h3 className="font-semibold text-gray-900 mb-1">{t.name}</h3>
+              <p className="text-xs text-gray-400">
+                {t.variables.length} kitöltendő mező
+              </p>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Step 2: Fill variables */}
+      {step === 2 && selectedTemplate && (
+        <div className="bg-white rounded-xl border p-6 max-w-2xl">
+          <h2 className="text-lg font-semibold mb-1">
+            {selectedTemplate.name}
+          </h2>
+          <p className="text-sm text-gray-500 mb-6">
+            Töltsd ki a szerződés adatait
+          </p>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Szerződés neve *
+              </label>
+              <input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </div>
+
+            {selectedTemplate.variables.map((v) => (
+              <div key={v.name}>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {v.label} {v.required && "*"}
+                </label>
+                {v.type === "textarea" ? (
+                  <textarea
+                    value={variables[v.name] ?? ""}
+                    onChange={(e) =>
+                      setVariables((prev) => ({
+                        ...prev,
+                        [v.name]: e.target.value,
+                      }))
+                    }
+                    rows={3}
+                    required={v.required}
+                    className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-y"
+                  />
+                ) : (
+                  <input
+                    type={v.type === "number" ? "number" : v.type === "date" ? "date" : "text"}
+                    value={variables[v.name] ?? ""}
+                    onChange={(e) =>
+                      setVariables((prev) => ({
+                        ...prev,
+                        [v.name]: e.target.value,
+                      }))
+                    }
+                    required={v.required}
+                    className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="flex gap-3 mt-6">
+            <button
+              onClick={() => setStep(1)}
+              className="px-5 py-2.5 border rounded-lg text-gray-600 hover:bg-gray-50"
+            >
+              Vissza
+            </button>
+            <button
+              onClick={() => setStep(3)}
+              className="px-5 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
+            >
+              Tovább
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Step 3: Signers */}
+      {step === 3 && (
+        <div className="bg-white rounded-xl border p-6 max-w-2xl">
+          <h2 className="text-lg font-semibold mb-1">Aláírók</h2>
+          <p className="text-sm text-gray-500 mb-6">
+            Add meg az aláírókat és szerepüket
+          </p>
+
+          <div className="space-y-4">
+            {signers.map((signer, i) => (
+              <div key={i} className="border rounded-lg p-4">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-sm font-medium text-gray-700">
+                    {i + 1}. aláíró
+                  </span>
+                  {signers.length > 1 && (
+                    <button
+                      onClick={() => removeSigner(i)}
+                      className="text-sm text-red-500 hover:text-red-700"
+                    >
+                      Törlés
+                    </button>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <input
+                    placeholder="Név *"
+                    value={signer.name}
+                    onChange={(e) => updateSigner(i, "name", e.target.value)}
+                    className="px-3 py-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <input
+                    placeholder="Email *"
+                    type="email"
+                    value={signer.email}
+                    onChange={(e) => updateSigner(i, "email", e.target.value)}
+                    className="px-3 py-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <input
+                    placeholder="Szerepkör (pl. Megbízó)"
+                    value={signer.role}
+                    onChange={(e) => updateSigner(i, "role", e.target.value)}
+                    className="px-3 py-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Sorrend"
+                    value={signer.signingOrder}
+                    onChange={(e) =>
+                      updateSigner(i, "signingOrder", parseInt(e.target.value) || 1)
+                    }
+                    min={1}
+                    className="px-3 py-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <button
+            onClick={addSigner}
+            className="mt-3 text-sm text-blue-600 hover:text-blue-700 font-medium"
+          >
+            + Aláíró hozzáadása
+          </button>
+
+          <div className="mt-6">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Aláírási határidő (opcionális)
+            </label>
+            <input
+              type="date"
+              value={expiresAt}
+              onChange={(e) => setExpiresAt(e.target.value)}
+              className="px-4 py-2.5 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div className="flex gap-3 mt-6">
+            <button
+              onClick={() => setStep(2)}
+              className="px-5 py-2.5 border rounded-lg text-gray-600 hover:bg-gray-50"
+            >
+              Vissza
+            </button>
+            <button
+              onClick={() => setStep(4)}
+              className="px-5 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
+            >
+              Tovább
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Step 4: Summary */}
+      {step === 4 && selectedTemplate && (
+        <div className="bg-white rounded-xl border p-6 max-w-2xl">
+          <h2 className="text-lg font-semibold mb-4">Összegzés</h2>
+
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm text-gray-500">Szerződés neve</p>
+              <p className="font-medium">{title}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Sablon</p>
+              <p className="font-medium">{selectedTemplate.name}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500 mb-2">Kitöltött adatok</p>
+              <div className="bg-gray-50 rounded-lg p-3 text-sm space-y-1">
+                {Object.entries(variables)
+                  .filter(([, v]) => v)
+                  .map(([key, value]) => {
+                    const varDef = selectedTemplate.variables.find(
+                      (v) => v.name === key
+                    );
+                    return (
+                      <div key={key} className="flex">
+                        <span className="text-gray-500 w-48 shrink-0">
+                          {varDef?.label ?? key}:
+                        </span>
+                        <span className="text-gray-900">{value}</span>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500 mb-2">Aláírók</p>
+              <div className="space-y-2">
+                {signers
+                  .filter((s) => s.name)
+                  .map((s, i) => (
+                    <div key={i} className="bg-gray-50 rounded-lg p-3 text-sm">
+                      <span className="font-medium">{s.name}</span>
+                      <span className="text-gray-500 ml-2">({s.email})</span>
+                      {s.role && (
+                        <span className="text-gray-400 ml-2">- {s.role}</span>
+                      )}
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-3 mt-6">
+            <button
+              onClick={() => setStep(3)}
+              className="px-5 py-2.5 border rounded-lg text-gray-600 hover:bg-gray-50"
+            >
+              Vissza
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={loading}
+              className="px-5 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50"
+            >
+              {loading ? "Létrehozás..." : "Szerződés létrehozása"}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function CreatePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        </div>
+      }
+    >
+      <CreateWizardInner />
+    </Suspense>
+  );
+}

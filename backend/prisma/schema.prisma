@@ -1,0 +1,204 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String     @id @default(uuid())
+  email            String     @unique
+  passwordHash     String     @map("password_hash")
+  name             String
+  companyName      String?    @map("company_name")
+  taxNumber        String?    @map("tax_number")
+  phone            String?
+  avatarUrl        String?    @map("avatar_url")
+  subscriptionTier String     @default("free") @map("subscription_tier")
+  stripeCustomerId String?    @map("stripe_customer_id")
+  microsecToken    String?    @map("microsec_token")
+  dapLinked        Boolean    @default(false) @map("dap_linked")
+  role             String     @default("owner") // owner | admin | member | viewer
+  notifyOnSign     Boolean    @default(true) @map("notify_on_sign")
+  notifyOnDecline  Boolean    @default(true) @map("notify_on_decline")
+  notifyOnExpire   Boolean    @default(true) @map("notify_on_expire")
+  notifyOnComment  Boolean    @default(true) @map("notify_on_comment")
+  emailDigest      String     @default("instant") @map("email_digest") // instant | daily | weekly | none
+  createdAt        DateTime   @default(now()) @map("created_at")
+  updatedAt        DateTime   @updatedAt @map("updated_at")
+
+  contracts   Contract[]
+  templates   Template[]
+  teamMembers TeamMember[]
+  ownedTeams  Team[]
+  apiKeys     ApiKey[]
+  comments    Comment[]
+  webhooks    Webhook[]
+
+  @@map("users")
+}
+
+model Team {
+  id        String   @id @default(uuid())
+  name      String
+  ownerId   String   @map("owner_id")
+  plan      String   @default("free") // free | basic | pro
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  owner   User         @relation(fields: [ownerId], references: [id])
+  members TeamMember[]
+
+  @@map("teams")
+}
+
+model TeamMember {
+  id     String @id @default(uuid())
+  teamId String @map("team_id")
+  userId String @map("user_id")
+  role   String @default("member") // admin | member | viewer
+  joinedAt DateTime @default(now()) @map("joined_at")
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@map("team_members")
+}
+
+model ApiKey {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  name      String
+  keyHash   String   @unique @map("key_hash")
+  prefix    String   // first 8 chars for identification
+  lastUsed  DateTime? @map("last_used")
+  expiresAt DateTime? @map("expires_at")
+  scopes    String   @default("contracts:read") // comma-separated: contracts:read,contracts:write,templates:read
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([keyHash])
+  @@map("api_keys")
+}
+
+model Template {
+  id          String   @id @default(uuid())
+  name        String
+  category    String
+  description String?
+  contentHtml String   @map("content_html")
+  variables   String
+  isPublic    Boolean  @default(true) @map("is_public")
+  ownerId     String?  @map("owner_id")
+  legalBasis  String?  @map("legal_basis")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  owner     User?      @relation(fields: [ownerId], references: [id])
+  contracts Contract[]
+
+  @@map("templates")
+}
+
+model Contract {
+  id            String    @id @default(uuid())
+  title         String
+  templateId    String?   @map("template_id")
+  ownerId       String    @map("owner_id")
+  contentHtml   String    @map("content_html")
+  pdfUrl        String?   @map("pdf_url")
+  status        String    @default("draft")
+  variablesData String?   @map("variables_data")
+  expiresAt     DateTime? @map("expires_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  template  Template?  @relation(fields: [templateId], references: [id])
+  owner     User       @relation(fields: [ownerId], references: [id])
+  signers   Signer[]
+  auditLogs AuditLog[]
+  comments  Comment[]
+
+  @@index([ownerId])
+  @@index([status])
+  @@map("contracts")
+}
+
+model Signer {
+  id                String    @id @default(uuid())
+  contractId        String    @map("contract_id")
+  name              String
+  email             String
+  role              String?
+  signingOrder      Int       @default(1) @map("signing_order")
+  signToken         String?   @unique @map("sign_token")
+  tokenExpiresAt    DateTime? @map("token_expires_at")
+  status            String    @default("pending")
+  signedAt          DateTime? @map("signed_at")
+  ipAddress         String?   @map("ip_address")
+  userAgent         String?   @map("user_agent")
+  signatureMethod   String?   @map("signature_method")
+  signatureImageUrl String?   @map("signature_image_url")
+  certificateData   String?   @map("certificate_data")
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  contract  Contract   @relation(fields: [contractId], references: [id])
+  auditLogs AuditLog[]
+
+  @@index([signToken])
+  @@index([contractId])
+  @@map("signers")
+}
+
+model AuditLog {
+  id           String   @id @default(uuid())
+  contractId   String   @map("contract_id")
+  signerId     String?  @map("signer_id")
+  eventType    String   @map("event_type")
+  eventData    String?  @map("event_data")
+  ipAddress    String?  @map("ip_address")
+  userAgent    String?  @map("user_agent")
+  documentHash String?  @map("document_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  contract Contract @relation(fields: [contractId], references: [id])
+  signer   Signer?  @relation(fields: [signerId], references: [id])
+
+  @@index([contractId])
+  @@map("audit_logs")
+}
+
+model Comment {
+  id         String   @id @default(uuid())
+  contractId String   @map("contract_id")
+  userId     String   @map("user_id")
+  content    String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  contract Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id])
+
+  @@index([contractId])
+  @@map("comments")
+}
+
+model Webhook {
+  id              String    @id @default(uuid())
+  userId          String    @map("user_id")
+  url             String
+  secret          String
+  events          String    // comma-separated: contract.created,contract.signed,contract.completed,contract.declined,contract.expired
+  active          Boolean   @default(true)
+  lastError       String?   @map("last_error")
+  lastTriggeredAt DateTime? @map("last_triggered_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("webhooks")
+}
