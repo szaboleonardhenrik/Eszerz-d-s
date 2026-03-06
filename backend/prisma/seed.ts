@@ -714,6 +714,396 @@ const templates = [
 <p style="margin-top:40px;">Kelt: ............, {{megrendelesKelte}}</p>
 `,
   },
+  {
+    name: 'Általános Szerződési Feltételek (ÁSZF)',
+    category: 'fogyasztoi',
+    description: 'ÁSZF sablon webshopokhoz és online szolgáltatásokhoz.',
+    legalBasis: 'Ptk. 6:77-78. §, Eker. tv. (2001. évi CVIII. tv.), Fgytv.',
+    variables: [
+      { name: 'szolgaltatoNeve', label: 'Szolgáltató neve', type: 'text', required: true },
+      { name: 'szolgaltatoCime', label: 'Szolgáltató székhelye', type: 'text', required: true },
+      { name: 'szolgaltatoAdoszam', label: 'Szolgáltató adószáma', type: 'text', required: true },
+      { name: 'szolgaltatoCegjegyzek', label: 'Cégjegyzékszám', type: 'text', required: true },
+      { name: 'szolgaltatoEmail', label: 'Ügyfélszolgálat email', type: 'text', required: true },
+      { name: 'szolgaltatoTelefon', label: 'Ügyfélszolgálat telefon', type: 'text', required: false },
+      { name: 'weboldalUrl', label: 'Weboldal URL', type: 'text', required: true },
+      { name: 'tevekenysegiKor', label: 'Tevékenységi kör leírása', type: 'textarea', required: true },
+      { name: 'fizetesiModok', label: 'Elfogadott fizetési módok', type: 'textarea', required: true },
+      { name: 'szallitasiIdo', label: 'Szállítási idő (munkanap)', type: 'number', required: false },
+      { name: 'elallasHatarido', label: 'Elállási határidő (nap)', type: 'number', required: true },
+      { name: 'hatalybaLepes', label: 'Hatályba lépés dátuma', type: 'date', required: true },
+    ],
+    contentHtml: `
+<h1>ÁLTALÁNOS SZERZŐDÉSI FELTÉTELEK</h1>
+<p><em>Hatályos: {{hatalybaLepes}} napjától</em></p>
+
+<h2>1. A Szolgáltató adatai</h2>
+<table>
+  <tr><td><strong>Cégnév:</strong></td><td>{{szolgaltatoNeve}}</td></tr>
+  <tr><td><strong>Székhely:</strong></td><td>{{szolgaltatoCime}}</td></tr>
+  <tr><td><strong>Adószám:</strong></td><td>{{szolgaltatoAdoszam}}</td></tr>
+  <tr><td><strong>Cégjegyzékszám:</strong></td><td>{{szolgaltatoCegjegyzek}}</td></tr>
+  <tr><td><strong>Email:</strong></td><td>{{szolgaltatoEmail}}</td></tr>
+  <tr><td><strong>Telefon:</strong></td><td>{{szolgaltatoTelefon}}</td></tr>
+  <tr><td><strong>Weboldal:</strong></td><td>{{weboldalUrl}}</td></tr>
+</table>
+
+<h2>2. Az ÁSZF hatálya</h2>
+<p>Jelen ÁSZF hatálya kiterjed a {{weboldalUrl}} weboldalon nyújtott szolgáltatásokra és a Szolgáltató és a Felhasználók (vásárlók, megrendelők) közötti jogviszonyra.</p>
+<p>A Felhasználó a szolgáltatás igénybevételével, illetve a megrendelés leadásával elfogadja jelen ÁSZF rendelkezéseit.</p>
+
+<h2>3. A szolgáltatás leírása</h2>
+<p>{{tevekenysegiKor}}</p>
+
+<h2>4. Megrendelés folyamata</h2>
+<ol>
+  <li>A Felhasználó a weboldalon kiválasztja a kívánt terméket/szolgáltatást.</li>
+  <li>A kosár tartalmát ellenőrzi és jóváhagyja.</li>
+  <li>Megadja a számlázási és szállítási adatait.</li>
+  <li>Kiválasztja a fizetési módot.</li>
+  <li>A megrendelést véglegesíti.</li>
+  <li>A Szolgáltató visszaigazoló emailt küld 48 órán belül.</li>
+</ol>
+<p>A megrendelés a Szolgáltató visszaigazolásával jön létre mint szerződés.</p>
+
+<h2>5. Árak és fizetés</h2>
+<p>A weboldalon feltüntetett árak bruttó árak (az ÁFA-t tartalmazzák), hacsak másként nem jelöltük.</p>
+<p><strong>Elfogadott fizetési módok:</strong> {{fizetesiModok}}</p>
+<p>A Szolgáltató fenntartja az árak módosításának jogát. A már leadott megrendelésekre az áremelés nem vonatkozik.</p>
+
+<h2>6. Szállítás</h2>
+<p>A szállítási idő a megrendelés visszaigazolásától számított <strong>{{szallitasiIdo}}</strong> munkanap.</p>
+<p>A szállítási költséget a megrendelés összesítőjében tüntetjük fel. A Szolgáltató a szállítás késedelméért nem felel, ha az vis maior vagy a futárszolgálat hibájából ered.</p>
+
+<h2>7. Elállási jog</h2>
+<p>A fogyasztónak minősülő Felhasználó a termék kézhezvételétől (szolgáltatás esetén a szerződés megkötésétől) számított <strong>{{elallasHatarido}}</strong> napon belül indokolás nélkül elállhat a szerződéstől.</p>
+<p>Az elállási jog gyakorlásának módja: írásbeli nyilatkozat a {{szolgaltatoEmail}} email címre.</p>
+<p>Elállás esetén a Szolgáltató a vételárat legkésőbb 14 napon belül visszafizeti.</p>
+
+<h2>8. Szavatosság és jótállás</h2>
+<p>A Szolgáltató szavatolja, hogy a termékek/szolgáltatások megfelelnek a leírásnak. Hibás teljesítés esetén a fogyasztó a Ptk. szerint szavatossági igényt érvényesíthet (javítás, csere, árleszállítás, elállás).</p>
+
+<h2>9. Panaszkezelés</h2>
+<p>A Felhasználó panaszát a {{szolgaltatoEmail}} email címen vagy a {{szolgaltatoTelefon}} telefonszámon jelezheti. A Szolgáltató a panaszra 30 napon belül írásban válaszol.</p>
+<p>Vitás esetben a Felhasználó a lakóhelye szerinti békéltető testülethez fordulhat, vagy az online vitarendezési platformot használhatja.</p>
+
+<h2>10. Adatkezelés</h2>
+<p>A Szolgáltató a Felhasználók személyes adatait az Adatkezelési Tájékoztatóban foglaltak szerint, a GDPR és az Infotv. rendelkezéseinek megfelelően kezeli.</p>
+
+<h2>11. Szellemi tulajdon</h2>
+<p>A weboldal teljes tartalma (szövegek, képek, grafika, logó, szoftver) a Szolgáltató szellemi tulajdonát képezi, azok engedély nélküli felhasználása tilos.</p>
+
+<h2>12. Záró rendelkezések</h2>
+<p>A jelen ÁSZF-ben nem szabályozott kérdésekben a Ptk., az Eker. tv. és a fogyasztóvédelmi jogszabályok rendelkezései irányadók.</p>
+<p>A Szolgáltató jogosult jelen ÁSZF-et egyoldalúan módosítani. A módosított ÁSZF a weboldalon való közzététellel lép hatályba.</p>
+`,
+  },
+  {
+    name: 'Adatkezelési tájékoztató (GDPR)',
+    category: 'adatvedelem',
+    description: 'GDPR-kompatibilis adatkezelési tájékoztató.',
+    legalBasis: 'GDPR (EU 2016/679), Infotv. (2011. évi CXII. tv.)',
+    variables: [
+      { name: 'adatkezeloNeve', label: 'Adatkezelő neve', type: 'text', required: true },
+      { name: 'adatkezeloCime', label: 'Adatkezelő székhelye', type: 'text', required: true },
+      { name: 'adatkezeloAdoszam', label: 'Adatkezelő adószáma', type: 'text', required: true },
+      { name: 'adatkezeloEmail', label: 'Adatvédelmi email cím', type: 'text', required: true },
+      { name: 'adatkezeloTelefon', label: 'Adatkezelő telefonszáma', type: 'text', required: false },
+      { name: 'weboldalUrl', label: 'Weboldal URL', type: 'text', required: true },
+      { name: 'adatfeldolgozok', label: 'Adatfeldolgozók listája', type: 'textarea', required: true },
+      { name: 'cookieLeiras', label: 'Cookie-k leírása', type: 'textarea', required: false },
+      { name: 'adatTarolasIdeje', label: 'Adatok tárolási ideje', type: 'text', required: true },
+      { name: 'hatalybaLepes', label: 'Hatályba lépés', type: 'date', required: true },
+    ],
+    contentHtml: `
+<h1>ADATKEZELÉSI TÁJÉKOZTATÓ</h1>
+<p><em>Hatályos: {{hatalybaLepes}} napjától</em></p>
+
+<h2>1. Az Adatkezelő</h2>
+<table>
+  <tr><td><strong>Név:</strong></td><td>{{adatkezeloNeve}}</td></tr>
+  <tr><td><strong>Székhely:</strong></td><td>{{adatkezeloCime}}</td></tr>
+  <tr><td><strong>Adószám:</strong></td><td>{{adatkezeloAdoszam}}</td></tr>
+  <tr><td><strong>Email:</strong></td><td>{{adatkezeloEmail}}</td></tr>
+  <tr><td><strong>Telefon:</strong></td><td>{{adatkezeloTelefon}}</td></tr>
+</table>
+
+<h2>2. A tájékoztató célja</h2>
+<p>Jelen tájékoztató célja, hogy a {{weboldalUrl}} weboldal felhasználói és ügyfelei számára átlátható módon bemutassa, hogyan kezeljük személyes adataikat az Európai Parlament és a Tanács (EU) 2016/679 rendelete (GDPR), valamint az információs önrendelkezési jogról szóló 2011. évi CXII. törvény (Infotv.) alapján.</p>
+
+<h2>3. Kezelt személyes adatok köre</h2>
+<table>
+  <tr><th>Adatkategória</th><th>Jogalap</th><th>Cél</th></tr>
+  <tr><td>Név, email cím</td><td>Szerződés teljesítése (GDPR 6(1)(b))</td><td>Felhasználói fiók kezelése, kapcsolattartás</td></tr>
+  <tr><td>Számlázási adatok (név, cím, adószám)</td><td>Jogi kötelezettség (GDPR 6(1)(c))</td><td>Számla kiállítása, adóügyi megfelelés</td></tr>
+  <tr><td>IP cím, böngésző adatok</td><td>Jogos érdek (GDPR 6(1)(f))</td><td>Biztonság, visszaélés-megelőzés</td></tr>
+  <tr><td>Cookie-k, használati adatok</td><td>Hozzájárulás (GDPR 6(1)(a))</td><td>Weboldal működtetése, elemzés</td></tr>
+</table>
+
+<h2>4. Adatok tárolásának ideje</h2>
+<p>{{adatTarolasIdeje}}</p>
+<p>A számlázási adatokat a számviteli törvény szerint 8 évig őrizzük meg.</p>
+
+<h2>5. Adatfeldolgozók</h2>
+<p>Az Adatkezelő az alábbi adatfeldolgozókat veszi igénybe:</p>
+<p>{{adatfeldolgozok}}</p>
+
+<h2>6. Az érintett jogai</h2>
+<p>A GDPR alapján Ön az alábbi jogokkal rendelkezik:</p>
+<ul>
+  <li><strong>Hozzáférés joga:</strong> Tájékoztatást kérhet az Önről kezelt adatokról.</li>
+  <li><strong>Helyesbítés joga:</strong> Kérheti pontatlan adatai kijavítását.</li>
+  <li><strong>Törlés joga ("elfeledtetés"):</strong> Kérheti adatai törlését, ha az adatkezelés célja megszűnt.</li>
+  <li><strong>Adatkezelés korlátozása:</strong> Kérheti az adatkezelés felfüggesztését.</li>
+  <li><strong>Adathordozhatóság:</strong> Kérheti adatai géppel olvasható formátumban történő kiadását.</li>
+  <li><strong>Tiltakozás:</strong> Tiltakozhat a jogos érdeken alapuló adatkezelés ellen.</li>
+  <li><strong>Hozzájárulás visszavonása:</strong> A hozzájáruláson alapuló adatkezelésre adott engedélyt bármikor visszavonhatja.</li>
+</ul>
+<p>Jogai gyakorlásához kérjük, írjon a {{adatkezeloEmail}} email címre.</p>
+
+<h2>7. Cookie-k (sütik)</h2>
+<p>{{cookieLeiras}}</p>
+
+<h2>8. Adatbiztonság</h2>
+<p>Az Adatkezelő megfelelő technikai és szervezési intézkedéseket alkalmaz a személyes adatok védelme érdekében, beleértve a titkosítást, tűzfalakat, hozzáférés-korlátozást és rendszeres biztonsági mentéseket.</p>
+
+<h2>9. Adattovábbítás harmadik országba</h2>
+<p>Az Adatkezelő nem továbbít személyes adatokat az Európai Gazdasági Térségen (EGT) kívülre, kivéve ha az adatfeldolgozó megfelelő garanciákat (pl. Standard Contractual Clauses) biztosít.</p>
+
+<h2>10. Jogorvoslat</h2>
+<p>Adatkezelési kérdéssel, panasszal forduljon hozzánk: {{adatkezeloEmail}}</p>
+<p>Ha nem elégedett válaszunkkal, panaszt nyújthat be a Nemzeti Adatvédelmi és Információszabadság Hatósághoz (NAIH):</p>
+<ul>
+  <li>Cím: 1055 Budapest, Falk Miksa utca 9-11.</li>
+  <li>Telefon: +36 (1) 391-1400</li>
+  <li>Web: www.naih.hu</li>
+</ul>
+`,
+  },
+  {
+    name: 'Kölcsönszerződés (magánszemélyek)',
+    category: 'penzugyi',
+    description: 'Kölcsönszerződés magánszemélyek közötti pénzkölcsönzésre.',
+    legalBasis: 'Ptk. 6:383-6:392. §',
+    variables: [
+      { name: 'kolcsonadoNeve', label: 'Kölcsönadó neve', type: 'text', required: true },
+      { name: 'kolcsonadoSzemelyiIg', label: 'Kölcsönadó személyi ig. száma', type: 'text', required: true },
+      { name: 'kolcsonadoLakcime', label: 'Kölcsönadó lakcíme', type: 'text', required: true },
+      { name: 'kolcsonvevoNeve', label: 'Kölcsönvevő neve', type: 'text', required: true },
+      { name: 'kolcsonvevoSzemelyiIg', label: 'Kölcsönvevő személyi ig. száma', type: 'text', required: true },
+      { name: 'kolcsonvevoLakcime', label: 'Kölcsönvevő lakcíme', type: 'text', required: true },
+      { name: 'kolcsonOsszeg', label: 'Kölcsön összege (Ft)', type: 'number', required: true },
+      { name: 'kamatMertek', label: 'Kamat mértéke (%/év)', type: 'text', required: true },
+      { name: 'visszafizetesiHatarido', label: 'Visszafizetési határidő', type: 'date', required: true },
+      { name: 'torlesztesModja', label: 'Törlesztés módja', type: 'text', required: true },
+      { name: 'szerzodesKelte', label: 'Szerződés kelte', type: 'date', required: true },
+    ],
+    contentHtml: `
+<h1>KÖLCSÖNSZERZŐDÉS</h1>
+<p>amely létrejött egyrészről</p>
+
+<h2>1. Kölcsönadó</h2>
+<table>
+  <tr><td><strong>Név:</strong></td><td>{{kolcsonadoNeve}}</td></tr>
+  <tr><td><strong>Személyi ig. szám:</strong></td><td>{{kolcsonadoSzemelyiIg}}</td></tr>
+  <tr><td><strong>Lakcím:</strong></td><td>{{kolcsonadoLakcime}}</td></tr>
+</table>
+<p>(a továbbiakban: <strong>Kölcsönadó</strong>), másrészről</p>
+
+<h2>2. Kölcsönvevő</h2>
+<table>
+  <tr><td><strong>Név:</strong></td><td>{{kolcsonvevoNeve}}</td></tr>
+  <tr><td><strong>Személyi ig. szám:</strong></td><td>{{kolcsonvevoSzemelyiIg}}</td></tr>
+  <tr><td><strong>Lakcím:</strong></td><td>{{kolcsonvevoLakcime}}</td></tr>
+</table>
+<p>(a továbbiakban: <strong>Kölcsönvevő</strong>) között az alábbi feltételekkel:</p>
+
+<h2>3. A kölcsön összege</h2>
+<p>A Kölcsönadó kölcsönad a Kölcsönvevőnek <strong>{{kolcsonOsszeg}}</strong> Ft, azaz ... forint összeget.</p>
+<p>A kölcsön összegét a Kölcsönadó jelen szerződés aláírásával egyidejűleg készpénzben átadja / a Kölcsönvevő bankszámlájára átutalja.</p>
+
+<h2>4. Kamat</h2>
+<p>A kölcsön éves kamata: <strong>{{kamatMertek}}</strong>.</p>
+<p>A kamat a kölcsön folyósításának napjától a visszafizetés napjáig számítandó.</p>
+
+<h2>5. Visszafizetés</h2>
+<p>A Kölcsönvevő a kölcsön összegét és járulékait legkésőbb <strong>{{visszafizetesiHatarido}}</strong> napjáig köteles visszafizetni.</p>
+<p>A törlesztés módja: <strong>{{torlesztesModja}}</strong></p>
+
+<h2>6. Késedelem</h2>
+<p>Késedelmes fizetés esetén a Kölcsönvevő a Ptk. szerinti késedelmi kamatot köteles fizetni (a jegybanki alapkamat + 8 százalékpont).</p>
+
+<h2>7. Előtörlesztés</h2>
+<p>A Kölcsönvevő jogosult a kölcsönt részben vagy egészben előtörleszteni. Előtörlesztés esetén a kamat csak a tényleges kölcsönhasználat idejére jár.</p>
+
+<h2>8. Felmondás</h2>
+<p>A Kölcsönadó azonnali hatállyal felmondhatja a kölcsönt, ha:</p>
+<ul>
+  <li>A Kölcsönvevő a törlesztő részlettel 30 napot meghaladó késedelembe esik;</li>
+  <li>A Kölcsönvevő vagyoni helyzete lényegesen romlik;</li>
+  <li>A Kölcsönvevő a szerződés lényeges feltételeit megszegi.</li>
+</ul>
+
+<h2>9. Záró rendelkezések</h2>
+<p>A jelen szerződésben nem szabályozott kérdésekben a Ptk. kölcsönszerződésre vonatkozó rendelkezései irányadók.</p>
+<p>Jelen szerződés 2 eredeti példányban készült, amelyből 1-1 a Feleket illeti.</p>
+
+<p style="margin-top:40px;">Kelt: ............, {{szerzodesKelte}}</p>
+`,
+  },
+  {
+    name: 'Szállítási szerződés',
+    category: 'b2b',
+    description: 'Szállítási keretszerződés rendszeres áruszállításra.',
+    legalBasis: 'Ptk. 6:258-6:260. §',
+    variables: [
+      { name: 'szallitoNeve', label: 'Szállító neve', type: 'text', required: true },
+      { name: 'szallitoCime', label: 'Szállító székhelye', type: 'text', required: true },
+      { name: 'szallitoAdoszam', label: 'Szállító adószáma', type: 'text', required: true },
+      { name: 'megrendeloNeve', label: 'Megrendelő neve', type: 'text', required: true },
+      { name: 'megrendeloCime', label: 'Megrendelő székhelye', type: 'text', required: true },
+      { name: 'megrendeloAdoszam', label: 'Megrendelő adószáma', type: 'text', required: true },
+      { name: 'szallitandoAru', label: 'Szállítandó áru megnevezése', type: 'textarea', required: true },
+      { name: 'szallitasiUtemezés', label: 'Szállítási ütemezés', type: 'text', required: true },
+      { name: 'szallitasiHely', label: 'Szállítás helye', type: 'text', required: true },
+      { name: 'arMeghatározas', label: 'Ár meghatározás módja', type: 'textarea', required: true },
+      { name: 'fizetesiHatarido', label: 'Fizetési határidő (nap)', type: 'number', required: true },
+      { name: 'szerzodesIdotartama', label: 'Szerződés időtartama', type: 'text', required: true },
+      { name: 'szerzodesKelte', label: 'Szerződés kelte', type: 'date', required: true },
+    ],
+    contentHtml: `
+<h1>SZÁLLÍTÁSI KERETSZERZŐDÉS</h1>
+<p>amely létrejött egyrészről</p>
+
+<h2>1. Szállító</h2>
+<table>
+  <tr><td><strong>Cégnév:</strong></td><td>{{szallitoNeve}}</td></tr>
+  <tr><td><strong>Székhely:</strong></td><td>{{szallitoCime}}</td></tr>
+  <tr><td><strong>Adószám:</strong></td><td>{{szallitoAdoszam}}</td></tr>
+</table>
+<p>(a továbbiakban: <strong>Szállító</strong>), másrészről</p>
+
+<h2>2. Megrendelő</h2>
+<table>
+  <tr><td><strong>Cégnév:</strong></td><td>{{megrendeloNeve}}</td></tr>
+  <tr><td><strong>Székhely:</strong></td><td>{{megrendeloCime}}</td></tr>
+  <tr><td><strong>Adószám:</strong></td><td>{{megrendeloAdoszam}}</td></tr>
+</table>
+<p>(a továbbiakban: <strong>Megrendelő</strong>) között az alábbi feltételekkel:</p>
+
+<h2>3. A szerződés tárgya</h2>
+<p>A Szállító vállalja az alábbi áruk rendszeres szállítását a Megrendelő részére:</p>
+<p>{{szallitandoAru}}</p>
+
+<h2>4. Szállítási feltételek</h2>
+<p><strong>Szállítási ütemezés:</strong> {{szallitasiUtemezés}}</p>
+<p><strong>Szállítás helye:</strong> {{szallitasiHely}}</p>
+<p>A Szállító az árut a szállítás helyén a Megrendelőnek vagy meghatalmazottjának adja át. Az áru átvételét a Megrendelő szállítólevél aláírásával igazolja.</p>
+
+<h2>5. Árak és fizetés</h2>
+<p>{{arMeghatározas}}</p>
+<p>Fizetési határidő: számla kézhezvételétől számított <strong>{{fizetesiHatarido}}</strong> nap, átutalással.</p>
+
+<h2>6. Minőség és mennyiség</h2>
+<p>A Szállító szavatolja, hogy az áruk a vonatkozó szabványoknak és a szerződésben foglalt minőségi követelményeknek megfelelnek.</p>
+<p>Mennyiségi és minőségi kifogásait a Megrendelő az átvételt követő 3 munkanapon belül köteles jelezni.</p>
+
+<h2>7. Szerződés időtartama</h2>
+<p>Jelen szerződés {{szerzodesIdotartama}} időtartamra jön létre. A szerződés bármelyik fél által 60 napos felmondási idővel felmondható.</p>
+
+<h2>8. Kötbér</h2>
+<p>Késedelmes szállítás esetén a Szállító a késedelmes tétel értékének napi 0,5%-ának megfelelő kötbért köteles fizetni, legfeljebb az adott tétel értékének 15%-áig.</p>
+
+<h2>9. Záró rendelkezések</h2>
+<p>A jelen szerződésben nem szabályozott kérdésekben a Ptk. rendelkezései irányadók.</p>
+
+<p style="margin-top:40px;">Kelt: ............, {{szerzodesKelte}}</p>
+`,
+  },
+  {
+    name: 'Szoftverfejlesztési szerződés',
+    category: 'it',
+    description: 'IT/szoftverfejlesztési szerződés egyedi szoftver készítésére.',
+    legalBasis: 'Ptk. 6:238-6:250. § (vállalkozás), Szjt. (1999. évi LXXVI. tv.)',
+    variables: [
+      { name: 'megrendeloCeg', label: 'Megrendelő cég neve', type: 'text', required: true },
+      { name: 'megrendeloCime', label: 'Megrendelő székhelye', type: 'text', required: true },
+      { name: 'megrendeloAdoszam', label: 'Megrendelő adószáma', type: 'text', required: true },
+      { name: 'fejlesztoCeg', label: 'Fejlesztő cég neve', type: 'text', required: true },
+      { name: 'fejlesztoCime', label: 'Fejlesztő székhelye', type: 'text', required: true },
+      { name: 'fejlesztoAdoszam', label: 'Fejlesztő adószáma', type: 'text', required: true },
+      { name: 'projektLeirasa', label: 'Projekt leírása', type: 'textarea', required: true },
+      { name: 'technologiakLista', label: 'Felhasznált technológiák', type: 'text', required: false },
+      { name: 'merfoldkovek', label: 'Mérföldkövek és határidők', type: 'textarea', required: true },
+      { name: 'vegsoHatarido', label: 'Végső átadási határidő', type: 'date', required: true },
+      { name: 'teljesDij', label: 'Teljes fejlesztési díj (Ft + ÁFA)', type: 'number', required: true },
+      { name: 'fizetesiUtemezés', label: 'Fizetési ütemezés', type: 'textarea', required: true },
+      { name: 'garancialisIdo', label: 'Garanciális hibajavítás ideje (hónap)', type: 'number', required: true },
+      { name: 'forrasKodAtadas', label: 'Forráskód átadása', type: 'text', required: true },
+      { name: 'szerzodesKelte', label: 'Szerződés kelte', type: 'date', required: true },
+    ],
+    contentHtml: `
+<h1>SZOFTVERFEJLESZTÉSI SZERZŐDÉS</h1>
+<p>amely létrejött egyrészről</p>
+
+<h2>1. Megrendelő</h2>
+<table>
+  <tr><td><strong>Cégnév:</strong></td><td>{{megrendeloCeg}}</td></tr>
+  <tr><td><strong>Székhely:</strong></td><td>{{megrendeloCime}}</td></tr>
+  <tr><td><strong>Adószám:</strong></td><td>{{megrendeloAdoszam}}</td></tr>
+</table>
+<p>(a továbbiakban: <strong>Megrendelő</strong>), másrészről</p>
+
+<h2>2. Fejlesztő</h2>
+<table>
+  <tr><td><strong>Cégnév:</strong></td><td>{{fejlesztoCeg}}</td></tr>
+  <tr><td><strong>Székhely:</strong></td><td>{{fejlesztoCime}}</td></tr>
+  <tr><td><strong>Adószám:</strong></td><td>{{fejlesztoAdoszam}}</td></tr>
+</table>
+<p>(a továbbiakban: <strong>Fejlesztő</strong>) között az alábbi feltételekkel:</p>
+
+<h2>3. A fejlesztés tárgya</h2>
+<p>{{projektLeirasa}}</p>
+<p>Felhasznált technológiák: {{technologiakLista}}</p>
+
+<h2>4. Mérföldkövek és határidők</h2>
+<p>{{merfoldkovek}}</p>
+<p><strong>Végső átadási határidő:</strong> {{vegsoHatarido}}</p>
+
+<h2>5. Fejlesztési díj és fizetés</h2>
+<p>A teljes fejlesztési díj: <strong>{{teljesDij}}</strong> Ft + ÁFA.</p>
+<p><strong>Fizetési ütemezés:</strong></p>
+<p>{{fizetesiUtemezés}}</p>
+
+<h2>6. Fejlesztési folyamat</h2>
+<p>A Fejlesztő agilis módszertan szerint dolgozik. Kéthetente demo-t tart a Megrendelőnek. A Megrendelő 5 munkanapon belül visszajelzést ad.</p>
+<p>A specifikáció módosítása írásban történik. Lényeges módosítás esetén a Fejlesztő módosított ajánlatot ad, amely a határidőre és az árra is kihathat.</p>
+
+<h2>7. Átadás-átvétel</h2>
+<p>Az átadás-átvétel a végső mérföldkő teljesítését követően történik. A Megrendelő 10 munkanapon belül tesztet végez és jelzi az észlelt hibákat. A Fejlesztő a hibákat 10 munkanapon belül javítja.</p>
+<p>Sikeres tesztelés után a Megrendelő átvételi jegyzőkönyvet ír alá.</p>
+
+<h2>8. Szellemi tulajdon</h2>
+<p>A teljes fejlesztési díj megfizetését követően a szoftver vagyoni felhasználási jogai a Megrendelőre szállnak át.</p>
+<p>Forráskód átadása: <strong>{{forrasKodAtadas}}</strong></p>
+<p>A Fejlesztő által használt nyílt forráskódú komponensek az eredeti licencük hatálya alatt maradnak.</p>
+
+<h2>9. Garancia és support</h2>
+<p>A Fejlesztő az átadástól számított <strong>{{garancialisIdo}}</strong> hónapig garanciális hibajavítást vállal díjmentesen.</p>
+<p>Kritikus hiba esetén a reagálási idő: 4 óra (munkanapokon). Nem kritikus hiba esetén: 2 munkanap.</p>
+
+<h2>10. Titoktartás</h2>
+<p>Mindkét fél köteles a másik fél üzleti titkait, technológiai megoldásait bizalmasan kezelni. Ez a kötelezettség a szerződés megszűnését követő 3 évig fennáll.</p>
+
+<h2>11. Felelősség korlátozása</h2>
+<p>A Fejlesztő felelőssége a fejlesztési díj összegéig terjed. A Fejlesztő nem felel a szoftver nem rendeltetésszerű használatából eredő károkért.</p>
+
+<h2>12. Záró rendelkezések</h2>
+<p>A jelen szerződésben nem szabályozott kérdésekben a Ptk. és a szerzői jogi törvény rendelkezései irányadók.</p>
+
+<p style="margin-top:40px;">Kelt: ............, {{szerzodesKelte}}</p>
+`,
+  },
 ];
 
 async function main() {

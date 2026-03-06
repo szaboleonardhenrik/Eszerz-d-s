@@ -25,6 +25,9 @@ const categoryLabels: Record<string, string> = {
   b2b: "Vállalati B2B",
   ingatlan: "Ingatlan",
   fogyasztoi: "Fogyasztói",
+  adatvedelem: "Adatvédelem",
+  penzugyi: "Pénzügyi",
+  it: "IT / Szoftver",
 };
 
 const categoryColors: Record<string, string> = {
@@ -32,6 +35,9 @@ const categoryColors: Record<string, string> = {
   b2b: "bg-blue-100 text-blue-700",
   ingatlan: "bg-amber-100 text-amber-700",
   fogyasztoi: "bg-emerald-100 text-emerald-700",
+  adatvedelem: "bg-rose-100 text-rose-700",
+  penzugyi: "bg-orange-100 text-orange-700",
+  it: "bg-cyan-100 text-cyan-700",
 };
 
 export default function TemplatesPage() {
@@ -86,12 +92,12 @@ export default function TemplatesPage() {
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Sablonkonyvtar</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Sablonkönyvtár</h1>
         <Link
           href="/templates/new"
           className="bg-brand-gold text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-brand-gold-dark transition shadow-sm"
         >
-          + Uj sablon
+          + Új sablon
         </Link>
       </div>
 
@@ -165,7 +171,7 @@ export default function TemplatesPage() {
                         : "bg-brand-teal/10 text-brand-teal-dark"
                     }`}
                   >
-                    {template.isPublic ? "Rendszer" : "Sajat"}
+                    {template.isPublic ? "Rendszer" : "Saját"}
                   </span>
                 </div>
                 <span className="text-xs text-gray-400">
@@ -190,7 +196,7 @@ export default function TemplatesPage() {
                   }
                   className="flex-1 bg-brand-teal-dark text-white py-2 rounded-xl text-sm font-medium hover:bg-brand-teal transition"
                 >
-                  Hasznalat
+                  Használat
                 </button>
                 {isOwner(template) && (
                   <>
@@ -206,7 +212,7 @@ export default function TemplatesPage() {
                       onClick={() => handleDelete(template.id)}
                       className="px-3 py-2 border border-red-200 rounded-xl text-sm text-red-500 hover:bg-red-50 transition"
                     >
-                      Torles
+                      Törlés
                     </button>
                   </>
                 )}

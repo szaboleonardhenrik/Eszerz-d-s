@@ -252,7 +252,7 @@ function StatsBar() {
 const features = [
   {
     icon: "M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6z",
-    title: "10+ jogi sablon",
+    title: "15+ jogi sablon",
     desc: "Ptk.-conform sablonok: munkaszerződés, megbízási, NDA, bérleti, vállalkozási. Jogász által ellenőrizve.",
     color: "bg-brand-teal/10 text-brand-teal-dark",
   },
@@ -325,7 +325,7 @@ function FeaturesSection() {
 
 /* ── 5. HOW IT WORKS ──────────────────────────────────────────────── */
 const steps = [
-  { num: "01", title: "Válassz sablont", desc: "Böngészd a 10+ jogász által ellenőrzött magyar sablont, vagy töltsd fel a sajátodat.", icon: "M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5z" },
+  { num: "01", title: "Válassz sablont", desc: "Böngészd a 15+ jogász által ellenőrzött magyar sablont, vagy töltsd fel a sajátodat.", icon: "M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5z" },
   { num: "02", title: "Töltsd ki", desc: "Add meg a feleket, összegeket és részleteket. A rendszer automatikusan behelyettesíti.", icon: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" },
   { num: "03", title: "Küld aláírásra", desc: "Az aláírók emailben kapják a linket. Aláírhatnak mobilról is, bárhonnan.", icon: "M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" },
   { num: "04", title: "Kész!", desc: "Az aláírt PDF automatikusan generálódik. Letölthető, audit naplóval.", icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" },
@@ -374,9 +374,9 @@ const templates = [
   { name: "Munkaszerződés", cat: "Munkajogi", catColor: "bg-brand-teal/10 text-brand-teal-dark", desc: "Határozatlan és határozott idejű munkaszerződés a Mt. alapján." },
   { name: "Megbízási szerződés", cat: "B2B", catColor: "bg-brand-gold/10 text-brand-gold-dark", desc: "Ptk. 6:272. § szerinti megbízási szerződés vállalkozásoknak." },
   { name: "Titoktartási nyilatkozat (NDA)", cat: "B2B", catColor: "bg-brand-gold/10 text-brand-gold-dark", desc: "Kétoldalú NDA üzleti tárgyalásokhoz és partnerségekhez." },
-  { name: "Vállalkozási szerződés", cat: "B2B", catColor: "bg-brand-gold/10 text-brand-gold-dark", desc: "Ptk. 6:238. § szerinti vállalkozási szerződés." },
   { name: "Lakásbérleti szerződés", cat: "Ingatlan", catColor: "bg-brand-teal-muted/10 text-brand-teal-muted", desc: "Részletes bérleti szerződés lakóingatlanokra." },
-  { name: "Szolgáltatási keretszerződés", cat: "B2B", catColor: "bg-brand-gold/10 text-brand-gold-dark", desc: "Hosszú távú szolgáltatás nyújtásához keret-megállapodás." },
+  { name: "ÁSZF (webshop)", cat: "Fogyasztói", catColor: "bg-purple-100 text-purple-700", desc: "Eker. tv.-nek megfelelő általános szerződési feltételek webshopokhoz." },
+  { name: "Szoftverfejlesztési szerződés", cat: "IT", catColor: "bg-blue-100 text-blue-700", desc: "Egyedi szoftverfejlesztésre, mérföldkövekkel és IP átadással." },
 ];
 
 function TemplatesSection() {
