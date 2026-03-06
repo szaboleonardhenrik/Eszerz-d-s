@@ -2,14 +2,22 @@ import { Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
 import puppeteer from 'puppeteer';
 
+export interface PdfBranding {
+  logoUrl?: string;
+  companyName?: string;
+  brandColor?: string; // hex color like #198296
+}
+
 @Injectable()
 export class PdfService {
-  async generatePdf(html: string, title: string): Promise<Buffer> {
-    const fullHtml = this.wrapInDocument(html, title);
+  async generatePdf(html: string, title: string, branding?: PdfBranding): Promise<Buffer> {
+    const fullHtml = this.wrapInDocument(html, title, branding);
     const browser = await puppeteer.launch({
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
+
+    const footerName = branding?.companyName ? this.escapeHtml(branding.companyName) : 'SzerződésPortál';
 
     try {
       const page = await browser.newPage();
@@ -21,7 +29,7 @@ export class PdfService {
         displayHeaderFooter: true,
         footerTemplate: `
           <div style="font-size:8px;width:100%;text-align:center;color:#999;padding:0 20mm;">
-            SzerződésPortál &mdash; Elektronikusan generált dokumentum &mdash;
+            ${footerName} &mdash; Elektronikusan generált dokumentum &mdash;
             <span class="pageNumber"></span>/<span class="totalPages"></span>. oldal
           </div>
         `,
@@ -44,6 +52,7 @@ export class PdfService {
       signedAt: string;
       method: string;
     }>,
+    branding?: PdfBranding,
   ): Promise<Buffer> {
     let signatureBlock = '<div class="signatures" style="margin-top:40px;page-break-inside:avoid;">';
     signatureBlock += '<h3 style="border-bottom:2px solid #2563eb;padding-bottom:8px;color:#1a1a1a;font-size:16px;">Aláírások</h3>';
@@ -72,14 +81,33 @@ export class PdfService {
 
     signatureBlock += '</div></div>';
     const fullHtml = html + signatureBlock;
-    return this.generatePdf(fullHtml, title);
+    return this.generatePdf(fullHtml, title, branding);
   }
 
   hashDocument(buffer: Buffer): string {
     return crypto.createHash('sha256').update(buffer).digest('hex');
   }
 
-  private wrapInDocument(html: string, title: string): string {
+  private wrapInDocument(html: string, title: string, branding?: PdfBranding): string {
+    const brandColor = branding?.brandColor || '#111827';
+    const h1Color = branding?.brandColor || '#111827';
+    const h2Color = branding?.brandColor || '#1f2937';
+
+    let brandingHeader = '';
+    if (branding && (branding.logoUrl || branding.companyName)) {
+      const logoHtml = branding.logoUrl
+        ? `<img src="${this.escapeHtml(branding.logoUrl)}" style="max-height:40px;object-fit:contain;" />`
+        : '';
+      const nameHtml = branding.companyName
+        ? `<span style="font-size:16px;font-weight:600;color:${brandColor};">${this.escapeHtml(branding.companyName)}</span>`
+        : '';
+      brandingHeader = `
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid ${brandColor};">
+          <div>${logoHtml}</div>
+          <div>${nameHtml}</div>
+        </div>`;
+    }
+
     return `<!DOCTYPE html>
 <html lang="hu">
 <head>
@@ -97,7 +125,7 @@ export class PdfService {
       font-size: 22px;
       text-align: center;
       margin-bottom: 24px;
-      color: #111827;
+      color: ${h1Color};
       letter-spacing: -0.3px;
     }
     h2 {
@@ -106,7 +134,7 @@ export class PdfService {
       margin-bottom: 8px;
       border-bottom: 1px solid #e5e7eb;
       padding-bottom: 6px;
-      color: #1f2937;
+      color: ${h2Color};
     }
     h3 { font-size: 14px; margin-top: 16px; color: #374151; }
     p { margin: 6px 0; }
@@ -119,7 +147,7 @@ export class PdfService {
     .signatures { margin-top: 40px; page-break-inside: avoid; }
   </style>
 </head>
-<body>${html}</body>
+<body>${brandingHeader}${html}</body>
 </html>`;
   }
 

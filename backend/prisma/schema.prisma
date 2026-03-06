@@ -26,6 +26,8 @@ model User {
   notifyOnExpire   Boolean    @default(true) @map("notify_on_expire")
   notifyOnComment  Boolean    @default(true) @map("notify_on_comment")
   emailDigest      String     @default("instant") @map("email_digest") // instant | daily | weekly | none
+  brandLogoUrl     String?    @map("brand_logo_url")
+  brandColor       String?    @map("brand_color") // hex color for PDF branding
   createdAt        DateTime   @default(now()) @map("created_at")
   updatedAt        DateTime   @updatedAt @map("updated_at")
 

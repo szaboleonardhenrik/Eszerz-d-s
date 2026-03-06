@@ -42,6 +42,8 @@ export class AuthController {
       notifyOnExpire?: boolean;
       notifyOnComment?: boolean;
       emailDigest?: string;
+      brandLogoUrl?: string;
+      brandColor?: string;
     },
   ) {
     const result = await this.authService.updateProfile(req.user.userId, body);

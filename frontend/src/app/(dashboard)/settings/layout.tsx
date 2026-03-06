@@ -11,6 +11,7 @@ const tabs = [
   { href: "/settings/tags", label: "Címkék" },
   { href: "/settings/notifications", label: "Értesítések" },
   { href: "/settings/webhooks", label: "Webhookok" },
+  { href: "/settings/branding", label: "Arculat" },
   { href: "/settings/billing", label: "Előfizetés" },
   { href: "/settings/referral", label: "Ajánlás" },
 ];

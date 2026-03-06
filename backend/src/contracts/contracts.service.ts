@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
-import { PdfService } from '../pdf/pdf.service';
+import { PdfService, PdfBranding } from '../pdf/pdf.service';
 import { StorageService } from '../storage/storage.service';
 import { AuditService } from '../audit/audit.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -25,6 +25,15 @@ export class ContractsService {
     private readonly templatesService: TemplatesService,
     private readonly config: ConfigService,
   ) {}
+
+  private getUserBranding(user: any): PdfBranding | undefined {
+    if (!user?.brandLogoUrl && !user?.brandColor && !user?.companyName) return undefined;
+    return {
+      logoUrl: user.brandLogoUrl ?? undefined,
+      companyName: user.companyName ?? undefined,
+      brandColor: user.brandColor ?? undefined,
+    };
+  }
 
   async create(dto: CreateContractDto, userId: string) {
     // Subscription limit check
@@ -63,7 +72,8 @@ export class ContractsService {
       );
     }
 
-    const pdfBuffer = await this.pdfService.generatePdf(contentHtml, dto.title);
+    const branding = this.getUserBranding(user);
+    const pdfBuffer = await this.pdfService.generatePdf(contentHtml, dto.title, branding);
     const pdfKey = `contracts/${userId}/${randomUUID()}.pdf`;
     await this.storageService.uploadPdf(pdfKey, pdfBuffer);
     const documentHash = this.pdfService.hashDocument(pdfBuffer);
@@ -119,7 +129,9 @@ export class ContractsService {
       throw new BadRequestException('Csak piszkozat státuszú szerződés szerkeszthető');
     }
 
-    const pdfBuffer = await this.pdfService.generatePdf(contentHtml, contract.title);
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const branding = this.getUserBranding(user);
+    const pdfBuffer = await this.pdfService.generatePdf(contentHtml, contract.title, branding);
     const pdfKey = `contracts/${userId}/${randomUUID()}.pdf`;
     await this.storageService.uploadPdf(pdfKey, pdfBuffer);
 
