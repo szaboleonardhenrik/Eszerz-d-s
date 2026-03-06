@@ -17,6 +17,7 @@ interface Signer {
   signedAt: string | null;
   signingOrder: number;
   signatureMethod: string | null;
+  signerNote?: string | null;
 }
 
 interface AuditEntry {
@@ -598,6 +599,11 @@ export default function ContractDetailPage() {
                         {signer.signedAt && (
                           <p className="text-xs text-gray-400 mt-1">
                             {new Date(signer.signedAt).toLocaleString("hu-HU")}
+                          </p>
+                        )}
+                        {signer.signerNote && (
+                          <p className="text-xs italic text-gray-500 dark:text-gray-400 mt-1">
+                            &ldquo;{signer.signerNote}&rdquo;
                           </p>
                         )}
                       </div>

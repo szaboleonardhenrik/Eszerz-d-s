@@ -23,6 +23,7 @@ import { FoldersModule } from './folders/folders.module';
 import { ContactsModule } from './contacts/contacts.module';
 import { InAppNotificationsModule } from './in-app-notifications/in-app-notifications.module';
 import { ReferralsModule } from './referrals/referrals.module';
+import { QuotesModule } from './quotes/quotes.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { ReferralsModule } from './referrals/referrals.module';
     ContactsModule,
     InAppNotificationsModule,
     ReferralsModule,
+    QuotesModule,
   ],
 })
 export class AppModule {}

@@ -35,6 +35,7 @@ export default function SignPage() {
   const [typedName, setTypedName] = useState("");
   const [declining, setDeclining] = useState(false);
   const [declineReason, setDeclineReason] = useState("");
+  const [signerNote, setSignerNote] = useState("");
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const padRef = useRef<SignaturePad | null>(null);
@@ -107,6 +108,7 @@ export default function SignPage() {
         signatureMethod: "simple",
         signatureImageBase64,
         typedName: signMethod === "type" ? typedName : undefined,
+        note: signerNote || undefined,
       });
       setSigned(true);
       toast.success("Sikeresen aláírta a szerződést!");
@@ -120,7 +122,7 @@ export default function SignPage() {
   const handleDecline = async () => {
     setSigning(true);
     try {
-      await api.post(`/sign/${token}/decline`, { reason: declineReason });
+      await api.post(`/sign/${token}/decline`, { reason: declineReason, note: signerNote || undefined });
       setError("Visszautasította a szerződést");
     } catch (err: any) {
       toast.error(err.response?.data?.error?.message ?? "Hiba");
@@ -269,6 +271,22 @@ export default function SignPage() {
                 Az aláírással elfogadom a szerződés feltételeit. Az aláírás
                 időbélyeggel, IP címmel és böngésző adatokkal kerül rögzítésre.
               </p>
+
+              {/* Optional signer note */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Megjegyzes (opcionalis)
+                </label>
+                <textarea
+                  value={signerNote}
+                  onChange={(e) => setSignerNote(e.target.value)}
+                  placeholder="Ha szeretne megjegyzest fuzni az alairasahoz..."
+                  rows={2}
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-[#198296] outline-none resize-none dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                  onFocus={(e) => (e.target.style.borderColor = "#198296")}
+                  onBlur={(e) => (e.target.style.borderColor = "")}
+                />
+              </div>
 
               <div className="flex gap-3">
                 <button

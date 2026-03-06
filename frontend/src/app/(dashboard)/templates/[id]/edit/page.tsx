@@ -30,8 +30,13 @@ export default function EditTemplatePage() {
   const [category, setCategory] = useState("munkajogi");
   const [description, setDescription] = useState("");
   const [contentHtml, setContentHtml] = useState("");
+  const [contentHtmlEn, setContentHtmlEn] = useState("");
   const [legalBasis, setLegalBasis] = useState("");
   const [variables, setVariables] = useState<Variable[]>([]);
+  const [contentLang, setContentLang] = useState<"hu" | "en">("hu");
+  const [showVersions, setShowVersions] = useState(false);
+  const [versions, setVersions] = useState<{ id: string; version: number; changeNote: string | null; createdAt: string }[]>([]);
+  const [versionsLoading, setVersionsLoading] = useState(false);
 
   useEffect(() => {
     loadTemplate();
@@ -45,6 +50,7 @@ export default function EditTemplatePage() {
       setCategory(t.category);
       setDescription(t.description ?? "");
       setContentHtml(t.contentHtml);
+      setContentHtmlEn(t.contentHtmlEn ?? "");
       setLegalBasis(t.legalBasis ?? "");
       setVariables(t.variables ?? []);
     } catch {
@@ -84,6 +90,7 @@ export default function EditTemplatePage() {
         category,
         description: description || undefined,
         contentHtml,
+        contentHtmlEn: contentHtmlEn || undefined,
         variables,
         legalBasis: legalBasis || undefined,
       });
@@ -98,7 +105,7 @@ export default function EditTemplatePage() {
   };
 
   const renderPreview = () => {
-    let html = contentHtml;
+    let html = contentLang === "en" ? contentHtmlEn : contentHtml;
     for (const v of variables) {
       if (v.name) {
         html = html.replaceAll(
@@ -108,6 +115,31 @@ export default function EditTemplatePage() {
       }
     }
     return html;
+  };
+
+  const loadVersions = async () => {
+    setVersionsLoading(true);
+    try {
+      const res = await api.get(`/templates/${id}/versions`);
+      setVersions(res.data.data ?? []);
+      setShowVersions(true);
+    } catch {
+      toast.error("Nem sikerult betolteni a verziokat");
+    } finally {
+      setVersionsLoading(false);
+    }
+  };
+
+  const handleRevert = async (versionId: string) => {
+    if (!confirm("Biztosan visszaallitod ezt a verziot?")) return;
+    try {
+      await api.post(`/templates/${id}/revert/${versionId}`);
+      toast.success("Verzio visszaallitva");
+      setShowVersions(false);
+      await loadTemplate();
+    } catch {
+      toast.error("Hiba a verzio visszaallitasakor");
+    }
   };
 
   if (loading) {
@@ -121,14 +153,65 @@ export default function EditTemplatePage() {
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Sablon szerkesztese</h1>
-        <button
-          onClick={() => router.push("/templates")}
-          className="text-sm text-gray-500 hover:text-gray-700"
-        >
-          Vissza
-        </button>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Sablon szerkesztese</h1>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={loadVersions}
+            disabled={versionsLoading}
+            className="text-sm font-medium px-4 py-2 rounded-lg border hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 disabled:opacity-50"
+          >
+            {versionsLoading ? "Betoltes..." : "Verziok"}
+          </button>
+          <button
+            onClick={() => router.push("/templates")}
+            className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          >
+            Vissza
+          </button>
+        </div>
       </div>
+
+      {/* Versions Panel */}
+      {showVersions && (
+        <div className="mb-6 bg-white dark:bg-gray-800 rounded-2xl border dark:border-gray-700 p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Verzio elozmények</h2>
+            <button onClick={() => setShowVersions(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          {versions.length === 0 ? (
+            <p className="text-sm text-gray-400">Nincs korabbi verzio</p>
+          ) : (
+            <div className="space-y-2">
+              {versions.map((v) => (
+                <div key={v.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-700">
+                  <div>
+                    <span className="font-medium text-gray-900 dark:text-white text-sm">v{v.version}</span>
+                    {v.changeNote && (
+                      <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">- {v.changeNote}</span>
+                    )}
+                    <span className="text-xs text-gray-400 ml-3">
+                      {new Date(v.createdAt).toLocaleString("hu-HU")}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => handleRevert(v.id)}
+                    className="text-sm font-medium px-3 py-1 rounded-lg text-white transition"
+                    style={{ backgroundColor: "#198296" }}
+                    onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = "#0e5f6e"}
+                    onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = "#198296"}
+                  >
+                    Visszaallitas
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Editor */}
@@ -188,19 +271,58 @@ export default function EditTemplatePage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border p-6">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border dark:border-gray-700 p-6">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Tartalom (HTML) *
             </label>
             <p className="text-xs text-gray-400 mb-2">
               Hasznalj {"{{valtozo_neve}}"} szintaxist a valtozokhoz.
             </p>
-            <textarea
-              value={contentHtml}
-              onChange={(e) => setContentHtml(e.target.value)}
-              rows={16}
-              className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-brand-teal outline-none resize-y font-mono text-sm leading-relaxed"
-            />
+
+            {/* HU / EN language toggle */}
+            <div className="flex gap-1 mb-3 bg-gray-100 dark:bg-gray-700 rounded-lg p-1 w-fit">
+              <button
+                type="button"
+                onClick={() => setContentLang("hu")}
+                className={`px-4 py-1.5 rounded-md text-sm font-medium transition ${
+                  contentLang === "hu"
+                    ? "text-white shadow-sm"
+                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                }`}
+                style={contentLang === "hu" ? { backgroundColor: "#198296" } : {}}
+              >
+                HU
+              </button>
+              <button
+                type="button"
+                onClick={() => setContentLang("en")}
+                className={`px-4 py-1.5 rounded-md text-sm font-medium transition ${
+                  contentLang === "en"
+                    ? "text-white shadow-sm"
+                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                }`}
+                style={contentLang === "en" ? { backgroundColor: "#198296" } : {}}
+              >
+                EN
+              </button>
+            </div>
+
+            {contentLang === "hu" ? (
+              <textarea
+                value={contentHtml}
+                onChange={(e) => setContentHtml(e.target.value)}
+                rows={16}
+                className="w-full px-4 py-3 border dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-brand-teal outline-none resize-y font-mono text-sm leading-relaxed dark:bg-gray-900 dark:text-gray-100"
+              />
+            ) : (
+              <textarea
+                value={contentHtmlEn}
+                onChange={(e) => setContentHtmlEn(e.target.value)}
+                rows={16}
+                placeholder="English version of the template content..."
+                className="w-full px-4 py-3 border dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-brand-teal outline-none resize-y font-mono text-sm leading-relaxed dark:bg-gray-900 dark:text-gray-100"
+              />
+            )}
           </div>
 
           {/* Variables */}

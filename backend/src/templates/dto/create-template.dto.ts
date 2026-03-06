@@ -7,4 +7,6 @@ export class CreateTemplateDto {
   @IsString() contentHtml: string;
   @IsOptional() @IsArray() variables?: { name: string; label: string; type: string; required: boolean }[];
   @IsOptional() @IsString() legalBasis?: string;
+  @IsOptional() @IsString() contentHtmlEn?: string;
+  @IsOptional() @IsString() changeNote?: string;
 }

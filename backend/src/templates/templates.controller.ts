@@ -30,6 +30,7 @@ export class TemplatesController {
       category: template.category,
       description: template.description,
       contentHtml: template.contentHtml,
+      contentHtmlEn: template.contentHtmlEn,
       variables: template.variables,
       legalBasis: template.legalBasis,
     });
@@ -44,6 +45,18 @@ export class TemplatesController {
   @Put(':id')
   async update(@Param('id') id: string, @Body() dto: Partial<CreateTemplateDto>, @Req() req: any) {
     const template = await this.templatesService.updateTemplate(id, req.user.userId, dto);
+    return ApiResponse.ok(template);
+  }
+
+  @Get(':id/versions')
+  async getVersions(@Param('id') id: string, @Req() req: any) {
+    const versions = await this.templatesService.getVersions(id);
+    return ApiResponse.ok(versions);
+  }
+
+  @Post(':id/revert/:versionId')
+  async revertToVersion(@Param('id') id: string, @Param('versionId') versionId: string, @Req() req: any) {
+    const template = await this.templatesService.revertToVersion(id, versionId, req.user.userId);
     return ApiResponse.ok(template);
   }
 

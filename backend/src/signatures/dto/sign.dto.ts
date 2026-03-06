@@ -11,4 +11,8 @@ export class SignContractDto {
   @IsOptional()
   @IsString()
   typedName?: string;
+
+  @IsOptional()
+  @IsString()
+  note?: string;
 }

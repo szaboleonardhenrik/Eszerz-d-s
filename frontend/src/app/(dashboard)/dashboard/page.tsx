@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { SkeletonStats, SkeletonRow } from "@/components/skeleton";
 import EmptyState from "@/components/empty-state";
 import ActivityFeed from "@/components/activity-feed";
+import WidgetReorder from "@/components/widget-reorder";
 
 interface MonthlyData {
   month: string;
@@ -130,6 +131,17 @@ export default function DashboardPage() {
     }
     return { expiring: true, awaiting: true, completed: true, chart: true, usage: true };
   });
+
+  const [widgetOrder, setWidgetOrder] = useState<string[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("dashboard_widget_order");
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return ["expiring", "awaiting", "completed", "activity", "chart", "usage"];
+  });
+  const [showReorder, setShowReorder] = useState(false);
 
   const toggleWidget = (key: string) => {
     setWidgetConfig((prev) => {
@@ -380,7 +392,15 @@ export default function DashboardPage() {
               </svg>
             </button>
             <div id="widget-config" className="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-lg border dark:border-gray-700 z-50 py-2">
-              <p className="px-4 py-1.5 text-xs font-semibold text-gray-400 uppercase">Widgetek</p>
+              <div className="px-4 py-1.5 flex items-center justify-between">
+                <p className="text-xs font-semibold text-gray-400 uppercase">Widgetek</p>
+                <button
+                  onClick={() => setShowReorder(true)}
+                  className="text-xs text-[#198296] hover:underline font-medium"
+                >
+                  Sorrend
+                </button>
+              </div>
               {[
                 { key: "expiring", label: "Lejáró szerződések" },
                 { key: "awaiting", label: "Aláírásra vár" },
@@ -989,6 +1009,17 @@ export default function DashboardPage() {
           </button>
         </div>
       )}
+
+      <WidgetReorder
+        open={showReorder}
+        onClose={() => setShowReorder(false)}
+        order={widgetOrder}
+        onSave={(newOrder) => {
+          setWidgetOrder(newOrder);
+          localStorage.setItem("dashboard_widget_order", JSON.stringify(newOrder));
+          setShowReorder(false);
+        }}
+      />
     </div>
   );
 }

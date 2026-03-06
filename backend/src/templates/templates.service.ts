@@ -33,6 +33,7 @@ export class TemplatesService {
         category: dto.category,
         description: dto.description ?? null,
         contentHtml: dto.contentHtml,
+        contentHtmlEn: dto.contentHtmlEn ?? null,
         variables: JSON.stringify(dto.variables ?? []),
         legalBasis: dto.legalBasis ?? null,
         isPublic: false,
@@ -60,10 +61,27 @@ export class TemplatesService {
         ...(dto.category !== undefined && { category: dto.category }),
         ...(dto.description !== undefined && { description: dto.description }),
         ...(dto.contentHtml !== undefined && { contentHtml: dto.contentHtml }),
+        ...(dto.contentHtmlEn !== undefined && { contentHtmlEn: dto.contentHtmlEn }),
         ...(dto.variables !== undefined && { variables: JSON.stringify(dto.variables) }),
         ...(dto.legalBasis !== undefined && { legalBasis: dto.legalBasis }),
       },
     });
+
+    // Create template version record
+    const lastVersion = await this.prisma.templateVersion.findFirst({
+      where: { templateId: id },
+      orderBy: { version: 'desc' },
+    });
+    await this.prisma.templateVersion.create({
+      data: {
+        templateId: id,
+        version: (lastVersion?.version ?? 0) + 1,
+        contentHtml: updated.contentHtml,
+        changeNote: dto.changeNote ?? `Verzio ${(lastVersion?.version ?? 0) + 1}`,
+        createdBy: userId,
+      },
+    });
+
     return {
       ...updated,
       variables: typeof updated.variables === 'string' ? JSON.parse(updated.variables) : updated.variables,
@@ -101,6 +119,24 @@ export class TemplatesService {
       where: { ownerId: userId },
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  async getVersions(templateId: string) {
+    return this.prisma.templateVersion.findMany({
+      where: { templateId },
+      orderBy: { version: 'desc' },
+    });
+  }
+
+  async revertToVersion(templateId: string, versionId: string, userId: string) {
+    const template = await this.prisma.template.findUnique({ where: { id: templateId } });
+    if (!template) throw new NotFoundException('Sablon nem talalhato');
+    if (template.ownerId !== userId) throw new ForbiddenException('Nincs jogosultsag');
+
+    const version = await this.prisma.templateVersion.findUnique({ where: { id: versionId } });
+    if (!version || version.templateId !== templateId) throw new NotFoundException('Verzio nem talalhato');
+
+    return this.updateTemplate(templateId, userId, { contentHtml: version.contentHtml });
   }
 
   async renderTemplate(

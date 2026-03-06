@@ -35,6 +35,7 @@ export class SignaturesController {
   async decline(
     @Param('token') token: string,
     @Body('reason') reason: string,
+    @Body('note') note: string,
     @Ip() ip: string,
     @Req() req: Request,
   ) {
@@ -44,6 +45,7 @@ export class SignaturesController {
       reason ?? '',
       ip,
       userAgent,
+      note,
     );
     return ApiResponse.ok(result);
   }

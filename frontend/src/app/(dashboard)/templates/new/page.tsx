@@ -26,8 +26,10 @@ export default function NewTemplatePage() {
   const [category, setCategory] = useState("munkajogi");
   const [description, setDescription] = useState("");
   const [contentHtml, setContentHtml] = useState("");
+  const [contentHtmlEn, setContentHtmlEn] = useState("");
   const [legalBasis, setLegalBasis] = useState("");
   const [variables, setVariables] = useState<Variable[]>([]);
+  const [contentLang, setContentLang] = useState<"hu" | "en">("hu");
 
   const addVariable = () => {
     setVariables([
@@ -58,6 +60,7 @@ export default function NewTemplatePage() {
         category,
         description: description || undefined,
         contentHtml,
+        contentHtmlEn: contentHtmlEn || undefined,
         variables,
         legalBasis: legalBasis || undefined,
       });
@@ -71,7 +74,7 @@ export default function NewTemplatePage() {
   };
 
   const renderPreview = () => {
-    let html = contentHtml;
+    let html = contentLang === "en" ? contentHtmlEn : contentHtml;
     for (const v of variables) {
       if (v.name) {
         html = html.replaceAll(
@@ -156,20 +159,59 @@ export default function NewTemplatePage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border p-6">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border dark:border-gray-700 p-6">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Tartalom (HTML) *
             </label>
             <p className="text-xs text-gray-400 mb-2">
               Hasznalj {"{{valtozo_neve}}"} szintaxist a valtozokhoz.
             </p>
-            <textarea
-              value={contentHtml}
-              onChange={(e) => setContentHtml(e.target.value)}
-              rows={16}
-              placeholder={'<h2>Munkaszerz\u0151des</h2>\n<p>amely letrejott egyreszt <strong>{{munkaltato_neve}}</strong>...</p>'}
-              className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-brand-teal outline-none resize-y font-mono text-sm leading-relaxed"
-            />
+
+            {/* HU / EN language toggle */}
+            <div className="flex gap-1 mb-3 bg-gray-100 dark:bg-gray-700 rounded-lg p-1 w-fit">
+              <button
+                type="button"
+                onClick={() => setContentLang("hu")}
+                className={`px-4 py-1.5 rounded-md text-sm font-medium transition ${
+                  contentLang === "hu"
+                    ? "text-white shadow-sm"
+                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                }`}
+                style={contentLang === "hu" ? { backgroundColor: "#198296" } : {}}
+              >
+                HU
+              </button>
+              <button
+                type="button"
+                onClick={() => setContentLang("en")}
+                className={`px-4 py-1.5 rounded-md text-sm font-medium transition ${
+                  contentLang === "en"
+                    ? "text-white shadow-sm"
+                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                }`}
+                style={contentLang === "en" ? { backgroundColor: "#198296" } : {}}
+              >
+                EN
+              </button>
+            </div>
+
+            {contentLang === "hu" ? (
+              <textarea
+                value={contentHtml}
+                onChange={(e) => setContentHtml(e.target.value)}
+                rows={16}
+                placeholder={'<h2>Munkaszerz\u0151des</h2>\n<p>amely letrejott egyreszt <strong>{{munkaltato_neve}}</strong>...</p>'}
+                className="w-full px-4 py-3 border dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-brand-teal outline-none resize-y font-mono text-sm leading-relaxed dark:bg-gray-900 dark:text-gray-100"
+              />
+            ) : (
+              <textarea
+                value={contentHtmlEn}
+                onChange={(e) => setContentHtmlEn(e.target.value)}
+                rows={16}
+                placeholder="English version of the template content..."
+                className="w-full px-4 py-3 border dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-brand-teal outline-none resize-y font-mono text-sm leading-relaxed dark:bg-gray-900 dark:text-gray-100"
+              />
+            )}
           </div>
 
           {/* Variables */}

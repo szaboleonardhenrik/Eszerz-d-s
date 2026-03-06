@@ -123,6 +123,7 @@ export class SignaturesService {
         signatureMethod: dto.signatureMethod,
         signatureImageUrl,
         typedName: dto.typedName,
+        signerNote: dto.note ?? null,
       },
     });
 
@@ -240,6 +241,7 @@ export class SignaturesService {
     reason: string,
     ipAddress: string,
     userAgent: string,
+    note?: string,
   ) {
     const signer = await this.prisma.signer.findUnique({
       where: { signToken: token },
@@ -252,7 +254,7 @@ export class SignaturesService {
 
     await this.prisma.signer.update({
       where: { id: signer.id },
-      data: { status: 'declined', ipAddress, userAgent },
+      data: { status: 'declined', ipAddress, userAgent, signerNote: note ?? null },
     });
 
     await this.prisma.contract.update({
