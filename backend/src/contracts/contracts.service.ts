@@ -421,6 +421,70 @@ export class ContractsService {
     return newContract;
   }
 
+  async cloneAsTemplate(contractId: string, userId: string) {
+    const contract = await this.prisma.contract.findUnique({
+      where: { id: contractId },
+      include: { signers: true, template: { select: { category: true } } },
+    });
+
+    if (!contract) {
+      throw new NotFoundException('A szerződés nem található');
+    }
+    if (contract.ownerId !== userId) {
+      throw new ForbiddenException('Nincs jogosultságod ehhez a szerződéshez');
+    }
+
+    const template = await this.prisma.template.create({
+      data: {
+        name: `${contract.title} (sablon)`,
+        category: contract.template?.category ?? 'egyeb',
+        description: 'Szerződésből generált sablon',
+        contentHtml: contract.contentHtml,
+        variables: '[]',
+        isPublic: false,
+        ownerId: userId,
+      },
+    });
+
+    return template;
+  }
+
+  async archive(contractId: string, userId: string) {
+    const contract = await this.findOneOwned(contractId, userId);
+
+    const updated = await this.prisma.contract.update({
+      where: { id: contractId },
+      data: { status: 'archived' },
+      include: { signers: true },
+    });
+
+    await this.auditService.log({
+      contractId,
+      eventType: 'contract_archived',
+      eventData: { previousStatus: contract.status },
+    });
+
+    return updated;
+  }
+
+  async unarchive(contractId: string, userId: string) {
+    const contract = await this.findOneOwned(contractId, userId);
+
+    const updated = await this.prisma.contract.update({
+      where: { id: contractId },
+      data: { status: 'draft' },
+      include: { signers: true },
+    });
+
+    await this.auditService.log({
+      contractId,
+      eventType: 'contract_unarchived',
+      eventData: { previousStatus: contract.status },
+    });
+
+    return updated;
+  }
+
   async bulkSend(contractIds: string[], userId: string) {
     let successCount = 0;
     let failureCount = 0;

@@ -111,6 +111,53 @@ export class SchedulerService {
     this.logger.log(`Expired ${expiredSigners.length} signer tokens`);
   }
 
+  /** Daily at 11:00 AM - send auto-reminders for signers pending > 3 days */
+  @Cron('0 11 * * *')
+  async sendAutoReminders() {
+    this.logger.log('Running auto-reminder job...');
+
+    const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+    const now = new Date();
+
+    const pendingSigners = await this.prisma.signer.findMany({
+      where: {
+        status: 'pending',
+        createdAt: { lt: threeDaysAgo },
+        tokenExpiresAt: { gt: now },
+        contract: {
+          status: { in: ['sent', 'partially_signed'] },
+          owner: { notifyOnSign: true },
+        },
+      },
+      include: { contract: true },
+    });
+
+    const frontendUrl = this.config.get<string>(
+      'FRONTEND_URL',
+      'http://localhost:3000',
+    );
+
+    for (const signer of pendingSigners) {
+      try {
+        await this.notificationsService.sendReminder({
+          to: signer.email,
+          signerName: signer.name,
+          contractTitle: signer.contract.title,
+          signUrl: `${frontendUrl}/sign/${signer.signToken}`,
+          expiresAt:
+            signer.tokenExpiresAt?.toLocaleDateString('hu-HU') ?? '',
+        });
+      } catch (error) {
+        this.logger.error(
+          `Failed to send auto-reminder to ${signer.email}`,
+          error,
+        );
+      }
+    }
+
+    this.logger.log(`Auto-reminders: sent ${pendingSigners.length} reminders`);
+  }
+
   /** Daily at 10:00 AM - send onboarding drip emails (day 1, 3, 7) */
   @Cron('0 10 * * *')
   async sendOnboardingEmails() {

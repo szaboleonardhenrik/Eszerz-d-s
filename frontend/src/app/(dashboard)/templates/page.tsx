@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { useAuth } from "@/lib/auth-store";
 import { SkeletonTemplateCard } from "@/components/skeleton";
 import EmptyState from "@/components/empty-state";
+import { isFavorite, toggleFavorite } from "@/lib/favorites";
 
 interface Template {
   id: string;
@@ -56,8 +57,15 @@ export default function TemplatesPage() {
   const [loading, setLoading] = useState(true);
   const [preview, setPreview] = useState<PreviewData | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [favs, setFavs] = useState<Record<string, boolean>>({});
   const router = useRouter();
   const user = useAuth((s) => s.user);
+
+  useEffect(() => {
+    const initial: Record<string, boolean> = {};
+    templates.forEach((t) => { initial[t.id] = isFavorite(t.id); });
+    setFavs(initial);
+  }, [templates]);
 
   useEffect(() => {
     loadTemplates();
@@ -77,12 +85,23 @@ export default function TemplatesPage() {
     }
   };
 
-  const filtered = templates.filter(
-    (t) =>
-      !search ||
-      t.name.toLowerCase().includes(search.toLowerCase()) ||
-      t.description?.toLowerCase().includes(search.toLowerCase())
-  );
+  const handleToggleFav = (id: string) => {
+    const newState = toggleFavorite(id);
+    setFavs((prev) => ({ ...prev, [id]: newState }));
+  };
+
+  const filtered = templates
+    .filter(
+      (t) =>
+        !search ||
+        t.name.toLowerCase().includes(search.toLowerCase()) ||
+        t.description?.toLowerCase().includes(search.toLowerCase())
+    )
+    .sort((a, b) => {
+      const aFav = favs[a.id] ? 1 : 0;
+      const bFav = favs[b.id] ? 1 : 0;
+      return bFav - aFav;
+    });
 
   const categories = [...new Set(templates.map((t) => t.category))];
 
@@ -115,13 +134,21 @@ export default function TemplatesPage() {
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Sablonkönyvtár</h1>
-        <Link
-          href="/templates/new"
-          className="bg-brand-gold text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-brand-gold-dark transition shadow-sm"
-        >
-          + Új sablon
-        </Link>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Sablonkonyvtar</h1>
+        <div className="flex gap-2">
+          <Link
+            href="/templates/marketplace"
+            className="border px-4 py-2 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+          >
+            Piac ter
+          </Link>
+          <Link
+            href="/templates/new"
+            className="bg-brand-gold text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-brand-gold-dark transition shadow-sm"
+          >
+            + Uj sablon
+          </Link>
+        </div>
       </div>
 
       <div className="flex gap-4 mb-6 flex-wrap">
@@ -197,9 +224,20 @@ export default function TemplatesPage() {
                     {template.isPublic ? "Rendszer" : "Saját"}
                   </span>
                 </div>
-                <span className="text-xs text-gray-400">
-                  {template.variables?.length ?? 0} mező
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-400">
+                    {template.variables?.length ?? 0} mezo
+                  </span>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleToggleFav(template.id); }}
+                    className="p-0.5 hover:scale-110 transition-transform"
+                    title={favs[template.id] ? "Eltavolitas a kedvencekbol" : "Kedvencekhez adas"}
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill={favs[template.id] ? "#D29B01" : "none"} stroke={favs[template.id] ? "#D29B01" : "#9ca3af"} strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                    </svg>
+                  </button>
+                </div>
               </div>
               <h3 className="font-semibold text-gray-900 mb-2">
                 {template.name}

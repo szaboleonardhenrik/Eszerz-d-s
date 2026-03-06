@@ -11,7 +11,9 @@ export type AuditEventType =
   | 'expired'
   | 'downloaded'
   | 'contract_duplicated'
-  | 'contract_updated';
+  | 'contract_updated'
+  | 'contract_archived'
+  | 'contract_unarchived';
 
 @Injectable()
 export class AuditService {

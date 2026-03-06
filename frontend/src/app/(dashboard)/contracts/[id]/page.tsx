@@ -6,6 +6,7 @@ import api from "@/lib/api";
 import toast from "react-hot-toast";
 import { useAuth } from "@/lib/auth-store";
 import VersionDiff from "@/components/version-diff";
+import QrSigningModal from "@/components/qr-signing-modal";
 
 interface Signer {
   id: string;
@@ -113,6 +114,9 @@ export default function ContractDetailPage() {
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [showTagMenu, setShowTagMenu] = useState(false);
   const [showDiff, setShowDiff] = useState(false);
+  const [qrSigner, setQrSigner] = useState<{ name: string; token: string } | null>(null);
+  const [archiving, setArchiving] = useState(false);
+  const [cloning, setCloning] = useState(false);
   const { user: currentUser } = useAuth();
 
   useEffect(() => {
@@ -260,6 +264,32 @@ export default function ContractDetailPage() {
       toast.error(err.response?.data?.error?.message ?? "Hiba az AI elemzés során");
     } finally {
       setAiLoading(false);
+    }
+  };
+
+  const handleArchive = async () => {
+    setArchiving(true);
+    try {
+      await api.post(`/contracts/${id}/archive`);
+      toast.success("Szerzodes archivalva");
+      loadContract();
+    } catch {
+      toast.error("Hiba az archivalaskor");
+    } finally {
+      setArchiving(false);
+    }
+  };
+
+  const handleCloneAsTemplate = async () => {
+    setCloning(true);
+    try {
+      const res = await api.post(`/contracts/${id}/clone-as-template`);
+      toast.success("Sablon letrehozva!");
+      router.push(`/templates/${res.data.data.id}/edit`);
+    } catch {
+      toast.error("Hiba a sablon letrehozasakor");
+    } finally {
+      setCloning(false);
     }
   };
 
@@ -423,6 +453,22 @@ export default function ContractDetailPage() {
               PDF letöltés
             </button>
           )}
+          <button
+            onClick={handleCloneAsTemplate}
+            disabled={cloning}
+            className="border px-5 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          >
+            {cloning ? "Mentes..." : "Sablonkent mentes"}
+          </button>
+          {!["completed", "cancelled", "archived"].includes(contract.status) && (
+            <button
+              onClick={handleArchive}
+              disabled={archiving}
+              className="border px-5 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            >
+              {archiving ? "Archivalas..." : "Archivalas"}
+            </button>
+          )}
           {!["completed", "cancelled"].includes(contract.status) && (
             <button
               onClick={handleCancel}
@@ -516,13 +562,24 @@ export default function ContractDetailPage() {
                     </div>
                     <div className="flex items-center gap-3">
                       {signer.status === "pending" && ["sent", "partially_signed"].includes(contract.status) && (
-                        <button
-                          onClick={() => handleReminder(signer.id)}
-                          disabled={reminderLoading === signer.id}
-                          className="text-xs px-3 py-1 rounded-lg border border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition disabled:opacity-50"
-                        >
-                          {reminderLoading === signer.id ? "Küldés..." : "Emlékeztető"}
-                        </button>
+                        <>
+                          <button
+                            onClick={() => handleReminder(signer.id)}
+                            disabled={reminderLoading === signer.id}
+                            className="text-xs px-3 py-1 rounded-lg border border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition disabled:opacity-50"
+                          >
+                            {reminderLoading === signer.id ? "Küldés..." : "Emlékeztető"}
+                          </button>
+                          <button
+                            onClick={() => setQrSigner({ name: signer.name, token: (signer as any).signToken })}
+                            className="text-xs px-2 py-1 rounded-lg border text-gray-500 hover:bg-gray-50 transition"
+                            title="QR kod"
+                          >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h7v7H3V3zm11 0h7v7h-7V3zM3 14h7v7H3v-7zm14 3h.01M17 14h.01M14 17h.01M14 14h3v3h-3v-3zm3 3h3v3h-3v-3z" />
+                            </svg>
+                          </button>
+                        </>
                       )}
                       <div className="text-right">
                         <span
@@ -723,6 +780,15 @@ export default function ContractDetailPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {qrSigner && (
+        <QrSigningModal
+          open={!!qrSigner}
+          onClose={() => setQrSigner(null)}
+          signerName={qrSigner.name}
+          signToken={qrSigner.token}
+        />
       )}
     </div>
   );

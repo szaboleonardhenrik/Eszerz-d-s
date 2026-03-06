@@ -6,6 +6,7 @@ import api from "@/lib/api";
 import toast from "react-hot-toast";
 import { SkeletonStats, SkeletonRow } from "@/components/skeleton";
 import EmptyState from "@/components/empty-state";
+import ActivityFeed from "@/components/activity-feed";
 
 interface MonthlyData {
   month: string;
@@ -384,6 +385,7 @@ export default function DashboardPage() {
                 { key: "expiring", label: "Lejáró szerződések" },
                 { key: "awaiting", label: "Aláírásra vár" },
                 { key: "completed", label: "Nemrég kész" },
+                { key: "activity", label: "Tevekenyseg" },
                 { key: "chart", label: "Havi grafikon" },
                 { key: "usage", label: "Használat" },
               ].map((w) => (
@@ -538,6 +540,14 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Activity Feed */}
+      {widgetConfig.activity !== false && (
+        <div className="mb-8 bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 p-6">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Legutobb tevekenyse</h3>
+          <ActivityFeed limit={8} />
         </div>
       )}
 

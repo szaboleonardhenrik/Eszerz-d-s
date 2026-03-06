@@ -217,6 +217,24 @@ export class ContractsController {
     return ApiResponse.ok(result);
   }
 
+  @Post(':id/clone-as-template')
+  async cloneAsTemplate(@Param('id') id: string, @Req() req: any) {
+    const result = await this.contractsService.cloneAsTemplate(id, req.user.userId);
+    return ApiResponse.ok(result);
+  }
+
+  @Post(':id/archive')
+  async archive(@Param('id') id: string, @Req() req: any) {
+    const result = await this.contractsService.archive(id, req.user.userId);
+    return ApiResponse.ok(result);
+  }
+
+  @Post(':id/unarchive')
+  async unarchive(@Param('id') id: string, @Req() req: any) {
+    const result = await this.contractsService.unarchive(id, req.user.userId);
+    return ApiResponse.ok(result);
+  }
+
   @Post(':id/cancel')
   async cancel(@Param('id') id: string, @Req() req: any) {
     const result = await this.contractsService.cancel(id, req.user.userId);
