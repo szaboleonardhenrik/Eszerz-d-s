@@ -131,7 +131,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               <ul className="space-y-2.5 text-sm">
                 <li><Link href="/adatvedelem" className="hover:text-white transition">Adatvédelmi tájékoztató</Link></li>
                 <li><Link href="/aszf" className="hover:text-white transition">ÁSZF</Link></li>
-                <li><span className="cursor-default">Cookie szabályzat</span></li>
+                <li><Link href="/cookie" className="hover:text-white transition">Cookie szabályzat</Link></li>
                 <li><Link href="/adatvedelem" className="hover:text-white transition">GDPR megfelelőség</Link></li>
               </ul>
             </div>
