@@ -270,6 +270,7 @@ export class ContractsService {
     if (search) {
       where.OR = [
         { title: { contains: search, mode: 'insensitive' } },
+        { contentHtml: { contains: search, mode: 'insensitive' } },
         { signers: { some: { name: { contains: search, mode: 'insensitive' } } } },
         { signers: { some: { email: { contains: search, mode: 'insensitive' } } } },
       ];

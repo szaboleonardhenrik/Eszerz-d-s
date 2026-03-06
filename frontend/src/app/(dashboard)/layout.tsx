@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth-store";
 import OnboardingModal from "@/components/onboarding-modal";
 import NotificationBell from "@/components/notification-bell";
 import ThemeToggle from "@/components/theme-toggle";
+import KeyboardShortcutsHelp, { useKeyboardShortcuts } from "@/components/keyboard-shortcuts";
 
 const navItems = [
   { href: "/dashboard", label: "Kezdőlap", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" },
@@ -23,6 +24,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileNav, setMobileNav] = useState(false);
+  const { showHelp, setShowHelp } = useKeyboardShortcuts();
 
   useEffect(() => {
     loadProfile();
@@ -185,6 +187,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {children}
       </main>
       <OnboardingModal />
+      <KeyboardShortcutsHelp open={showHelp} onClose={() => setShowHelp(false)} />
     </div>
   );
 }

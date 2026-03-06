@@ -61,6 +61,12 @@ interface Widget {
   recentlyCompleted: { id: string; title: string; updatedAt: string }[];
 }
 
+interface Folder {
+  id: string;
+  name: string;
+  color: string;
+}
+
 const statusLabels: Record<string, string> = {
   draft: "Piszkozat",
   sent: "Elküldve",
@@ -109,6 +115,28 @@ export default function DashboardPage() {
   const [selectedTag, setSelectedTag] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [folders, setFolders] = useState<Folder[]>([]);
+  const [selectedFolder, setSelectedFolder] = useState("");
+  const [showFolders, setShowFolders] = useState(false);
+  const [dragOverFolder, setDragOverFolder] = useState<string | null>(null);
+  const [newFolderName, setNewFolderName] = useState("");
+  const [widgetConfig, setWidgetConfig] = useState<Record<string, boolean>>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("dashboard_widgets");
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return { expiring: true, awaiting: true, completed: true, chart: true, usage: true };
+  });
+
+  const toggleWidget = (key: string) => {
+    setWidgetConfig((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      localStorage.setItem("dashboard_widgets", JSON.stringify(next));
+      return next;
+    });
+  };
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -148,15 +176,51 @@ export default function DashboardPage() {
   useEffect(() => {
     api.get("/tags").then((res) => setTags(res.data.data ?? [])).catch(() => {});
     api.get("/contracts/widgets").then((res) => setWidgets(res.data.data)).catch(() => {});
+    api.get("/folders").then((res) => setFolders(res.data.data ?? [])).catch(() => {});
   }, []);
+
+  const handleDragStart = (e: React.DragEvent, contractId: string) => {
+    e.dataTransfer.setData("contractId", contractId);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDropOnFolder = async (e: React.DragEvent, folderId: string | null) => {
+    e.preventDefault();
+    setDragOverFolder(null);
+    const contractId = e.dataTransfer.getData("contractId");
+    if (!contractId) return;
+    try {
+      if (folderId) {
+        await api.post(`/folders/${folderId}/contracts/${contractId}`);
+      } else {
+        await api.delete(`/folders/contracts/${contractId}`);
+      }
+      toast.success("Szerződés áthelyezve");
+      loadData();
+    } catch {
+      toast.error("Hiba az áthelyezéskor");
+    }
+  };
+
+  const createFolder = async () => {
+    if (!newFolderName.trim()) return;
+    try {
+      const res = await api.post("/folders", { name: newFolderName.trim() });
+      setFolders((prev) => [...prev, res.data.data]);
+      setNewFolderName("");
+      toast.success("Mappa létrehozva");
+    } catch {
+      toast.error("Hiba a mappa létrehozásakor");
+    }
+  };
 
   useEffect(() => {
     setPage(1);
-  }, [filter, debouncedSearch, selectedTag, dateFrom, dateTo]);
+  }, [filter, debouncedSearch, selectedTag, dateFrom, dateTo, selectedFolder]);
 
   useEffect(() => {
     loadData();
-  }, [filter, debouncedSearch, selectedTag, page, dateFrom, dateTo]);
+  }, [filter, debouncedSearch, selectedTag, page, dateFrom, dateTo, selectedFolder]);
 
   const loadData = async () => {
     setLoading(true);
@@ -167,6 +231,7 @@ export default function DashboardPage() {
       if (selectedTag) params.tagId = selectedTag;
       if (dateFrom) params.dateFrom = dateFrom;
       if (dateTo) params.dateTo = dateTo;
+      if (selectedFolder) params.folderId = selectedFolder;
 
       const [statsRes, contractsRes] = await Promise.all([
         api.get("/contracts/stats"),
@@ -279,9 +344,61 @@ export default function DashboardPage() {
 
   return (
     <div>
+      {/* Usage Warning */}
+      {stats && stats.usage.limit > 0 && stats.usage.used / stats.usage.limit >= 0.8 && (
+        <div className={`mb-4 px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-3 ${
+          stats.usage.used >= stats.usage.limit
+            ? "bg-red-50 text-red-700 border border-red-200"
+            : "bg-yellow-50 text-yellow-700 border border-yellow-200"
+        }`}>
+          <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          </svg>
+          {stats.usage.used >= stats.usage.limit
+            ? `Elérted a havi limitedet (${stats.usage.used}/${stats.usage.limit}). Válts magasabb csomagra!`
+            : `${stats.usage.limit - stats.usage.used} szerződésed maradt ebben a hónapban (${stats.usage.used}/${stats.usage.limit}).`}
+          <Link href="/settings/billing" className="ml-auto underline whitespace-nowrap">Csomag váltás</Link>
+        </div>
+      )}
+
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Kezdőlap</h1>
         <div className="flex items-center gap-3">
+          {/* Widget toggle */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                const el = document.getElementById("widget-config");
+                if (el) el.classList.toggle("hidden");
+              }}
+              className="flex items-center gap-2 px-3 py-2.5 rounded-lg font-medium border text-gray-500 hover:bg-gray-50 transition text-sm"
+              title="Widgetek testreszabása"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+            </button>
+            <div id="widget-config" className="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-lg border dark:border-gray-700 z-50 py-2">
+              <p className="px-4 py-1.5 text-xs font-semibold text-gray-400 uppercase">Widgetek</p>
+              {[
+                { key: "expiring", label: "Lejáró szerződések" },
+                { key: "awaiting", label: "Aláírásra vár" },
+                { key: "completed", label: "Nemrég kész" },
+                { key: "chart", label: "Havi grafikon" },
+                { key: "usage", label: "Használat" },
+              ].map((w) => (
+                <label key={w.key} className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={widgetConfig[w.key] !== false}
+                    onChange={() => toggleWidget(w.key)}
+                    className="rounded border-gray-300 text-[#198296] focus:ring-[#198296]"
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{w.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
           <div className="relative" ref={exportRef}>
             <button
               onClick={() => setExportOpen((v) => !v)}
@@ -342,10 +459,10 @@ export default function DashboardPage() {
       ) : null}
 
       {/* Widgets Row */}
-      {widgets && (widgets.expiringContracts.length > 0 || widgets.awaitingSignature.length > 0) && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+      {widgets && (widgets.expiringContracts.length > 0 || widgets.awaitingSignature.length > 0 || widgets.recentlyCompleted.length > 0) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
           {/* Expiring contracts widget */}
-          {widgets.expiringContracts.length > 0 && (
+          {widgetConfig.expiring !== false && widgets.expiringContracts.length > 0 && (
             <div className="bg-white rounded-xl border p-5">
               <h3 className="text-sm font-semibold text-red-600 mb-3 flex items-center gap-2">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -371,7 +488,7 @@ export default function DashboardPage() {
           )}
 
           {/* Awaiting signature widget */}
-          {widgets.awaitingSignature.length > 0 && (
+          {widgetConfig.awaiting !== false && widgets.awaitingSignature.length > 0 && (
             <div className="bg-white rounded-xl border p-5">
               <h3 className="text-sm font-semibold text-yellow-600 mb-3 flex items-center gap-2">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -395,14 +512,41 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
+
+          {/* Recently completed widget */}
+          {widgetConfig.completed !== false && widgets.recentlyCompleted.length > 0 && (
+            <div className="bg-white rounded-xl border p-5">
+              <h3 className="text-sm font-semibold text-green-600 mb-3 flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Nemrég elkészült
+              </h3>
+              <div className="space-y-2">
+                {widgets.recentlyCompleted.map((c) => (
+                  <Link
+                    key={c.id}
+                    href={`/contracts/${c.id}`}
+                    className="flex items-center justify-between p-2.5 rounded-lg hover:bg-green-50 transition text-sm"
+                  >
+                    <span className="font-medium text-gray-900 truncate mr-3">{c.title}</span>
+                    <span className="text-green-500 text-xs whitespace-nowrap">
+                      {new Date(c.updatedAt).toLocaleDateString("hu-HU")}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
       {/* Analytics Row */}
-      {stats && stats.monthlyStats && (
+      {stats && stats.monthlyStats && (widgetConfig.chart !== false || widgetConfig.usage !== false) && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
           {/* Mini Chart */}
-          <div className="lg:col-span-2 bg-white rounded-xl border p-6">
+          {widgetConfig.chart !== false && (
+          <div className={`${widgetConfig.usage !== false ? "lg:col-span-2" : "lg:col-span-3"} bg-white rounded-xl border p-6`}>
             <h3 className="text-sm font-semibold text-gray-900 mb-4">Utolsó 6 hónap</h3>
             <div className="flex items-end gap-3 h-40">
               {stats.monthlyStats.map((m, i) => (
@@ -432,9 +576,11 @@ export default function DashboardPage() {
               </span>
             </div>
           </div>
+          )}
 
           {/* Usage Card */}
-          <div className="bg-white rounded-xl border p-6">
+          {widgetConfig.usage !== false && (
+          <div className={`bg-white rounded-xl border p-6 ${widgetConfig.chart === false ? "lg:col-span-3" : ""}`}>
             <h3 className="text-sm font-semibold text-gray-900 mb-4">Havi használat</h3>
             <div className="text-center mb-4">
               <p className="text-4xl font-bold text-gray-900">{stats.usage.used}</p>
@@ -472,11 +618,85 @@ export default function DashboardPage() {
               )}
             </div>
           </div>
+          )}
         </div>
       )}
 
-      {/* Contract List */}
-      <div className="bg-white rounded-xl shadow-sm border">
+      {/* Contract List with Folder Sidebar */}
+      <div className="flex gap-4">
+      {/* Folder Sidebar */}
+      {folders.length > 0 && (
+        <div className={`${showFolders ? "w-56" : "w-0"} shrink-0 transition-all overflow-hidden`}>
+          <div className="bg-white rounded-xl border p-3 space-y-1 min-w-[14rem]">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold text-gray-400 uppercase">Mappák</p>
+            </div>
+            <button
+              onClick={() => { setSelectedFolder(""); }}
+              onDrop={(e) => handleDropOnFolder(e, null)}
+              onDragOver={(e) => { e.preventDefault(); setDragOverFolder("none"); }}
+              onDragLeave={() => setDragOverFolder(null)}
+              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${
+                !selectedFolder
+                  ? "bg-blue-50 text-blue-700 font-medium"
+                  : "text-gray-600 hover:bg-gray-50"
+              } ${dragOverFolder === "none" ? "ring-2 ring-blue-400" : ""}`}
+            >
+              Összes
+            </button>
+            <button
+              onClick={() => setSelectedFolder("none")}
+              onDrop={(e) => handleDropOnFolder(e, null)}
+              onDragOver={(e) => { e.preventDefault(); setDragOverFolder("unassigned"); }}
+              onDragLeave={() => setDragOverFolder(null)}
+              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${
+                selectedFolder === "none"
+                  ? "bg-blue-50 text-blue-700 font-medium"
+                  : "text-gray-600 hover:bg-gray-50"
+              } ${dragOverFolder === "unassigned" ? "ring-2 ring-blue-400" : ""}`}
+            >
+              Mappa nélkül
+            </button>
+            {folders.map((f) => (
+              <button
+                key={f.id}
+                onClick={() => setSelectedFolder(f.id)}
+                onDrop={(e) => handleDropOnFolder(e, f.id)}
+                onDragOver={(e) => { e.preventDefault(); setDragOverFolder(f.id); }}
+                onDragLeave={() => setDragOverFolder(null)}
+                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition flex items-center gap-2 ${
+                  selectedFolder === f.id
+                    ? "bg-blue-50 text-blue-700 font-medium"
+                    : "text-gray-600 hover:bg-gray-50"
+                } ${dragOverFolder === f.id ? "ring-2 ring-blue-400 bg-blue-50" : ""}`}
+              >
+                <span className="w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: f.color }} />
+                <span className="truncate">{f.name}</span>
+              </button>
+            ))}
+            <div className="pt-2 border-t mt-2">
+              <div className="flex gap-1">
+                <input
+                  type="text"
+                  value={newFolderName}
+                  onChange={(e) => setNewFolderName(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && createFolder()}
+                  placeholder="Új mappa..."
+                  className="flex-1 px-2 py-1.5 border rounded text-xs outline-none focus:ring-1 focus:ring-blue-500"
+                />
+                <button
+                  onClick={createFolder}
+                  disabled={!newFolderName.trim()}
+                  className="px-2 py-1.5 bg-blue-600 text-white rounded text-xs disabled:opacity-40"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      <div className="flex-1 bg-white rounded-xl shadow-sm border">
         <div className="p-4 border-b flex flex-col sm:flex-row gap-3">
           <div className="flex gap-2 flex-wrap flex-1">
             {["", "draft", "sent", "partially_signed", "completed", "declined", "expired"].map((s) => (
@@ -528,12 +748,23 @@ export default function DashboardPage() {
                 ))}
               </select>
             )}
+            {folders.length > 0 && (
+              <button
+                onClick={() => setShowFolders((v) => !v)}
+                className={`px-3 py-1.5 border rounded-lg text-sm transition ${showFolders ? "bg-blue-100 text-blue-700 border-blue-300" : "text-gray-500 hover:bg-gray-50"}`}
+                title="Mappák megjelenítése"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                </svg>
+              </button>
+            )}
             <input
               type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Keresés..."
-              className="px-3 py-1.5 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500 w-48"
+              placeholder="Keresés cím, tartalom, aláíró..."
+              className="px-3 py-1.5 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500 w-60"
             />
             {searchInput && (
               <button
@@ -588,7 +819,7 @@ export default function DashboardPage() {
               </thead>
               <tbody>
                 {contracts.map((c) => (
-                  <tr key={c.id} className={`border-b last:border-0 hover:bg-gray-50 transition ${selectedIds.has(c.id) ? "bg-blue-50" : ""}`}>
+                  <tr key={c.id} draggable onDragStart={(e) => handleDragStart(e, c.id)} className={`border-b last:border-0 hover:bg-gray-50 transition cursor-grab active:cursor-grabbing ${selectedIds.has(c.id) ? "bg-blue-50" : ""}`}>
                     <td className="px-4 py-3">
                       <input
                         type="checkbox"
@@ -674,6 +905,7 @@ export default function DashboardPage() {
             )}
           </>
         )}
+      </div>
       </div>
 
       {/* Floating Bulk Action Bar */}
