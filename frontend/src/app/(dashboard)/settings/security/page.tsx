@@ -23,12 +23,43 @@ function getPasswordStrength(password: string): {
   return { label: "Erős", color: "bg-green-500", width: "w-full" };
 }
 
+interface Session {
+  id: string;
+  ipAddress: string | null;
+  device: string | null;
+  lastActive: string;
+  createdAt: string;
+  current: boolean;
+}
+
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "Most";
+  if (mins < 60) return `${mins} perce`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} órája`;
+  const days = Math.floor(hours / 24);
+  return `${days} napja`;
+}
+
+function deviceIcon(device: string | null): string {
+  switch (device) {
+    case "Windows": return "M3 5h8v8H3V5zm10 0h8v8h-8V5zM3 15h8v6H3v-6zm10 0h8v6h-8v-6z";
+    case "Mac": return "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z";
+    case "iPhone": case "Android": case "Mobil": return "M7 2h10a2 2 0 012 2v16a2 2 0 01-2 2H7a2 2 0 01-2-2V4a2 2 0 012-2zm5 18a1 1 0 100-2 1 1 0 000 2z";
+    case "Linux": return "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z";
+    default: return "M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z";
+  }
+}
+
 export default function SecuritySettings() {
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [saving, setSaving] = useState(false);
-  const [lastActivity, setLastActivity] = useState<string | null>(null);
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [sessionsLoading, setSessionsLoading] = useState(true);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const strength = useMemo(() => getPasswordStrength(newPassword), [newPassword]);
@@ -40,13 +71,19 @@ export default function SecuritySettings() {
     newPassword === confirmPassword;
 
   useEffect(() => {
-    api
-      .get("/auth/sessions")
-      .then((res) => {
-        setLastActivity(res.data.data.lastActivity);
-      })
-      .catch(() => {});
+    loadSessions();
   }, []);
+
+  const loadSessions = async () => {
+    try {
+      const res = await api.get("/auth/sessions");
+      setSessions(res.data.data);
+    } catch {
+      // silently fail
+    } finally {
+      setSessionsLoading(false);
+    }
+  };
 
   const handleChangePassword = async () => {
     if (!isValid) return;
@@ -68,13 +105,35 @@ export default function SecuritySettings() {
     }
   };
 
+  const revokeSession = async (sessionId: string) => {
+    try {
+      await api.delete(`/auth/sessions/${sessionId}`);
+      toast.success("Munkamenet törölve");
+      setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+    } catch {
+      toast.error("Hiba a munkamenet törlésekor");
+    }
+  };
+
+  const revokeAllOther = async () => {
+    try {
+      const res = await api.delete("/auth/sessions");
+      toast.success(res.data.data.message);
+      setSessions((prev) => prev.filter((s) => s.current));
+    } catch {
+      toast.error("Hiba a munkamenetek törlésekor");
+    }
+  };
+
   const handleDeleteAccount = () => {
     setShowDeleteConfirm(false);
-    toast("Kérjük vegye fel a kapcsolatot: hello@szerzodesportal.hu", {
+    toast("Kérjük vegye fel a kapcsolatot: hello@szerzodes.cegverzum.hu", {
       icon: "📧",
       duration: 5000,
     });
   };
+
+  const otherSessions = sessions.filter((s) => !s.current);
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -162,26 +221,76 @@ export default function SecuritySettings() {
         </button>
       </div>
 
-      {/* Account Security */}
+      {/* Active Sessions */}
       <div className="bg-white rounded-xl border p-6 space-y-5">
-        <h2 className="text-lg font-semibold text-gray-900">
-          Fiók biztonság
-        </h2>
-
-        <div className="flex items-center justify-between py-3 border-b">
-          <div>
-            <p className="text-sm font-medium text-gray-900">
-              Utolsó bejelentkezés
-            </p>
-            <p className="text-sm text-gray-500">
-              {lastActivity
-                ? new Date(lastActivity).toLocaleString("hu-HU")
-                : "Betöltés..."}
-            </p>
-          </div>
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-gray-900">
+            Aktív munkamenetek
+          </h2>
+          {otherSessions.length > 0 && (
+            <button
+              onClick={revokeAllOther}
+              className="text-sm text-red-600 hover:text-red-700 font-medium"
+            >
+              Összes többi kijelentkeztetése
+            </button>
+          )}
         </div>
 
-        <div className="flex items-center justify-between py-3 border-b">
+        {sessionsLoading ? (
+          <div className="py-8 text-center text-gray-400 text-sm">Betöltés...</div>
+        ) : sessions.length === 0 ? (
+          <div className="py-8 text-center text-gray-400 text-sm">Nincs aktív munkamenet</div>
+        ) : (
+          <div className="space-y-3">
+            {sessions.map((session) => (
+              <div
+                key={session.id}
+                className={`rounded-lg p-4 flex items-center justify-between ${
+                  session.current ? "bg-green-50 border border-green-200" : "bg-gray-50"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    session.current ? "bg-green-100" : "bg-gray-200"
+                  }`}>
+                    <svg className={`w-5 h-5 ${session.current ? "text-green-600" : "text-gray-500"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={deviceIcon(session.device)} />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-gray-900">
+                        {session.device || "Ismeretlen eszköz"}
+                      </p>
+                      {session.current && (
+                        <span className="text-xs font-medium text-green-600 bg-green-100 px-2 py-0.5 rounded">
+                          Jelenlegi
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      {session.ipAddress || "Ismeretlen IP"} &middot; {timeAgo(session.lastActive)}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      Belépés: {new Date(session.createdAt).toLocaleString("hu-HU")}
+                    </p>
+                  </div>
+                </div>
+                {!session.current && (
+                  <button
+                    onClick={() => revokeSession(session.id)}
+                    className="text-sm text-red-600 hover:text-red-700 font-medium px-3 py-1.5 rounded-lg hover:bg-red-50 transition"
+                  >
+                    Kijelentkeztetés
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="flex items-center justify-between py-3 border-t">
           <div>
             <p className="text-sm font-medium text-gray-900">
               Kétfaktoros hitelesítés
@@ -193,32 +302,6 @@ export default function SecuritySettings() {
           <span className="text-xs font-medium bg-gray-100 text-gray-600 px-3 py-1 rounded-full">
             Hamarosan
           </span>
-        </div>
-
-        <div className="py-3">
-          <p className="text-sm font-medium text-gray-900 mb-2">
-            Munkamenetek
-          </p>
-          <div className="bg-gray-50 rounded-lg p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                <div className="w-2 h-2 bg-green-500 rounded-full" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-900">
-                  Jelenlegi munkamenet
-                </p>
-                <p className="text-xs text-gray-500">
-                  {lastActivity
-                    ? `Utolsó aktivitás: ${new Date(lastActivity).toLocaleString("hu-HU")}`
-                    : "Aktív"}
-                </p>
-              </div>
-            </div>
-            <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded">
-              Aktív
-            </span>
-          </div>
         </div>
       </div>
 

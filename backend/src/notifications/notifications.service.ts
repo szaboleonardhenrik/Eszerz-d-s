@@ -116,6 +116,25 @@ export class NotificationsService {
     }
   }
 
+  async sendOnboardingEmail(params: {
+    to: string;
+    name: string;
+    subject: string;
+    html: string;
+  }) {
+    try {
+      await this.resend.emails.send({
+        from: this.fromEmail,
+        to: params.to,
+        subject: params.subject,
+        html: params.html,
+      });
+      this.logger.log(`Onboarding email sent to ${params.to}: "${params.subject}"`);
+    } catch (error) {
+      this.logger.error(`Failed to send onboarding email to ${params.to}`, error);
+    }
+  }
+
   async sendExpiryWarning(params: {
     to: string;
     ownerName: string;

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useAuth } from "@/lib/auth-store";
 import OnboardingModal from "@/components/onboarding-modal";
 import NotificationBell from "@/components/notification-bell";
+import ThemeToggle from "@/components/theme-toggle";
 
 const navItems = [
   { href: "/dashboard", label: "Kezdőlap", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" },
@@ -47,8 +48,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center gap-8">
@@ -69,8 +70,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       href={item.href}
                       className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition ${
                         isActive
-                          ? "bg-blue-50 text-blue-700"
-                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                          ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
+                          : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-200"
                       }`}
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -83,6 +84,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <ThemeToggle />
               <NotificationBell />
               <button
                 onClick={() => setMobileNav(!mobileNav)}
@@ -111,7 +113,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 {menuOpen && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border z-50 py-2">
+                    <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-lg border dark:border-gray-700 z-50 py-2">
                       <div className="px-4 py-2 border-b">
                         <p className="text-sm font-medium text-gray-900">{user.name}</p>
                         <p className="text-xs text-gray-400">{user.email}</p>
@@ -154,7 +156,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </nav>
       {mobileNav && (
-        <div className="md:hidden bg-white border-b shadow-sm">
+        <div className="md:hidden bg-white dark:bg-gray-800 border-b dark:border-gray-700 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 py-2 space-y-1">
             {navItems.map((item) => {
               const isActive = pathname === item.href || pathname.startsWith(item.href + "/");

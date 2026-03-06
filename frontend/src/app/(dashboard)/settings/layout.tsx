@@ -12,6 +12,7 @@ const tabs = [
   { href: "/settings/notifications", label: "Értesítések" },
   { href: "/settings/webhooks", label: "Webhookok" },
   { href: "/settings/billing", label: "Előfizetés" },
+  { href: "/settings/referral", label: "Ajánlás" },
 ];
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {

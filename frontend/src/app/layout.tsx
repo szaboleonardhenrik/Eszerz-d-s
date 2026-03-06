@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import CookieConsent from "@/components/cookie-consent";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const inter = Inter({ subsets: ["latin", "latin-ext"] });
 
@@ -39,11 +40,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="hu">
-      <body className={`${inter.className} antialiased bg-gray-50`}>
-        <Toaster position="top-right" />
-        {children}
-        <CookieConsent />
+    <html lang="hu" suppressHydrationWarning>
+      <body className={`${inter.className} antialiased bg-gray-50 dark:bg-gray-900 dark:text-gray-100`}>
+        <ThemeProvider>
+          <Toaster position="top-right" />
+          {children}
+          <CookieConsent />
+        </ThemeProvider>
       </body>
     </html>
   );

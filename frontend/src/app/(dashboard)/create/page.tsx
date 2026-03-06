@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, lazy } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
+import WysiwygEditor from "@/components/wysiwyg-editor";
 
 interface TemplateVar {
   name: string;
@@ -180,9 +181,15 @@ function CreateWizardInner() {
             </button>
             <button
               onClick={() => setUploadMode(true)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${uploadMode ? "bg-blue-100 text-blue-700" : "text-gray-500 hover:bg-gray-100"}`}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${uploadMode && !uploadedHtml ? "bg-blue-100 text-blue-700" : "text-gray-500 hover:bg-gray-100"}`}
             >
               Saját fájl feltöltés
+            </button>
+            <button
+              onClick={() => { setUploadMode(true); if (!uploadedHtml) setUploadedHtml("<p></p>"); }}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${uploadMode && uploadedHtml ? "bg-blue-100 text-blue-700" : "text-gray-500 hover:bg-gray-100"}`}
+            >
+              Szerkesztő
             </button>
           </div>
 
@@ -223,19 +230,23 @@ function CreateWizardInner() {
                 </label>
               </div>
               {uploadedHtml && (
-                <div className="mt-4">
-                  <p className="text-sm text-green-600 font-medium mb-2">Fájl betöltve! Add meg a szerződés címét és az aláírókat.</p>
+                <div className="mt-4 space-y-4">
                   <input
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Szerződés címe"
-                    className="w-full px-4 py-2 border rounded-lg text-sm mb-3 outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2.5 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <WysiwygEditor
+                    value={uploadedHtml}
+                    onChange={setUploadedHtml}
+                    placeholder="Szerkessze a szerződés tartalmát..."
                   />
                   <button
                     onClick={() => { if (title.trim()) setStep(3); }}
                     disabled={!title.trim()}
-                    className="px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition disabled:opacity-50"
+                    className="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition disabled:opacity-50"
                   >
                     Tovább az aláírókhoz
                   </button>

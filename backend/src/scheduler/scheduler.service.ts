@@ -111,6 +111,136 @@ export class SchedulerService {
     this.logger.log(`Expired ${expiredSigners.length} signer tokens`);
   }
 
+  /** Daily at 10:00 AM - send onboarding drip emails (day 1, 3, 7) */
+  @Cron('0 10 * * *')
+  async sendOnboardingEmails() {
+    this.logger.log('Running onboarding drip campaign job...');
+
+    const frontendUrl = this.config.get<string>(
+      'FRONTEND_URL',
+      'http://localhost:3000',
+    );
+
+    const onboardingSteps = [
+      {
+        daysAgo: 1,
+        subject: 'Üdvözöljük a SzerződésPortálon!',
+        buildHtml: (name: string) => `
+          <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
+            <h2>Kedves ${name}!</h2>
+            <p>Köszönjük, hogy regisztrált a <strong>SzerződésPortálon</strong>! Örülünk, hogy velünk van.</p>
+            <p>Íme néhány tipp az induláshoz:</p>
+            <div style="background:#f5f5f5;padding:16px;border-radius:8px;margin:16px 0;">
+              <ul style="margin:0;padding-left:20px;line-height:1.8;">
+                <li><strong>Hozza létre első szerződését</strong> – válasszon a 15+ professzionális sablon közül</li>
+                <li><strong>Töltse ki a profilját</strong> – adja meg céges adatait a gyorsabb kitöltéshez</li>
+                <li><strong>Hívja meg aláíróit</strong> – küldjön aláírási felkérést e-mailben</li>
+              </ul>
+            </div>
+            <a href="${frontendUrl}/dashboard"
+               style="display:inline-block;background:#2563eb;color:white;padding:12px 32px;border-radius:6px;text-decoration:none;font-weight:bold;">
+              Irány az Irányítópult
+            </a>
+            <p style="margin-top:24px;font-size:12px;color:#999;">
+              Ha kérdése van, bátran írjon nekünk – szívesen segítünk!
+            </p>
+          </div>
+        `,
+      },
+      {
+        daysAgo: 3,
+        subject: 'Próbálja ki a sablonokat!',
+        buildHtml: (name: string) => `
+          <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
+            <h2>Kedves ${name}!</h2>
+            <p>Tudta, hogy a SzerződésPortálon <strong>15+ kész szerződéssablon</strong> várja?</p>
+            <p>Munkajogi, B2B, ingatlan, IT, GDPR és sok más – mind magyar jogszabályoknak megfelelően.</p>
+            <div style="background:#f5f5f5;padding:16px;border-radius:8px;margin:16px 0;">
+              <h3 style="margin:0 0 8px 0;">Népszerű sablonok:</h3>
+              <ul style="margin:0;padding-left:20px;line-height:1.8;">
+                <li>Munkaszerződés</li>
+                <li>Megbízási szerződés</li>
+                <li>Vállalkozási szerződés</li>
+                <li>Titoktartási megállapodás (NDA)</li>
+              </ul>
+            </div>
+            <p>Válasszon sablont, töltse ki a wizard segítségével, és percek alatt kész a szerződése!</p>
+            <a href="${frontendUrl}/templates"
+               style="display:inline-block;background:#2563eb;color:white;padding:12px 32px;border-radius:6px;text-decoration:none;font-weight:bold;">
+              Sablonok böngészése
+            </a>
+            <p style="margin-top:24px;font-size:12px;color:#999;">
+              Ha kérdése van, bátran írjon nekünk – szívesen segítünk!
+            </p>
+          </div>
+        `,
+      },
+      {
+        daysAgo: 7,
+        subject: 'Hozza ki a legtöbbet a SzerződésPortálból!',
+        buildHtml: (name: string) => `
+          <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
+            <h2>Kedves ${name}!</h2>
+            <p>Már egy hete velünk van – ideje felfedezni a <strong>haladó funkciókat</strong>!</p>
+            <div style="background:#f5f5f5;padding:16px;border-radius:8px;margin:16px 0;">
+              <h3 style="margin:0 0 12px 0;">Tudta, hogy ezek is elérhetők?</h3>
+              <ul style="margin:0;padding-left:20px;line-height:1.8;">
+                <li><strong>AI elemzés</strong> – A mesterséges intelligencia átnézi szerződését és javaslatokat tesz</li>
+                <li><strong>Csapatkezelés</strong> – Hívja meg kollégáit és dolgozzanak együtt</li>
+                <li><strong>API integráció</strong> – Kösse össze saját rendszereivel API kulcsokkal</li>
+                <li><strong>Webhookok</strong> – Kapjon valós idejű értesítéseket más rendszerekbe</li>
+              </ul>
+            </div>
+            <a href="${frontendUrl}/settings"
+               style="display:inline-block;background:#2563eb;color:white;padding:12px 32px;border-radius:6px;text-decoration:none;font-weight:bold;">
+              Beállítások felfedezése
+            </a>
+            <p style="margin-top:24px;font-size:12px;color:#999;">
+              Kérdése van a haladó funkciókról? Írjon nekünk bátran!
+            </p>
+          </div>
+        `,
+      },
+    ];
+
+    let totalSent = 0;
+
+    for (const step of onboardingSteps) {
+      const targetDate = new Date();
+      targetDate.setDate(targetDate.getDate() - step.daysAgo);
+      const dayStart = new Date(targetDate);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(targetDate);
+      dayEnd.setHours(23, 59, 59, 999);
+
+      const users = await this.prisma.user.findMany({
+        where: {
+          createdAt: { gte: dayStart, lte: dayEnd },
+        },
+        select: { email: true, name: true },
+      });
+
+      for (const user of users) {
+        try {
+          await this.notificationsService.sendOnboardingEmail({
+            to: user.email,
+            name: user.name,
+            subject: step.subject,
+            html: step.buildHtml(user.name),
+          });
+          totalSent++;
+        } catch (error) {
+          this.logger.error(
+            `Failed to send day-${step.daysAgo} onboarding email to ${user.email}`,
+            error,
+          );
+        }
+      }
+    }
+
+    this.logger.log(`Onboarding drip campaign: sent ${totalSent} emails`);
+  }
+
   /** Daily at 8:00 AM - send contract expiry warnings (30, 14, 7 days before) */
   @Cron('0 8 * * *')
   async sendExpiryWarnings() {

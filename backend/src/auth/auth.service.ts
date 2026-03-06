@@ -4,9 +4,11 @@ import {
   UnauthorizedException,
   BadRequestException,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -18,7 +20,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async register(dto: RegisterDto) {
+  async register(dto: RegisterDto, ip?: string, userAgent?: string) {
     const existing = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -38,13 +40,14 @@ export class AuthService {
     });
 
     const token = this.generateToken(user.id, user.email);
+    await this.createSession(user.id, token, ip, userAgent);
     return {
       user: { id: user.id, email: user.email, name: user.name },
       token,
     };
   }
 
-  async login(dto: LoginDto) {
+  async login(dto: LoginDto, ip?: string, userAgent?: string) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -58,6 +61,7 @@ export class AuthService {
     }
 
     const token = this.generateToken(user.id, user.email);
+    await this.createSession(user.id, token, ip, userAgent);
     return {
       user: {
         id: user.id,
@@ -151,25 +155,83 @@ export class AuthService {
     return { message: 'Jelszó sikeresen módosítva' };
   }
 
-  async getLoginHistory(userId: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { updatedAt: true, createdAt: true },
+  async getSessions(userId: string, currentToken?: string) {
+    const sessions = await this.prisma.session.findMany({
+      where: { userId },
+      orderBy: { lastActive: 'desc' },
+      select: {
+        id: true,
+        ipAddress: true,
+        device: true,
+        lastActive: true,
+        createdAt: true,
+        tokenHash: true,
+      },
     });
-    if (!user) {
-      throw new NotFoundException('Felhasználó nem található');
+
+    const currentHash = currentToken ? this.hashToken(currentToken) : null;
+
+    return sessions.map(({ tokenHash, ...session }) => ({
+      ...session,
+      current: currentHash ? tokenHash === currentHash : false,
+    }));
+  }
+
+  async revokeSession(sessionId: string, userId: string) {
+    const session = await this.prisma.session.findUnique({
+      where: { id: sessionId },
+    });
+    if (!session) {
+      throw new NotFoundException('Munkamenet nem található');
+    }
+    if (session.userId !== userId) {
+      throw new ForbiddenException('Nincs jogosultság a munkamenet törléséhez');
     }
 
-    return {
-      lastActivity: user.updatedAt,
-      createdAt: user.createdAt,
-      sessions: [
-        {
-          current: true,
-          lastActive: user.updatedAt,
-        },
-      ],
-    };
+    await this.prisma.session.delete({ where: { id: sessionId } });
+    return { message: 'Munkamenet sikeresen törölve' };
+  }
+
+  async revokeAllOtherSessions(userId: string, currentTokenHash: string) {
+    const result = await this.prisma.session.deleteMany({
+      where: {
+        userId,
+        tokenHash: { not: currentTokenHash },
+      },
+    });
+    return { message: `${result.count} munkamenet törölve` };
+  }
+
+  hashToken(token: string): string {
+    return crypto.createHash('sha256').update(token).digest('hex');
+  }
+
+  private parseDevice(userAgent?: string): string {
+    if (!userAgent) return 'Ismeretlen';
+    if (/iPhone/i.test(userAgent)) return 'iPhone';
+    if (/Android/i.test(userAgent)) return 'Android';
+    if (/Mobile/i.test(userAgent)) return 'Mobil';
+    if (/Mac/i.test(userAgent)) return 'Mac';
+    if (/Windows/i.test(userAgent)) return 'Windows';
+    if (/Linux/i.test(userAgent)) return 'Linux';
+    return 'Ismeretlen';
+  }
+
+  private async createSession(userId: string, token: string, ip?: string, userAgent?: string) {
+    const tokenHash = this.hashToken(token);
+    const device = this.parseDevice(userAgent);
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+
+    await this.prisma.session.create({
+      data: {
+        userId,
+        tokenHash,
+        ipAddress: ip || null,
+        userAgent: userAgent || null,
+        device,
+        expiresAt,
+      },
+    });
   }
 
   private generateToken(userId: string, email: string): string {

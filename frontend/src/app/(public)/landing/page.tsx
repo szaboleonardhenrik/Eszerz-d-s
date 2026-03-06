@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { ABTestProvider, ABVariant } from "@/components/ab-test";
 
 /* ── Reveal on scroll ─────────────────────────────────────────────── */
 function Reveal({ children, className = "", delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
@@ -58,8 +59,13 @@ function Counter({ end, suffix = "" }: { end: number; suffix?: string }) {
 /* ══════════════════════════════════════════════════════════════════ */
 export default function LandingPage() {
   return (
-    <>
-      <HeroSection />
+    <ABTestProvider>
+      <ABVariant variant="A">
+        <HeroSection />
+      </ABVariant>
+      <ABVariant variant="B">
+        <HeroSectionB />
+      </ABVariant>
       <LogoBar />
       <StatsBar />
       <FeaturesSection />
@@ -69,7 +75,7 @@ export default function LandingPage() {
       <PricingSection />
       <FAQSection />
       <FinalCTA />
-    </>
+    </ABTestProvider>
   );
 }
 
@@ -119,6 +125,131 @@ function HeroSection() {
                   className="inline-flex items-center justify-center gap-2 bg-brand-gold hover:bg-brand-gold-dark text-white font-semibold px-8 py-4 rounded-xl transition shadow-lg shadow-brand-gold/30 text-base"
                 >
                   Ingyenes regisztráció
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                </Link>
+                <Link
+                  href="/landing#hogyan-mukodik"
+                  className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold px-8 py-4 rounded-xl border border-white/20 transition text-base"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  Hogyan működik?
+                </Link>
+              </div>
+            </Reveal>
+            <Reveal delay={400}>
+              <div className="flex items-center gap-6 mt-8 text-white/60 text-sm">
+                <span className="flex items-center gap-1.5">
+                  <svg className="w-4 h-4 text-brand-gold" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                  Nem kell bankkártya
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <svg className="w-4 h-4 text-brand-gold" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                  5 szerződés ingyen
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <svg className="w-4 h-4 text-brand-gold" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                  30 mp-es regisztráció
+                </span>
+              </div>
+            </Reveal>
+          </div>
+
+          {/* Right — floating contract mockup */}
+          <Reveal delay={200} className="hidden lg:block">
+            <div className="relative animate-float">
+              {/* Main card */}
+              <div className="bg-white rounded-2xl shadow-2xl p-8 relative z-10">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <p className="text-xs text-gray-400 uppercase tracking-wider">Szerződés</p>
+                    <h3 className="font-bold text-gray-900">Megbízási szerződés</h3>
+                  </div>
+                  <span className="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full">Aláírva</span>
+                </div>
+                <div className="space-y-3 mb-6">
+                  <div className="h-3 bg-gray-100 rounded-full w-full" />
+                  <div className="h-3 bg-gray-100 rounded-full w-4/5" />
+                  <div className="h-3 bg-gray-100 rounded-full w-3/5" />
+                </div>
+                <div className="border-t pt-5 flex items-center justify-between">
+                  <div className="flex -space-x-2">
+                    <div className="w-9 h-9 rounded-full bg-brand-teal flex items-center justify-center text-white text-xs font-bold ring-2 ring-white">NK</div>
+                    <div className="w-9 h-9 rounded-full bg-brand-gold flex items-center justify-center text-white text-xs font-bold ring-2 ring-white">BT</div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-gray-400">Aláírva</p>
+                    <svg className="w-24 h-10 text-gray-800 animate-draw" viewBox="0 0 100 40" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M5 30 Q 15 5, 30 25 T 55 20 T 80 25 Q 90 28, 95 15" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              {/* Background cards */}
+              <div className="absolute -top-4 -right-4 w-full h-full bg-brand-teal/20 rounded-2xl -z-10 rotate-2" />
+              <div className="absolute -top-8 -right-8 w-full h-full bg-brand-gold/10 rounded-2xl -z-20 rotate-4" />
+              {/* Notification badge */}
+              <div className="absolute -top-3 -left-3 bg-white rounded-xl shadow-lg px-4 py-3 z-20 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-gray-900">Aláírás sikeres!</p>
+                  <p className="text-xs text-gray-400">2 mp-el ezelőtt</p>
+                </div>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── 1B. HERO (Variant B) ─────────────────────────────────────────── */
+function HeroSectionB() {
+  return (
+    <section className="relative overflow-hidden bg-gradient-to-br from-brand-teal-dark via-brand-teal to-brand-teal-muted min-h-[90vh] flex items-center">
+      {/* Background decoration */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-brand-gold rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-white rounded-full blur-3xl" />
+      </div>
+      <div className="absolute inset-0" style={{
+        backgroundImage: "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.08) 1px, transparent 0)",
+        backgroundSize: "40px 40px",
+      }} />
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-0">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          {/* Left text */}
+          <div>
+            <Reveal>
+              <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm px-4 py-1.5 rounded-full mb-6">
+                <span className="w-2 h-2 bg-brand-gold rounded-full animate-pulse" />
+                <span className="text-white/90 text-sm font-medium">Több mint 500+ elégedett ügyfél</span>
+              </div>
+            </Reveal>
+            <Reveal delay={100}>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-[1.1] mb-6">
+                Digitális
+                <br />
+                <span className="text-brand-gold">szerződéskötés</span>
+                <br />
+                5 perc alatt
+              </h1>
+            </Reveal>
+            <Reveal delay={200}>
+              <p className="text-lg text-white/80 mb-8 leading-relaxed max-w-xl">
+                Nincs több papírmunka. Készítsen, küldjön és írjon alá szerződéseket online — bárhonnan, bármikor.
+              </p>
+            </Reveal>
+            <Reveal delay={300}>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link
+                  href="/register"
+                  className="inline-flex items-center justify-center gap-2 bg-brand-gold hover:bg-brand-gold-dark text-white font-semibold px-8 py-4 rounded-xl transition shadow-lg shadow-brand-gold/30 text-base"
+                >
+                  Kezdje el ingyen
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                 </Link>
                 <Link
