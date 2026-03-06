@@ -89,6 +89,15 @@ export class ContractsService {
             ),
           })),
         },
+        versions: {
+          create: {
+            version: 1,
+            contentHtml,
+            pdfUrl: pdfKey,
+            changeNote: 'Eredeti verzió',
+            createdBy: userId,
+          },
+        },
       },
       include: { signers: true },
     });
@@ -101,6 +110,88 @@ export class ContractsService {
     });
 
     return contract;
+  }
+
+  async updateContent(contractId: string, userId: string, contentHtml: string, changeNote?: string) {
+    const contract = await this.findOneOwned(contractId, userId);
+
+    if (contract.status !== 'draft') {
+      throw new BadRequestException('Csak piszkozat státuszú szerződés szerkeszthető');
+    }
+
+    const pdfBuffer = await this.pdfService.generatePdf(contentHtml, contract.title);
+    const pdfKey = `contracts/${userId}/${randomUUID()}.pdf`;
+    await this.storageService.uploadPdf(pdfKey, pdfBuffer);
+
+    const lastVersion = await this.prisma.contractVersion.findFirst({
+      where: { contractId },
+      orderBy: { version: 'desc' },
+    });
+    const nextVersion = (lastVersion?.version ?? 0) + 1;
+
+    await this.prisma.contractVersion.create({
+      data: {
+        contractId,
+        version: nextVersion,
+        contentHtml,
+        pdfUrl: pdfKey,
+        changeNote: changeNote ?? `${nextVersion}. verzió`,
+        createdBy: userId,
+      },
+    });
+
+    const updated = await this.prisma.contract.update({
+      where: { id: contractId },
+      data: { contentHtml, pdfUrl: pdfKey },
+      include: { signers: true },
+    });
+
+    await this.auditService.log({
+      contractId,
+      eventType: 'contract_updated',
+      eventData: { version: nextVersion, changeNote },
+    });
+
+    return updated;
+  }
+
+  async getVersions(contractId: string, userId: string) {
+    await this.findOneOwned(contractId, userId);
+    return this.prisma.contractVersion.findMany({
+      where: { contractId },
+      orderBy: { version: 'desc' },
+    });
+  }
+
+  async sendReminder(contractId: string, signerId: string, userId: string) {
+    const contract = await this.findOneOwned(contractId, userId);
+    if (!['sent', 'partially_signed'].includes(contract.status)) {
+      throw new BadRequestException('Emlékeztető csak elküldött szerződéshez küldhető');
+    }
+
+    const signer = contract.signers.find((s) => s.id === signerId);
+    if (!signer) throw new NotFoundException('Aláíró nem található');
+    if (signer.status !== 'pending') {
+      throw new BadRequestException('Ez az aláíró már aláírta vagy visszautasította');
+    }
+
+    const frontendUrl = this.config.get<string>('FRONTEND_URL', 'http://localhost:3000');
+    await this.notificationsService.sendReminder({
+      to: signer.email,
+      signerName: signer.name,
+      contractTitle: contract.title,
+      signUrl: `${frontendUrl}/sign/${signer.signToken}`,
+      expiresAt: signer.tokenExpiresAt?.toLocaleDateString('hu-HU') ?? '',
+    });
+
+    await this.auditService.log({
+      contractId,
+      signerId: signer.id,
+      eventType: 'reminder_sent',
+      eventData: { email: signer.email },
+    });
+
+    return { message: `Emlékeztető elküldve: ${signer.name}` };
   }
 
   async sendForSigning(contractId: string, userId: string) {
@@ -146,25 +237,49 @@ export class ContractsService {
     return { message: 'Szerződés elküldve aláírásra' };
   }
 
-  async findAllByUser(userId: string, status?: string, search?: string) {
+  async findAllByUser(
+    userId: string,
+    status?: string,
+    search?: string,
+    tagId?: string,
+    page: number = 1,
+    limit: number = 20,
+  ) {
     const where: any = { ownerId: userId };
     if (status) where.status = status;
+    if (tagId) {
+      where.tags = { some: { tagId } };
+    }
     if (search) {
       where.OR = [
-        { title: { contains: search } },
-        { signers: { some: { name: { contains: search } } } },
-        { signers: { some: { email: { contains: search } } } },
+        { title: { contains: search, mode: 'insensitive' } },
+        { signers: { some: { name: { contains: search, mode: 'insensitive' } } } },
+        { signers: { some: { email: { contains: search, mode: 'insensitive' } } } },
       ];
     }
 
-    return this.prisma.contract.findMany({
-      where,
-      include: {
-        signers: { select: { id: true, name: true, email: true, status: true, role: true } },
-        template: { select: { name: true, category: true } },
-      },
-      orderBy: { updatedAt: 'desc' },
-    });
+    const [items, total] = await Promise.all([
+      this.prisma.contract.findMany({
+        where,
+        include: {
+          signers: { select: { id: true, name: true, email: true, status: true, role: true } },
+          template: { select: { name: true, category: true } },
+          tags: { include: { tag: true } },
+        },
+        orderBy: { updatedAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.contract.count({ where }),
+    ]);
+
+    return {
+      items,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async findOneOwned(contractId: string, userId: string) {
@@ -188,6 +303,7 @@ export class ContractsService {
       include: {
         signers: true,
         template: { select: { name: true, category: true } },
+        tags: { include: { tag: true } },
       },
     });
 
@@ -292,6 +408,66 @@ export class ContractsService {
     return { successCount, failureCount, errors };
   }
 
+  async getDashboardWidgets(userId: string) {
+    const now = new Date();
+    const sevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+    // Expiring contracts (within 7 days)
+    const expiringContracts = await this.prisma.contract.findMany({
+      where: {
+        ownerId: userId,
+        status: { in: ['sent', 'partially_signed'] },
+        expiresAt: { gte: now, lte: sevenDaysLater },
+      },
+      include: { signers: { select: { name: true, status: true } } },
+      orderBy: { expiresAt: 'asc' },
+      take: 5,
+    });
+
+    // Contracts with pending signers (waiting longest)
+    const awaitingSignature = await this.prisma.contract.findMany({
+      where: {
+        ownerId: userId,
+        status: { in: ['sent', 'partially_signed'] },
+      },
+      include: {
+        signers: {
+          where: { status: 'pending' },
+          select: { name: true, email: true, createdAt: true },
+        },
+      },
+      orderBy: { updatedAt: 'asc' },
+      take: 5,
+    });
+
+    // Recently completed
+    const recentlyCompleted = await this.prisma.contract.findMany({
+      where: { ownerId: userId, status: 'completed' },
+      select: { id: true, title: true, updatedAt: true },
+      orderBy: { updatedAt: 'desc' },
+      take: 5,
+    });
+
+    return {
+      expiringContracts: expiringContracts.map((c) => ({
+        id: c.id,
+        title: c.title,
+        expiresAt: c.expiresAt,
+        pendingSigners: c.signers.filter((s) => s.status === 'pending').length,
+        totalSigners: c.signers.length,
+      })),
+      awaitingSignature: awaitingSignature
+        .filter((c) => c.signers.length > 0)
+        .map((c) => ({
+          id: c.id,
+          title: c.title,
+          pendingSigners: c.signers.map((s) => s.name),
+          waitingSince: c.updatedAt,
+        })),
+      recentlyCompleted,
+    };
+  }
+
   async getAnalytics(userId: string) {
     // Overview stats
     const allContracts = await this.prisma.contract.findMany({
@@ -312,7 +488,7 @@ export class ContractsService {
     const completionRate = total > 0 ? Math.round((completedCount / total) * 100) : 0;
     const expirationRate = total > 0 ? Math.round((expiredCount / total) * 100) : 0;
 
-    // Average signing time (days) — from createdAt to updatedAt for completed contracts
+    // Average signing time (days)
     const completedContracts = allContracts.filter(
       (c) => c.status === 'completed',
     );
@@ -327,13 +503,11 @@ export class ContractsService {
       avgSigningTime = Math.round((totalDays / completedContracts.length) * 10) / 10;
     }
 
-    // Total signers
     const totalSigners = allContracts.reduce(
       (sum, c) => sum + c.signers.length,
       0,
     );
 
-    // Active this month
     const firstOfMonth = new Date();
     firstOfMonth.setDate(1);
     firstOfMonth.setHours(0, 0, 0, 0);
@@ -408,7 +582,6 @@ export class ContractsService {
         ? Math.round((allSigners.length / total) * 10) / 10
         : 0;
 
-    // Fastest signer: signer with shortest time between contract creation and signedAt
     let fastestSigner: { name: string; email: string; days: number } | null =
       null;
     for (const c of allContracts) {
@@ -429,7 +602,6 @@ export class ContractsService {
       }
     }
 
-    // Most active signer email
     const signerEmailCounts: Record<string, number> = {};
     for (const s of allSigners) {
       signerEmailCounts[s.email] = (signerEmailCounts[s.email] || 0) + 1;

@@ -20,6 +20,15 @@ interface Template {
   variables: { name: string; label: string; type: string; required: boolean }[];
 }
 
+interface PreviewData {
+  name: string;
+  category: string;
+  description: string;
+  contentHtml: string;
+  variables: any[];
+  legalBasis: string;
+}
+
 const categoryLabels: Record<string, string> = {
   munkajogi: "Munkajogi",
   b2b: "Vállalati B2B",
@@ -45,6 +54,8 @@ export default function TemplatesPage() {
   const [filter, setFilter] = useState("");
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [preview, setPreview] = useState<PreviewData | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
   const router = useRouter();
   const user = useAuth((s) => s.user);
 
@@ -60,7 +71,7 @@ export default function TemplatesPage() {
       });
       setTemplates(res.data.data);
     } catch {
-      toast.error("Hiba a sablonok bet\u00f6lt\u00e9sekor");
+      toast.error("Hiba a sablonok betöltésekor");
     } finally {
       setLoading(false);
     }
@@ -76,13 +87,25 @@ export default function TemplatesPage() {
   const categories = [...new Set(templates.map((t) => t.category))];
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Biztosan torolni szeretned ezt a sablont?")) return;
+    if (!confirm("Biztosan törölni szeretnéd ezt a sablont?")) return;
     try {
       await api.delete(`/templates/${id}`);
-      toast.success("Sablon torolve");
+      toast.success("Sablon törölve");
       loadTemplates();
     } catch {
-      toast.error("Hiba a sablon torlese kozben");
+      toast.error("Hiba a sablon törlése közben");
+    }
+  };
+
+  const handlePreview = async (id: string) => {
+    setPreviewLoading(true);
+    try {
+      const res = await api.get(`/templates/${id}/preview`);
+      setPreview(res.data.data);
+    } catch {
+      toast.error("Hiba az előnézet betöltésekor");
+    } finally {
+      setPreviewLoading(false);
     }
   };
 
@@ -141,13 +164,13 @@ export default function TemplatesPage() {
           <div className="col-span-full">
             <EmptyState
               icon="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
-              title="M\u00e9g nincsenek sablonok"
-              description="A sablonk\u00f6nyvt\u00e1r m\u00e9g \u00fcres. Hamarosan el\u00e9rhet\u0151ek lesznek az el\u0151re elk\u00e9sz\u00edtett sablonok."
+              title="Még nincsenek sablonok"
+              description="A sablonkönyvtár még üres. Hamarosan elérhetőek lesznek az előre elkészített sablonok."
             />
           </div>
         ) : filtered.length === 0 ? (
           <div className="col-span-full text-center py-12 text-gray-400">
-            Nincs tal\u00e1lat
+            Nincs találat
           </div>
         ) : (
           filtered.map((template) => (
@@ -175,7 +198,7 @@ export default function TemplatesPage() {
                   </span>
                 </div>
                 <span className="text-xs text-gray-400">
-                  {template.variables?.length ?? 0} mezo
+                  {template.variables?.length ?? 0} mező
                 </span>
               </div>
               <h3 className="font-semibold text-gray-900 mb-2">
@@ -197,6 +220,16 @@ export default function TemplatesPage() {
                   className="flex-1 bg-brand-teal-dark text-white py-2 rounded-xl text-sm font-medium hover:bg-brand-teal transition"
                 >
                   Használat
+                </button>
+                <button
+                  onClick={() => handlePreview(template.id)}
+                  className="px-3 py-2 border rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition"
+                  title="Előnézet"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
                 </button>
                 {isOwner(template) && (
                   <>
@@ -221,6 +254,68 @@ export default function TemplatesPage() {
           ))
         )}
       </div>
+
+      {/* Preview Modal */}
+      {(preview || previewLoading) && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b p-4 flex justify-between items-center rounded-t-2xl">
+              <h2 className="text-lg font-semibold text-gray-900">
+                {preview ? preview.name : "Betöltés..."}
+              </h2>
+              <button
+                onClick={() => setPreview(null)}
+                className="p-1 hover:bg-gray-100 rounded-lg transition"
+              >
+                <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            {previewLoading ? (
+              <div className="p-8 text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto" />
+              </div>
+            ) : preview ? (
+              <div className="p-6">
+                <div className="flex gap-2 mb-4">
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${categoryColors[preview.category] ?? "bg-gray-100"}`}>
+                    {categoryLabels[preview.category] ?? preview.category}
+                  </span>
+                  <span className="text-xs text-gray-400">
+                    {preview.variables?.length ?? 0} mező
+                  </span>
+                </div>
+                {preview.description && (
+                  <p className="text-sm text-gray-600 mb-4">{preview.description}</p>
+                )}
+                {preview.legalBasis && (
+                  <p className="text-xs text-gray-400 mb-4">{preview.legalBasis}</p>
+                )}
+                {preview.variables?.length > 0 && (
+                  <div className="mb-4">
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">Kitöltendő mezők:</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {preview.variables.map((v: any, i: number) => (
+                        <span key={i} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                          {v.label} {v.required && "*"}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <div className="border-t pt-4">
+                  <h3 className="text-sm font-medium text-gray-700 mb-3">Sablon előnézet:</h3>
+                  <div
+                    className="prose prose-sm max-w-none border rounded-lg p-4 bg-gray-50"
+                    dangerouslySetInnerHTML={{ __html: preview.contentHtml }}
+                  />
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

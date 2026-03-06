@@ -18,6 +18,7 @@ import { InvoicingModule } from './invoicing/invoicing.module';
 import { AiModule } from './ai/ai.module';
 import { CommentsModule } from './comments/comments.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
+import { TagsModule } from './tags/tags.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
     AiModule,
     CommentsModule,
     WebhooksModule,
+    TagsModule,
   ],
 })
 export class AppModule {}

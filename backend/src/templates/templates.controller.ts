@@ -22,6 +22,19 @@ export class TemplatesController {
     return ApiResponse.ok(template);
   }
 
+  @Get(':id/preview')
+  async preview(@Param('id') id: string) {
+    const template = await this.templatesService.findOne(id);
+    return ApiResponse.ok({
+      name: template.name,
+      category: template.category,
+      description: template.description,
+      contentHtml: template.contentHtml,
+      variables: template.variables,
+      legalBasis: template.legalBasis,
+    });
+  }
+
   @Post()
   async create(@Body() dto: CreateTemplateDto, @Req() req: any) {
     const template = await this.templatesService.createTemplate(req.user.userId, dto);

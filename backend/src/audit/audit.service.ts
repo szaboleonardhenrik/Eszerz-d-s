@@ -10,7 +10,8 @@ export type AuditEventType =
   | 'reminder_sent'
   | 'expired'
   | 'downloaded'
-  | 'contract_duplicated';
+  | 'contract_duplicated'
+  | 'contract_updated';
 
 @Injectable()
 export class AuditService {

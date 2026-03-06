@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
@@ -30,6 +30,12 @@ interface Stats {
   usage: Usage;
 }
 
+interface Tag {
+  id: string;
+  name: string;
+  color: string;
+}
+
 interface Contract {
   id: string;
   title: string;
@@ -38,6 +44,21 @@ interface Contract {
   updatedAt: string;
   signers: { name: string; email: string; status: string; role: string }[];
   template?: { name: string; category: string };
+  tags?: { tag: Tag }[];
+}
+
+interface Pagination {
+  items: Contract[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+interface Widget {
+  expiringContracts: { id: string; title: string; expiresAt: string; pendingSigners: number; totalSigners: number }[];
+  awaitingSignature: { id: string; title: string; pendingSigners: string[]; waitingSince: string }[];
+  recentlyCompleted: { id: string; title: string; updatedAt: string }[];
 }
 
 const statusLabels: Record<string, string> = {
@@ -60,17 +81,32 @@ const statusColors: Record<string, string> = {
   cancelled: "bg-gray-100 text-gray-500",
 };
 
+function useDebounce(value: string, delay: number) {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  return debounced;
+}
+
 export default function DashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [filter, setFilter] = useState("");
-  const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
+  const debouncedSearch = useDebounce(searchInput, 400);
   const [loading, setLoading] = useState(true);
   const [exportOpen, setExportOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkLoading, setBulkLoading] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [widgets, setWidgets] = useState<Widget | null>(null);
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [selectedTag, setSelectedTag] = useState("");
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -108,32 +144,40 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
+    api.get("/tags").then((res) => setTags(res.data.data ?? [])).catch(() => {});
+    api.get("/contracts/widgets").then((res) => setWidgets(res.data.data)).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    setPage(1);
+  }, [filter, debouncedSearch, selectedTag]);
+
+  useEffect(() => {
     loadData();
-  }, [filter, search]);
+  }, [filter, debouncedSearch, selectedTag, page]);
 
   const loadData = async () => {
     setLoading(true);
     try {
-      const params: Record<string, string> = {};
+      const params: Record<string, string> = { page: String(page), limit: "20" };
       if (filter) params.status = filter;
-      if (search) params.search = search;
+      if (debouncedSearch) params.search = debouncedSearch;
+      if (selectedTag) params.tagId = selectedTag;
 
       const [statsRes, contractsRes] = await Promise.all([
         api.get("/contracts/stats"),
         api.get("/contracts", { params }),
       ]);
       setStats(statsRes.data.data);
-      setContracts(contractsRes.data.data);
+      const paginationData: Pagination = contractsRes.data.data;
+      setContracts(paginationData.items);
+      setTotalPages(paginationData.totalPages);
+      setTotal(paginationData.total);
     } catch {
       toast.error("Hiba az adatok betöltésekor");
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSearch(searchInput);
   };
 
   const toggleSelect = (id: string) => {
@@ -224,6 +268,11 @@ export default function DashboardPage() {
     return Math.max(...stats.monthlyStats.map((m) => Math.max(m.created, m.signed)), 1);
   }, [stats]);
 
+  const daysUntil = (date: string) => {
+    const diff = new Date(date).getTime() - Date.now();
+    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
@@ -287,6 +336,63 @@ export default function DashboardPage() {
           <StatCard label="Kész" value={stats.completed} color="green" icon="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </div>
       ) : null}
+
+      {/* Widgets Row */}
+      {widgets && (widgets.expiringContracts.length > 0 || widgets.awaitingSignature.length > 0) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+          {/* Expiring contracts widget */}
+          {widgets.expiringContracts.length > 0 && (
+            <div className="bg-white rounded-xl border p-5">
+              <h3 className="text-sm font-semibold text-red-600 mb-3 flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Hamarosan lejáró szerződések
+              </h3>
+              <div className="space-y-2">
+                {widgets.expiringContracts.map((c) => (
+                  <Link
+                    key={c.id}
+                    href={`/contracts/${c.id}`}
+                    className="flex items-center justify-between p-2.5 rounded-lg hover:bg-red-50 transition text-sm"
+                  >
+                    <span className="font-medium text-gray-900 truncate mr-3">{c.title}</span>
+                    <span className="text-red-500 text-xs font-medium whitespace-nowrap">
+                      {daysUntil(c.expiresAt)} nap
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Awaiting signature widget */}
+          {widgets.awaitingSignature.length > 0 && (
+            <div className="bg-white rounded-xl border p-5">
+              <h3 className="text-sm font-semibold text-yellow-600 mb-3 flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+                Aláírásra vár
+              </h3>
+              <div className="space-y-2">
+                {widgets.awaitingSignature.map((c) => (
+                  <Link
+                    key={c.id}
+                    href={`/contracts/${c.id}`}
+                    className="flex items-center justify-between p-2.5 rounded-lg hover:bg-yellow-50 transition text-sm"
+                  >
+                    <div className="min-w-0">
+                      <span className="font-medium text-gray-900 truncate block">{c.title}</span>
+                      <span className="text-xs text-gray-400">{c.pendingSigners.join(", ")}</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Analytics Row */}
       {stats && stats.monthlyStats && (
@@ -383,7 +489,19 @@ export default function DashboardPage() {
               </button>
             ))}
           </div>
-          <form onSubmit={handleSearch} className="flex gap-2">
+          <div className="flex gap-2 items-center">
+            {tags.length > 0 && (
+              <select
+                value={selectedTag}
+                onChange={(e) => setSelectedTag(e.target.value)}
+                className="px-3 py-1.5 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Összes címke</option>
+                {tags.map((t) => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
+              </select>
+            )}
             <input
               type="text"
               value={searchInput}
@@ -391,10 +509,10 @@ export default function DashboardPage() {
               placeholder="Keresés..."
               className="px-3 py-1.5 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500 w-48"
             />
-            {search && (
+            {searchInput && (
               <button
                 type="button"
-                onClick={() => { setSearch(""); setSearchInput(""); }}
+                onClick={() => setSearchInput("")}
                 className="px-2 py-1.5 text-gray-400 hover:text-gray-600"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -402,7 +520,7 @@ export default function DashboardPage() {
                 </svg>
               </button>
             )}
-          </form>
+          </div>
         </div>
 
         {loading && contracts.length === 0 ? (
@@ -414,76 +532,121 @@ export default function DashboardPage() {
         ) : contracts.length === 0 ? (
           <EmptyState
             icon="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            title={search ? "Nincs találat" : "Még nincs szerződésed"}
+            title={searchInput ? "Nincs találat" : "Még nincs szerződésed"}
             description={
-              search
-                ? `Nincs "${search}" keresésre illeszkedő szerződés.`
+              searchInput
+                ? `Nincs "${searchInput}" keresésre illeszkedő szerződés.`
                 : "Hozd létre az első szerződésedet egy sablonból vagy nulláról."
             }
-            actionLabel={search ? undefined : "Első szerződés létrehozása"}
-            actionHref={search ? undefined : "/create"}
+            actionLabel={searchInput ? undefined : "Első szerződés létrehozása"}
+            actionHref={searchInput ? undefined : "/create"}
           />
         ) : (
-          <table className="w-full">
-            <thead>
-              <tr className="text-left text-sm text-gray-500 border-b">
-                <th className="px-4 py-3 w-10">
-                  <input
-                    type="checkbox"
-                    checked={contracts.length > 0 && selectedIds.size === contracts.length}
-                    onChange={toggleSelectAll}
-                    className="rounded border-gray-300 text-[#198296] focus:ring-[#198296]"
-                  />
-                </th>
-                <th className="px-4 py-3 font-medium">Szerződés</th>
-                <th className="px-4 py-3 font-medium">Státusz</th>
-                <th className="px-4 py-3 font-medium hidden sm:table-cell">Felek</th>
-                <th className="px-4 py-3 font-medium hidden md:table-cell">Dátum</th>
-              </tr>
-            </thead>
-            <tbody>
-              {contracts.map((c) => (
-                <tr key={c.id} className={`border-b last:border-0 hover:bg-gray-50 transition ${selectedIds.has(c.id) ? "bg-blue-50" : ""}`}>
-                  <td className="px-4 py-3">
+          <>
+            <table className="w-full">
+              <thead>
+                <tr className="text-left text-sm text-gray-500 border-b">
+                  <th className="px-4 py-3 w-10">
                     <input
                       type="checkbox"
-                      checked={selectedIds.has(c.id)}
-                      onChange={() => toggleSelect(c.id)}
+                      checked={contracts.length > 0 && selectedIds.size === contracts.length}
+                      onChange={toggleSelectAll}
                       className="rounded border-gray-300 text-[#198296] focus:ring-[#198296]"
                     />
-                  </td>
-                  <td className="px-4 py-3">
-                    <Link
-                      href={`/contracts/${c.id}`}
-                      className="font-medium text-gray-900 hover:text-blue-600 transition"
-                    >
-                      {c.title}
-                    </Link>
-                    {c.template && (
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        {c.template.name}
-                      </p>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        statusColors[c.status] ?? "bg-gray-100"
-                      }`}
-                    >
-                      {statusLabels[c.status] ?? c.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 hidden sm:table-cell text-sm text-gray-600">
-                    {c.signers.map((s) => s.name).join(", ")}
-                  </td>
-                  <td className="px-4 py-3 hidden md:table-cell text-sm text-gray-400">
-                    {new Date(c.updatedAt).toLocaleDateString("hu-HU")}
-                  </td>
+                  </th>
+                  <th className="px-4 py-3 font-medium">Szerződés</th>
+                  <th className="px-4 py-3 font-medium">Státusz</th>
+                  <th className="px-4 py-3 font-medium hidden sm:table-cell">Felek</th>
+                  <th className="px-4 py-3 font-medium hidden md:table-cell">Dátum</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {contracts.map((c) => (
+                  <tr key={c.id} className={`border-b last:border-0 hover:bg-gray-50 transition ${selectedIds.has(c.id) ? "bg-blue-50" : ""}`}>
+                    <td className="px-4 py-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(c.id)}
+                        onChange={() => toggleSelect(c.id)}
+                        className="rounded border-gray-300 text-[#198296] focus:ring-[#198296]"
+                      />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Link
+                        href={`/contracts/${c.id}`}
+                        className="font-medium text-gray-900 hover:text-blue-600 transition"
+                      >
+                        {c.title}
+                      </Link>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        {c.template && (
+                          <span className="text-xs text-gray-400">
+                            {c.template.name}
+                          </span>
+                        )}
+                        {c.tags && c.tags.length > 0 && (
+                          <div className="flex gap-1 ml-1">
+                            {c.tags.map((ct) => (
+                              <span
+                                key={ct.tag.id}
+                                className="inline-block px-1.5 py-0 rounded text-[10px] font-medium text-white"
+                                style={{ backgroundColor: ct.tag.color }}
+                              >
+                                {ct.tag.name}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          statusColors[c.status] ?? "bg-gray-100"
+                        }`}
+                      >
+                        {statusLabels[c.status] ?? c.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 hidden sm:table-cell text-sm text-gray-600">
+                      {c.signers.map((s) => s.name).join(", ")}
+                    </td>
+                    <td className="px-4 py-3 hidden md:table-cell text-sm text-gray-400">
+                      {new Date(c.updatedAt).toLocaleDateString("hu-HU")}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between px-4 py-3 border-t">
+                <p className="text-sm text-gray-500">
+                  Összesen {total} szerződés
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page <= 1}
+                    className="px-3 py-1.5 rounded-lg text-sm border disabled:opacity-40 hover:bg-gray-50 transition"
+                  >
+                    Előző
+                  </button>
+                  <span className="text-sm text-gray-600">
+                    {page} / {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page >= totalPages}
+                    className="px-3 py-1.5 rounded-lg text-sm border disabled:opacity-40 hover:bg-gray-50 transition"
+                  >
+                    Következő
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 

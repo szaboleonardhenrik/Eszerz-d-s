@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Param,
   Body,
   Query,
@@ -53,18 +54,55 @@ export class ContractsController {
     return ApiResponse.ok(result);
   }
 
+  @Post(':id/remind/:signerId')
+  async sendReminder(
+    @Param('id') id: string,
+    @Param('signerId') signerId: string,
+    @Req() req: any,
+  ) {
+    const result = await this.contractsService.sendReminder(id, signerId, req.user.userId);
+    return ApiResponse.ok(result);
+  }
+
+  @Put(':id/content')
+  async updateContent(
+    @Param('id') id: string,
+    @Body() body: { contentHtml: string; changeNote?: string },
+    @Req() req: any,
+  ) {
+    const contract = await this.contractsService.updateContent(
+      id,
+      req.user.userId,
+      body.contentHtml,
+      body.changeNote,
+    );
+    return ApiResponse.ok(contract);
+  }
+
+  @Get(':id/versions')
+  async getVersions(@Param('id') id: string, @Req() req: any) {
+    const versions = await this.contractsService.getVersions(id, req.user.userId);
+    return ApiResponse.ok(versions);
+  }
+
   @Get()
   async findAll(
     @Req() req: any,
     @Query('status') status?: string,
     @Query('search') search?: string,
+    @Query('tagId') tagId?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
   ) {
-    const contracts = await this.contractsService.findAllByUser(
+    const result = await this.contractsService.findAllByUser(
       req.user.userId,
       status,
       search,
+      tagId,
+      page ? parseInt(page) : 1,
+      limit ? parseInt(limit) : 20,
     );
-    return ApiResponse.ok(contracts);
+    return ApiResponse.ok(result);
   }
 
   @Get('export')
@@ -145,6 +183,14 @@ export class ContractsController {
       req.user.userId,
     );
     return ApiResponse.ok(stats);
+  }
+
+  @Get('widgets')
+  async getWidgets(@Req() req: any) {
+    const widgets = await this.contractsService.getDashboardWidgets(
+      req.user.userId,
+    );
+    return ApiResponse.ok(widgets);
   }
 
   @Get(':id')
