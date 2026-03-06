@@ -122,6 +122,7 @@ export class SignaturesService {
         userAgent,
         signatureMethod: dto.signatureMethod,
         signatureImageUrl,
+        typedName: dto.typedName,
       },
     });
 
@@ -134,7 +135,7 @@ export class SignaturesService {
       contractId: signer.contractId,
       signerId: signer.id,
       eventType: 'signed',
-      eventData: { method: dto.signatureMethod },
+      eventData: { method: dto.signatureMethod, typedName: dto.typedName },
       ipAddress,
       userAgent,
       documentHash,
@@ -154,6 +155,7 @@ export class SignaturesService {
         name: s.name,
         role: s.role ?? 'Aláíró',
         signatureImageUrl: s.signatureImageUrl ?? undefined,
+        typedName: s.id === signer.id ? dto.typedName : s.typedName ?? undefined,
         signedAt:
           (s.id === signer.id ? new Date() : s.signedAt)?.toLocaleDateString(
             'hu-HU',
@@ -177,6 +179,7 @@ export class SignaturesService {
             name: s.name,
             role: s.role,
             signatureImageBase64,
+            typedName: s.typedName,
             signedAt: s.signedAt,
             method: s.method,
           };

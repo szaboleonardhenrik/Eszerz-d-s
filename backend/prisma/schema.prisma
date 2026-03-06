@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -143,6 +143,7 @@ model Signer {
   userAgent         String?   @map("user_agent")
   signatureMethod   String?   @map("signature_method")
   signatureImageUrl String?   @map("signature_image_url")
+  typedName         String?   @map("typed_name")
   certificateData   String?   @map("certificate_data")
   createdAt         DateTime  @default(now()) @map("created_at")
 
