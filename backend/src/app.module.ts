@@ -19,6 +19,9 @@ import { AiModule } from './ai/ai.module';
 import { CommentsModule } from './comments/comments.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
 import { TagsModule } from './tags/tags.module';
+import { FoldersModule } from './folders/folders.module';
+import { ContactsModule } from './contacts/contacts.module';
+import { InAppNotificationsModule } from './in-app-notifications/in-app-notifications.module';
 
 @Module({
   imports: [
@@ -42,6 +45,9 @@ import { TagsModule } from './tags/tags.module';
     CommentsModule,
     WebhooksModule,
     TagsModule,
+    FoldersModule,
+    ContactsModule,
+    InAppNotificationsModule,
   ],
 })
 export class AppModule {}

@@ -110,4 +110,48 @@ export class SchedulerService {
 
     this.logger.log(`Expired ${expiredSigners.length} signer tokens`);
   }
+
+  /** Daily at 8:00 AM - send contract expiry warnings (30, 14, 7 days before) */
+  @Cron('0 8 * * *')
+  async sendExpiryWarnings() {
+    this.logger.log('Running contract expiry warning job...');
+
+    const now = new Date();
+    const warningDays = [30, 14, 7];
+
+    for (const days of warningDays) {
+      const targetDate = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+      const dayStart = new Date(targetDate);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(targetDate);
+      dayEnd.setHours(23, 59, 59, 999);
+
+      const expiringContracts = await this.prisma.contract.findMany({
+        where: {
+          status: { in: ['sent', 'partially_signed', 'draft'] },
+          expiresAt: { gte: dayStart, lte: dayEnd },
+        },
+        include: {
+          owner: { select: { email: true, name: true, notifyOnExpire: true } },
+        },
+      });
+
+      for (const contract of expiringContracts) {
+        if (!contract.owner.notifyOnExpire) continue;
+
+        try {
+          await this.notificationsService.sendExpiryWarning({
+            to: contract.owner.email,
+            ownerName: contract.owner.name,
+            contractTitle: contract.title,
+            daysLeft: days,
+            contractId: contract.id,
+          });
+          this.logger.log(`Expiry warning (${days}d) sent for contract ${contract.id}`);
+        } catch (error) {
+          this.logger.error(`Failed to send expiry warning for ${contract.id}`, error);
+        }
+      }
+    }
+  }
 }

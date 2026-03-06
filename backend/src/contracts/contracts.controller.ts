@@ -91,6 +91,9 @@ export class ContractsController {
     @Query('status') status?: string,
     @Query('search') search?: string,
     @Query('tagId') tagId?: string,
+    @Query('folderId') folderId?: string,
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
@@ -101,6 +104,9 @@ export class ContractsController {
       tagId,
       page ? parseInt(page) : 1,
       limit ? parseInt(limit) : 20,
+      folderId,
+      dateFrom,
+      dateTo,
     );
     return ApiResponse.ok(result);
   }

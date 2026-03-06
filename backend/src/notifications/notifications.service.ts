@@ -115,4 +115,37 @@ export class NotificationsService {
       this.logger.error(`Failed to send reminder to ${params.to}`, error);
     }
   }
+
+  async sendExpiryWarning(params: {
+    to: string;
+    ownerName: string;
+    contractTitle: string;
+    daysLeft: number;
+    contractId: string;
+  }) {
+    const frontendUrl = this.config.get<string>('FRONTEND_URL', 'http://localhost:3000');
+    try {
+      await this.resend.emails.send({
+        from: this.fromEmail,
+        to: params.to,
+        subject: `Figyelmeztetés: "${params.contractTitle}" ${params.daysLeft} nap múlva lejár`,
+        html: `
+          <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
+            <h2>Kedves ${params.ownerName}!</h2>
+            <p>A(z) <strong>${params.contractTitle}</strong> szerződés <strong>${params.daysLeft} nap múlva lejár</strong>.</p>
+            <p>Kérjük, ellenőrizze a szerződés státuszát, és szükség esetén intézkedjen.</p>
+            <a href="${frontendUrl}/contracts/${params.contractId}"
+               style="display:inline-block;background:#D29B01;color:white;padding:12px 32px;border-radius:6px;text-decoration:none;font-weight:bold;">
+              Szerződés megtekintése
+            </a>
+            <p style="margin-top:24px;font-size:12px;color:#999;">
+              Ezt az értesítést a Beállítások > Értesítések menüben kikapcsolhatja.
+            </p>
+          </div>
+        `,
+      });
+    } catch (error) {
+      this.logger.error(`Failed to send expiry warning to ${params.to}`, error);
+    }
+  }
 }

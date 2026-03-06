@@ -244,11 +244,28 @@ export class ContractsService {
     tagId?: string,
     page: number = 1,
     limit: number = 20,
+    folderId?: string,
+    dateFrom?: string,
+    dateTo?: string,
   ) {
     const where: any = { ownerId: userId };
     if (status) where.status = status;
     if (tagId) {
       where.tags = { some: { tagId } };
+    }
+    if (folderId === 'none') {
+      where.folderId = null;
+    } else if (folderId) {
+      where.folderId = folderId;
+    }
+    if (dateFrom || dateTo) {
+      where.createdAt = {};
+      if (dateFrom) where.createdAt.gte = new Date(dateFrom);
+      if (dateTo) {
+        const end = new Date(dateTo);
+        end.setHours(23, 59, 59, 999);
+        where.createdAt.lte = end;
+      }
     }
     if (search) {
       where.OR = [
@@ -265,6 +282,7 @@ export class ContractsService {
           signers: { select: { id: true, name: true, email: true, status: true, role: true } },
           template: { select: { name: true, category: true } },
           tags: { include: { tag: true } },
+          folder: { select: { id: true, name: true, color: true } },
         },
         orderBy: { updatedAt: 'desc' },
         skip: (page - 1) * limit,

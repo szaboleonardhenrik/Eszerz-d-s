@@ -35,8 +35,11 @@ model User {
   ownedTeams  Team[]
   apiKeys     ApiKey[]
   comments    Comment[]
-  webhooks    Webhook[]
-  tags        Tag[]
+  webhooks      Webhook[]
+  tags          Tag[]
+  folders       Folder[]
+  contacts      Contact[]
+  notifications Notification[]
 
   @@map("users")
 }
@@ -114,12 +117,14 @@ model Contract {
   pdfUrl        String?   @map("pdf_url")
   status        String    @default("draft")
   variablesData String?   @map("variables_data")
+  folderId      String?   @map("folder_id")
   expiresAt     DateTime? @map("expires_at")
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
   template  Template?          @relation(fields: [templateId], references: [id])
   owner     User               @relation(fields: [ownerId], references: [id])
+  folder    Folder?            @relation(fields: [folderId], references: [id])
   signers   Signer[]
   auditLogs AuditLog[]
   comments  Comment[]
@@ -232,6 +237,58 @@ model ContractVersion {
 
   @@index([contractId])
   @@map("contract_versions")
+}
+
+model Folder {
+  id        String   @id @default(uuid())
+  name      String
+  color     String   @default("#6B7280")
+  userId    String   @map("user_id")
+  parentId  String?  @map("parent_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent    Folder?    @relation("FolderTree", fields: [parentId], references: [id])
+  children  Folder[]   @relation("FolderTree")
+  contracts Contract[]
+
+  @@unique([userId, name, parentId])
+  @@map("folders")
+}
+
+model Contact {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  name        String
+  email       String
+  company     String?
+  phone       String?
+  taxNumber   String?  @map("tax_number")
+  address     String?
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, email])
+  @@map("contacts")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  type      String   // contract_signed, contract_completed, contract_declined, contract_expired, reminder, system
+  title     String
+  message   String
+  link      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+  @@map("notifications")
 }
 
 model Webhook {

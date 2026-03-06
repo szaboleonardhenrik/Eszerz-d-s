@@ -44,6 +44,9 @@ function CreateWizardInner() {
   const [loading, setLoading] = useState(false);
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [uploadMode, setUploadMode] = useState(false);
+  const [uploadedHtml, setUploadedHtml] = useState("");
+  const [dragOver, setDragOver] = useState(false);
 
   useEffect(() => {
     api.get("/templates").then((res) => {
@@ -60,6 +63,19 @@ function CreateWizardInner() {
       }
     });
   }, [templateIdParam]);
+
+  const handleFileUpload = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      if (file.name.endsWith(".txt")) {
+        setUploadedHtml(`<pre style="white-space:pre-wrap;font-family:inherit;">${text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>`);
+      } else {
+        setUploadedHtml(text);
+      }
+    };
+    reader.readAsText(file, "utf-8");
+  };
 
   const selectTemplate = (t: Template) => {
     setSelectedTemplate(t);
@@ -91,16 +107,21 @@ function CreateWizardInner() {
   };
 
   const handleSubmit = async () => {
-    if (!selectedTemplate) return;
+    if (!selectedTemplate && !uploadedHtml) return;
     setLoading(true);
     try {
-      const res = await api.post("/contracts", {
+      const payload: any = {
         title,
-        templateId: selectedTemplate.id,
-        variables,
         signers: signers.filter((s) => s.name && s.email),
         expiresAt: expiresAt || undefined,
-      });
+      };
+      if (selectedTemplate) {
+        payload.templateId = selectedTemplate.id;
+        payload.variables = variables;
+      } else {
+        payload.contentHtml = uploadedHtml;
+      }
+      const res = await api.post("/contracts", payload);
       toast.success("Szerződés létrehozva!");
       router.push(`/contracts/${res.data.data.id}`);
     } catch (err: any) {
@@ -150,6 +171,78 @@ function CreateWizardInner() {
       {/* Step 1: Template selection */}
       {step === 1 && (
         <>
+          <div className="flex gap-3 mb-6">
+            <button
+              onClick={() => setUploadMode(false)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${!uploadMode ? "bg-blue-100 text-blue-700" : "text-gray-500 hover:bg-gray-100"}`}
+            >
+              Sablon választás
+            </button>
+            <button
+              onClick={() => setUploadMode(true)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${uploadMode ? "bg-blue-100 text-blue-700" : "text-gray-500 hover:bg-gray-100"}`}
+            >
+              Saját fájl feltöltés
+            </button>
+          </div>
+
+          {uploadMode ? (
+            <div className="max-w-2xl">
+              <div
+                className={`border-2 border-dashed rounded-2xl p-12 text-center transition ${
+                  dragOver ? "border-blue-400 bg-blue-50" : "border-gray-200 hover:border-gray-300"
+                }`}
+                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setDragOver(false);
+                  const file = e.dataTransfer.files[0];
+                  if (file) handleFileUpload(file);
+                }}
+              >
+                <svg className="w-12 h-12 text-gray-300 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <p className="text-gray-600 font-medium mb-1">Húzd ide a fájlt, vagy kattints a feltöltéshez</p>
+                <p className="text-sm text-gray-400 mb-4">Támogatott formátumok: .html, .txt</p>
+                <label className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg font-medium text-sm hover:bg-blue-700 transition cursor-pointer">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                  Fájl kiválasztása
+                  <input
+                    type="file"
+                    accept=".html,.htm,.txt"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleFileUpload(file);
+                    }}
+                  />
+                </label>
+              </div>
+              {uploadedHtml && (
+                <div className="mt-4">
+                  <p className="text-sm text-green-600 font-medium mb-2">Fájl betöltve! Add meg a szerződés címét és az aláírókat.</p>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Szerződés címe"
+                    className="w-full px-4 py-2 border rounded-lg text-sm mb-3 outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <button
+                    onClick={() => { if (title.trim()) setStep(3); }}
+                    disabled={!title.trim()}
+                    className="px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition disabled:opacity-50"
+                  >
+                    Tovább az aláírókhoz
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {templates.map((t) => (
               <div
@@ -188,6 +281,7 @@ function CreateWizardInner() {
               </div>
             ))}
           </div>
+          )}
           {/* Preview Modal */}
           {(previewHtml || previewLoading) && (
             <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">

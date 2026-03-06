@@ -107,6 +107,8 @@ export default function DashboardPage() {
   const [widgets, setWidgets] = useState<Widget | null>(null);
   const [tags, setTags] = useState<Tag[]>([]);
   const [selectedTag, setSelectedTag] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -150,11 +152,11 @@ export default function DashboardPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [filter, debouncedSearch, selectedTag]);
+  }, [filter, debouncedSearch, selectedTag, dateFrom, dateTo]);
 
   useEffect(() => {
     loadData();
-  }, [filter, debouncedSearch, selectedTag, page]);
+  }, [filter, debouncedSearch, selectedTag, page, dateFrom, dateTo]);
 
   const loadData = async () => {
     setLoading(true);
@@ -163,6 +165,8 @@ export default function DashboardPage() {
       if (filter) params.status = filter;
       if (debouncedSearch) params.search = debouncedSearch;
       if (selectedTag) params.tagId = selectedTag;
+      if (dateFrom) params.dateFrom = dateFrom;
+      if (dateTo) params.dateTo = dateTo;
 
       const [statsRes, contractsRes] = await Promise.all([
         api.get("/contracts/stats"),
@@ -489,7 +493,29 @@ export default function DashboardPage() {
               </button>
             ))}
           </div>
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-2 items-center flex-wrap">
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="px-2 py-1.5 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              title="Dátumtól"
+            />
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="px-2 py-1.5 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              title="Dátumig"
+            />
+            {(dateFrom || dateTo) && (
+              <button onClick={() => { setDateFrom(""); setDateTo(""); }}
+                className="text-xs text-gray-400 hover:text-gray-600 px-1">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
             {tags.length > 0 && (
               <select
                 value={selectedTag}

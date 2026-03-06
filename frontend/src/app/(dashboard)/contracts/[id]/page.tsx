@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
 import { useAuth } from "@/lib/auth-store";
+import VersionDiff from "@/components/version-diff";
 
 interface Signer {
   id: string;
@@ -43,6 +44,7 @@ interface Tag {
 interface ContractVersion {
   id: string;
   version: number;
+  contentHtml: string;
   changeNote: string | null;
   createdAt: string;
 }
@@ -110,6 +112,7 @@ export default function ContractDetailPage() {
   const [reminderLoading, setReminderLoading] = useState<string | null>(null);
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [showTagMenu, setShowTagMenu] = useState(false);
+  const [showDiff, setShowDiff] = useState(false);
   const { user: currentUser } = useAuth();
 
   useEffect(() => {
@@ -456,21 +459,35 @@ export default function ContractDetailPage() {
           {versions.length === 0 ? (
             <p className="text-gray-400 text-sm">Nincs korábbi verzió</p>
           ) : (
-            <div className="space-y-2">
-              {versions.map((v) => (
-                <div key={v.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
-                  <div>
-                    <span className="font-medium text-gray-900 text-sm">v{v.version}</span>
-                    {v.changeNote && (
-                      <span className="text-sm text-gray-500 ml-2">- {v.changeNote}</span>
-                    )}
-                  </div>
-                  <span className="text-xs text-gray-400">
-                    {new Date(v.createdAt).toLocaleString("hu-HU")}
-                  </span>
+            <>
+              {versions.length >= 2 && (
+                <button
+                  onClick={() => setShowDiff(!showDiff)}
+                  className="mb-3 text-sm font-medium text-blue-600 hover:underline"
+                >
+                  {showDiff ? "Lista nézet" : "Verziók összehasonlítása"}
+                </button>
+              )}
+              {showDiff ? (
+                <VersionDiff versions={versions} />
+              ) : (
+                <div className="space-y-2">
+                  {versions.map((v) => (
+                    <div key={v.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
+                      <div>
+                        <span className="font-medium text-gray-900 text-sm">v{v.version}</span>
+                        {v.changeNote && (
+                          <span className="text-sm text-gray-500 ml-2">- {v.changeNote}</span>
+                        )}
+                      </div>
+                      <span className="text-xs text-gray-400">
+                        {new Date(v.createdAt).toLocaleString("hu-HU")}
+                      </span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           )}
         </div>
       )}
