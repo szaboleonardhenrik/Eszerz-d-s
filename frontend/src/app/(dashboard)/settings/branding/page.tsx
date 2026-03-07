@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import { useAuth } from "@/lib/auth-store";
 import toast from "react-hot-toast";
+import FeatureGate from "@/components/feature-gate";
 
 const PRESET_COLORS = [
   "#198296", "#2563eb", "#7c3aed", "#dc2626", "#059669",
@@ -40,6 +41,7 @@ export default function BrandingSettings() {
   };
 
   return (
+    <FeatureGate requiredTier="basic" featureName="Markaarculat">
     <div className="max-w-2xl">
       <div className="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 p-6 space-y-6">
         <div>
@@ -158,5 +160,6 @@ export default function BrandingSettings() {
         </div>
       </div>
     </div>
+    </FeatureGate>
   );
 }

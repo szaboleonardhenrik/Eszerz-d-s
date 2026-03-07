@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
+import FeatureGate from "@/components/feature-gate";
 
 interface Overview {
   total: number;
@@ -139,6 +140,7 @@ export default function AnalyticsPage() {
   }
 
   return (
+    <FeatureGate requiredTier="basic" featureName="Analitika">
     <div>
       <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-8">Analitika</h1>
 
@@ -332,6 +334,7 @@ export default function AnalyticsPage() {
         </div>
       </div>
     </div>
+    </FeatureGate>
   );
 }
 

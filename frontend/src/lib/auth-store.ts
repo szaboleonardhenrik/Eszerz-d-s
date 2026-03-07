@@ -7,6 +7,7 @@ interface User {
   name: string;
   companyName?: string;
   subscriptionTier: string;
+  role?: string;
 }
 
 interface AuthState {

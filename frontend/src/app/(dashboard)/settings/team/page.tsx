@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
 import EmptyState from "@/components/empty-state";
+import FeatureGate from "@/components/feature-gate";
 
 interface TeamMember {
   id: string;
@@ -80,6 +81,7 @@ export default function TeamSettings() {
   };
 
   return (
+    <FeatureGate requiredTier="basic" featureName="Csapatkezeles">
     <div className="max-w-3xl space-y-6">
       <div className="bg-white rounded-xl border p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-1">Csapattagok</h2>
@@ -166,5 +168,6 @@ export default function TeamSettings() {
         </div>
       </div>
     </div>
+    </FeatureGate>
   );
 }

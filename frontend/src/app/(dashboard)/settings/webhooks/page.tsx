@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
 import EmptyState from "@/components/empty-state";
+import FeatureGate from "@/components/feature-gate";
 
 interface Webhook {
   id: string;
@@ -127,6 +128,7 @@ export default function WebhooksSettings() {
   };
 
   return (
+    <FeatureGate requiredTier="pro" featureName="Webhookok">
     <div className="max-w-3xl space-y-6">
       {/* New secret alert */}
       {newSecret && (
@@ -425,5 +427,6 @@ export default function WebhooksSettings() {
         </pre>
       </div>
     </div>
+    </FeatureGate>
   );
 }

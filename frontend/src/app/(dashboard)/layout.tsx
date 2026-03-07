@@ -111,7 +111,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   </div>
                   <div className="hidden sm:block text-left">
                     <p className="text-sm font-medium text-gray-900 leading-none">{user.name}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{user.subscriptionTier} {t("auth.plan")}</p>
+                    <p className="text-xs mt-0.5">
+                      <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase ${
+                        user.subscriptionTier === "pro"
+                          ? "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400"
+                          : user.subscriptionTier === "basic"
+                          ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400"
+                          : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400"
+                      }`}>{user.subscriptionTier} {t("auth.plan")}</span>
+                    </p>
                   </div>
                     <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -124,6 +132,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       <div className="px-4 py-2 border-b dark:border-gray-700">
                         <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.name}</p>
                         <p className="text-xs text-gray-400">{user.email}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">Szerepkör: {user.role ?? "owner"}</p>
                       </div>
                       <Link
                         href="/settings"

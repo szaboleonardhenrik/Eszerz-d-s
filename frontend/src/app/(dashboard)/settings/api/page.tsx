@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
 import EmptyState from "@/components/empty-state";
+import FeatureGate from "@/components/feature-gate";
 
 interface ApiKey {
   id: string;
@@ -81,6 +82,7 @@ export default function ApiKeysSettings() {
   };
 
   return (
+    <FeatureGate requiredTier="basic" featureName="API kulcsok">
     <div className="max-w-3xl space-y-6">
       {/* New key alert */}
       {newKey && (
@@ -233,5 +235,6 @@ curl -X POST http://localhost:3001/api/contracts \\
         </pre>
       </div>
     </div>
+    </FeatureGate>
   );
 }
