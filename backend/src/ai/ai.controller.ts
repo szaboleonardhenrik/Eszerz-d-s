@@ -41,4 +41,28 @@ export class AiController {
       return ApiResponse.error('AI_ERROR', 'Hiba az AI elemzés során.');
     }
   }
+
+  @Post('risk-analysis/:contractId')
+  async riskAnalysis(
+    @Param('contractId') contractId: string,
+    @Req() req: any,
+  ) {
+    const contract = await this.prisma.contract.findFirst({
+      where: { id: contractId, ownerId: req.user.userId },
+    });
+
+    if (!contract) {
+      return ApiResponse.error('NOT_FOUND', 'Szerződés nem található.');
+    }
+
+    try {
+      const analysis = await this.aiService.riskAnalysis(contract.contentHtml);
+      return ApiResponse.ok(analysis);
+    } catch (error: any) {
+      if (error.message === 'AI szolgáltatás nincs konfigurálva') {
+        return ApiResponse.error('AI_NOT_CONFIGURED', 'AI elemzés jelenleg nem elérhető.');
+      }
+      return ApiResponse.error('AI_ERROR', 'Hiba az AI kockázatelemzés során.');
+    }
+  }
 }

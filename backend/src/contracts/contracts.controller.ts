@@ -9,17 +9,24 @@ import {
   UseGuards,
   Req,
   Res,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
 import { ContractsService } from './contracts.service';
 import { CreateContractDto } from './dto/create-contract.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ApiResponse } from '../common/api-response';
+import { StorageService } from '../storage/storage.service';
 
 @Controller('contracts')
 @UseGuards(JwtAuthGuard)
 export class ContractsController {
-  constructor(private readonly contractsService: ContractsService) {}
+  constructor(
+    private readonly contractsService: ContractsService,
+    private readonly storageService: StorageService,
+  ) {}
 
   @Post()
   async create(@Body() dto: CreateContractDto, @Req() req: any) {
@@ -37,6 +44,29 @@ export class ContractsController {
       req.user.userId,
     );
     return ApiResponse.ok(result);
+  }
+
+  @Post('upload-pdf')
+  @UseInterceptors(FileInterceptor('file', {
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype === 'application/pdf') {
+        cb(null, true);
+      } else {
+        cb(new Error('Only PDF files are allowed'), false);
+      }
+    },
+  }))
+  async uploadPdf(
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: any,
+  ) {
+    if (!file) {
+      return ApiResponse.error('BAD_REQUEST', 'No file uploaded');
+    }
+    const key = `uploads/${req.user.userId}/${Date.now()}-${file.originalname}`;
+    await this.storageService.uploadFile(key, file.buffer, 'application/pdf');
+    return ApiResponse.ok({ key, originalName: file.originalname, size: file.size });
   }
 
   @Post(':id/duplicate')

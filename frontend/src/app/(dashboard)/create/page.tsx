@@ -65,7 +65,31 @@ function CreateWizardInner() {
     });
   }, [templateIdParam]);
 
-  const handleFileUpload = (file: File) => {
+  const [uploadingPdf, setUploadingPdf] = useState(false);
+  const [pdfFileName, setPdfFileName] = useState("");
+
+  const handleFileUpload = async (file: File) => {
+    if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
+      // Upload PDF to backend
+      setUploadingPdf(true);
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await api.post("/contracts/upload-pdf", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        setPdfFileName(file.name);
+        setUploadedHtml(`<!-- PDF:${res.data.data.key} --><div style="text-align:center;padding:40px;background:#f8f9fa;border-radius:8px;"><p style="font-size:18px;font-weight:bold;color:#198296;">PDF feltöltve</p><p style="color:#666;">${file.name} (${(file.size / 1024).toFixed(0)} KB)</p></div>`);
+        if (!title) setTitle(file.name.replace(/\.pdf$/i, ""));
+        toast.success("PDF sikeresen feltöltve!");
+      } catch (err: any) {
+        toast.error(err.response?.data?.error?.message ?? "Hiba a PDF feltöltésekor");
+      } finally {
+        setUploadingPdf(false);
+      }
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (e) => {
       const text = e.target?.result as string;
@@ -74,6 +98,7 @@ function CreateWizardInner() {
       } else {
         setUploadedHtml(text);
       }
+      if (!title) setTitle(file.name.replace(/\.[^.]+$/, ""));
     };
     reader.readAsText(file, "utf-8");
   };
@@ -211,8 +236,14 @@ function CreateWizardInner() {
                 <svg className="w-12 h-12 text-gray-300 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
+                {uploadingPdf && (
+                  <div className="mb-4">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto" />
+                    <p className="text-sm text-blue-600 mt-2">PDF feltöltése...</p>
+                  </div>
+                )}
                 <p className="text-gray-600 font-medium mb-1">Húzd ide a fájlt, vagy kattints a feltöltéshez</p>
-                <p className="text-sm text-gray-400 mb-4">Támogatott formátumok: .html, .txt</p>
+                <p className="text-sm text-gray-400 mb-4">Támogatott formátumok: .pdf, .html, .txt</p>
                 <label className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg font-medium text-sm hover:bg-blue-700 transition cursor-pointer">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
@@ -220,7 +251,7 @@ function CreateWizardInner() {
                   Fájl kiválasztása
                   <input
                     type="file"
-                    accept=".html,.htm,.txt"
+                    accept=".pdf,.html,.htm,.txt"
                     className="hidden"
                     onChange={(e) => {
                       const file = e.target.files?.[0];

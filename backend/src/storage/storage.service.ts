@@ -99,6 +99,21 @@ export class StorageService {
     return Buffer.concat(chunks);
   }
 
+  async uploadFile(key: string, buffer: Buffer, contentType: string): Promise<string> {
+    if (this.useLocal) {
+      return this.saveLocal(key, buffer);
+    }
+    await this.s3!.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+        Body: buffer,
+        ContentType: contentType,
+      }),
+    );
+    return key;
+  }
+
   getLocalFilePath(key: string): string | null {
     if (!this.useLocal) return null;
     const filePath = path.join(this.localDir, key);

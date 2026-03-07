@@ -50,6 +50,17 @@ export class QuotesController {
     return ApiResponse.ok(stats);
   }
 
+  @Get(':id/pdf')
+  async generatePdf(@Param('id') id: string, @Req() req: any) {
+    const quote = await this.quotesService.findOne(id, req.user.userId);
+    if (!quote) {
+      return ApiResponse.error('NOT_FOUND', 'Ajánlat nem található.');
+    }
+    return ApiResponse.ok({
+      html: this.quotesService.generateQuoteHtml(quote)
+    });
+  }
+
   @Get(':id')
   async findOne(@Req() req: any, @Param('id') id: string) {
     const quote = await this.quotesService.findOne(id, req.user.userId);

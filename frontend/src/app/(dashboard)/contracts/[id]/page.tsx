@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { useAuth } from "@/lib/auth-store";
 import VersionDiff from "@/components/version-diff";
 import QrSigningModal from "@/components/qr-signing-modal";
+import RiskAnalysis from "@/components/risk-analysis";
 
 interface Signer {
   id: string;
@@ -787,6 +788,11 @@ export default function ContractDetailPage() {
           </div>
         </div>
       )}
+
+      {/* AI Risk Analysis */}
+      <div className="mt-8">
+        <RiskAnalysis contractId={contract.id} />
+      </div>
 
       {qrSigner && (
         <QrSigningModal

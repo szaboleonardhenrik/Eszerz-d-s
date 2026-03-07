@@ -64,4 +64,77 @@ ${contractHtml.replace(/<[^>]*>/g, ' ').substring(0, 8000)}`,
       };
     }
   }
+
+  async riskAnalysis(contractHtml: string): Promise<{
+    overallRisk: 'low' | 'medium' | 'high' | 'critical';
+    score: number;
+    categories: {
+      name: string;
+      risk: 'low' | 'medium' | 'high' | 'critical';
+      issues: { title: string; description: string; severity: 'info' | 'warning' | 'error' | 'critical'; suggestion: string }[];
+    }[];
+    summary: string;
+  }> {
+    if (!this.client) {
+      throw new Error('AI szolgáltatás nincs konfigurálva');
+    }
+
+    const response = await this.client.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 3000,
+      messages: [
+        {
+          role: 'user',
+          content: `Te egy magyar jogi kockázatelemző AI vagy. Elemezd az alábbi szerződés kockázatait és adj vissza egy JSON objektumot az alábbi struktúrában:
+{
+  "overallRisk": "low" | "medium" | "high" | "critical",
+  "score": 0-100 (ahol 100 a legkockázatosabb),
+  "categories": [
+    {
+      "name": "Kategória neve (pl. Pénzügyi kockázatok, Jogi hiányosságok, Felmondási feltételek, Felelősségkorlátozás, Adatvédelem, Szellemi tulajdon, Vitarendezés)",
+      "risk": "low" | "medium" | "high" | "critical",
+      "issues": [
+        {
+          "title": "Probléma rövid megnevezése",
+          "description": "Részletes leírás, miért probléma",
+          "severity": "info" | "warning" | "error" | "critical",
+          "suggestion": "Konkrét javaslat a javításra"
+        }
+      ]
+    }
+  ],
+  "summary": "2-3 mondatos összefoglaló a kockázati szintről és a legfontosabb problémákról"
+}
+
+Értékeld a következő szempontok szerint:
+- Ptk. megfelelőség
+- Hiányzó vagy gyenge záradékok (vis maior, felmondás, kötbér, titoktartás)
+- Egyoldalú vagy méltánytalan feltételek
+- Adatvédelmi (GDPR) hiányosságok
+- Felelősségkorlátozás mértéke
+- Vitarendezési mechanizmus
+- Szellemi tulajdonjogi kérdések
+
+Csak a JSON-t add vissza, semmi mást. A szerződés:
+
+${contractHtml.replace(/<[^>]*>/g, ' ').substring(0, 8000)}`,
+        },
+      ],
+    });
+
+    const text = response.content[0].type === 'text' ? response.content[0].text : '';
+
+    try {
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error('No JSON found');
+      return JSON.parse(jsonMatch[0]);
+    } catch {
+      return {
+        overallRisk: 'medium',
+        score: 50,
+        categories: [],
+        summary: 'Nem sikerült a kockázatelemzés feldolgozása. Kérjük, próbáld újra.',
+      };
+    }
+  }
 }
