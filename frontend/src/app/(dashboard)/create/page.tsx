@@ -160,39 +160,83 @@ function CreateWizardInner() {
     }
   };
 
+  const steps = [
+    { label: "Sablon", icon: "M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6z" },
+    { label: "Kitoltes", icon: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" },
+    { label: "Alairok", icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" },
+    { label: "Osszegzes", icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" },
+  ];
+
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">
-        Új szerződés létrehozása
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+        Uj szerzodes letrehozasa
       </h1>
 
       {/* Step indicator */}
-      <div className="flex gap-2 mb-8">
-        {["Sablon", "Kitöltés", "Aláírók", "Összegzés"].map((label, i) => (
-          <div key={i} className="flex items-center gap-2">
-            <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                step > i + 1
-                  ? "bg-green-100 text-green-700"
-                  : step === i + 1
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-400"
-              }`}
-            >
-              {step > i + 1 ? "\u2713" : i + 1}
-            </div>
-            <span
-              className={`text-sm hidden sm:inline ${
-                step === i + 1 ? "text-gray-900 font-medium" : "text-gray-400"
-              }`}
-            >
-              {label}
-            </span>
-            {i < 3 && (
-              <div className="w-8 h-px bg-gray-200 hidden sm:block" />
-            )}
-          </div>
-        ))}
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 mb-8">
+        <div className="flex items-center">
+          {steps.map((s, i) => {
+            const isDone = step > i + 1;
+            const isCurrent = step === i + 1;
+            const isFuture = step < i + 1;
+            return (
+              <div key={i} className="flex items-center flex-1 last:flex-none">
+                <button
+                  onClick={() => { if (isDone) setStep(i + 1); }}
+                  className={`flex items-center gap-2.5 group ${isDone ? "cursor-pointer" : "cursor-default"}`}
+                >
+                  <div
+                    className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 ${
+                      isDone
+                        ? "bg-green-500 text-white shadow-sm shadow-green-200 dark:shadow-green-900/30"
+                        : isCurrent
+                          ? "bg-blue-600 text-white shadow-md shadow-blue-200 dark:shadow-blue-900/40 ring-4 ring-blue-100 dark:ring-blue-900/30"
+                          : "bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500"
+                    }`}
+                  >
+                    {isDone ? (
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d={s.icon} />
+                      </svg>
+                    )}
+                  </div>
+                  <div className="hidden sm:block text-left">
+                    <p className={`text-xs font-medium uppercase tracking-wider ${
+                      isFuture ? "text-gray-400 dark:text-gray-500" : "text-gray-500 dark:text-gray-400"
+                    }`}>
+                      {i + 1}. lepes
+                    </p>
+                    <p className={`text-sm font-semibold ${
+                      isDone
+                        ? "text-green-600 dark:text-green-400 group-hover:text-green-700 dark:group-hover:text-green-300"
+                        : isCurrent
+                          ? "text-gray-900 dark:text-gray-100"
+                          : "text-gray-400 dark:text-gray-500"
+                    }`}>
+                      {s.label}
+                    </p>
+                  </div>
+                </button>
+                {i < 3 && (
+                  <div className="flex-1 mx-3 hidden sm:block">
+                    <div className="h-0.5 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          isDone ? "bg-green-400 w-full" : "bg-gray-100 dark:bg-gray-700 w-0"
+                        }`}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Step 1: Template selection */}
@@ -201,19 +245,19 @@ function CreateWizardInner() {
           <div className="flex gap-3 mb-6">
             <button
               onClick={() => setUploadMode(false)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${!uploadMode ? "bg-blue-100 text-blue-700" : "text-gray-500 hover:bg-gray-100"}`}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${!uploadMode ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400" : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"}`}
             >
               Sablon választás
             </button>
             <button
               onClick={() => setUploadMode(true)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${uploadMode && !uploadedHtml ? "bg-blue-100 text-blue-700" : "text-gray-500 hover:bg-gray-100"}`}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${uploadMode && !uploadedHtml ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400" : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"}`}
             >
               Saját fájl feltöltés
             </button>
             <button
               onClick={() => { setUploadMode(true); if (!uploadedHtml) setUploadedHtml("<p></p>"); }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${uploadMode && uploadedHtml ? "bg-blue-100 text-blue-700" : "text-gray-500 hover:bg-gray-100"}`}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${uploadMode && uploadedHtml ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400" : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"}`}
             >
               Szerkesztő
             </button>
@@ -223,7 +267,7 @@ function CreateWizardInner() {
             <div className="max-w-2xl">
               <div
                 className={`border-2 border-dashed rounded-2xl p-12 text-center transition ${
-                  dragOver ? "border-blue-400 bg-blue-50" : "border-gray-200 hover:border-gray-300"
+                  dragOver ? "border-blue-400 bg-blue-50 dark:bg-blue-900/20" : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
                 }`}
                 onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
                 onDragLeave={() => setDragOver(false)}
@@ -243,7 +287,7 @@ function CreateWizardInner() {
                     <p className="text-sm text-blue-600 mt-2">PDF feltöltése...</p>
                   </div>
                 )}
-                <p className="text-gray-600 font-medium mb-1">Húzd ide a fájlt, vagy kattints a feltöltéshez</p>
+                <p className="text-gray-600 dark:text-gray-300 font-medium mb-1">Húzd ide a fájlt, vagy kattints a feltöltéshez</p>
                 <p className="text-sm text-gray-400 mb-4">Támogatott formátumok: .pdf, .html, .txt</p>
                 <label className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg font-medium text-sm hover:bg-blue-700 transition cursor-pointer">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -268,7 +312,7 @@ function CreateWizardInner() {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Szerződés címe"
-                    className="w-full px-4 py-2.5 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <WysiwygEditor
                     value={uploadedHtml}
@@ -290,9 +334,9 @@ function CreateWizardInner() {
             {templates.map((t) => (
               <div
                 key={t.id}
-                className="bg-white rounded-xl border p-5 text-left hover:border-blue-300 hover:shadow-sm transition"
+                className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 text-left hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-sm transition"
               >
-                <h3 className="font-semibold text-gray-900 mb-1">{t.name}</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">{t.name}</h3>
                 <p className="text-xs text-gray-400 mb-3">
                   {t.variables.length} kitöltendő mező
                 </p>
@@ -356,29 +400,29 @@ function CreateWizardInner() {
 
       {/* Step 2: Fill variables */}
       {step === 2 && selectedTemplate && (
-        <div className="bg-white rounded-xl border p-6 max-w-2xl">
-          <h2 className="text-lg font-semibold mb-1">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 max-w-2xl">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
             {selectedTemplate.name}
           </h2>
-          <p className="text-sm text-gray-500 mb-6">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
             Töltsd ki a szerződés adatait
           </p>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Szerződés neve *
               </label>
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
 
             {selectedTemplate.variables.map((v) => (
               <div key={v.name}>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   {v.label} {v.required && "*"}
                 </label>
                 {v.type === "textarea" ? (
@@ -392,7 +436,7 @@ function CreateWizardInner() {
                     }
                     rows={3}
                     required={v.required}
-                    className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-y"
+                    className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 outline-none resize-y"
                   />
                 ) : (
                   <input
@@ -405,7 +449,7 @@ function CreateWizardInner() {
                       }))
                     }
                     required={v.required}
-                    className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 outline-none"
                   />
                 )}
               </div>
@@ -415,7 +459,7 @@ function CreateWizardInner() {
           <div className="flex gap-3 mt-6">
             <button
               onClick={() => setStep(1)}
-              className="px-5 py-2.5 border rounded-lg text-gray-600 hover:bg-gray-50"
+              className="px-5 py-2.5 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               Vissza
             </button>
@@ -431,17 +475,17 @@ function CreateWizardInner() {
 
       {/* Step 3: Signers */}
       {step === 3 && (
-        <div className="bg-white rounded-xl border p-6 max-w-2xl">
-          <h2 className="text-lg font-semibold mb-1">Aláírók</h2>
-          <p className="text-sm text-gray-500 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 max-w-2xl">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">Aláírók</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
             Add meg az aláírókat és szerepüket
           </p>
 
           <div className="space-y-4">
             {signers.map((signer, i) => (
-              <div key={i} className="border rounded-lg p-4">
+              <div key={i} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
                 <div className="flex justify-between items-center mb-3">
-                  <span className="text-sm font-medium text-gray-700">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     {i + 1}. aláíró
                   </span>
                   {signers.length > 1 && (
@@ -458,20 +502,20 @@ function CreateWizardInner() {
                     placeholder="Név *"
                     value={signer.name}
                     onChange={(e) => updateSigner(i, "name", e.target.value)}
-                    className="px-3 py-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <input
                     placeholder="Email *"
                     type="email"
                     value={signer.email}
                     onChange={(e) => updateSigner(i, "email", e.target.value)}
-                    className="px-3 py-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <input
                     placeholder="Szerepkör (pl. Megbízó)"
                     value={signer.role}
                     onChange={(e) => updateSigner(i, "role", e.target.value)}
-                    className="px-3 py-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <input
                     type="number"
@@ -481,7 +525,7 @@ function CreateWizardInner() {
                       updateSigner(i, "signingOrder", parseInt(e.target.value) || 1)
                     }
                     min={1}
-                    className="px-3 py-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -496,21 +540,21 @@ function CreateWizardInner() {
           </button>
 
           <div className="mt-6">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Aláírási határidő (opcionális)
             </label>
             <input
               type="date"
               value={expiresAt}
               onChange={(e) => setExpiresAt(e.target.value)}
-              className="px-4 py-2.5 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div className="flex gap-3 mt-6">
             <button
               onClick={() => setStep(2)}
-              className="px-5 py-2.5 border rounded-lg text-gray-600 hover:bg-gray-50"
+              className="px-5 py-2.5 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               Vissza
             </button>
@@ -526,21 +570,21 @@ function CreateWizardInner() {
 
       {/* Step 4: Summary */}
       {step === 4 && selectedTemplate && (
-        <div className="bg-white rounded-xl border p-6 max-w-2xl">
-          <h2 className="text-lg font-semibold mb-4">Összegzés</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 max-w-2xl">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Összegzés</h2>
 
           <div className="space-y-4">
             <div>
-              <p className="text-sm text-gray-500">Szerződés neve</p>
-              <p className="font-medium">{title}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Szerzodes neve</p>
+              <p className="font-medium text-gray-900 dark:text-gray-100">{title}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Sablon</p>
-              <p className="font-medium">{selectedTemplate.name}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Sablon</p>
+              <p className="font-medium text-gray-900 dark:text-gray-100">{selectedTemplate.name}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500 mb-2">Kitöltött adatok</p>
-              <div className="bg-gray-50 rounded-lg p-3 text-sm space-y-1">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Kitoltott adatok</p>
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 text-sm space-y-1">
                 {Object.entries(variables)
                   .filter(([, v]) => v)
                   .map(([key, value]) => {
@@ -549,23 +593,23 @@ function CreateWizardInner() {
                     );
                     return (
                       <div key={key} className="flex">
-                        <span className="text-gray-500 w-48 shrink-0">
+                        <span className="text-gray-500 dark:text-gray-400 w-48 shrink-0">
                           {varDef?.label ?? key}:
                         </span>
-                        <span className="text-gray-900">{value}</span>
+                        <span className="text-gray-900 dark:text-gray-100">{value}</span>
                       </div>
                     );
                   })}
               </div>
             </div>
             <div>
-              <p className="text-sm text-gray-500 mb-2">Aláírók</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Alairok</p>
               <div className="space-y-2">
                 {signers
                   .filter((s) => s.name)
                   .map((s, i) => (
-                    <div key={i} className="bg-gray-50 rounded-lg p-3 text-sm">
-                      <span className="font-medium">{s.name}</span>
+                    <div key={i} className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 text-sm">
+                      <span className="font-medium text-gray-900 dark:text-gray-100">{s.name}</span>
                       <span className="text-gray-500 ml-2">({s.email})</span>
                       {s.role && (
                         <span className="text-gray-400 ml-2">- {s.role}</span>
@@ -579,7 +623,7 @@ function CreateWizardInner() {
           <div className="flex gap-3 mt-6">
             <button
               onClick={() => setStep(3)}
-              className="px-5 py-2.5 border rounded-lg text-gray-600 hover:bg-gray-50"
+              className="px-5 py-2.5 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               Vissza
             </button>
