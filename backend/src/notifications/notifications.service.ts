@@ -135,6 +135,117 @@ export class NotificationsService {
     }
   }
 
+  // ─── QUOTE NOTIFICATIONS ─────────────────────────────
+
+  async sendQuoteToClient(params: {
+    to: string;
+    clientName: string;
+    senderName: string;
+    quoteTitle: string;
+    quoteNumber: string;
+    totalAmount: string;
+    viewUrl: string;
+    validUntil: string | null;
+  }) {
+    try {
+      await this.resend.emails.send({
+        from: this.fromEmail,
+        to: params.to,
+        subject: `Árajánlat: ${params.quoteTitle} – ${params.senderName}`,
+        html: `
+          <div style="font-family:'Segoe UI',sans-serif;max-width:600px;margin:0 auto;color:#333;">
+            <div style="background:#198296;padding:24px 32px;border-radius:12px 12px 0 0;">
+              <h1 style="color:white;margin:0;font-size:22px;">Árajánlat</h1>
+              <p style="color:rgba(255,255,255,0.8);margin:4px 0 0;font-size:14px;">${params.senderName}</p>
+            </div>
+            <div style="background:white;padding:32px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 12px 12px;">
+              <p style="font-size:16px;">Kedves ${params.clientName}!</p>
+              <p><strong>${params.senderName}</strong> árajánlatot küldött Önnek:</p>
+              <div style="background:#f8f9fa;padding:20px;border-radius:8px;margin:20px 0;">
+                <h3 style="margin:0 0 8px;color:#198296;">${params.quoteTitle}</h3>
+                ${params.quoteNumber ? `<p style="margin:0 0 4px;font-size:13px;color:#666;">Azonosító: ${params.quoteNumber}</p>` : ''}
+                <p style="margin:0 0 4px;font-size:20px;font-weight:bold;color:#198296;">${params.totalAmount}</p>
+                ${params.validUntil ? `<p style="margin:0;font-size:13px;color:#666;">Érvényes: ${params.validUntil}-ig</p>` : ''}
+              </div>
+              <div style="text-align:center;margin:24px 0;">
+                <a href="${params.viewUrl}"
+                   style="display:inline-block;background:#198296;color:white;padding:14px 40px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;">
+                  Ajánlat megtekintése
+                </a>
+              </div>
+              <p style="font-size:13px;color:#999;margin-top:24px;">
+                Az ajánlatot online megtekintheti, elfogadhatja vagy visszautasíthatja a fenti gomb segítségével.
+              </p>
+            </div>
+          </div>
+        `,
+      });
+      this.logger.log(`Quote email sent to ${params.to}`);
+    } catch (error) {
+      this.logger.error(`Failed to send quote email to ${params.to}`, error);
+      throw error;
+    }
+  }
+
+  async sendQuoteAccepted(params: {
+    to: string;
+    ownerName: string;
+    quoteTitle: string;
+    clientName: string;
+    quoteNumber: string;
+  }) {
+    try {
+      await this.resend.emails.send({
+        from: this.fromEmail,
+        to: params.to,
+        subject: `Ajánlat elfogadva: ${params.quoteTitle}`,
+        html: `
+          <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
+            <h2>Kedves ${params.ownerName}!</h2>
+            <p>Nagyszerű hír! <strong>${params.clientName}</strong> elfogadta az Ön ajánlatát:</p>
+            <div style="background:#f0fdf4;padding:16px;border-radius:8px;margin:16px 0;border-left:4px solid #22c55e;">
+              <h3 style="margin:0 0 4px;color:#166534;">${params.quoteTitle}</h3>
+              ${params.quoteNumber ? `<p style="margin:0;font-size:13px;color:#666;">Azonosító: ${params.quoteNumber}</p>` : ''}
+            </div>
+            <p>Javasoljuk, hogy hozza létre a szerződést az elfogadott ajánlat alapján.</p>
+          </div>
+        `,
+      });
+    } catch (error) {
+      this.logger.error(`Failed to send quote accepted notification to ${params.to}`, error);
+    }
+  }
+
+  async sendQuoteDeclined(params: {
+    to: string;
+    ownerName: string;
+    quoteTitle: string;
+    clientName: string;
+    quoteNumber: string;
+    reason: string;
+  }) {
+    try {
+      await this.resend.emails.send({
+        from: this.fromEmail,
+        to: params.to,
+        subject: `Ajánlat visszautasítva: ${params.quoteTitle}`,
+        html: `
+          <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
+            <h2>Kedves ${params.ownerName}!</h2>
+            <p><strong>${params.clientName}</strong> visszautasította az ajánlatot:</p>
+            <div style="background:#fef2f2;padding:16px;border-radius:8px;margin:16px 0;border-left:4px solid #ef4444;">
+              <h3 style="margin:0 0 4px;color:#991b1b;">${params.quoteTitle}</h3>
+              ${params.quoteNumber ? `<p style="margin:0 0 4px;font-size:13px;color:#666;">Azonosító: ${params.quoteNumber}</p>` : ''}
+              ${params.reason ? `<p style="margin:8px 0 0;font-size:13px;"><strong>Indok:</strong> ${params.reason}</p>` : ''}
+            </div>
+          </div>
+        `,
+      });
+    } catch (error) {
+      this.logger.error(`Failed to send quote declined notification to ${params.to}`, error);
+    }
+  }
+
   async sendExpiryWarning(params: {
     to: string;
     ownerName: string;

@@ -288,6 +288,25 @@ export class SchedulerService {
     this.logger.log(`Onboarding drip campaign: sent ${totalSent} emails`);
   }
 
+  /** Hourly - expire quotes past validUntil */
+  @Cron('30 * * * *')
+  async expireQuotes() {
+    this.logger.log('Running quote expiration job...');
+
+    const now = new Date();
+    const result = await this.prisma.quote.updateMany({
+      where: {
+        status: 'sent',
+        validUntil: { lt: now },
+      },
+      data: { status: 'expired' },
+    });
+
+    if (result.count > 0) {
+      this.logger.log(`Expired ${result.count} quotes`);
+    }
+  }
+
   /** Daily at 8:00 AM - send contract expiry warnings (30, 14, 7 days before) */
   @Cron('0 8 * * *')
   async sendExpiryWarnings() {

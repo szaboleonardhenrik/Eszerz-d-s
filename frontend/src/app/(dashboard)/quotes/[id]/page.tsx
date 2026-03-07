@@ -6,12 +6,27 @@ import Link from "next/link";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
 
-interface LineItem {
+interface QuoteItem {
   description: string;
   quantity: number;
   unitPrice: number;
   unit: string;
-  vatPercent: number;
+  taxRate: number;
+  sectionName?: string;
+  isOptional: boolean;
+  discount?: number;
+  discountType?: string;
+  sortOrder: number;
+}
+
+interface QuoteOwner {
+  name: string;
+  companyName?: string;
+  email: string;
+  brandColor?: string;
+  brandLogoUrl?: string;
+  phone?: string;
+  taxNumber?: string;
 }
 
 interface Quote {
@@ -20,11 +35,20 @@ interface Quote {
   clientName: string;
   clientEmail: string;
   clientCompany?: string;
+  clientPhone?: string;
+  clientAddress?: string;
+  clientTaxNumber?: string;
   status: string;
+  quoteNumber?: string;
   currency: string;
   validUntil: string | null;
+  introText?: string;
+  outroText?: string;
   notes?: string;
-  lineItems: LineItem[];
+  discount?: number;
+  discountType?: string;
+  items: QuoteItem[];
+  owner?: QuoteOwner;
   createdAt: string;
   updatedAt: string;
 }
@@ -45,17 +69,19 @@ const statusColors: Record<string, string> = {
   expired: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
 };
 
-const unitLabels: Record<string, string> = {
-  db: "db",
-  ora: "ora",
-  honap: "honap",
-  nap: "nap",
-};
-
 function formatCurrency(value: number, currency: string) {
   const formatted = new Intl.NumberFormat("hu-HU").format(Math.round(value));
   const symbols: Record<string, string> = { HUF: " Ft", EUR: " EUR", USD: " USD" };
   return formatted + (symbols[currency] ?? ` ${currency}`);
+}
+
+function calcItemNetto(item: QuoteItem) {
+  let netto = item.quantity * item.unitPrice;
+  if (item.discount && item.discountType) {
+    if (item.discountType === "percent") netto *= (1 - item.discount / 100);
+    else netto -= item.discount;
+  }
+  return Math.max(0, netto);
 }
 
 export default function QuoteDetailPage() {
@@ -66,9 +92,7 @@ export default function QuoteDetailPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [pdfLoading, setPdfLoading] = useState(false);
 
-  useEffect(() => {
-    loadQuote();
-  }, [id]);
+  useEffect(() => { loadQuote(); }, [id]);
 
   const loadQuote = async () => {
     setLoading(true);
@@ -83,41 +107,19 @@ export default function QuoteDetailPage() {
     }
   };
 
-  const handleSend = async () => {
-    setActionLoading("send");
+  const doAction = async (action: string, successMsg: string, method: "post" | "delete" = "post") => {
+    setActionLoading(action);
     try {
-      await api.post(`/quotes/${id}/send`);
-      toast.success("Ajanlat elkuldve!");
-      loadQuote();
+      if (method === "delete") {
+        await api.delete(`/quotes/${id}`);
+      } else {
+        await api.post(`/quotes/${id}/${action}`);
+      }
+      toast.success(successMsg);
+      if (action === "delete" || method === "delete") router.push("/quotes");
+      else loadQuote();
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba az ajanlat kuldesekor");
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const handleAccept = async () => {
-    setActionLoading("accept");
-    try {
-      await api.post(`/quotes/${id}/accept`);
-      toast.success("Ajanlat elfogadva!");
-      loadQuote();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba az elfogadaskor");
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const handleDecline = async () => {
-    if (!confirm("Biztosan visszautasitja az ajanlatot?")) return;
-    setActionLoading("decline");
-    try {
-      await api.post(`/quotes/${id}/decline`);
-      toast.success("Ajanlat visszautasitva");
-      loadQuote();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba a visszautasitaskor");
+      toast.error(err.response?.data?.error?.message ?? "Hiba tortent");
     } finally {
       setActionLoading(null);
     }
@@ -128,12 +130,7 @@ export default function QuoteDetailPage() {
     try {
       const res = await api.post(`/quotes/${id}/duplicate`);
       toast.success("Ajanlat duplikalva!");
-      const newId = res.data.data?.id;
-      if (newId) {
-        router.push(`/quotes/${newId}`);
-      } else {
-        router.push("/quotes");
-      }
+      router.push(`/quotes/${res.data.data?.id ?? ""}`);
     } catch (err: any) {
       toast.error(err.response?.data?.error?.message ?? "Hiba a duplikalaskor");
     } finally {
@@ -144,52 +141,33 @@ export default function QuoteDetailPage() {
   const handlePdfDownload = async () => {
     setPdfLoading(true);
     try {
-      const res = await api.get(`/quotes/${id}/pdf`);
-      const html = res.data.data.html;
-      const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+      const res = await api.get(`/quotes/${id}/pdf`, { responseType: "blob" });
+      const blob = new Blob([res.data], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
-      const w = window.open(url, "_blank");
-      if (w) {
-        w.onload = () => {
-          w.print();
-          URL.revokeObjectURL(url);
-        };
-      }
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${quote?.quoteNumber || "ajanlat"}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     } catch {
-      toast.error("Hiba a PDF generáláskor");
+      toast.error("Hiba a PDF generalasakor");
     } finally {
       setPdfLoading(false);
     }
   };
 
-  const handleDelete = async () => {
-    if (!confirm("Biztosan torli az ajanlatot?")) return;
-    setActionLoading("delete");
-    try {
-      await api.delete(`/quotes/${id}`);
-      toast.success("Ajanlat torolve!");
-      router.push("/quotes");
-    } catch {
-      toast.error("Hiba a torleskor");
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
   if (loading) {
     return (
-      <div>
-        <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-4" />
-        <div className="h-8 w-64 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-2" />
-        <div className="h-4 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-8" />
+      <div className="animate-pulse">
+        <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded mb-4" />
+        <div className="h-8 w-64 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+        <div className="h-4 w-48 bg-gray-200 dark:bg-gray-700 rounded mb-8" />
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <div className="space-y-4">
             {[0, 1, 2, 3].map((i) => (
-              <div key={i} className="flex gap-4 animate-pulse">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded flex-1" />
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20" />
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24" />
-              </div>
+              <div key={i} className="flex gap-4"><div className="h-4 bg-gray-200 dark:bg-gray-700 rounded flex-1" /><div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20" /></div>
             ))}
           </div>
         </div>
@@ -199,23 +177,35 @@ export default function QuoteDetailPage() {
 
   if (!quote) return null;
 
-  const items = quote.lineItems ?? [];
-  const totalNetto = items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
-  const totalVat = items.reduce(
-    (sum, i) => sum + i.quantity * i.unitPrice * (i.vatPercent / 100),
-    0
-  );
+  const items = quote.items ?? [];
+  const activeItems = items.filter((i) => !i.isOptional);
+  const optionalItems = items.filter((i) => i.isOptional);
+
+  let totalNetto = activeItems.reduce((sum, i) => sum + calcItemNetto(i), 0);
+  let totalVat = activeItems.reduce((sum, i) => sum + calcItemNetto(i) * (i.taxRate / 100), 0);
+
+  if (quote.discount && quote.discountType) {
+    const discAmount = quote.discountType === "percent" ? totalNetto * (quote.discount / 100) : quote.discount;
+    const ratio = totalNetto > 0 ? (totalNetto - discAmount) / totalNetto : 0;
+    totalNetto = Math.max(0, totalNetto - discAmount);
+    totalVat = Math.max(0, totalVat * ratio);
+  }
   const totalBrutto = totalNetto + totalVat;
 
-  const brandBtn =
-    "text-white px-5 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50";
+  // Group items by section
+  const sections = new Map<string, QuoteItem[]>();
+  for (const item of items) {
+    const sec = item.sectionName || "";
+    if (!sections.has(sec)) sections.set(sec, []);
+    sections.get(sec)!.push(item);
+  }
+
+  const brandColor = quote.owner?.brandColor || "#198296";
+  const brandBtn = "text-white px-5 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50";
 
   return (
     <div>
-      <Link
-        href="/quotes"
-        className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mb-4 inline-block"
-      >
+      <Link href="/quotes" className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mb-4 inline-block">
         &larr; Vissza az ajanlatokhoz
       </Link>
 
@@ -223,10 +213,9 @@ export default function QuoteDetailPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{quote.title}</h1>
+          {quote.quoteNumber && <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">{quote.quoteNumber}</p>}
           <div className="flex items-center gap-3 mt-2 flex-wrap">
-            <span
-              className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[quote.status] ?? "bg-gray-100 text-gray-700"}`}
-            >
+            <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[quote.status] ?? "bg-gray-100 text-gray-700"}`}>
               {statusLabels[quote.status] ?? quote.status}
             </span>
             <span className="text-sm text-gray-400 dark:text-gray-500">
@@ -241,84 +230,66 @@ export default function QuoteDetailPage() {
         </div>
 
         <div className="flex gap-2 flex-wrap">
-          <Link
-            href={`/quotes/new?edit=${quote.id}`}
-            className="border border-gray-300 dark:border-gray-600 px-5 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
-          >
-            Szerkesztes
-          </Link>
+          {quote.status === "draft" && (
+            <Link
+              href={`/quotes/new?edit=${quote.id}`}
+              className="border border-gray-300 dark:border-gray-600 px-5 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+            >
+              Szerkesztes
+            </Link>
+          )}
 
           {quote.status === "draft" && (
-            <button
-              onClick={handleSend}
-              disabled={actionLoading === "send"}
-              className={brandBtn}
-              style={{ backgroundColor: "#198296" }}
-              onMouseEnter={(e) => {
-                if (actionLoading !== "send")
-                  (e.target as HTMLElement).style.backgroundColor = "#0e5f6e";
-              }}
-              onMouseLeave={(e) => {
-                if (actionLoading !== "send")
-                  (e.target as HTMLElement).style.backgroundColor = "#198296";
-              }}
-            >
+            <button onClick={() => doAction("send", "Ajanlat elkuldve!")} disabled={actionLoading === "send"} className={brandBtn} style={{ backgroundColor: brandColor }}>
               {actionLoading === "send" ? "Kuldes..." : "Kuldes"}
             </button>
           )}
 
           {quote.status === "sent" && (
             <>
-              <button
-                onClick={handleAccept}
-                disabled={actionLoading === "accept"}
-                className={brandBtn + " bg-green-600 hover:bg-green-700"}
-              >
+              <button onClick={() => doAction("accept", "Ajanlat elfogadva!")} disabled={actionLoading === "accept"} className={brandBtn + " bg-green-600 hover:bg-green-700"}>
                 {actionLoading === "accept" ? "Elfogadas..." : "Elfogadas"}
               </button>
-              <button
-                onClick={handleDecline}
-                disabled={actionLoading === "decline"}
-                className="border border-red-200 dark:border-red-800 px-5 py-2 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition disabled:opacity-50"
-              >
+              <button onClick={() => { if (confirm("Biztosan visszautasitja?")) doAction("decline", "Ajanlat visszautasitva"); }} disabled={actionLoading === "decline"} className="border border-red-200 dark:border-red-800 px-5 py-2 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition disabled:opacity-50">
                 {actionLoading === "decline" ? "Visszautasitas..." : "Visszautasitas"}
               </button>
             </>
           )}
 
-          <button
-            onClick={handlePdfDownload}
-            disabled={pdfLoading}
-            className="border border-gray-300 dark:border-gray-600 px-5 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-50 flex items-center gap-2"
-          >
+          <button onClick={handlePdfDownload} disabled={pdfLoading} className="border border-gray-300 dark:border-gray-600 px-5 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-50 flex items-center gap-2">
             {pdfLoading ? (
-              <>
-                <div className="w-3.5 h-3.5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-                PDF...
-              </>
+              <><div className="w-3.5 h-3.5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />PDF...</>
             ) : (
-              <>
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                PDF letöltés
-              </>
+              <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>PDF letoltes</>
             )}
           </button>
 
-          <button
-            onClick={handleDuplicate}
-            disabled={actionLoading === "duplicate"}
-            className="border border-gray-300 dark:border-gray-600 px-5 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-50"
-          >
+          {quote.status === "accepted" && (
+            <button
+              onClick={async () => {
+                setActionLoading("convert");
+                try {
+                  const res = await api.post(`/quotes/${id}/convert-to-contract`);
+                  toast.success("Szerzodes letrehozva az ajanlatbol!");
+                  router.push(`/contracts/${res.data.data?.id}`);
+                } catch (err: any) {
+                  toast.error(err.response?.data?.error?.message ?? "Hiba a konverziokor");
+                } finally {
+                  setActionLoading(null);
+                }
+              }}
+              disabled={actionLoading === "convert"}
+              className={brandBtn + " bg-purple-600 hover:bg-purple-700"}
+            >
+              {actionLoading === "convert" ? "Letrehozas..." : "Szerzodes letrehozasa"}
+            </button>
+          )}
+
+          <button onClick={handleDuplicate} disabled={actionLoading === "duplicate"} className="border border-gray-300 dark:border-gray-600 px-5 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-50">
             {actionLoading === "duplicate" ? "Duplikalas..." : "Duplikalas"}
           </button>
 
-          <button
-            onClick={handleDelete}
-            disabled={actionLoading === "delete"}
-            className="border border-red-200 dark:border-red-800 px-5 py-2 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition disabled:opacity-50"
-          >
+          <button onClick={() => { if (confirm("Biztosan torli az ajanlatot?")) doAction("", "Ajanlat torolve!", "delete"); }} disabled={actionLoading === "delete"} className="border border-red-200 dark:border-red-800 px-5 py-2 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition disabled:opacity-50">
             {actionLoading === "delete" ? "Torles..." : "Torles"}
           </button>
         </div>
@@ -342,27 +313,43 @@ export default function QuoteDetailPage() {
               <p className="text-sm text-gray-900 dark:text-white">{quote.clientCompany}</p>
             </div>
           )}
+          {quote.clientPhone && (
+            <div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Telefon</p>
+              <p className="text-sm text-gray-900 dark:text-white">{quote.clientPhone}</p>
+            </div>
+          )}
+          {quote.clientAddress && (
+            <div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Cim</p>
+              <p className="text-sm text-gray-900 dark:text-white">{quote.clientAddress}</p>
+            </div>
+          )}
+          {quote.clientTaxNumber && (
+            <div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Adoszam</p>
+              <p className="text-sm text-gray-900 dark:text-white">{quote.clientTaxNumber}</p>
+            </div>
+          )}
           <div>
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Ervenyesseg</p>
             <p className="text-sm text-gray-900 dark:text-white">
-              {quote.validUntil
-                ? new Date(quote.validUntil).toLocaleDateString("hu-HU")
-                : "Nincs megadva"}
+              {quote.validUntil ? new Date(quote.validUntil).toLocaleDateString("hu-HU") : "Nincs megadva"}
             </p>
           </div>
         </div>
-        {quote.notes && (
-          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Megjegyzes</p>
-            <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-              {quote.notes}
-            </p>
-          </div>
-        )}
       </div>
 
+      {/* Intro text */}
+      {quote.introText && (
+        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 font-medium">Bevezeto</p>
+          <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{quote.introText}</p>
+        </div>
+      )}
+
       {/* Line items */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Tetelek</h2>
 
         {items.length === 0 ? (
@@ -377,49 +364,15 @@ export default function QuoteDetailPage() {
                     <th className="pb-2 px-2 font-medium text-right">Mennyiseg</th>
                     <th className="pb-2 px-2 font-medium">Egyseg</th>
                     <th className="pb-2 px-2 font-medium text-right">Egysegar</th>
-                    <th className="pb-2 px-2 font-medium text-right">AFA %</th>
+                    <th className="pb-2 px-2 font-medium text-right">AFA</th>
                     <th className="pb-2 px-2 font-medium text-right">Netto</th>
-                    <th className="pb-2 px-2 font-medium text-right hidden sm:table-cell">AFA</th>
                     <th className="pb-2 pl-2 font-medium text-right">Brutto</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {items.map((item, idx) => {
-                    const lineNetto = item.quantity * item.unitPrice;
-                    const lineVat = lineNetto * (item.vatPercent / 100);
-                    const lineBrutto = lineNetto + lineVat;
-                    return (
-                      <tr
-                        key={idx}
-                        className="border-b border-gray-100 dark:border-gray-700 last:border-0"
-                      >
-                        <td className="py-3 pr-2 text-sm text-gray-900 dark:text-white">
-                          {item.description}
-                        </td>
-                        <td className="py-3 px-2 text-sm text-gray-700 dark:text-gray-300 text-right">
-                          {item.quantity}
-                        </td>
-                        <td className="py-3 px-2 text-sm text-gray-500 dark:text-gray-400">
-                          {unitLabels[item.unit] ?? item.unit}
-                        </td>
-                        <td className="py-3 px-2 text-sm text-gray-700 dark:text-gray-300 text-right">
-                          {formatCurrency(item.unitPrice, quote.currency)}
-                        </td>
-                        <td className="py-3 px-2 text-sm text-gray-500 dark:text-gray-400 text-right">
-                          {item.vatPercent}%
-                        </td>
-                        <td className="py-3 px-2 text-sm text-gray-700 dark:text-gray-300 text-right">
-                          {formatCurrency(lineNetto, quote.currency)}
-                        </td>
-                        <td className="py-3 px-2 text-sm text-gray-500 dark:text-gray-400 text-right hidden sm:table-cell">
-                          {formatCurrency(lineVat, quote.currency)}
-                        </td>
-                        <td className="py-3 pl-2 text-sm font-medium text-gray-900 dark:text-white text-right">
-                          {formatCurrency(lineBrutto, quote.currency)}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  {Array.from(sections.entries()).map(([sectionName, sectionItems]) => (
+                    <SectionBlock key={sectionName} name={sectionName} items={sectionItems} currency={quote.currency} brandColor={brandColor} />
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -429,27 +382,91 @@ export default function QuoteDetailPage() {
               <div className="flex flex-col items-end gap-1">
                 <div className="flex justify-between w-full max-w-xs text-sm">
                   <span className="text-gray-500 dark:text-gray-400">Netto osszeg:</span>
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    {formatCurrency(totalNetto, quote.currency)}
-                  </span>
+                  <span className="font-medium text-gray-900 dark:text-white">{formatCurrency(totalNetto, quote.currency)}</span>
                 </div>
+                {quote.discount && quote.discountType && (
+                  <div className="flex justify-between w-full max-w-xs text-sm text-red-500">
+                    <span>Kedvezmeny ({quote.discountType === "percent" ? `${quote.discount}%` : formatCurrency(quote.discount, quote.currency)}):</span>
+                    <span>-{formatCurrency(
+                      quote.discountType === "percent"
+                        ? activeItems.reduce((s, i) => s + calcItemNetto(i), 0) * quote.discount / 100
+                        : quote.discount,
+                      quote.currency
+                    )}</span>
+                  </div>
+                )}
                 <div className="flex justify-between w-full max-w-xs text-sm">
                   <span className="text-gray-500 dark:text-gray-400">AFA:</span>
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    {formatCurrency(totalVat, quote.currency)}
-                  </span>
+                  <span className="font-medium text-gray-900 dark:text-white">{formatCurrency(totalVat, quote.currency)}</span>
                 </div>
                 <div className="flex justify-between w-full max-w-xs text-base border-t border-gray-200 dark:border-gray-700 pt-2 mt-1">
                   <span className="font-semibold text-gray-900 dark:text-white">Brutto osszeg:</span>
-                  <span className="font-bold" style={{ color: "#198296" }}>
-                    {formatCurrency(totalBrutto, quote.currency)}
-                  </span>
+                  <span className="font-bold" style={{ color: brandColor }}>{formatCurrency(totalBrutto, quote.currency)}</span>
                 </div>
+                {optionalItems.length > 0 && (
+                  <div className="flex justify-between w-full max-w-xs text-sm mt-2 text-amber-600">
+                    <span>Opcionalis tetelek:</span>
+                    <span>{formatCurrency(optionalItems.reduce((s, i) => s + calcItemNetto(i), 0), quote.currency)} netto</span>
+                  </div>
+                )}
               </div>
             </div>
           </>
         )}
       </div>
+
+      {/* Outro text */}
+      {quote.outroText && (
+        <div className="rounded-xl border-l-4 p-6 mb-6 bg-green-50 dark:bg-green-900/10" style={{ borderColor: brandColor }}>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 font-medium">Zaro szoveg</p>
+          <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{quote.outroText}</p>
+        </div>
+      )}
+
+      {/* Notes */}
+      {quote.notes && (
+        <div className="bg-amber-50 dark:bg-amber-900/10 rounded-xl border border-amber-200 dark:border-amber-800 p-6">
+          <p className="text-xs text-amber-600 dark:text-amber-400 mb-2 font-medium">Belso megjegyzes</p>
+          <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{quote.notes}</p>
+        </div>
+      )}
     </div>
+  );
+}
+
+function SectionBlock({ name, items, currency, brandColor }: { name: string; items: QuoteItem[]; currency: string; brandColor: string }) {
+  return (
+    <>
+      {name && (
+        <tr>
+          <td colSpan={7} className="pt-4 pb-1">
+            <span className="text-sm font-semibold" style={{ color: brandColor }}>{name}</span>
+          </td>
+        </tr>
+      )}
+      {items.map((item, idx) => {
+        const lineNetto = calcItemNetto(item);
+        const lineVat = lineNetto * (item.taxRate / 100);
+        return (
+          <tr key={idx} className={`border-b border-gray-100 dark:border-gray-700 last:border-0 ${item.isOptional ? "opacity-60" : ""}`}>
+            <td className="py-3 pr-2 text-sm text-gray-900 dark:text-white">
+              {item.description}
+              {item.isOptional && <span className="ml-2 text-xs px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded">opcionalis</span>}
+              {item.discount && item.discountType && (
+                <span className="ml-2 text-xs text-red-500">
+                  ({item.discountType === "percent" ? `-${item.discount}%` : `-${formatCurrency(item.discount, currency)}`})
+                </span>
+              )}
+            </td>
+            <td className="py-3 px-2 text-sm text-gray-700 dark:text-gray-300 text-right">{item.quantity}</td>
+            <td className="py-3 px-2 text-sm text-gray-500 dark:text-gray-400">{item.unit}</td>
+            <td className="py-3 px-2 text-sm text-gray-700 dark:text-gray-300 text-right">{formatCurrency(item.unitPrice, currency)}</td>
+            <td className="py-3 px-2 text-sm text-gray-500 dark:text-gray-400 text-right">{item.taxRate}%</td>
+            <td className="py-3 px-2 text-sm text-gray-700 dark:text-gray-300 text-right">{formatCurrency(lineNetto, currency)}</td>
+            <td className="py-3 pl-2 text-sm font-medium text-gray-900 dark:text-white text-right">{formatCurrency(lineNetto + lineVat, currency)}</td>
+          </tr>
+        );
+      })}
+    </>
   );
 }

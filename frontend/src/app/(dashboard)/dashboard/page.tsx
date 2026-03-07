@@ -274,8 +274,19 @@ const statConfig = [
 /*  DASHBOARD PAGE                                                    */
 /* ══════════════════════════════════════════════════════════════════ */
 
+interface QuoteStats {
+  total: number;
+  draft: number;
+  sent: number;
+  accepted: number;
+  declined: number;
+  expired: number;
+  totalRevenue: number;
+}
+
 export default function DashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null);
+  const [quoteStats, setQuoteStats] = useState<QuoteStats | null>(null);
   const [widgets, setWidgets] = useState<Widget | null>(null);
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [loading, setLoading] = useState(true);
@@ -287,7 +298,7 @@ export default function DashboardPage() {
 
   const loadData = useCallback(async () => {
     try {
-      const [statsRes, widgetsRes, contractsRes] = await Promise.all([
+      const [statsRes, widgetsRes, contractsRes, quoteStatsRes] = await Promise.all([
         api.get("/contracts/stats"),
         api.get("/contracts/widgets"),
         api.get("/contracts", {
@@ -298,8 +309,10 @@ export default function DashboardPage() {
             ...(search ? { search } : {}),
           },
         }),
+        api.get("/quotes/stats").catch(() => ({ data: { data: null } })),
       ]);
       setStats(statsRes.data.data);
+      setQuoteStats(quoteStatsRes.data.data);
       setWidgets(widgetsRes.data.data);
       const pagination = contractsRes.data.data;
       setContracts(pagination.items ?? []);
@@ -446,6 +459,42 @@ export default function DashboardPage() {
               />
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── Quote Stats ────────────────────────────────────────── */}
+      {quoteStats && quoteStats.total > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-teal-50 dark:bg-teal-900/30 flex items-center justify-center">
+                <svg className="w-4 h-4 text-teal-600 dark:text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">Ajanlatok</h2>
+            </div>
+            <Link href="/quotes" className="text-xs text-blue-600 hover:text-blue-700 font-medium">
+              Osszes ajanlat &rarr;
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            {[
+              { label: "Osszes", value: quoteStats.total, color: "text-gray-900 dark:text-gray-100" },
+              { label: "Piszkozat", value: quoteStats.draft, color: "text-gray-500" },
+              { label: "Elkuldve", value: quoteStats.sent, color: "text-blue-600" },
+              { label: "Elfogadva", value: quoteStats.accepted, color: "text-green-600" },
+              { label: "Elutasitva", value: quoteStats.declined, color: "text-red-500" },
+              { label: "Bevetel", value: null, color: "text-teal-600", formatted: `${new Intl.NumberFormat('hu-HU').format(Math.round(quoteStats.totalRevenue))} Ft` },
+            ].map((s, i) => (
+              <div key={i} className="text-center p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+                <p className="text-[11px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">{s.label}</p>
+                <p className={`text-lg font-bold mt-1 ${s.color}`}>
+                  {s.formatted ?? s.value}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

@@ -6,12 +6,15 @@ import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
 
-interface LineItem {
+interface QuoteItem {
   description: string;
   quantity: number;
   unitPrice: number;
   unit: string;
-  vatPercent: number;
+  taxRate: number;
+  isOptional: boolean;
+  discount?: number;
+  discountType?: string;
 }
 
 interface Quote {
@@ -21,9 +24,12 @@ interface Quote {
   clientEmail: string;
   clientCompany?: string;
   status: string;
+  quoteNumber?: string;
   currency: string;
   validUntil: string;
-  lineItems: LineItem[];
+  discount?: number;
+  discountType?: string;
+  items: QuoteItem[];
   createdAt: string;
   updatedAt: string;
 }
@@ -67,13 +73,25 @@ function formatCurrency(value: number, currency: string) {
   return formatted + (symbols[currency] ?? ` ${currency}`);
 }
 
-function calcTotals(items: LineItem[], currency: string) {
+function calcTotals(items: QuoteItem[], currency: string, globalDiscount?: number, globalDiscountType?: string) {
   let netto = 0;
   let vat = 0;
   for (const item of items) {
-    const lineNetto = item.quantity * item.unitPrice;
+    if (item.isOptional) continue;
+    let lineNetto = item.quantity * item.unitPrice;
+    if (item.discount && item.discountType) {
+      if (item.discountType === "percent") lineNetto *= (1 - item.discount / 100);
+      else lineNetto -= item.discount;
+    }
+    lineNetto = Math.max(0, lineNetto);
     netto += lineNetto;
-    vat += lineNetto * (item.vatPercent / 100);
+    vat += lineNetto * (item.taxRate / 100);
+  }
+  if (globalDiscount && globalDiscountType) {
+    const discAmount = globalDiscountType === "percent" ? netto * (globalDiscount / 100) : globalDiscount;
+    const ratio = netto > 0 ? (netto - discAmount) / netto : 0;
+    netto = Math.max(0, netto - discAmount);
+    vat = Math.max(0, vat * ratio);
   }
   return {
     netto,
@@ -127,7 +145,7 @@ export default function QuotesPage() {
         setTotalPages(1);
         setTotal(data.length);
       } else {
-        setQuotes(data.items ?? []);
+        setQuotes(data.quotes ?? data.items ?? []);
         setTotalPages(data.totalPages ?? 1);
         setTotal(data.total ?? 0);
       }
@@ -187,15 +205,23 @@ export default function QuotesPage() {
             Ajanlatok es arajanlatiak kezelese
           </p>
         </div>
-        <Link
-          href="/quotes/new"
-          className="text-white px-5 py-2.5 rounded-lg font-medium transition text-sm"
-          style={{ backgroundColor: "#198296" }}
-          onMouseEnter={(e) => ((e.target as HTMLElement).style.backgroundColor = "#0e5f6e")}
-          onMouseLeave={(e) => ((e.target as HTMLElement).style.backgroundColor = "#198296")}
-        >
-          + Uj ajanlat
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            href="/quotes/templates"
+            className="px-4 py-2.5 rounded-lg font-medium transition text-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+          >
+            Sablonok
+          </Link>
+          <Link
+            href="/quotes/new"
+            className="text-white px-5 py-2.5 rounded-lg font-medium transition text-sm"
+            style={{ backgroundColor: "#198296" }}
+            onMouseEnter={(e) => ((e.target as HTMLElement).style.backgroundColor = "#0e5f6e")}
+            onMouseLeave={(e) => ((e.target as HTMLElement).style.backgroundColor = "#198296")}
+          >
+            + Uj ajanlat
+          </Link>
+        </div>
       </div>
 
       {/* Stats */}
@@ -300,7 +326,7 @@ export default function QuotesPage() {
                 </thead>
                 <tbody>
                   {quotes.map((q) => {
-                    const totals = calcTotals(q.lineItems ?? [], q.currency);
+                    const totals = calcTotals(q.items ?? [], q.currency, q.discount, q.discountType);
                     return (
                       <tr
                         key={q.id}
@@ -313,6 +339,9 @@ export default function QuotesPage() {
                           >
                             {q.title}
                           </Link>
+                          {q.quoteNumber && (
+                            <p className="text-xs text-gray-400">{q.quoteNumber}</p>
+                          )}
                         </td>
                         <td className="px-4 py-3">
                           <p className="text-sm text-gray-900 dark:text-gray-200">{q.clientName}</p>

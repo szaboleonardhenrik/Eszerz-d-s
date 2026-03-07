@@ -1,0 +1,1 @@
+ALTER TABLE "quotes" ADD COLUMN "language" TEXT NOT NULL DEFAULT 'hu';

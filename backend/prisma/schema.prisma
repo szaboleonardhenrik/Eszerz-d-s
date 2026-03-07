@@ -45,7 +45,8 @@ model User {
   sessions      Session[]
   referralsSent Referral[] @relation("ReferralsSent")
   referralsReceived Referral[] @relation("ReferralsReceived")
-  quotes        Quote[]
+  quotes          Quote[]
+  quoteTemplates  QuoteTemplate[]
 
   @@map("users")
 }
@@ -369,34 +370,92 @@ model Webhook {
 model Quote {
   id            String    @id @default(uuid())
   ownerId       String    @map("owner_id")
+  templateId    String?   @map("template_id")
   title         String
   clientName    String    @map("client_name")
   clientEmail   String    @map("client_email")
   clientCompany String?   @map("client_company")
+  clientPhone   String?   @map("client_phone")
+  clientAddress String?   @map("client_address")
+  clientTaxNumber String? @map("client_tax_number")
   status        String    @default("draft") // draft | sent | accepted | declined | expired
+  viewToken     String?   @unique @map("view_token") // public viewing token
+  quoteNumber   String?   @map("quote_number") // e.g. AJ-2026-0001
   validUntil    DateTime? @map("valid_until")
   currency      String    @default("HUF")
+  language      String    @default("hu")
+  introText     String?   @map("intro_text")
+  outroText     String?   @map("outro_text")
   notes         String?
+  discount      Float?    // global discount value
+  discountType  String?   @map("discount_type") // percent | fixed
+  variablesData String?   @map("variables_data") // JSON string of template variables
+  version       Int       @default(1)
+  declineReason String?   @map("decline_reason")
+  acceptedAt    DateTime? @map("accepted_at")
+  declinedAt    DateTime? @map("declined_at")
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
-  owner User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  items QuoteItem[]
+  owner    User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  template QuoteTemplate? @relation(fields: [templateId], references: [id])
+  items    QuoteItem[]
+  comments QuoteComment[]
 
   @@index([ownerId])
+  @@index([viewToken])
   @@map("quotes")
 }
 
 model QuoteItem {
-  id          String  @id @default(uuid())
-  quoteId     String  @map("quote_id")
-  description String
-  quantity    Float   @default(1)
-  unitPrice   Float   @map("unit_price")
-  unit        String  @default("db") // db, ora, honap, etc.
-  taxRate     Float   @default(27) @map("tax_rate") // percentage
+  id           String  @id @default(uuid())
+  quoteId      String  @map("quote_id")
+  description  String
+  quantity     Float   @default(1)
+  unitPrice    Float   @map("unit_price")
+  unit         String  @default("db") // db, ora, honap, nap, projekt, oldal, km
+  taxRate      Float   @default(27) @map("tax_rate") // percentage
+  sectionName  String? @map("section_name") // grouping label
+  isOptional   Boolean @default(false) @map("is_optional")
+  discount     Float?  // item-level discount value
+  discountType String? @map("discount_type") // percent | fixed
+  sortOrder    Int     @default(0) @map("sort_order")
 
   quote Quote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
 
   @@map("quote_items")
+}
+
+model QuoteComment {
+  id        String   @id @default(uuid())
+  quoteId   String   @map("quote_id")
+  author    String   // client name or "owner"
+  isOwner   Boolean  @default(false) @map("is_owner")
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+  quote     Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  @@index([quoteId])
+  @@map("quote_comments")
+}
+
+model QuoteTemplate {
+  id          String   @id @default(uuid())
+  ownerId     String   @map("owner_id")
+  name        String
+  description String?
+  category    String   @default("altalanos") // altalanos, it, marketing, epiteszet, tanácsadás, etc.
+  currency    String   @default("HUF")
+  introText   String?  @map("intro_text")
+  outroText   String?  @map("outro_text")
+  itemsJson   String   @map("items_json") // JSON array of template line items
+  variables   String?  // JSON array of variable definitions [{key, label, type, defaultValue}]
+  isPublic    Boolean  @default(false) @map("is_public")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  owner  User    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  quotes Quote[]
+
+  @@index([ownerId])
+  @@map("quote_templates")
 }
