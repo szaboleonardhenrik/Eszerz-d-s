@@ -57,45 +57,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center gap-8">
-              <Link href="/dashboard" className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">SZ</span>
-                </div>
-                <span className="text-lg font-bold text-gray-900 hidden sm:inline">
-                  <span className="text-blue-600">Szerződés</span>Portál
-                </span>
-              </Link>
-              <div className="hidden lg:flex gap-1">
-                {navItemKeys.map((item) => {
-                  const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition ${
-                        isActive
-                          ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
-                          : "text-gray-800 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100"
-                      }`}
-                    >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={item.icon} />
-                      </svg>
-                      <span className="hidden xl:inline">{t(item.labelKey)}</span>
-                    </Link>
-                  );
-                })}
+          {/* Top row: logo + actions */}
+          <div className="flex justify-between items-center h-14">
+            <Link href="/dashboard" className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
+                <span className="text-white font-bold text-sm">SZ</span>
               </div>
-            </div>
-            <div className="flex items-center gap-2">
+              <span className="text-lg font-bold text-gray-900 dark:text-gray-100 hidden sm:inline">
+                <span className="text-blue-600">Szerzodes</span>Portal
+              </span>
+            </Link>
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <LanguageSwitcher />
               <ThemeToggle />
               <NotificationBell />
               <button
                 onClick={() => setMobileNav(!mobileNav)}
-                className="lg:hidden p-2 rounded-lg hover:bg-gray-50"
+                className="lg:hidden p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
               >
                 <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={mobileNav ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
@@ -104,13 +82,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <div className="relative">
                 <button
                   onClick={() => setMenuOpen(!menuOpen)}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                  className="flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                 >
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-semibold">
                     {user.name.split(" ").map((n) => n[0]).join("").substring(0, 2).toUpperCase()}
                   </div>
                   <div className="hidden sm:block text-left">
-                    <p className="text-sm font-medium text-gray-900 leading-none">{user.name}</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 leading-none">{user.name}</p>
                     <p className="text-xs mt-0.5">
                       <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase ${
                         user.subscriptionTier === "pro"
@@ -121,7 +99,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       }`}>{user.subscriptionTier} {t("auth.plan")}</span>
                     </p>
                   </div>
-                    <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-4 h-4 text-gray-400 hidden sm:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
@@ -132,7 +110,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       <div className="px-4 py-2 border-b dark:border-gray-700">
                         <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.name}</p>
                         <p className="text-xs text-gray-400">{user.email}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">Szerepkör: {user.role ?? "owner"}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">Szerepkor: {user.role ?? "owner"}</p>
                       </div>
                       <Link
                         href="/settings"
@@ -175,6 +153,28 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 )}
               </div>
             </div>
+          </div>
+          {/* Bottom row: navigation links */}
+          <div className="hidden lg:flex gap-1 pb-2 -mb-px">
+            {navItemKeys.map((item) => {
+              const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition ${
+                    isActive
+                      ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100"
+                  }`}
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={item.icon} />
+                  </svg>
+                  {t(item.labelKey)}
+                </Link>
+              );
+            })}
           </div>
         </div>
       </nav>
