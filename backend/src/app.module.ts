@@ -30,6 +30,7 @@ import { RemindersModule } from './reminders/reminders.module';
 import { NotificationsGatewayModule } from './notifications-gateway/notifications-gateway.module';
 import { ChatModule } from './chat/chat.module';
 import { PortalModule } from './portal/portal.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { PortalModule } from './portal/portal.module';
     NotificationsGatewayModule,
     ChatModule,
     PortalModule,
+    AdminModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

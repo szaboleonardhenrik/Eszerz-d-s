@@ -49,7 +49,7 @@ async function main() {
       brandColor: '#198296',
       phone: '+36 30 123 4567',
       taxNumber: '12345678-2-42',
-      role: 'owner',
+      role: 'admin',
     },
   });
   console.log(`User created: ${user.email} (${user.id})`);

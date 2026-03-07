@@ -40,6 +40,7 @@ const en: Translations = {
     quotes: "Quotes",
     archive: "Archive",
     settings: "Settings",
+    admin: "Admin",
   },
   auth: {
     login: "Sign In",

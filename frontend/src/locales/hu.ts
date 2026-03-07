@@ -38,6 +38,7 @@ const hu = {
     quotes: "Ajánlatok",
     archive: "Archívum",
     settings: "Beállítások",
+    admin: "Admin",
   },
   auth: {
     login: "Bejelentkezés",

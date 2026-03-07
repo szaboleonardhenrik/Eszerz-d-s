@@ -24,6 +24,12 @@ const navItemKeys = [
   { href: "/reminders", labelKey: "nav.reminders", icon: "M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" },
 ];
 
+const adminNavItem = {
+  href: "/admin",
+  labelKey: "nav.admin",
+  icon: "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z",
+};
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, loadProfile, logout } = useAuth();
   const { t } = useI18n();
@@ -159,16 +165,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
           {/* Bottom row: navigation links */}
           <div className="hidden lg:flex gap-1 pb-2 -mb-px">
-            {navItemKeys.map((item) => {
+            {[...navItemKeys, ...(user.role === "admin" ? [adminNavItem] : [])].map((item) => {
               const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+              const isAdmin = item.href === "/admin";
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition ${
                     isActive
-                      ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100"
+                      ? isAdmin
+                        ? "bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400"
+                        : "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
+                      : isAdmin
+                        ? "text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:text-violet-700 dark:hover:text-violet-300"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100"
                   }`}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -201,8 +212,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </button>
             </div>
             <div className="px-3 py-4 space-y-1">
-              {navItemKeys.map((item) => {
+              {[...navItemKeys, ...(user.role === "admin" ? [adminNavItem] : [])].map((item) => {
                 const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+                const isAdmin = item.href === "/admin";
                 return (
                   <Link
                     key={item.href}
@@ -210,8 +222,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     onClick={() => setMobileNav(false)}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition ${
                       isActive
-                        ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
-                        : "text-gray-800 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                        ? isAdmin
+                          ? "bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400"
+                          : "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
+                        : isAdmin
+                          ? "text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20"
+                          : "text-gray-800 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                     }`}
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
