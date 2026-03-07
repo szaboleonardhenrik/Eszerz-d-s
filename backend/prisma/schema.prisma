@@ -133,18 +133,19 @@ model TemplateVersion {
 }
 
 model Contract {
-  id            String    @id @default(uuid())
-  title         String
-  templateId    String?   @map("template_id")
-  ownerId       String    @map("owner_id")
-  contentHtml   String    @map("content_html")
-  pdfUrl        String?   @map("pdf_url")
-  status        String    @default("draft")
-  variablesData String?   @map("variables_data")
-  folderId      String?   @map("folder_id")
-  expiresAt     DateTime? @map("expires_at")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  id               String    @id @default(uuid())
+  title            String
+  templateId       String?   @map("template_id")
+  ownerId          String    @map("owner_id")
+  contentHtml      String    @map("content_html")
+  pdfUrl           String?   @map("pdf_url")
+  status           String    @default("draft")
+  variablesData    String?   @map("variables_data")
+  folderId         String?   @map("folder_id")
+  verificationHash String?   @unique @map("verification_hash")
+  expiresAt        DateTime? @map("expires_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
 
   template  Template?          @relation(fields: [templateId], references: [id])
   owner     User               @relation(fields: [ownerId], references: [id])

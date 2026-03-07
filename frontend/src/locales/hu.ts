@@ -32,6 +32,7 @@ const hu = {
     contacts: "Névjegyek",
     bulkSend: "Tömeges küldés",
     analytics: "Analitika",
+    calendar: "Naptar",
     kanban: "Kanban",
     quotes: "Ajánlatok",
     archive: "Archívum",

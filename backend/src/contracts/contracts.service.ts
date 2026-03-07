@@ -4,7 +4,7 @@ import {
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
-import { randomBytes } from 'crypto';
+import { randomBytes, createHash } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { PdfService, PdfBranding } from '../pdf/pdf.service';
 import { StorageService } from '../storage/storage.service';
@@ -25,6 +25,13 @@ export class ContractsService {
     private readonly templatesService: TemplatesService,
     private readonly config: ConfigService,
   ) {}
+
+  private generateVerificationHash(): string {
+    return createHash('sha256')
+      .update(randomBytes(32).toString('hex') + Date.now().toString())
+      .digest('hex')
+      .substring(0, 16);
+  }
 
   private getUserBranding(user: any): PdfBranding | undefined {
     if (!user?.brandLogoUrl && !user?.brandColor && !user?.companyName) return undefined;
@@ -73,7 +80,8 @@ export class ContractsService {
     }
 
     const branding = this.getUserBranding(user);
-    const pdfBuffer = await this.pdfService.generatePdf(contentHtml, dto.title, branding);
+    const verificationHash = this.generateVerificationHash();
+    const pdfBuffer = await this.pdfService.generatePdf(contentHtml, dto.title, branding, verificationHash);
     const pdfKey = `contracts/${userId}/${randomBytes(16).toString('hex')}.pdf`;
     await this.storageService.uploadPdf(pdfKey, pdfBuffer);
     const documentHash = this.pdfService.hashDocument(pdfBuffer);
@@ -85,6 +93,7 @@ export class ContractsService {
         ownerId: userId,
         contentHtml,
         pdfUrl: pdfKey,
+        verificationHash,
         variablesData: dto.variables ? JSON.stringify(dto.variables) : undefined,
         expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : undefined,
         signers: {
@@ -131,7 +140,7 @@ export class ContractsService {
 
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     const branding = this.getUserBranding(user);
-    const pdfBuffer = await this.pdfService.generatePdf(contentHtml, contract.title, branding);
+    const pdfBuffer = await this.pdfService.generatePdf(contentHtml, contract.title, branding, contract.verificationHash ?? undefined);
     const pdfKey = `contracts/${userId}/${randomBytes(16).toString('hex')}.pdf`;
     await this.storageService.uploadPdf(pdfKey, pdfBuffer);
 
@@ -396,6 +405,7 @@ export class ContractsService {
         ownerId: userId,
         contentHtml: original.contentHtml,
         variablesData: original.variablesData,
+        verificationHash: this.generateVerificationHash(),
         status: 'draft',
         signers: {
           create: original.signers.map((s) => ({
@@ -721,6 +731,31 @@ export class ContractsService {
       signerStats,
       expirationRate,
     };
+  }
+
+  async verifyByHash(hash: string) {
+    const contract = await this.prisma.contract.findUnique({
+      where: { verificationHash: hash },
+      select: {
+        title: true,
+        status: true,
+        verificationHash: true,
+        createdAt: true,
+        signers: {
+          select: {
+            name: true,
+            status: true,
+            signedAt: true,
+          },
+        },
+      },
+    });
+
+    if (!contract) {
+      throw new NotFoundException('A szerzodes nem talalhato vagy ervenytelen.');
+    }
+
+    return contract;
   }
 
   async getDashboardStats(userId: string) {

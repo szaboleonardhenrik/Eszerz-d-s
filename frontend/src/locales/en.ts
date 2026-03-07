@@ -34,6 +34,7 @@ const en: Translations = {
     contacts: "Contacts",
     bulkSend: "Bulk Send",
     analytics: "Analytics",
+    calendar: "Calendar",
     kanban: "Kanban",
     quotes: "Quotes",
     archive: "Archive",

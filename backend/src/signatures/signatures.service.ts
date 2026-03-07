@@ -191,6 +191,8 @@ export class SignaturesService {
         signer.contract.contentHtml,
         signer.contract.title,
         signaturesWithImages,
+        undefined,
+        (signer.contract as any).verificationHash ?? undefined,
       );
 
       const finalPdfKey = `contracts/signed/${signer.contractId}/final.pdf`;

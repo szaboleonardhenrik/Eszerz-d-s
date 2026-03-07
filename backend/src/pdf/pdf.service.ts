@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
 import puppeteer from 'puppeteer';
+import * as QRCode from 'qrcode';
 
 export interface PdfBranding {
   logoUrl?: string;
@@ -10,8 +11,31 @@ export interface PdfBranding {
 
 @Injectable()
 export class PdfService {
-  async generatePdf(html: string, title: string, branding?: PdfBranding): Promise<Buffer> {
-    const fullHtml = this.wrapInDocument(html, title, branding);
+  async generatePdf(html: string, title: string, branding?: PdfBranding, verificationHash?: string): Promise<Buffer> {
+    let qrBlock = '';
+    if (verificationHash) {
+      const verifyUrl = `https://szerzodes.cegverzum.hu/verify/${verificationHash}`;
+      try {
+        const qrDataUrl = await QRCode.toDataURL(verifyUrl, {
+          width: 80,
+          margin: 1,
+          color: { dark: '#1a1a1a', light: '#ffffff' },
+        });
+        qrBlock = `
+          <div style="margin-top:32px;page-break-inside:avoid;display:flex;align-items:center;gap:12px;padding:12px 16px;border:1px solid #e5e7eb;border-radius:8px;background:#fafafa;">
+            <img src="${qrDataUrl}" style="width:80px;height:80px;flex-shrink:0;" />
+            <div style="font-size:10px;color:#6b7280;line-height:1.5;">
+              <strong style="color:#374151;">Ellenorizze:</strong><br/>
+              szerzodes.cegverzum.hu/verify/${this.escapeHtml(verificationHash)}<br/>
+              <span style="font-size:9px;color:#9ca3af;">Ez a szerzodes a SzerzodesPortal rendszerben lett letrehozva es hitelesitve.</span>
+            </div>
+          </div>`;
+      } catch {
+        // QR generation failed, skip
+      }
+    }
+
+    const fullHtml = this.wrapInDocument(html + qrBlock, title, branding);
     const browser = await puppeteer.launch({
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
@@ -53,6 +77,7 @@ export class PdfService {
       method: string;
     }>,
     branding?: PdfBranding,
+    verificationHash?: string,
   ): Promise<Buffer> {
     let signatureBlock = '<div class="signatures" style="margin-top:40px;page-break-inside:avoid;">';
     signatureBlock += '<h3 style="border-bottom:2px solid #2563eb;padding-bottom:8px;color:#1a1a1a;font-size:16px;">Aláírások</h3>';
@@ -81,7 +106,7 @@ export class PdfService {
 
     signatureBlock += '</div></div>';
     const fullHtml = html + signatureBlock;
-    return this.generatePdf(fullHtml, title, branding);
+    return this.generatePdf(fullHtml, title, branding, verificationHash);
   }
 
   hashDocument(buffer: Buffer): string {
