@@ -77,6 +77,13 @@ interface WidgetData {
   apiCallsToday?: number;
 }
 
+interface DashboardAlerts {
+  expiringIn7Days: { id: string; title: string; daysUntilExpiry: number }[];
+  expiringIn30Days: { id: string; title: string; daysUntilExpiry: number }[];
+  staleUnsigned: { id: string; title: string; daysSinceCreated: number }[];
+  totalAlerts: number;
+}
+
 /* ── Progress Bar Component ──────────────────────────────────────── */
 
 function ProgressBar({ used, limit, label, sublabel }: { used: number; limit: number; label: string; sublabel: string }) {
@@ -142,6 +149,7 @@ export default function DashboardPage() {
   const [quoteStats, setQuoteStats] = useState<QuoteStats | null>(null);
   const [widgetData, setWidgetData] = useState<WidgetData | null>(null);
   const [contracts, setContracts] = useState<Contract[]>([]);
+  const [alerts, setAlerts] = useState<DashboardAlerts | null>(null);
   const [loading, setLoading] = useState(true);
 
   const tier = (user?.subscriptionTier ?? "free") as keyof typeof tierLimits;
@@ -149,17 +157,19 @@ export default function DashboardPage() {
 
   const loadData = useCallback(async () => {
     try {
-      const [statsRes, widgetsRes, contractsRes, quoteStatsRes] = await Promise.all([
+      const [statsRes, widgetsRes, contractsRes, quoteStatsRes, alertsRes] = await Promise.all([
         api.get("/contracts/stats"),
         api.get("/contracts/widgets").catch(() => ({ data: { data: null } })),
         api.get("/contracts", { params: { limit: 5 } }),
         api.get("/quotes/stats").catch(() => ({ data: { data: null } })),
+        api.get("/reminders/alerts").catch(() => ({ data: { data: null } })),
       ]);
       setStats(statsRes.data.data);
       setWidgetData(widgetsRes.data.data);
       const pagination = contractsRes.data.data;
       setContracts(pagination.items ?? []);
       setQuoteStats(quoteStatsRes.data.data);
+      setAlerts(alertsRes.data.data);
     } catch {
       toast.error("Hiba az adatok betoltesekor");
     } finally {
@@ -255,6 +265,59 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* ── 1.5 Alerts Banner ──────────────────────────────────── */}
+      {alerts && alerts.totalAlerts > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
+                <svg className="w-4 h-4 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+              </div>
+              <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                Figyelmezteteseek ({alerts.totalAlerts})
+              </h2>
+            </div>
+            <Link
+              href="/reminders"
+              className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium"
+            >
+              Osszes megtekintese &rarr;
+            </Link>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {alerts.expiringIn7Days.length > 0 && (
+              <Link
+                href="/reminders"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30 transition"
+              >
+                <span className="w-2 h-2 rounded-full bg-red-500" />
+                {alerts.expiringIn7Days.length} szerzodes 7 napon belul lejar
+              </Link>
+            )}
+            {alerts.expiringIn30Days.length > 0 && (
+              <Link
+                href="/reminders"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-800 hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition"
+              >
+                <span className="w-2 h-2 rounded-full bg-yellow-500" />
+                {alerts.expiringIn30Days.length} szerzodes 30 napon belul lejar
+              </Link>
+            )}
+            {alerts.staleUnsigned.length > 0 && (
+              <Link
+                href="/reminders"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition"
+              >
+                <span className="w-2 h-2 rounded-full bg-blue-500" />
+                {alerts.staleUnsigned.length} szerzodes 3+ napja alairatlan
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ── 2. Usage & Limits Row ──────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

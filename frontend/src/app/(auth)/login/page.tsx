@@ -122,6 +122,11 @@ export default function LoginPage() {
               Regisztráció
             </Link>
           </p>
+          <p className="text-center text-sm text-gray-400 mt-3">
+            <Link href="/portal" className="hover:text-brand-teal-dark transition hover:underline">
+              Ügyfélportál (aláíróknak)
+            </Link>
+          </p>
         </div>
       </div>
     </div>

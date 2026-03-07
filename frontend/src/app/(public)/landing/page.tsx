@@ -597,6 +597,7 @@ function Footer() {
               <li><Link href="/pricing" className="hover:text-white transition">Árazás</Link></li>
               <li><Link href="/landing#sablonok" className="hover:text-white transition">Sablonok</Link></li>
               <li><Link href="/blog" className="hover:text-white transition">Blog</Link></li>
+              <li><Link href="/portal" className="hover:text-white transition">Ügyfélportál</Link></li>
             </ul>
           </div>
           <div>

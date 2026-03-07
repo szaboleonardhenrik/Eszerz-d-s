@@ -155,6 +155,7 @@ model Contract {
   comments  Comment[]
   tags      ContractTag[]
   versions  ContractVersion[]
+  reminders ContractReminder[]
 
   @@index([ownerId])
   @@index([status])
@@ -437,6 +438,21 @@ model QuoteComment {
   quote     Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
   @@index([quoteId])
   @@map("quote_comments")
+}
+
+model ContractReminder {
+  id          String   @id @default(uuid()) @map("id")
+  contractId  String   @map("contract_id")
+  contract    Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  type        String   // "expiry", "renewal", "signing_deadline", "custom"
+  message     String
+  remindAt    DateTime @map("remind_at")
+  sent        Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([contractId])
+  @@index([remindAt])
+  @@map("contract_reminders")
 }
 
 model QuoteTemplate {

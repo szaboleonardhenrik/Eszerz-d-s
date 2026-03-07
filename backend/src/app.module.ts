@@ -26,7 +26,10 @@ import { ContactsModule } from './contacts/contacts.module';
 import { InAppNotificationsModule } from './in-app-notifications/in-app-notifications.module';
 import { ReferralsModule } from './referrals/referrals.module';
 import { QuotesModule } from './quotes/quotes.module';
+import { RemindersModule } from './reminders/reminders.module';
 import { NotificationsGatewayModule } from './notifications-gateway/notifications-gateway.module';
+import { ChatModule } from './chat/chat.module';
+import { PortalModule } from './portal/portal.module';
 
 @Module({
   imports: [
@@ -56,7 +59,10 @@ import { NotificationsGatewayModule } from './notifications-gateway/notification
     InAppNotificationsModule,
     ReferralsModule,
     QuotesModule,
+    RemindersModule,
     NotificationsGatewayModule,
+    ChatModule,
+    PortalModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
