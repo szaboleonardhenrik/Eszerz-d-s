@@ -42,13 +42,13 @@ const categoryLabels: Record<string, string> = {
 };
 
 const categoryColors: Record<string, string> = {
-  munkajogi: "bg-purple-100 text-purple-700",
-  b2b: "bg-blue-100 text-blue-700",
-  ingatlan: "bg-amber-100 text-amber-700",
-  fogyasztoi: "bg-emerald-100 text-emerald-700",
-  adatvedelem: "bg-rose-100 text-rose-700",
-  penzugyi: "bg-orange-100 text-orange-700",
-  it: "bg-cyan-100 text-cyan-700",
+  munkajogi: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
+  b2b: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+  ingatlan: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
+  fogyasztoi: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
+  adatvedelem: "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300",
+  penzugyi: "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
+  it: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300",
 };
 
 export default function TemplatesPage() {
@@ -139,7 +139,7 @@ export default function TemplatesPage() {
         <div className="flex gap-2">
           <Link
             href="/templates/marketplace"
-            className="border px-4 py-2 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+            className="border border-gray-200 dark:border-gray-600 px-4 py-2 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
           >
             Piac ter
           </Link>
@@ -158,13 +158,13 @@ export default function TemplatesPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Keresés..."
-          className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none w-64"
+          className="px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none w-64 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
         />
         <div className="flex gap-2">
           <button
             onClick={() => setFilter("")}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
-              !filter ? "bg-blue-100 text-blue-700" : "text-gray-500 hover:bg-gray-100"
+              !filter ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
             }`}
           >
             Összes
@@ -175,8 +175,8 @@ export default function TemplatesPage() {
               onClick={() => setFilter(cat)}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
                 filter === cat
-                  ? "bg-blue-100 text-blue-700"
-                  : "text-gray-500 hover:bg-gray-100"
+                  ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
+                  : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
               }`}
             >
               {categoryLabels[cat] ?? cat}
@@ -197,20 +197,20 @@ export default function TemplatesPage() {
             />
           </div>
         ) : filtered.length === 0 ? (
-          <div className="col-span-full text-center py-12 text-gray-400">
+          <div className="col-span-full text-center py-12 text-gray-400 dark:text-gray-500">
             Nincs találat
           </div>
         ) : (
           filtered.map((template) => (
             <div
               key={template.id}
-              className="bg-white rounded-2xl shadow-sm border p-6 hover:shadow-md transition group"
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition group"
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <span
                     className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                      categoryColors[template.category] ?? "bg-gray-100"
+                      categoryColors[template.category] ?? "bg-gray-100 dark:bg-gray-700"
                     }`}
                   >
                     {categoryLabels[template.category] ?? template.category}
@@ -218,15 +218,15 @@ export default function TemplatesPage() {
                   <span
                     className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                       template.isPublic
-                        ? "bg-gray-100 text-gray-500"
-                        : "bg-brand-teal/10 text-brand-teal-dark"
+                        ? "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
+                        : "bg-brand-teal/10 text-brand-teal-dark dark:bg-brand-teal/20 dark:text-brand-teal"
                     }`}
                   >
                     {template.isPublic ? "Rendszer" : "Saját"}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-gray-400 dark:text-gray-500">
                     {template.variables?.length ?? 0} mezo
                   </span>
                   <button
@@ -240,14 +240,14 @@ export default function TemplatesPage() {
                   </button>
                 </div>
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
                 {template.name}
               </h3>
-              <p className="text-sm text-gray-500 mb-3 line-clamp-2">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-3 line-clamp-2">
                 {template.description}
               </p>
               {template.legalBasis && (
-                <p className="text-xs text-gray-400 mb-4">
+                <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">
                   {template.legalBasis}
                 </p>
               )}
@@ -262,7 +262,7 @@ export default function TemplatesPage() {
                 </button>
                 <button
                   onClick={() => handlePreview(template.id)}
-                  className="px-3 py-2 border rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition"
+                  className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                   title="Előnézet"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -276,13 +276,13 @@ export default function TemplatesPage() {
                       onClick={() =>
                         router.push(`/templates/${template.id}/edit`)
                       }
-                      className="px-3 py-2 border rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition"
+                      className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                     >
                       Szerk.
                     </button>
                     <button
                       onClick={() => handleDelete(template.id)}
-                      className="px-3 py-2 border border-red-200 rounded-xl text-sm text-red-500 hover:bg-red-50 transition"
+                      className="px-3 py-2 border border-red-200 dark:border-red-800 rounded-xl text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition"
                     >
                       Törlés
                     </button>
@@ -297,16 +297,16 @@ export default function TemplatesPage() {
       {/* Preview Modal */}
       {(preview || previewLoading) && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[80vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b p-4 flex justify-between items-center rounded-t-2xl">
-              <h2 className="text-lg font-semibold text-gray-900">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-3xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex justify-between items-center rounded-t-2xl">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 {preview ? preview.name : "Betöltés..."}
               </h2>
               <button
                 onClick={() => setPreview(null)}
-                className="p-1 hover:bg-gray-100 rounded-lg transition"
+                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"
               >
-                <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -318,35 +318,35 @@ export default function TemplatesPage() {
             ) : preview ? (
               <div className="p-6">
                 <div className="flex gap-2 mb-4">
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${categoryColors[preview.category] ?? "bg-gray-100"}`}>
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${categoryColors[preview.category] ?? "bg-gray-100 dark:bg-gray-700"}`}>
                     {categoryLabels[preview.category] ?? preview.category}
                   </span>
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-gray-400 dark:text-gray-500">
                     {preview.variables?.length ?? 0} mező
                   </span>
                 </div>
                 {preview.description && (
-                  <p className="text-sm text-gray-600 mb-4">{preview.description}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">{preview.description}</p>
                 )}
                 {preview.legalBasis && (
-                  <p className="text-xs text-gray-400 mb-4">{preview.legalBasis}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">{preview.legalBasis}</p>
                 )}
                 {preview.variables?.length > 0 && (
                   <div className="mb-4">
-                    <h3 className="text-sm font-medium text-gray-700 mb-2">Kitöltendő mezők:</h3>
+                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Kitöltendő mezők:</h3>
                     <div className="flex flex-wrap gap-2">
                       {preview.variables.map((v: any, i: number) => (
-                        <span key={i} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                        <span key={i} className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-1 rounded">
                           {v.label} {v.required && "*"}
                         </span>
                       ))}
                     </div>
                   </div>
                 )}
-                <div className="border-t pt-4">
-                  <h3 className="text-sm font-medium text-gray-700 mb-3">Sablon előnézet:</h3>
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Sablon előnézet:</h3>
                   <div
-                    className="prose prose-sm max-w-none border rounded-lg p-4 bg-gray-50"
+                    className="prose prose-sm dark:prose-invert max-w-none border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-900"
                     dangerouslySetInnerHTML={{ __html: sanitizeHtml(preview.contentHtml) }}
                   />
                 </div>
