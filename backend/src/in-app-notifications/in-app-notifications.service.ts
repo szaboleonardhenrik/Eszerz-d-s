@@ -1,15 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsGateway } from '../notifications-gateway/notifications.gateway';
 
 @Injectable()
 export class InAppNotificationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly gateway: NotificationsGateway,
+  ) {}
 
   async create(
     userId: string,
     data: { type: string; title: string; message: string; link?: string },
   ) {
-    return this.prisma.notification.create({
+    const notification = await this.prisma.notification.create({
       data: {
         userId,
         type: data.type,
@@ -18,6 +22,20 @@ export class InAppNotificationsService {
         link: data.link,
       },
     });
+
+    // Push via WebSocket in real-time
+    this.gateway.sendNotification(userId, {
+      id: notification.id,
+      type: notification.type,
+      title: notification.title,
+      message: notification.message,
+      link: notification.link ?? undefined,
+    });
+
+    const unreadCount = await this.getUnreadCount(userId);
+    this.gateway.sendUnreadCount(userId, unreadCount);
+
+    return notification;
   }
 
   async findAllByUser(userId: string, unreadOnly?: boolean) {
@@ -32,17 +50,26 @@ export class InAppNotificationsService {
   }
 
   async markAsRead(notificationId: string, userId: string) {
-    return this.prisma.notification.updateMany({
+    const result = await this.prisma.notification.updateMany({
       where: { id: notificationId, userId },
       data: { read: true },
     });
+
+    const unreadCount = await this.getUnreadCount(userId);
+    this.gateway.sendUnreadCount(userId, unreadCount);
+
+    return result;
   }
 
   async markAllAsRead(userId: string) {
-    return this.prisma.notification.updateMany({
+    const result = await this.prisma.notification.updateMany({
       where: { userId, read: false },
       data: { read: true },
     });
+
+    this.gateway.sendUnreadCount(userId, 0);
+
+    return result;
   }
 
   async getUnreadCount(userId: string) {

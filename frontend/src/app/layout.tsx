@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import CookieConsent from "@/components/cookie-consent";
 import { ThemeProvider } from "@/components/theme-provider";
+import { I18nProvider } from "@/lib/i18n";
 
 const inter = Inter({ subsets: ["latin", "latin-ext"] });
 
@@ -43,9 +44,11 @@ export default function RootLayout({
     <html lang="hu" suppressHydrationWarning>
       <body className={`${inter.className} antialiased bg-gray-50 dark:bg-gray-900 dark:text-gray-100`}>
         <ThemeProvider>
-          <Toaster position="top-right" />
-          {children}
-          <CookieConsent />
+          <I18nProvider>
+            <Toaster position="top-right" />
+            {children}
+            <CookieConsent />
+          </I18nProvider>
         </ThemeProvider>
       </body>
     </html>

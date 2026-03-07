@@ -3,6 +3,8 @@
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
+import { useSocket } from "@/lib/socket";
+import toast from "react-hot-toast";
 
 interface Notification {
   id: string;
@@ -19,10 +21,36 @@ export default function NotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const wsConnected = useRef(false);
 
+  // WebSocket connection for real-time updates
+  useSocket({
+    onNotification: (notification) => {
+      wsConnected.current = true;
+      setNotifications((prev) => [
+        { ...notification, read: false, createdAt: new Date().toISOString() },
+        ...prev,
+      ].slice(0, 50));
+      setUnreadCount((c) => c + 1);
+      toast(notification.title, {
+        icon: "🔔",
+        duration: 4000,
+        style: { fontSize: "14px" },
+      });
+    },
+    onUnreadCount: (data) => {
+      wsConnected.current = true;
+      setUnreadCount(data.count);
+    },
+  });
+
+  // Polling fallback (longer interval when WS is connected)
   useEffect(() => {
     loadUnreadCount();
-    const interval = setInterval(loadUnreadCount, 30000);
+    const interval = setInterval(
+      loadUnreadCount,
+      wsConnected.current ? 120000 : 30000
+    );
     return () => clearInterval(interval);
   }, []);
 
@@ -103,13 +131,13 @@ export default function NotificationBell() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen(!open)}
-        className="relative p-2 rounded-lg hover:bg-gray-50 transition"
+        className="relative p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
       >
         <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
         </svg>
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+          <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
@@ -118,9 +146,14 @@ export default function NotificationBell() {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-xl shadow-xl border z-50 max-h-[28rem] flex flex-col">
-            <div className="flex items-center justify-between px-4 py-3 border-b">
-              <h3 className="font-semibold text-gray-900 text-sm">Értesítések</h3>
+          <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-gray-800 rounded-xl shadow-xl border dark:border-gray-700 z-50 max-h-[28rem] flex flex-col">
+            <div className="flex items-center justify-between px-4 py-3 border-b dark:border-gray-700">
+              <div className="flex items-center gap-2">
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">Értesítések</h3>
+                {wsConnected.current && (
+                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full" title="Valós idejű" />
+                )}
+              </div>
               {unreadCount > 0 && (
                 <button
                   onClick={markAllRead}
@@ -139,8 +172,8 @@ export default function NotificationBell() {
                 notifications.map((n) => {
                   const content = (
                     <div
-                      className={`px-4 py-3 flex gap-3 hover:bg-gray-50 transition cursor-pointer ${
-                        !n.read ? "bg-blue-50/50" : ""
+                      className={`px-4 py-3 flex gap-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition cursor-pointer ${
+                        !n.read ? "bg-blue-50/50 dark:bg-blue-900/10" : ""
                       }`}
                       onClick={() => { if (!n.read) markRead(n.id); setOpen(false); }}
                     >
@@ -152,11 +185,11 @@ export default function NotificationBell() {
                           d={typeIcons[n.type] ?? typeIcons.system} />
                       </svg>
                       <div className="min-w-0 flex-1">
-                        <p className={`text-sm ${!n.read ? "font-semibold text-gray-900" : "text-gray-700"}`}>
+                        <p className={`text-sm ${!n.read ? "font-semibold text-gray-900 dark:text-gray-100" : "text-gray-700 dark:text-gray-300"}`}>
                           {n.title}
                         </p>
                         <p className="text-xs text-gray-400 mt-0.5 truncate">{n.message}</p>
-                        <p className="text-xs text-gray-300 mt-1">{timeAgo(n.createdAt)}</p>
+                        <p className="text-xs text-gray-300 dark:text-gray-500 mt-1">{timeAgo(n.createdAt)}</p>
                       </div>
                       {!n.read && (
                         <span className="w-2 h-2 bg-blue-500 rounded-full mt-2 shrink-0" />

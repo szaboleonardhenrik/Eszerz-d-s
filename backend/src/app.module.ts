@@ -24,6 +24,7 @@ import { ContactsModule } from './contacts/contacts.module';
 import { InAppNotificationsModule } from './in-app-notifications/in-app-notifications.module';
 import { ReferralsModule } from './referrals/referrals.module';
 import { QuotesModule } from './quotes/quotes.module';
+import { NotificationsGatewayModule } from './notifications-gateway/notifications-gateway.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { QuotesModule } from './quotes/quotes.module';
     InAppNotificationsModule,
     ReferralsModule,
     QuotesModule,
+    NotificationsGatewayModule,
   ],
 })
 export class AppModule {}

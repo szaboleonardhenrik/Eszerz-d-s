@@ -29,7 +29,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                 <Link href="/landing#hogyan-mukodik" className="text-sm text-gray-600 hover:text-brand-teal-dark transition font-medium">
                   Hogyan működik
                 </Link>
-                <Link href="/landing#arak" className="text-sm text-gray-600 hover:text-brand-teal-dark transition font-medium">
+                <Link href="/pricing" className="text-sm text-gray-600 hover:text-brand-teal-dark transition font-medium">
                   Árak
                 </Link>
                 <Link href="/landing#velemenyek" className="text-sm text-gray-600 hover:text-brand-teal-dark transition font-medium">
@@ -74,7 +74,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               {[
                 { href: "/landing#funkciok", label: "Funkciók" },
                 { href: "/landing#hogyan-mukodik", label: "Hogyan működik" },
-                { href: "/landing#arak", label: "Árak" },
+                { href: "/pricing", label: "Árak" },
                 { href: "/landing#velemenyek", label: "Vélemények" },
                 { href: "/landing#gyik", label: "GYIK" },
                 { href: "/blog", label: "Blog" },
@@ -120,7 +120,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               <h3 className="text-white font-semibold mb-4">Termék</h3>
               <ul className="space-y-2.5 text-sm">
                 <li><Link href="/landing#funkciok" className="hover:text-white transition">Funkciók</Link></li>
-                <li><Link href="/landing#arak" className="hover:text-white transition">Árazás</Link></li>
+                <li><Link href="/pricing" className="hover:text-white transition">Árazás</Link></li>
                 <li><Link href="/landing#sablonok" className="hover:text-white transition">Sablonok</Link></li>
                 <li><Link href="/blog" className="hover:text-white transition">Blog</Link></li>
                 <li><Link href="/api/docs" target="_blank" className="hover:text-white transition">API dokumentáció</Link></li>

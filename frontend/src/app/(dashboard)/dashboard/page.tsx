@@ -63,993 +63,740 @@ interface Widget {
   recentlyCompleted: { id: string; title: string; updatedAt: string }[];
 }
 
-interface Folder {
-  id: string;
-  name: string;
-  color: string;
-}
+/* ── Mini Chart Components (SVG-based, no external deps) ─────────── */
 
-const statusLabels: Record<string, string> = {
-  draft: "Piszkozat",
-  sent: "Elküldve",
-  partially_signed: "Részben aláírt",
-  completed: "Kész",
-  declined: "Visszautasítva",
-  expired: "Lejárt",
-  cancelled: "Visszavonva",
-};
+function MiniLineChart({ data, dataKeyA, dataKeyB, colorA, colorB, height = 200 }: {
+  data: MonthlyData[];
+  dataKeyA: "created" | "signed";
+  dataKeyB: "created" | "signed";
+  colorA: string;
+  colorB: string;
+  height?: number;
+}) {
+  if (!data.length) return null;
+  const w = 100;
+  const h = height;
+  const pad = { t: 20, r: 10, b: 30, l: 35 };
+  const iw = w - pad.l - pad.r;
+  const ih = h - pad.t - pad.b;
 
-const statusColors: Record<string, string> = {
-  draft: "bg-gray-100 text-gray-700",
-  sent: "bg-yellow-100 text-yellow-700",
-  partially_signed: "bg-orange-100 text-orange-700",
-  completed: "bg-green-100 text-green-700",
-  declined: "bg-red-100 text-red-700",
-  expired: "bg-gray-100 text-gray-500",
-  cancelled: "bg-gray-100 text-gray-500",
-};
+  const maxVal = Math.max(1, ...data.map(d => Math.max(d[dataKeyA], d[dataKeyB])));
+  const xStep = data.length > 1 ? iw / (data.length - 1) : iw;
 
-function useDebounce(value: string, delay: number) {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const timer = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-  return debounced;
-}
+  const toPath = (key: "created" | "signed") =>
+    data.map((d, i) => {
+      const x = pad.l + (data.length > 1 ? i * xStep : iw / 2);
+      const y = pad.t + ih - (d[key] / maxVal) * ih;
+      return `${i === 0 ? "M" : "L"}${x},${y}`;
+    }).join(" ");
 
-export default function DashboardPage() {
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [contracts, setContracts] = useState<Contract[]>([]);
-  const [filter, setFilter] = useState("");
-  const [searchInput, setSearchInput] = useState("");
-  const debouncedSearch = useDebounce(searchInput, 400);
-  const [loading, setLoading] = useState(true);
-  const [exportOpen, setExportOpen] = useState(false);
-  const exportRef = useRef<HTMLDivElement>(null);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [bulkLoading, setBulkLoading] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [widgets, setWidgets] = useState<Widget | null>(null);
-  const [tags, setTags] = useState<Tag[]>([]);
-  const [selectedTag, setSelectedTag] = useState("");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
-  const [folders, setFolders] = useState<Folder[]>([]);
-  const [selectedFolder, setSelectedFolder] = useState("");
-  const [showFolders, setShowFolders] = useState(false);
-  const [dragOverFolder, setDragOverFolder] = useState<string | null>(null);
-  const [newFolderName, setNewFolderName] = useState("");
-  const [widgetConfig, setWidgetConfig] = useState<Record<string, boolean>>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const saved = localStorage.getItem("dashboard_widgets");
-        if (saved) return JSON.parse(saved);
-      } catch {}
-    }
-    return { expiring: true, awaiting: true, completed: true, chart: true, usage: true };
-  });
-
-  const [widgetOrder, setWidgetOrder] = useState<string[]>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const saved = localStorage.getItem("dashboard_widget_order");
-        if (saved) return JSON.parse(saved);
-      } catch {}
-    }
-    return ["expiring", "awaiting", "completed", "activity", "chart", "usage"];
-  });
-  const [showReorder, setShowReorder] = useState(false);
-
-  const toggleWidget = (key: string) => {
-    setWidgetConfig((prev) => {
-      const next = { ...prev, [key]: !prev[key] };
-      localStorage.setItem("dashboard_widgets", JSON.stringify(next));
-      return next;
+  const toArea = (key: "created" | "signed") => {
+    const line = data.map((d, i) => {
+      const x = pad.l + (data.length > 1 ? i * xStep : iw / 2);
+      const y = pad.t + ih - (d[key] / maxVal) * ih;
+      return `${x},${y}`;
     });
+    return `M${line[0]} ${line.join(" L")} L${pad.l + (data.length > 1 ? (data.length - 1) * xStep : iw / 2)},${pad.t + ih} L${pad.l},${pad.t + ih} Z`;
   };
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (exportRef.current && !exportRef.current.contains(e.target as Node)) {
-        setExportOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const handleExport = async (format: "csv" | "json") => {
-    setExportOpen(false);
-    try {
-      const res = await api.get("/contracts/export", {
-        params: { format },
-        responseType: "blob",
-      });
-      const ext = format === "json" ? "json" : "csv";
-      const blob = new Blob([res.data], {
-        type: format === "json" ? "application/json" : "text/csv",
-      });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `szerzodesek.${ext}`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-      toast.success("Export sikeres!");
-    } catch {
-      toast.error("Hiba az exportálás során");
-    }
-  };
-
-  useEffect(() => {
-    api.get("/tags").then((res) => setTags(res.data.data ?? [])).catch(() => {});
-    api.get("/contracts/widgets").then((res) => setWidgets(res.data.data)).catch(() => {});
-    api.get("/folders").then((res) => setFolders(res.data.data ?? [])).catch(() => {});
-  }, []);
-
-  const handleDragStart = (e: React.DragEvent, contractId: string) => {
-    e.dataTransfer.setData("contractId", contractId);
-    e.dataTransfer.effectAllowed = "move";
-  };
-
-  const handleDropOnFolder = async (e: React.DragEvent, folderId: string | null) => {
-    e.preventDefault();
-    setDragOverFolder(null);
-    const contractId = e.dataTransfer.getData("contractId");
-    if (!contractId) return;
-    try {
-      if (folderId) {
-        await api.post(`/folders/${folderId}/contracts/${contractId}`);
-      } else {
-        await api.delete(`/folders/contracts/${contractId}`);
-      }
-      toast.success("Szerződés áthelyezve");
-      loadData();
-    } catch {
-      toast.error("Hiba az áthelyezéskor");
-    }
-  };
-
-  const createFolder = async () => {
-    if (!newFolderName.trim()) return;
-    try {
-      const res = await api.post("/folders", { name: newFolderName.trim() });
-      setFolders((prev) => [...prev, res.data.data]);
-      setNewFolderName("");
-      toast.success("Mappa létrehozva");
-    } catch {
-      toast.error("Hiba a mappa létrehozásakor");
-    }
-  };
-
-  useEffect(() => {
-    setPage(1);
-  }, [filter, debouncedSearch, selectedTag, dateFrom, dateTo, selectedFolder]);
-
-  useEffect(() => {
-    loadData();
-  }, [filter, debouncedSearch, selectedTag, page, dateFrom, dateTo, selectedFolder]);
-
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const params: Record<string, string> = { page: String(page), limit: "20" };
-      if (filter) params.status = filter;
-      if (debouncedSearch) params.search = debouncedSearch;
-      if (selectedTag) params.tagId = selectedTag;
-      if (dateFrom) params.dateFrom = dateFrom;
-      if (dateTo) params.dateTo = dateTo;
-      if (selectedFolder) params.folderId = selectedFolder;
-
-      const [statsRes, contractsRes] = await Promise.all([
-        api.get("/contracts/stats"),
-        api.get("/contracts", { params }),
-      ]);
-      setStats(statsRes.data.data);
-      const paginationData: Pagination = contractsRes.data.data;
-      setContracts(paginationData.items);
-      setTotalPages(paginationData.totalPages);
-      setTotal(paginationData.total);
-    } catch {
-      toast.error("Hiba az adatok betöltésekor");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const toggleSelect = (id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedIds.size === contracts.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(contracts.map((c) => c.id)));
-    }
-  };
-
-  const selectedContracts = contracts.filter((c) => selectedIds.has(c.id));
-
-  const handleBulkSend = async () => {
-    const draftIds = selectedContracts
-      .filter((c) => c.status === "draft")
-      .map((c) => c.id);
-    if (draftIds.length === 0) {
-      toast.error("Nincs piszkozat státuszú szerződés a kiválasztottak között");
-      return;
-    }
-    setBulkLoading("send");
-    try {
-      const res = await api.post("/contracts/bulk-send", { contractIds: draftIds });
-      const { successCount, failureCount } = res.data.data;
-      toast.success(`${successCount} szerződés elküldve${failureCount > 0 ? `, ${failureCount} sikertelen` : ""}`);
-      setSelectedIds(new Set());
-      loadData();
-    } catch {
-      toast.error("Hiba a tömeges küldés során");
-    } finally {
-      setBulkLoading(null);
-    }
-  };
-
-  const handleBulkDownload = async () => {
-    setBulkLoading("download");
-    let done = 0;
-    const total = selectedIds.size;
-    for (const id of selectedIds) {
-      try {
-        const res = await api.get(`/contracts/${id}/download`);
-        window.open(res.data.data.url, "_blank");
-        done++;
-      } catch {
-        // skip failed downloads
-      }
-    }
-    toast.success(`${done}/${total} PDF megnyitva`);
-    setBulkLoading(null);
-  };
-
-  const handleBulkCancel = async () => {
-    const cancellable = selectedContracts.filter(
-      (c) => !["completed", "cancelled"].includes(c.status)
-    );
-    if (cancellable.length === 0) {
-      toast.error("Nincs visszavonható szerződés a kiválasztottak között");
-      return;
-    }
-    if (!confirm(`Biztosan visszavonsz ${cancellable.length} szerződést?`)) return;
-    setBulkLoading("cancel");
-    let done = 0;
-    for (const c of cancellable) {
-      try {
-        await api.post(`/contracts/${c.id}/cancel`);
-        done++;
-      } catch {
-        // skip
-      }
-    }
-    toast.success(`${done} szerződés visszavonva`);
-    setSelectedIds(new Set());
-    loadData();
-    setBulkLoading(null);
-  };
-
-  const chartMax = useMemo(() => {
-    if (!stats?.monthlyStats) return 1;
-    return Math.max(...stats.monthlyStats.map((m) => Math.max(m.created, m.signed)), 1);
-  }, [stats]);
-
-  const daysUntil = (date: string) => {
-    const diff = new Date(date).getTime() - Date.now();
-    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
-  };
+  const gridLines = [0, 0.25, 0.5, 0.75, 1].map(f => ({
+    y: pad.t + ih - f * ih,
+    label: Math.round(maxVal * f),
+  }));
 
   return (
-    <div>
-      {/* Usage Warning */}
-      {stats && stats.usage.limit > 0 && stats.usage.used / stats.usage.limit >= 0.8 && (
-        <div className={`mb-4 px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-3 ${
-          stats.usage.used >= stats.usage.limit
-            ? "bg-red-50 text-red-700 border border-red-200"
-            : "bg-yellow-50 text-yellow-700 border border-yellow-200"
-        }`}>
-          <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-          </svg>
-          {stats.usage.used >= stats.usage.limit
-            ? `Elérted a havi limitedet (${stats.usage.used}/${stats.usage.limit}). Válts magasabb csomagra!`
-            : `${stats.usage.limit - stats.usage.used} szerződésed maradt ebben a hónapban (${stats.usage.used}/${stats.usage.limit}).`}
-          <Link href="/settings/billing" className="ml-auto underline whitespace-nowrap">Csomag váltás</Link>
-        </div>
-      )}
+    <svg viewBox={`0 0 ${w} ${h}`} className="w-full" preserveAspectRatio="xMidYMid meet">
+      {/* Grid */}
+      {gridLines.map((g, i) => (
+        <g key={i}>
+          <line x1={pad.l} y1={g.y} x2={w - pad.r} y2={g.y} stroke="#e5e7eb" strokeWidth="0.3" strokeDasharray="1,1" />
+          <text x={pad.l - 2} y={g.y + 1} textAnchor="end" className="fill-gray-400" fontSize="3">{g.label}</text>
+        </g>
+      ))}
+      {/* X labels */}
+      {data.map((d, i) => (
+        <text key={i} x={pad.l + (data.length > 1 ? i * xStep : iw / 2)} y={h - 5} textAnchor="middle" className="fill-gray-400" fontSize="2.8">
+          {d.month.slice(0, 3)}
+        </text>
+      ))}
+      {/* Area fills */}
+      <path d={toArea(dataKeyA)} fill={colorA} opacity="0.1" />
+      <path d={toArea(dataKeyB)} fill={colorB} opacity="0.1" />
+      {/* Lines */}
+      <path d={toPath(dataKeyA)} fill="none" stroke={colorA} strokeWidth="0.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d={toPath(dataKeyB)} fill="none" stroke={colorB} strokeWidth="0.8" strokeLinecap="round" strokeLinejoin="round" />
+      {/* Dots */}
+      {data.map((d, i) => (
+        <g key={i}>
+          <circle cx={pad.l + (data.length > 1 ? i * xStep : iw / 2)} cy={pad.t + ih - (d[dataKeyA] / maxVal) * ih} r="1.2" fill={colorA} />
+          <circle cx={pad.l + (data.length > 1 ? i * xStep : iw / 2)} cy={pad.t + ih - (d[dataKeyB] / maxVal) * ih} r="1.2" fill={colorB} />
+        </g>
+      ))}
+    </svg>
+  );
+}
 
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Kezdőlap</h1>
-        <div className="flex items-center gap-3">
-          {/* Widget toggle */}
-          <div className="relative">
-            <button
-              onClick={() => {
-                const el = document.getElementById("widget-config");
-                if (el) el.classList.toggle("hidden");
-              }}
-              className="flex items-center gap-2 px-3 py-2.5 rounded-lg font-medium border text-gray-500 hover:bg-gray-50 transition text-sm"
-              title="Widgetek testreszabása"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-              </svg>
-            </button>
-            <div id="widget-config" className="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-lg border dark:border-gray-700 z-50 py-2">
-              <div className="px-4 py-1.5 flex items-center justify-between">
-                <p className="text-xs font-semibold text-gray-400 uppercase">Widgetek</p>
-                <button
-                  onClick={() => setShowReorder(true)}
-                  className="text-xs text-[#198296] hover:underline font-medium"
-                >
-                  Sorrend
-                </button>
-              </div>
-              {[
-                { key: "expiring", label: "Lejáró szerződések" },
-                { key: "awaiting", label: "Aláírásra vár" },
-                { key: "completed", label: "Nemrég kész" },
-                { key: "activity", label: "Tevekenyseg" },
-                { key: "chart", label: "Havi grafikon" },
-                { key: "usage", label: "Használat" },
-              ].map((w) => (
-                <label key={w.key} className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={widgetConfig[w.key] !== false}
-                    onChange={() => toggleWidget(w.key)}
-                    className="rounded border-gray-300 text-[#198296] focus:ring-[#198296]"
-                  />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">{w.label}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-          <div className="relative" ref={exportRef}>
-            <button
-              onClick={() => setExportOpen((v) => !v)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium border border-[#198296] text-[#198296] hover:bg-[#198296] hover:text-white transition text-sm"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-              Exportálás
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            {exportOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border z-50 py-1">
-                <button
-                  onClick={() => handleExport("csv")}
-                  className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition flex items-center gap-2"
-                >
-                  <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  CSV letöltés
-                </button>
-                <button
-                  onClick={() => handleExport("json")}
-                  className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition flex items-center gap-2"
-                >
-                  <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                  </svg>
-                  JSON letöltés
-                </button>
-              </div>
-            )}
-          </div>
-          <Link
-            href="/create"
-            className="bg-blue-600 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition"
-          >
-            + Új szerződés
-          </Link>
-        </div>
-      </div>
+function DonutChart({ segments, size = 120 }: {
+  segments: { label: string; value: number; color: string }[];
+  size?: number;
+}) {
+  const total = segments.reduce((s, seg) => s + seg.value, 0);
+  if (total === 0) return null;
+  const r = 40;
+  const cx = 50;
+  const cy = 50;
+  const strokeW = 12;
+  const circ = 2 * Math.PI * r;
+  let offset = 0;
 
-      {/* Stats Cards */}
-      {loading && !stats ? (
-        <div className="mb-8">
-          <SkeletonStats />
-        </div>
-      ) : stats ? (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-          <StatCard label="Összes" value={stats.total} icon="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          <StatCard label="Piszkozat" value={stats.draft} color="gray" icon="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-          <StatCard label="Aláírásra vár" value={stats.awaitingSignature} color="yellow" icon="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          <StatCard label="Kész" value={stats.completed} color="green" icon="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </div>
-      ) : null}
-
-      {/* Widgets Row */}
-      {widgets && (widgets.expiringContracts.length > 0 || widgets.awaitingSignature.length > 0 || widgets.recentlyCompleted.length > 0) && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
-          {/* Expiring contracts widget */}
-          {widgetConfig.expiring !== false && widgets.expiringContracts.length > 0 && (
-            <div className="bg-white rounded-xl border p-5">
-              <h3 className="text-sm font-semibold text-red-600 mb-3 flex items-center gap-2">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Hamarosan lejáró szerződések
-              </h3>
-              <div className="space-y-2">
-                {widgets.expiringContracts.map((c) => (
-                  <Link
-                    key={c.id}
-                    href={`/contracts/${c.id}`}
-                    className="flex items-center justify-between p-2.5 rounded-lg hover:bg-red-50 transition text-sm"
-                  >
-                    <span className="font-medium text-gray-900 truncate mr-3">{c.title}</span>
-                    <span className="text-red-500 text-xs font-medium whitespace-nowrap">
-                      {daysUntil(c.expiresAt)} nap
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Awaiting signature widget */}
-          {widgetConfig.awaiting !== false && widgets.awaitingSignature.length > 0 && (
-            <div className="bg-white rounded-xl border p-5">
-              <h3 className="text-sm font-semibold text-yellow-600 mb-3 flex items-center gap-2">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                </svg>
-                Aláírásra vár
-              </h3>
-              <div className="space-y-2">
-                {widgets.awaitingSignature.map((c) => (
-                  <Link
-                    key={c.id}
-                    href={`/contracts/${c.id}`}
-                    className="flex items-center justify-between p-2.5 rounded-lg hover:bg-yellow-50 transition text-sm"
-                  >
-                    <div className="min-w-0">
-                      <span className="font-medium text-gray-900 truncate block">{c.title}</span>
-                      <span className="text-xs text-gray-400">{c.pendingSigners.join(", ")}</span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Recently completed widget */}
-          {widgetConfig.completed !== false && widgets.recentlyCompleted.length > 0 && (
-            <div className="bg-white rounded-xl border p-5">
-              <h3 className="text-sm font-semibold text-green-600 mb-3 flex items-center gap-2">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Nemrég elkészült
-              </h3>
-              <div className="space-y-2">
-                {widgets.recentlyCompleted.map((c) => (
-                  <Link
-                    key={c.id}
-                    href={`/contracts/${c.id}`}
-                    className="flex items-center justify-between p-2.5 rounded-lg hover:bg-green-50 transition text-sm"
-                  >
-                    <span className="font-medium text-gray-900 truncate mr-3">{c.title}</span>
-                    <span className="text-green-500 text-xs whitespace-nowrap">
-                      {new Date(c.updatedAt).toLocaleDateString("hu-HU")}
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Activity Feed */}
-      {widgetConfig.activity !== false && (
-        <div className="mb-8 bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 p-6">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Legutobb tevekenyse</h3>
-          <ActivityFeed limit={8} />
-        </div>
-      )}
-
-      {/* Analytics Row */}
-      {stats && stats.monthlyStats && (widgetConfig.chart !== false || widgetConfig.usage !== false) && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
-          {/* Mini Chart */}
-          {widgetConfig.chart !== false && (
-          <div className={`${widgetConfig.usage !== false ? "lg:col-span-2" : "lg:col-span-3"} bg-white rounded-xl border p-6`}>
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">Utolsó 6 hónap</h3>
-            <div className="flex items-end gap-3 h-40">
-              {stats.monthlyStats.map((m, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                  <div className="w-full flex gap-1 items-end justify-center h-32">
-                    <div
-                      className="w-5 bg-blue-500 rounded-t transition-all"
-                      style={{ height: `${Math.max((m.created / chartMax) * 100, 4)}%` }}
-                      title={`Létrehozott: ${m.created}`}
-                    />
-                    <div
-                      className="w-5 bg-green-500 rounded-t transition-all"
-                      style={{ height: `${Math.max((m.signed / chartMax) * 100, 4)}%` }}
-                      title={`Aláírt: ${m.signed}`}
-                    />
-                  </div>
-                  <span className="text-xs text-gray-400 truncate w-full text-center">{m.month}</span>
-                </div>
-              ))}
-            </div>
-            <div className="flex gap-6 mt-4 text-xs text-gray-500">
-              <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 bg-blue-500 rounded-sm inline-block" /> Létrehozott
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 bg-green-500 rounded-sm inline-block" /> Aláírt
-              </span>
-            </div>
-          </div>
-          )}
-
-          {/* Usage Card */}
-          {widgetConfig.usage !== false && (
-          <div className={`bg-white rounded-xl border p-6 ${widgetConfig.chart === false ? "lg:col-span-3" : ""}`}>
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">Havi használat</h3>
-            <div className="text-center mb-4">
-              <p className="text-4xl font-bold text-gray-900">{stats.usage.used}</p>
-              <p className="text-sm text-gray-400 mt-1">
-                {stats.usage.limit > 0 ? `/ ${stats.usage.limit} szerződés` : "korlátlan"}
-              </p>
-            </div>
-            {stats.usage.limit > 0 && (
-              <div className="space-y-2">
-                <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all ${
-                      stats.usage.used / stats.usage.limit > 0.8 ? "bg-red-500" : "bg-blue-500"
-                    }`}
-                    style={{ width: `${Math.min((stats.usage.used / stats.usage.limit) * 100, 100)}%` }}
-                  />
-                </div>
-                <p className="text-xs text-gray-400 text-center">
-                  {stats.usage.limit - stats.usage.used} szerződés maradt
-                </p>
-              </div>
-            )}
-            <div className="mt-4 pt-4 border-t">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Csomag</span>
-                <span className="font-medium text-gray-900 capitalize">{stats.usage.tier}</span>
-              </div>
-              {stats.usage.tier !== "pro" && (
-                <Link
-                  href="/settings/billing"
-                  className="block mt-3 text-center text-sm bg-blue-50 text-blue-600 py-2 rounded-lg hover:bg-blue-100 transition font-medium"
-                >
-                  Csomag váltás
-                </Link>
-              )}
-            </div>
-          </div>
-          )}
-        </div>
-      )}
-
-      {/* Contract List with Folder Sidebar */}
-      <div className="flex gap-4">
-      {/* Folder Sidebar */}
-      {folders.length > 0 && (
-        <div className={`${showFolders ? "w-56" : "w-0"} shrink-0 transition-all overflow-hidden`}>
-          <div className="bg-white rounded-xl border p-3 space-y-1 min-w-[14rem]">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-semibold text-gray-400 uppercase">Mappák</p>
-            </div>
-            <button
-              onClick={() => { setSelectedFolder(""); }}
-              onDrop={(e) => handleDropOnFolder(e, null)}
-              onDragOver={(e) => { e.preventDefault(); setDragOverFolder("none"); }}
-              onDragLeave={() => setDragOverFolder(null)}
-              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${
-                !selectedFolder
-                  ? "bg-blue-50 text-blue-700 font-medium"
-                  : "text-gray-600 hover:bg-gray-50"
-              } ${dragOverFolder === "none" ? "ring-2 ring-blue-400" : ""}`}
-            >
-              Összes
-            </button>
-            <button
-              onClick={() => setSelectedFolder("none")}
-              onDrop={(e) => handleDropOnFolder(e, null)}
-              onDragOver={(e) => { e.preventDefault(); setDragOverFolder("unassigned"); }}
-              onDragLeave={() => setDragOverFolder(null)}
-              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${
-                selectedFolder === "none"
-                  ? "bg-blue-50 text-blue-700 font-medium"
-                  : "text-gray-600 hover:bg-gray-50"
-              } ${dragOverFolder === "unassigned" ? "ring-2 ring-blue-400" : ""}`}
-            >
-              Mappa nélkül
-            </button>
-            {folders.map((f) => (
-              <button
-                key={f.id}
-                onClick={() => setSelectedFolder(f.id)}
-                onDrop={(e) => handleDropOnFolder(e, f.id)}
-                onDragOver={(e) => { e.preventDefault(); setDragOverFolder(f.id); }}
-                onDragLeave={() => setDragOverFolder(null)}
-                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition flex items-center gap-2 ${
-                  selectedFolder === f.id
-                    ? "bg-blue-50 text-blue-700 font-medium"
-                    : "text-gray-600 hover:bg-gray-50"
-                } ${dragOverFolder === f.id ? "ring-2 ring-blue-400 bg-blue-50" : ""}`}
-              >
-                <span className="w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: f.color }} />
-                <span className="truncate">{f.name}</span>
-              </button>
-            ))}
-            <div className="pt-2 border-t mt-2">
-              <div className="flex gap-1">
-                <input
-                  type="text"
-                  value={newFolderName}
-                  onChange={(e) => setNewFolderName(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && createFolder()}
-                  placeholder="Új mappa..."
-                  className="flex-1 px-2 py-1.5 border rounded text-xs outline-none focus:ring-1 focus:ring-blue-500"
-                />
-                <button
-                  onClick={createFolder}
-                  disabled={!newFolderName.trim()}
-                  className="px-2 py-1.5 bg-blue-600 text-white rounded text-xs disabled:opacity-40"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-      <div className="flex-1 bg-white rounded-xl shadow-sm border">
-        <div className="p-4 border-b flex flex-col sm:flex-row gap-3">
-          <div className="flex gap-2 flex-wrap flex-1">
-            {["", "draft", "sent", "partially_signed", "completed", "declined", "expired"].map((s) => (
-              <button
-                key={s}
-                onClick={() => setFilter(s)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
-                  filter === s
-                    ? "bg-blue-100 text-blue-700"
-                    : "text-gray-500 hover:bg-gray-100"
-                }`}
-              >
-                {s === "" ? "Összes" : statusLabels[s]}
-              </button>
-            ))}
-          </div>
-          <div className="flex gap-2 items-center flex-wrap">
-            <input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-              className="px-2 py-1.5 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
-              title="Dátumtól"
+  return (
+    <div className="flex flex-col sm:flex-row items-center gap-4">
+      <svg viewBox="0 0 100 100" width={size} height={size} className="shrink-0">
+        {segments.filter(s => s.value > 0).map((seg, i) => {
+          const pct = seg.value / total;
+          const dash = pct * circ;
+          const gap = circ - dash;
+          const cur = offset;
+          offset += dash;
+          return (
+            <circle
+              key={i}
+              cx={cx} cy={cy} r={r}
+              fill="none"
+              stroke={seg.color}
+              strokeWidth={strokeW}
+              strokeDasharray={`${dash} ${gap}`}
+              strokeDashoffset={-cur}
+              strokeLinecap="round"
+              transform={`rotate(-90 ${cx} ${cy})`}
+              className="transition-all duration-700"
             />
-            <input
-              type="date"
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-              className="px-2 py-1.5 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
-              title="Dátumig"
-            />
-            {(dateFrom || dateTo) && (
-              <button onClick={() => { setDateFrom(""); setDateTo(""); }}
-                className="text-xs text-gray-400 hover:text-gray-600 px-1">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            )}
-            {tags.length > 0 && (
-              <select
-                value={selectedTag}
-                onChange={(e) => setSelectedTag(e.target.value)}
-                className="px-3 py-1.5 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Összes címke</option>
-                {tags.map((t) => (
-                  <option key={t.id} value={t.id}>{t.name}</option>
-                ))}
-              </select>
-            )}
-            {folders.length > 0 && (
-              <button
-                onClick={() => setShowFolders((v) => !v)}
-                className={`px-3 py-1.5 border rounded-lg text-sm transition ${showFolders ? "bg-blue-100 text-blue-700 border-blue-300" : "text-gray-500 hover:bg-gray-50"}`}
-                title="Mappák megjelenítése"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                </svg>
-              </button>
-            )}
-            <input
-              type="text"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Keresés cím, tartalom, aláíró..."
-              className="px-3 py-1.5 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500 w-60"
-            />
-            {searchInput && (
-              <button
-                type="button"
-                onClick={() => setSearchInput("")}
-                className="px-2 py-1.5 text-gray-400 hover:text-gray-600"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            )}
+          );
+        })}
+        <text x={cx} y={cy - 3} textAnchor="middle" className="fill-gray-900 dark:fill-gray-100 font-bold" fontSize="14">{total}</text>
+        <text x={cx} y={cy + 8} textAnchor="middle" className="fill-gray-400" fontSize="5">szerződés</text>
+      </svg>
+      <div className="flex flex-wrap gap-x-4 gap-y-1">
+        {segments.filter(s => s.value > 0).map((seg, i) => (
+          <div key={i} className="flex items-center gap-1.5 text-xs">
+            <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: seg.color }} />
+            <span className="text-gray-600 dark:text-gray-400">{seg.label}</span>
+            <span className="font-semibold text-gray-900 dark:text-gray-100">{seg.value}</span>
           </div>
-        </div>
-
-        {loading && contracts.length === 0 ? (
-          <div className="divide-y">
-            {[0, 1, 2, 3, 4].map((i) => (
-              <SkeletonRow key={i} />
-            ))}
-          </div>
-        ) : contracts.length === 0 ? (
-          <EmptyState
-            icon="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            title={searchInput ? "Nincs találat" : "Még nincs szerződésed"}
-            description={
-              searchInput
-                ? `Nincs "${searchInput}" keresésre illeszkedő szerződés.`
-                : "Hozd létre az első szerződésedet egy sablonból vagy nulláról."
-            }
-            actionLabel={searchInput ? undefined : "Első szerződés létrehozása"}
-            actionHref={searchInput ? undefined : "/create"}
-          />
-        ) : (
-          <>
-            <table className="w-full">
-              <thead>
-                <tr className="text-left text-sm text-gray-500 border-b">
-                  <th className="px-4 py-3 w-10">
-                    <input
-                      type="checkbox"
-                      checked={contracts.length > 0 && selectedIds.size === contracts.length}
-                      onChange={toggleSelectAll}
-                      className="rounded border-gray-300 text-[#198296] focus:ring-[#198296]"
-                    />
-                  </th>
-                  <th className="px-4 py-3 font-medium">Szerződés</th>
-                  <th className="px-4 py-3 font-medium">Státusz</th>
-                  <th className="px-4 py-3 font-medium hidden sm:table-cell">Felek</th>
-                  <th className="px-4 py-3 font-medium hidden md:table-cell">Dátum</th>
-                </tr>
-              </thead>
-              <tbody>
-                {contracts.map((c) => (
-                  <tr key={c.id} draggable onDragStart={(e) => handleDragStart(e, c.id)} className={`border-b last:border-0 hover:bg-gray-50 transition cursor-grab active:cursor-grabbing ${selectedIds.has(c.id) ? "bg-blue-50" : ""}`}>
-                    <td className="px-4 py-3">
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.has(c.id)}
-                        onChange={() => toggleSelect(c.id)}
-                        className="rounded border-gray-300 text-[#198296] focus:ring-[#198296]"
-                      />
-                    </td>
-                    <td className="px-4 py-3">
-                      <Link
-                        href={`/contracts/${c.id}`}
-                        className="font-medium text-gray-900 hover:text-blue-600 transition"
-                      >
-                        {c.title}
-                      </Link>
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        {c.template && (
-                          <span className="text-xs text-gray-400">
-                            {c.template.name}
-                          </span>
-                        )}
-                        {c.tags && c.tags.length > 0 && (
-                          <div className="flex gap-1 ml-1">
-                            {c.tags.map((ct) => (
-                              <span
-                                key={ct.tag.id}
-                                className="inline-block px-1.5 py-0 rounded text-[10px] font-medium text-white"
-                                style={{ backgroundColor: ct.tag.color }}
-                              >
-                                {ct.tag.name}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          statusColors[c.status] ?? "bg-gray-100"
-                        }`}
-                      >
-                        {statusLabels[c.status] ?? c.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 hidden sm:table-cell text-sm text-gray-600">
-                      {c.signers.map((s) => s.name).join(", ")}
-                    </td>
-                    <td className="px-4 py-3 hidden md:table-cell text-sm text-gray-400">
-                      {new Date(c.updatedAt).toLocaleDateString("hu-HU")}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between px-4 py-3 border-t">
-                <p className="text-sm text-gray-500">
-                  Összesen {total} szerződés
-                </p>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    disabled={page <= 1}
-                    className="px-3 py-1.5 rounded-lg text-sm border disabled:opacity-40 hover:bg-gray-50 transition"
-                  >
-                    Előző
-                  </button>
-                  <span className="text-sm text-gray-600">
-                    {page} / {totalPages}
-                  </span>
-                  <button
-                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                    disabled={page >= totalPages}
-                    className="px-3 py-1.5 rounded-lg text-sm border disabled:opacity-40 hover:bg-gray-50 transition"
-                  >
-                    Következő
-                  </button>
-                </div>
-              </div>
-            )}
-          </>
-        )}
+        ))}
       </div>
-      </div>
-
-      {/* Floating Bulk Action Bar */}
-      {selectedIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-900 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-4">
-          <span className="text-sm font-medium whitespace-nowrap">
-            {selectedIds.size} kiválasztva
-          </span>
-          <div className="h-5 w-px bg-gray-600" />
-          <button
-            onClick={handleBulkSend}
-            disabled={bulkLoading !== null}
-            className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium transition disabled:opacity-50"
-            style={{ backgroundColor: "#198296" }}
-          >
-            {bulkLoading === "send" ? (
-              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-            ) : (
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-            )}
-            Elküldés
-          </button>
-          <button
-            onClick={handleBulkDownload}
-            disabled={bulkLoading !== null}
-            className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium transition disabled:opacity-50"
-            style={{ backgroundColor: "#D29B01" }}
-          >
-            {bulkLoading === "download" ? (
-              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-            ) : (
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-            )}
-            Letöltés
-          </button>
-          <button
-            onClick={handleBulkCancel}
-            disabled={bulkLoading !== null}
-            className="flex items-center gap-2 px-4 py-1.5 bg-red-600 rounded-lg text-sm font-medium transition disabled:opacity-50 hover:bg-red-700"
-          >
-            {bulkLoading === "cancel" ? (
-              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-            ) : (
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            )}
-            Törlés
-          </button>
-          <button
-            onClick={() => setSelectedIds(new Set())}
-            className="ml-1 p-1.5 rounded-lg hover:bg-gray-700 transition"
-            title="Kijelölés törlése"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-      )}
-
-      <WidgetReorder
-        open={showReorder}
-        onClose={() => setShowReorder(false)}
-        order={widgetOrder}
-        onSave={(newOrder) => {
-          setWidgetOrder(newOrder);
-          localStorage.setItem("dashboard_widget_order", JSON.stringify(newOrder));
-          setShowReorder(false);
-        }}
-      />
     </div>
   );
 }
 
-function StatCard({
-  label,
-  value,
-  color = "blue",
-  icon,
-}: {
-  label: string;
-  value: number;
-  color?: string;
-  icon: string;
-}) {
-  const colors: Record<string, string> = {
-    blue: "bg-blue-50 text-blue-700",
-    gray: "bg-gray-50 text-gray-700",
-    yellow: "bg-yellow-50 text-yellow-700",
-    green: "bg-green-50 text-green-700",
-  };
+function BarChart({ data, height = 160 }: { data: MonthlyData[]; height?: number }) {
+  if (!data.length) return null;
+  const maxVal = Math.max(1, ...data.map(d => d.created + d.signed));
+  const barW = Math.min(8, 60 / data.length);
+
   return (
-    <div className={`rounded-xl p-5 ${colors[color]} transition hover:shadow-sm`}>
-      <div className="flex items-center justify-between">
-        <p className="text-sm opacity-70">{label}</p>
-        <svg className="w-5 h-5 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={icon} />
-        </svg>
+    <div className="flex items-end gap-1 justify-center" style={{ height }}>
+      {data.map((d, i) => (
+        <div key={i} className="flex flex-col items-center gap-0.5">
+          <div className="flex gap-px items-end">
+            <div
+              className="rounded-t transition-all duration-500"
+              style={{
+                width: barW,
+                height: Math.max(2, (d.created / maxVal) * (height - 30)),
+                backgroundColor: "#198296",
+              }}
+              title={`Létrehozott: ${d.created}`}
+            />
+            <div
+              className="rounded-t transition-all duration-500"
+              style={{
+                width: barW,
+                height: Math.max(2, (d.signed / maxVal) * (height - 30)),
+                backgroundColor: "#D29B01",
+              }}
+              title={`Aláírt: ${d.signed}`}
+            />
+          </div>
+          <span className="text-[9px] text-gray-400 mt-1">{d.month.slice(0, 3)}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SignatureRateGauge({ completed, total }: { completed: number; total: number }) {
+  const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
+  const r = 40;
+  const circ = Math.PI * r; // half circle
+  const fill = (rate / 100) * circ;
+
+  return (
+    <div className="flex flex-col items-center">
+      <svg viewBox="0 0 100 55" width={160} height={90}>
+        <path
+          d={`M 10 50 A 40 40 0 0 1 90 50`}
+          fill="none"
+          stroke="#e5e7eb"
+          strokeWidth="10"
+          strokeLinecap="round"
+        />
+        <path
+          d={`M 10 50 A 40 40 0 0 1 90 50`}
+          fill="none"
+          stroke={rate >= 70 ? "#22c55e" : rate >= 40 ? "#D29B01" : "#ef4444"}
+          strokeWidth="10"
+          strokeLinecap="round"
+          strokeDasharray={`${fill} ${circ}`}
+          className="transition-all duration-1000"
+        />
+        <text x="50" y="48" textAnchor="middle" className="fill-gray-900 dark:fill-gray-100 font-bold" fontSize="16">{rate}%</text>
+      </svg>
+      <p className="text-xs text-gray-500 -mt-1">
+        {completed} / {total} szerződés aláírva
+      </p>
+    </div>
+  );
+}
+
+/* ── Stat Card ─────────────────────────────────────────────────────── */
+
+const statConfig = [
+  { key: "total", label: "Összes", icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", color: "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" },
+  { key: "draft", label: "Piszkozat", icon: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z", color: "bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400" },
+  { key: "awaitingSignature", label: "Aláírásra vár", icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z", color: "bg-yellow-50 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400" },
+  { key: "completed", label: "Befejezett", icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z", color: "bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400" },
+  { key: "declined", label: "Elutasított", icon: "M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z", color: "bg-red-50 text-red-500 dark:bg-red-900/30 dark:text-red-400" },
+  { key: "expired", label: "Lejárt", icon: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z", color: "bg-orange-50 text-orange-500 dark:bg-orange-900/30 dark:text-orange-400" },
+];
+
+/* ══════════════════════════════════════════════════════════════════ */
+/*  DASHBOARD PAGE                                                    */
+/* ══════════════════════════════════════════════════════════════════ */
+
+export default function DashboardPage() {
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [widgets, setWidgets] = useState<Widget | null>(null);
+  const [contracts, setContracts] = useState<Contract[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [search, setSearch] = useState("");
+  const searchTimeout = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  const loadData = useCallback(async () => {
+    try {
+      const [statsRes, widgetsRes, contractsRes] = await Promise.all([
+        api.get("/contracts/stats"),
+        api.get("/contracts/widgets"),
+        api.get("/contracts", {
+          params: {
+            page,
+            limit: 10,
+            ...(statusFilter !== "all" ? { status: statusFilter } : {}),
+            ...(search ? { search } : {}),
+          },
+        }),
+      ]);
+      setStats(statsRes.data.data);
+      setWidgets(widgetsRes.data.data);
+      const pagination = contractsRes.data.data;
+      setContracts(pagination.items ?? []);
+      setTotalPages(pagination.totalPages ?? 1);
+    } catch (err) {
+      toast.error("Hiba az adatok betöltésekor");
+    } finally {
+      setLoading(false);
+    }
+  }, [page, statusFilter, search]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const debouncedSearch = useCallback((val: string) => {
+    if (searchTimeout.current) clearTimeout(searchTimeout.current);
+    searchTimeout.current = setTimeout(() => {
+      setSearch(val);
+      setPage(1);
+    }, 400);
+  }, []);
+
+  const statusLabels: Record<string, string> = {
+    draft: "Piszkozat",
+    sent: "Elküldve",
+    partially_signed: "Részben aláírt",
+    completed: "Befejezett",
+    declined: "Elutasított",
+    expired: "Lejárt",
+    cancelled: "Visszavont",
+  };
+
+  const statusColors: Record<string, string> = {
+    draft: "bg-gray-100 text-gray-600",
+    sent: "bg-blue-100 text-blue-700",
+    partially_signed: "bg-yellow-100 text-yellow-700",
+    completed: "bg-green-100 text-green-700",
+    declined: "bg-red-100 text-red-600",
+    expired: "bg-orange-100 text-orange-700",
+    cancelled: "bg-gray-200 text-gray-600",
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <SkeletonStats />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <SkeletonRow />
+          <SkeletonRow />
+        </div>
       </div>
-      <p className="text-3xl font-bold mt-1">{value}</p>
+    );
+  }
+
+  if (stats && stats.total === 0 && contracts.length === 0) {
+    return (
+      <EmptyState
+        icon="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+        title="Még nincs szerződésed"
+        description="Hozd létre az első szerződésedet, és kezdj el digitálisan szerződni!"
+        actionLabel="Első szerződés létrehozása"
+        actionHref="/create"
+      />
+    );
+  }
+
+  const donutSegments = stats ? [
+    { label: "Piszkozat", value: stats.draft, color: "#6b7280" },
+    { label: "Aláírásra vár", value: stats.awaitingSignature, color: "#eab308" },
+    { label: "Befejezett", value: stats.completed, color: "#22c55e" },
+    { label: "Elutasított", value: stats.declined, color: "#ef4444" },
+    { label: "Lejárt", value: stats.expired, color: "#f97316" },
+  ] : [];
+
+  return (
+    <div className="space-y-6">
+      {/* ── Header ──────────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Áttekintés</h1>
+          <p className="text-sm text-gray-500 mt-1">Szerződéseid aktuális állapota és statisztikái</p>
+        </div>
+        <Link
+          href="/create"
+          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition shadow-sm self-start sm:self-auto"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          Új szerződés
+        </Link>
+      </div>
+
+      {/* ── Stat Cards ──────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        {statConfig.map((sc) => {
+          const value = stats ? (stats as any)[sc.key] : 0;
+          return (
+            <div
+              key={sc.key}
+              className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4 hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-center gap-3">
+                <div className={`w-9 h-9 rounded-lg ${sc.color} flex items-center justify-center shrink-0`}>
+                  <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={sc.icon} />
+                  </svg>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium truncate">{sc.label}</p>
+                  <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{value}</p>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Usage Bar ───────────────────────────────────────────── */}
+      {stats?.usage && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">Felhasználás</span>
+              <span className="text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full font-medium">
+                {stats.usage.tier} csomag
+              </span>
+            </div>
+            <span className="text-sm text-gray-500">
+              {stats.usage.limit === -1
+                ? `${stats.usage.used} szerződés (Korlátlan)`
+                : `${stats.usage.used} / ${stats.usage.limit} szerződés`}
+            </span>
+          </div>
+          {stats.usage.limit !== -1 && (
+            <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2.5">
+              <div
+                className="h-2.5 rounded-full transition-all duration-500"
+                style={{
+                  width: `${Math.min(100, (stats.usage.used / stats.usage.limit) * 100)}%`,
+                  backgroundColor: stats.usage.used / stats.usage.limit > 0.9 ? "#ef4444" : stats.usage.used / stats.usage.limit > 0.7 ? "#eab308" : "#198296",
+                }}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Charts Row ──────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Monthly Trend Chart */}
+        <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">Havi trend</h2>
+            <div className="flex items-center gap-4 text-xs">
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-0.5 rounded bg-[#198296]" />
+                <span className="text-gray-500">Létrehozott</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-0.5 rounded bg-[#D29B01]" />
+                <span className="text-gray-500">Aláírt</span>
+              </span>
+            </div>
+          </div>
+          {stats?.monthlyStats && stats.monthlyStats.length > 0 ? (
+            <MiniLineChart
+              data={stats.monthlyStats}
+              dataKeyA="created"
+              dataKeyB="signed"
+              colorA="#198296"
+              colorB="#D29B01"
+              height={180}
+            />
+          ) : (
+            <div className="h-44 flex items-center justify-center text-gray-400 text-sm">
+              Még nincs elég adat a grafikonhoz
+            </div>
+          )}
+        </div>
+
+        {/* Status Distribution Donut */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-5">
+          <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm mb-4">Státusz megoszlás</h2>
+          {stats && stats.total > 0 ? (
+            <DonutChart segments={donutSegments} size={110} />
+          ) : (
+            <div className="h-32 flex items-center justify-center text-gray-400 text-sm">
+              Nincs adat
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Signature Rate + Bar Chart Row ──────────────────────── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Signature Rate Gauge */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-5">
+          <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm mb-4">Aláírási arány</h2>
+          {stats ? (
+            <SignatureRateGauge completed={stats.completed} total={stats.total} />
+          ) : null}
+        </div>
+
+        {/* Bar Chart */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">Havi összehasonlítás</h2>
+            <div className="flex items-center gap-3 text-xs">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-sm bg-[#198296]" />
+                <span className="text-gray-500">Létrehozott</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-sm bg-[#D29B01]" />
+                <span className="text-gray-500">Aláírt</span>
+              </span>
+            </div>
+          </div>
+          {stats?.monthlyStats && stats.monthlyStats.length > 0 ? (
+            <BarChart data={stats.monthlyStats} height={140} />
+          ) : (
+            <div className="h-36 flex items-center justify-center text-gray-400 text-sm">
+              Még nincs elég adat
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Widgets ─────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Expiring Contracts */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-900/30 flex items-center justify-center">
+              <svg className="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className="font-semibold text-sm text-gray-900 dark:text-gray-100">Hamarosan lejáró</h3>
+          </div>
+          <div className="space-y-2">
+            {widgets?.expiringContracts?.length ? (
+              widgets.expiringContracts.slice(0, 5).map((c) => (
+                <Link
+                  key={c.id}
+                  href={`/contracts/${c.id}`}
+                  className="flex items-center justify-between p-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition text-sm group"
+                >
+                  <span className="text-gray-700 dark:text-gray-300 truncate flex-1 group-hover:text-blue-600">{c.title}</span>
+                  <span className="text-xs text-orange-500 shrink-0 ml-2">
+                    {new Date(c.expiresAt).toLocaleDateString("hu-HU")}
+                  </span>
+                </Link>
+              ))
+            ) : (
+              <p className="text-sm text-gray-400 text-center py-4">Nincs lejáró szerződés</p>
+            )}
+          </div>
+        </div>
+
+        {/* Awaiting Signature */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-lg bg-yellow-50 dark:bg-yellow-900/30 flex items-center justify-center">
+              <svg className="w-4 h-4 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+            </div>
+            <h3 className="font-semibold text-sm text-gray-900 dark:text-gray-100">Aláírásra váró</h3>
+          </div>
+          <div className="space-y-2">
+            {widgets?.awaitingSignature?.length ? (
+              widgets.awaitingSignature.slice(0, 5).map((c) => (
+                <Link
+                  key={c.id}
+                  href={`/contracts/${c.id}`}
+                  className="flex items-center justify-between p-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition text-sm group"
+                >
+                  <div className="min-w-0 flex-1">
+                    <span className="text-gray-700 dark:text-gray-300 truncate block group-hover:text-blue-600">{c.title}</span>
+                    <span className="text-[11px] text-gray-400">
+                      {c.pendingSigners?.length} aláíró vár
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-gray-400 shrink-0 ml-2">
+                    {new Date(c.waitingSince).toLocaleDateString("hu-HU")}
+                  </span>
+                </Link>
+              ))
+            ) : (
+              <p className="text-sm text-gray-400 text-center py-4">Nincs várakozó szerződés</p>
+            )}
+          </div>
+        </div>
+
+        {/* Recently Completed */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-lg bg-green-50 dark:bg-green-900/30 flex items-center justify-center">
+              <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className="font-semibold text-sm text-gray-900 dark:text-gray-100">Nemrég befejezett</h3>
+          </div>
+          <div className="space-y-2">
+            {widgets?.recentlyCompleted?.length ? (
+              widgets.recentlyCompleted.slice(0, 5).map((c) => (
+                <Link
+                  key={c.id}
+                  href={`/contracts/${c.id}`}
+                  className="flex items-center justify-between p-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition text-sm group"
+                >
+                  <span className="text-gray-700 dark:text-gray-300 truncate flex-1 group-hover:text-blue-600">{c.title}</span>
+                  <span className="text-[11px] text-gray-400 shrink-0 ml-2">
+                    {new Date(c.updatedAt).toLocaleDateString("hu-HU")}
+                  </span>
+                </Link>
+              ))
+            ) : (
+              <p className="text-sm text-gray-400 text-center py-4">Nincs befejezett szerződés</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Activity Feed ───────────────────────────────────────── */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-5">
+        <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm mb-4">Legutóbbi tevékenységek</h2>
+        <ActivityFeed />
+      </div>
+
+      {/* ── Contract List ───────────────────────────────────────── */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700">
+        <div className="p-4 border-b border-gray-100 dark:border-gray-700">
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Search */}
+            <div className="relative flex-1">
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Szerződés keresése..."
+                onChange={(e) => debouncedSearch(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700"
+              />
+            </div>
+            {/* Status filter */}
+            <select
+              value={statusFilter}
+              onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+              className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 min-w-[140px]"
+            >
+              <option value="all">Minden státusz</option>
+              {Object.entries(statusLabels).map(([k, v]) => (
+                <option key={k} value={k}>{v}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Table - Desktop */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-100 dark:border-gray-700 text-left">
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Szerződés</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Státusz</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Aláírók</th>
+                <th className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Létrehozva</th>
+                <th className="px-4 py-3"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {contracts.map((c) => (
+                <tr key={c.id} className="border-b border-gray-50 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
+                  <td className="px-4 py-3">
+                    <Link href={`/contracts/${c.id}`} className="font-medium text-gray-900 dark:text-gray-100 hover:text-blue-600 transition">
+                      {c.title}
+                    </Link>
+                    {c.template && (
+                      <p className="text-xs text-gray-400 mt-0.5">{c.template.name}</p>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[c.status] ?? "bg-gray-100 text-gray-600"}`}>
+                      {statusLabels[c.status] ?? c.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex -space-x-1">
+                      {c.signers?.slice(0, 3).map((s, i) => (
+                        <div
+                          key={i}
+                          className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold ring-2 ring-white dark:ring-gray-800 ${
+                            s.status === "signed" ? "bg-green-500" : s.status === "declined" ? "bg-red-400" : "bg-gray-400"
+                          }`}
+                          title={`${s.name} (${s.status})`}
+                        >
+                          {s.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
+                        </div>
+                      ))}
+                      {c.signers?.length > 3 && (
+                        <div className="w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center text-[10px] font-medium text-gray-600 dark:text-gray-300 ring-2 ring-white dark:ring-gray-800">
+                          +{c.signers.length - 3}
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-gray-500 text-xs">
+                    {new Date(c.createdAt).toLocaleDateString("hu-HU")}
+                  </td>
+                  <td className="px-4 py-3">
+                    <Link
+                      href={`/contracts/${c.id}`}
+                      className="text-blue-600 hover:text-blue-700 text-xs font-medium"
+                    >
+                      Megnyitás
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Cards - Mobile */}
+        <div className="md:hidden divide-y divide-gray-100 dark:divide-gray-700">
+          {contracts.map((c) => (
+            <Link
+              key={c.id}
+              href={`/contracts/${c.id}`}
+              className="block p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{c.title}</p>
+                  {c.template && (
+                    <p className="text-xs text-gray-400 mt-0.5">{c.template.name}</p>
+                  )}
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium ${statusColors[c.status] ?? "bg-gray-100 text-gray-600"}`}>
+                      {statusLabels[c.status] ?? c.status}
+                    </span>
+                    <span className="text-[11px] text-gray-400">
+                      {new Date(c.createdAt).toLocaleDateString("hu-HU")}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex -space-x-1 shrink-0">
+                  {c.signers?.slice(0, 2).map((s, i) => (
+                    <div
+                      key={i}
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-[9px] font-bold ring-2 ring-white dark:ring-gray-800 ${
+                        s.status === "signed" ? "bg-green-500" : "bg-gray-400"
+                      }`}
+                    >
+                      {s.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        {/* No results */}
+        {contracts.length === 0 && !loading && (
+          <div className="p-8 text-center text-gray-400 text-sm">
+            Nincs találat a szűrőknek megfelelő szerződés.
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 dark:border-gray-700">
+            <button
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page <= 1}
+              className="px-3 py-1.5 text-sm border rounded-lg disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+            >
+              Előző
+            </button>
+            <span className="text-sm text-gray-500">{page} / {totalPages}</span>
+            <button
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page >= totalPages}
+              className="px-3 py-1.5 text-sm border rounded-lg disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+            >
+              Következő
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
