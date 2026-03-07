@@ -368,13 +368,13 @@ export default function DashboardPage() {
     );
   }
 
-  if (stats && stats.total === 0 && contracts.length === 0) {
+  if (stats && stats.total === 0 && contracts.length === 0 && (!quoteStats || quoteStats.total === 0)) {
     return (
       <EmptyState
         icon="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-        title="Még nincs szerződésed"
-        description="Hozd létre az első szerződésedet, és kezdj el digitálisan szerződni!"
-        actionLabel="Első szerződés létrehozása"
+        title="Meg nincs szerzodesed"
+        description="Hozd letre az elso szerzodesed, es kezdj el digitalisan szerzodni!"
+        actionLabel="Elso szerzodes letrehozasa"
         actionHref="/create"
       />
     );
