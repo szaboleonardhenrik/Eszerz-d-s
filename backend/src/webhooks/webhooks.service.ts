@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { randomBytes } from 'crypto';
+import { randomBytes, createHmac } from 'crypto';
 
 @Injectable()
 export class WebhooksService {
@@ -18,10 +18,31 @@ export class WebhooksService {
     }));
   }
 
+  private validateWebhookUrl(url: string): void {
+    let parsed: URL;
+    try {
+      parsed = new URL(url);
+    } catch {
+      throw new NotFoundException('Érvénytelen webhook URL');
+    }
+    if (!['https:', 'http:'].includes(parsed.protocol)) {
+      throw new NotFoundException('Csak HTTP/HTTPS webhook URL engedélyezett');
+    }
+    const hostname = parsed.hostname.toLowerCase();
+    const forbidden = ['localhost', '127.0.0.1', '0.0.0.0', '::1', '[::1]'];
+    if (forbidden.includes(hostname) ||
+        hostname.startsWith('10.') ||
+        hostname.startsWith('192.168.') ||
+        /^172\.(1[6-9]|2\d|3[01])\./.test(hostname)) {
+      throw new NotFoundException('Belső hálózati cím nem engedélyezett webhook URL-ként');
+    }
+  }
+
   async create(
     userId: string,
     data: { url: string; events: string; secret?: string },
   ) {
+    this.validateWebhookUrl(data.url);
     const secret = data.secret || `whsec_${randomBytes(24).toString('hex')}`;
 
     const webhook = await this.prisma.webhook.create({
@@ -46,6 +67,7 @@ export class WebhooksService {
       where: { id, userId },
     });
     if (!webhook) throw new NotFoundException('Webhook nem található');
+    if (data.url) this.validateWebhookUrl(data.url);
 
     const updated = await this.prisma.webhook.update({
       where: { id },
@@ -81,18 +103,22 @@ export class WebhooksService {
 
     for (const webhook of matching) {
       // Fire and forget
+      const body = JSON.stringify({
+          event,
+          timestamp: new Date().toISOString(),
+          data: payload,
+        });
+      const signature = createHmac('sha256', webhook.secret)
+        .update(body)
+        .digest('hex');
       fetch(webhook.url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Webhook-Secret': webhook.secret,
+          'X-Webhook-Signature': signature,
           'X-Webhook-Event': event,
         },
-        body: JSON.stringify({
-          event,
-          timestamp: new Date().toISOString(),
-          data: payload,
-        }),
+        body,
       })
         .then(async (res) => {
           if (!res.ok) {

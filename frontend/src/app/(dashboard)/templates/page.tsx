@@ -6,6 +6,7 @@ import Link from "next/link";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
 import { useAuth } from "@/lib/auth-store";
+import { sanitizeHtml } from "@/lib/sanitize";
 import { SkeletonTemplateCard } from "@/components/skeleton";
 import EmptyState from "@/components/empty-state";
 import { isFavorite, toggleFavorite } from "@/lib/favorites";
@@ -346,7 +347,7 @@ export default function TemplatesPage() {
                   <h3 className="text-sm font-medium text-gray-700 mb-3">Sablon előnézet:</h3>
                   <div
                     className="prose prose-sm max-w-none border rounded-lg p-4 bg-gray-50"
-                    dangerouslySetInnerHTML={{ __html: preview.contentHtml }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(preview.contentHtml) }}
                   />
                 </div>
               </div>

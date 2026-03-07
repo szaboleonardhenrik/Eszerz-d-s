@@ -1,10 +1,12 @@
 import { Controller, Get, Post, Param, Body, Req, Ip } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { SignaturesService } from './signatures.service';
 import { SignContractDto } from './dto/sign.dto';
 import { ApiResponse } from '../common/api-response';
 import type { Request } from 'express';
 
 @Controller('sign')
+@Throttle({ default: { limit: 10, ttl: 60000 } })
 export class SignaturesController {
   constructor(private readonly signaturesService: SignaturesService) {}
 

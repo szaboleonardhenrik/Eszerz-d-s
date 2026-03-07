@@ -152,6 +152,9 @@ export class AuthService {
       data: { passwordHash },
     });
 
+    // Invalidate all existing sessions on password change
+    await this.prisma.session.deleteMany({ where: { userId } });
+
     return { message: 'Jelszó sikeresen módosítva' };
   }
 

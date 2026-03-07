@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 const categoryOptions = [
   { value: "munkajogi", label: "Munkajogi" },
@@ -309,7 +310,7 @@ export default function NewTemplatePage() {
             </h2>
             <div
               className="prose prose-sm max-w-none border rounded-xl p-4 bg-gray-50 min-h-[300px]"
-              dangerouslySetInnerHTML={{ __html: renderPreview() }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(renderPreview()) }}
             />
           </div>
 

@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import SignaturePad from "signature_pad";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 interface SignerInfo {
   id: string;
@@ -198,7 +199,7 @@ export default function SignPage() {
           ref={contentRef}
           onScroll={handleScroll}
           className="bg-white rounded-xl border shadow-sm p-8 mb-6 max-h-[60vh] overflow-y-auto"
-          dangerouslySetInnerHTML={{ __html: contract.contentHtml }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(contract.contentHtml) }}
         />
 
         {/* Signing area */}

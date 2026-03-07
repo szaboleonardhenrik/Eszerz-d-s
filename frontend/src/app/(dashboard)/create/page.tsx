@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
 import WysiwygEditor from "@/components/wysiwyg-editor";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 interface TemplateVar {
   name: string;
@@ -343,7 +344,7 @@ function CreateWizardInner() {
                 ) : (
                   <div className="p-6">
                     <div className="prose prose-sm max-w-none border rounded-lg p-4 bg-gray-50"
-                      dangerouslySetInnerHTML={{ __html: previewHtml ?? "" }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(previewHtml ?? "") }}
                     />
                   </div>
                 )}

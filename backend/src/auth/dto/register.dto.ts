@@ -1,4 +1,4 @@
-import { IsEmail, IsString, MinLength, IsOptional } from 'class-validator';
+import { IsEmail, IsString, MinLength, IsOptional, Matches } from 'class-validator';
 
 export class RegisterDto {
   @IsEmail({}, { message: 'Érvényes email címet adj meg' })
@@ -6,6 +6,9 @@ export class RegisterDto {
 
   @IsString()
   @MinLength(8, { message: 'A jelszó legalább 8 karakter legyen' })
+  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/, {
+    message: 'A jelszónak tartalmaznia kell kis- és nagybetűt, valamint számot',
+  })
   password: string;
 
   @IsString()

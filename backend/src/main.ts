@@ -1,12 +1,18 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { rawBody: true });
 
   app.setGlobalPrefix('api');
+
+  app.use(helmet({
+    contentSecurityPolicy: false, // Allow inline styles for PDF/email
+    crossOriginEmbedderPolicy: false,
+  }));
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -16,22 +22,25 @@ async function bootstrap() {
     }),
   );
 
+  const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
   app.enableCors({
-    origin: process.env.FRONTEND_URL ?? 'http://localhost:3000',
+    origin: frontendUrl,
     credentials: true,
   });
 
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle('SzerződésPortál API')
-    .setDescription('Magyar KKV-knak szánt SaaS szerződéskezelő platform API dokumentáció')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('api/docs', app, document);
+  // Only enable Swagger in development
+  if (process.env.NODE_ENV !== 'production') {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('SzerződésPortál API')
+      .setDescription('Magyar KKV-knak szánt SaaS szerződéskezelő platform API dokumentáció')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build();
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup('api/docs', app, document);
+  }
 
   await app.listen(process.env.PORT ?? 3001);
-  console.log(`Backend running on http://localhost:${process.env.PORT ?? 3001}`);
-  console.log(`Swagger docs: http://localhost:${process.env.PORT ?? 3001}/api/docs`);
+  console.log(`Backend running on port ${process.env.PORT ?? 3001}`);
 }
 bootstrap();

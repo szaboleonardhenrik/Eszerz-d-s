@@ -4,7 +4,7 @@ import {
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
-import { randomUUID } from 'crypto';
+import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { PdfService, PdfBranding } from '../pdf/pdf.service';
 import { StorageService } from '../storage/storage.service';
@@ -74,7 +74,7 @@ export class ContractsService {
 
     const branding = this.getUserBranding(user);
     const pdfBuffer = await this.pdfService.generatePdf(contentHtml, dto.title, branding);
-    const pdfKey = `contracts/${userId}/${randomUUID()}.pdf`;
+    const pdfKey = `contracts/${userId}/${randomBytes(16).toString('hex')}.pdf`;
     await this.storageService.uploadPdf(pdfKey, pdfBuffer);
     const documentHash = this.pdfService.hashDocument(pdfBuffer);
 
@@ -93,7 +93,7 @@ export class ContractsService {
             email: s.email,
             role: s.role,
             signingOrder: s.signingOrder ?? i + 1,
-            signToken: randomUUID(),
+            signToken: randomBytes(32).toString('hex'),
             tokenExpiresAt: new Date(
               Date.now() + 7 * 24 * 60 * 60 * 1000,
             ),
@@ -132,7 +132,7 @@ export class ContractsService {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     const branding = this.getUserBranding(user);
     const pdfBuffer = await this.pdfService.generatePdf(contentHtml, contract.title, branding);
-    const pdfKey = `contracts/${userId}/${randomUUID()}.pdf`;
+    const pdfKey = `contracts/${userId}/${randomBytes(16).toString('hex')}.pdf`;
     await this.storageService.uploadPdf(pdfKey, pdfBuffer);
 
     const lastVersion = await this.prisma.contractVersion.findFirst({
@@ -403,7 +403,7 @@ export class ContractsService {
             email: s.email,
             role: s.role,
             signingOrder: s.signingOrder,
-            signToken: randomUUID(),
+            signToken: randomBytes(32).toString('hex'),
             tokenExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
             status: 'pending',
           })),

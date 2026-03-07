@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 interface ContractListItem {
   id: string;
@@ -305,7 +306,7 @@ export default function ContractComparePage() {
               <div
                 className="p-6 prose prose-sm dark:prose-invert max-w-none overflow-auto"
                 style={{ maxHeight: "600px" }}
-                dangerouslySetInnerHTML={{ __html: contractA.contentHtml }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(contractA.contentHtml) }}
               />
             </div>
 
@@ -322,7 +323,7 @@ export default function ContractComparePage() {
               <div
                 className="p-6 prose prose-sm dark:prose-invert max-w-none overflow-auto"
                 style={{ maxHeight: "600px" }}
-                dangerouslySetInnerHTML={{ __html: contractB.contentHtml }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(contractB.contentHtml) }}
               />
             </div>
           </div>

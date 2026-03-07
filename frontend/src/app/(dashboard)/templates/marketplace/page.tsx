@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
 import { SkeletonTemplateCard } from "@/components/skeleton";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 interface Template {
   id: string;
@@ -562,7 +563,7 @@ export default function MarketplacePage() {
                   <div
                     className="prose prose-sm dark:prose-invert max-w-none border border-gray-200 dark:border-gray-700 rounded-xl p-5 bg-gray-50 dark:bg-gray-900"
                     dangerouslySetInnerHTML={{
-                      __html: preview.contentHtml,
+                      __html: sanitizeHtml(preview.contentHtml),
                     }}
                   />
                 </div>

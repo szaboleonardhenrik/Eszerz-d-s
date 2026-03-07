@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth-store";
 import VersionDiff from "@/components/version-diff";
 import QrSigningModal from "@/components/qr-signing-modal";
 import RiskAnalysis from "@/components/risk-analysis";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 interface Signer {
   id: string;
@@ -488,7 +489,7 @@ export default function ContractDetailPage() {
           <h2 className="text-lg font-semibold mb-4">Szerződés tartalma</h2>
           <div
             className="prose prose-sm max-w-none border rounded-lg p-6 bg-gray-50"
-            dangerouslySetInnerHTML={{ __html: contract.contentHtml }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(contract.contentHtml) }}
           />
         </div>
       )}
