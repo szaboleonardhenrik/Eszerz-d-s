@@ -237,6 +237,9 @@ function CreateWizardInner() {
             );
           })}
         </div>
+        <p className="sm:hidden text-center text-xs text-gray-500 dark:text-gray-400 mt-3">
+          {step}. lepes / {steps.length} — {steps[step - 1].label}
+        </p>
       </div>
 
       {/* Step 1: Template selection */}
@@ -266,7 +269,7 @@ function CreateWizardInner() {
           {uploadMode ? (
             <div className="max-w-2xl">
               <div
-                className={`border-2 border-dashed rounded-2xl p-12 text-center transition ${
+                className={`border-2 border-dashed rounded-2xl p-6 sm:p-12 text-center transition ${
                   dragOver ? "border-blue-400 bg-blue-50 dark:bg-blue-900/20" : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
                 }`}
                 onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
@@ -593,7 +596,7 @@ function CreateWizardInner() {
                     );
                     return (
                       <div key={key} className="flex">
-                        <span className="text-gray-500 dark:text-gray-400 w-48 shrink-0">
+                        <span className="text-gray-500 dark:text-gray-400 w-32 sm:w-48 shrink-0">
                           {varDef?.label ?? key}:
                         </span>
                         <span className="text-gray-900 dark:text-gray-100">{value}</span>

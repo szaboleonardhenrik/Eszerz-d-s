@@ -321,7 +321,7 @@ export default function QuotesPage() {
                     <th className="px-4 py-3 font-medium hidden md:table-cell">Osszeg</th>
                     <th className="px-4 py-3 font-medium">Statusz</th>
                     <th className="px-4 py-3 font-medium hidden lg:table-cell">Ervenyes</th>
-                    <th className="px-4 py-3 font-medium w-48">Muveletek</th>
+                    <th className="px-4 py-3 font-medium w-32 sm:w-40 md:w-48">Muveletek</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -372,7 +372,7 @@ export default function QuotesPage() {
                           </span>
                         </td>
                         <td className="px-4 py-3">
-                          <div className="flex gap-1">
+                          <div className="flex flex-wrap gap-1">
                             <Link
                               href={`/quotes/${q.id}`}
                               className="text-xs px-3 py-1 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 transition"

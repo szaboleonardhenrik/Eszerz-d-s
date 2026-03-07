@@ -371,7 +371,7 @@ export default function DashboardPage() {
               Osszes ajanlat &rarr;
             </Link>
           </div>
-          <div className="grid grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {[
               { label: "Piszkozat", value: quoteStats.draft, color: "text-gray-500" },
               { label: "Elkuldve", value: quoteStats.sent, color: "text-blue-600 dark:text-blue-400" },

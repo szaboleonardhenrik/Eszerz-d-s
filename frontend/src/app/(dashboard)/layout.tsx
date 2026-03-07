@@ -128,7 +128,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 {menuOpen && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-                    <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-lg border dark:border-gray-700 z-50 py-2">
+                    <div className="absolute right-0 mt-2 w-48 sm:w-56 bg-white dark:bg-gray-800 rounded-xl shadow-lg border dark:border-gray-700 z-50 py-2">
                       <div className="px-4 py-2 border-b dark:border-gray-700">
                         <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.name}</p>
                         <p className="text-xs text-gray-400">{user.email}</p>
@@ -181,7 +181,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {mobileNav && (
         <>
           <div className="fixed inset-0 bg-black/20 z-40 lg:hidden" onClick={() => setMobileNav(false)} />
-          <div className="fixed inset-y-0 left-0 w-72 bg-white dark:bg-gray-800 border-r dark:border-gray-700 shadow-xl z-50 lg:hidden overflow-y-auto">
+          <div className="fixed inset-y-0 left-0 w-64 sm:w-72 bg-white dark:bg-gray-800 border-r dark:border-gray-700 shadow-xl z-50 lg:hidden overflow-y-auto">
             <div className="flex items-center justify-between px-4 h-16 border-b border-gray-100 dark:border-gray-700">
               <Link href="/dashboard" className="flex items-center gap-2" onClick={() => setMobileNav(false)}>
                 <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
