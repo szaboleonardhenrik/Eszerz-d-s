@@ -64,7 +64,8 @@ export class ContractsController {
     if (!file) {
       return ApiResponse.error('BAD_REQUEST', 'No file uploaded');
     }
-    const key = `uploads/${req.user.userId}/${Date.now()}-${file.originalname}`;
+    const safeName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_').substring(0, 100);
+    const key = `uploads/${req.user.userId}/${Date.now()}-${safeName}`;
     await this.storageService.uploadFile(key, file.buffer, 'application/pdf');
     return ApiResponse.ok({ key, originalName: file.originalname, size: file.size });
   }

@@ -181,6 +181,7 @@ export class QuotesService {
   }
 
   generateQuoteHtml(quote: any): string {
+    const esc = (s: string) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     const formatNum = (n: number) => new Intl.NumberFormat('hu-HU').format(Math.round(n));
     const currencySymbol: Record<string, string> = { HUF: 'Ft', EUR: 'EUR', USD: 'USD' };
     const cur = currencySymbol[quote.currency] ?? quote.currency;
@@ -194,8 +195,8 @@ export class QuotesService {
       totalNetto += netto;
       totalVat += vat;
       return `<tr>
-      <td style="padding:8px;border-bottom:1px solid #eee;">${item.description}</td>
-      <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">${item.quantity} ${item.unit}</td>
+      <td style="padding:8px;border-bottom:1px solid #eee;">${esc(item.description)}</td>
+      <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">${item.quantity} ${esc(item.unit)}</td>
       <td style="padding:8px;border-bottom:1px solid #eee;text-align:right;">${formatNum(item.unitPrice)} ${cur}</td>
       <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">${item.taxRate}%</td>
       <td style="padding:8px;border-bottom:1px solid #eee;text-align:right;">${formatNum(netto + vat)} ${cur}</td>
@@ -223,14 +224,14 @@ td { font-size: 13px; }
 .footer { margin-top: 40px; text-align: center; color: #999; font-size: 11px; border-top: 1px solid #eee; padding-top: 16px; }
 </style></head>
 <body>
-  <h1>${quote.title}</h1>
+  <h1>${esc(quote.title)}</h1>
   <div class="meta">Ajánlat · ${new Date(quote.createdAt).toLocaleDateString('hu-HU')}${quote.validUntil ? ` · Érvényes: ${new Date(quote.validUntil).toLocaleDateString('hu-HU')}-ig` : ''}</div>
 
   <div class="client-box">
     <h3>Ügyfél</h3>
-    <p><strong>${quote.clientName}</strong></p>
-    <p>${quote.clientEmail}</p>
-    ${quote.clientCompany ? `<p>${quote.clientCompany}</p>` : ''}
+    <p><strong>${esc(quote.clientName)}</strong></p>
+    <p>${esc(quote.clientEmail)}</p>
+    ${quote.clientCompany ? `<p>${esc(quote.clientCompany)}</p>` : ''}
   </div>
 
   <table>
@@ -252,7 +253,7 @@ td { font-size: 13px; }
     <div class="row total"><span>Bruttó összeg:</span><span>${formatNum(totalNetto + totalVat)} ${cur}</span></div>
   </div>
 
-  ${quote.notes ? `<div class="notes"><h4>Megjegyzés</h4><p>${quote.notes}</p></div>` : ''}
+  ${quote.notes ? `<div class="notes"><h4>Megjegyzés</h4><p>${esc(quote.notes)}</p></div>` : ''}
 
   <div class="footer">
     Generálva: SzerződésPortál · ${new Date().toLocaleDateString('hu-HU')}

@@ -82,9 +82,17 @@ export class StorageService {
     return getSignedUrl(this.s3!, command, { expiresIn });
   }
 
+  private resolveLocalPath(key: string): string {
+    const filePath = path.resolve(this.localDir, key);
+    if (!filePath.startsWith(this.localDir)) {
+      throw new Error('Invalid file path');
+    }
+    return filePath;
+  }
+
   async downloadFile(key: string): Promise<Buffer> {
     if (this.useLocal) {
-      const filePath = path.join(this.localDir, key);
+      const filePath = this.resolveLocalPath(key);
       return fs.readFileSync(filePath) as Buffer;
     }
     const command = new GetObjectCommand({
@@ -116,12 +124,12 @@ export class StorageService {
 
   getLocalFilePath(key: string): string | null {
     if (!this.useLocal) return null;
-    const filePath = path.join(this.localDir, key);
+    const filePath = this.resolveLocalPath(key);
     return fs.existsSync(filePath) ? filePath : null;
   }
 
   private saveLocal(key: string, buffer: Buffer): string {
-    const filePath = path.join(this.localDir, key);
+    const filePath = this.resolveLocalPath(key);
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
     fs.writeFileSync(filePath, buffer);
     return key;
