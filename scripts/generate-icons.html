@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head><title>PWA Icon Generator</title></head>
+<body style="font-family:sans-serif;padding:40px;text-align:center;">
+<h1>SzerződésPortál PWA Icon Generator</h1>
+<p>Icons will auto-download. You can also right-click to save.</p>
+<div id="previews" style="display:flex;gap:40px;justify-content:center;margin-top:20px;"></div>
+<script>
+function generateIcon(size) {
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+
+  // Background with rounded corners
+  const radius = size * 0.18;
+  ctx.beginPath();
+  ctx.roundRect(0, 0, size, size, radius);
+  ctx.fillStyle = '#0d6e6e';
+  ctx.fill();
+
+  // Subtle gradient overlay
+  const grad = ctx.createLinearGradient(0, 0, size, size);
+  grad.addColorStop(0, 'rgba(255,255,255,0.1)');
+  grad.addColorStop(1, 'rgba(0,0,0,0.1)');
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // "SZ" text
+  ctx.fillStyle = '#ffffff';
+  ctx.font = `bold ${size * 0.42}px -apple-system, 'Segoe UI', sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('SZ', size / 2, size / 2 + size * 0.02);
+
+  return canvas;
+}
+
+[192, 512].forEach(size => {
+  const canvas = generateIcon(size);
+
+  // Preview
+  const div = document.createElement('div');
+  div.innerHTML = `<p style="font-weight:bold">${size}x${size}</p>`;
+  const preview = document.createElement('canvas');
+  preview.width = 192;
+  preview.height = 192;
+  preview.style.border = '1px solid #ccc';
+  preview.style.borderRadius = '16px';
+  preview.getContext('2d').drawImage(canvas, 0, 0, 192, 192);
+  div.appendChild(preview);
+  document.getElementById('previews').appendChild(div);
+
+  // Download
+  canvas.toBlob(blob => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `icon-${size}.png`;
+    a.click();
+  });
+});
+</script>
+</body>
+</html>

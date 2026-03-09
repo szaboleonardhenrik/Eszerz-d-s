@@ -47,8 +47,9 @@ export class ContractsService {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     const tier = user?.subscriptionTier ?? 'free';
 
-    if (tier !== 'pro') {
-      const maxContracts = tier === 'basic' ? 30 : 5;
+    const tierLimits: Record<string, number> = { free: 2, starter: 2, medium: 12, premium: 35, enterprise: 500, basic: 12, pro: 35 };
+    const maxContracts = tierLimits[tier] ?? 2;
+    if (maxContracts > 0) {
       const firstOfMonth = new Date();
       firstOfMonth.setDate(1);
       firstOfMonth.setHours(0, 0, 0, 0);
@@ -804,7 +805,8 @@ export class ContractsService {
     const monthlyUsage = await this.prisma.contract.count({
       where: { ownerId: userId, createdAt: { gte: firstOfMonth } },
     });
-    const monthlyLimit = tier === 'pro' ? -1 : tier === 'basic' ? 30 : 5;
+    const tierLimitsMap: Record<string, number> = { free: 2, starter: 2, medium: 12, premium: 35, enterprise: 500, basic: 12, pro: 35 };
+    const monthlyLimit = tierLimitsMap[tier] ?? 2;
 
     return {
       total,

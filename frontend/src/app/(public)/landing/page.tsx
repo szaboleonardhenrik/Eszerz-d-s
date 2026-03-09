@@ -360,31 +360,31 @@ function HowItWorks() {
 /* -- 5. PRICING PREVIEW -------------------------------------------------- */
 const plans = [
   {
-    name: "Ingyenes",
-    price: "0",
-    period: "Ft / hó",
-    desc: "Egyéni vállalkozóknak, kipróbáláshoz.",
-    features: ["5 szerződés / hó", "1 felhasználó", "100 MB tárolás", "Email értesítők", "Alap sablonok"],
-    cta: "Regisztráció ingyen",
+    name: "Kezdő",
+    price: "975",
+    period: "Ft + áfa / hó",
+    desc: "Egyéni vállalkozóknak, akik ismerkednek az e-szerződéskötéssel.",
+    features: ["2 szerződés / hó", "AI asszisztens és elemző", "Elektronikus kézi aláírás", "Tevékenységi napló", "Adatvédelmi pajzs", "24 időbélyeg/év"],
+    cta: "Kezdő csomag választása",
     popular: false,
   },
   {
-    name: "Alap",
-    price: "4 990",
-    period: "Ft / hó",
-    desc: "Kis csapatoknak, akik komolyan veszik.",
-    features: ["30 szerződés / hó", "3 felhasználó", "1 GB tárolás", "API hozzáférés (100/nap)", "Analitika", "Csapatkezelés", "Egyéni branding"],
-    cta: "Alap csomag választása",
+    name: "Közepes",
+    price: "14 950",
+    period: "Ft + áfa / hó",
+    desc: "Mikro-vállalkozásoknak, átlátható partnerlista és csapatmunka.",
+    features: ["12 szerződés / hó", "2 társfiók", "Sablontár + CRM", "Email követés", "Sablon verziókövetés", "144 időbélyeg/év"],
+    cta: "Közepes csomag választása",
+    popular: false,
+  },
+  {
+    name: "Prémium",
+    price: "26 000",
+    period: "Ft + áfa / hó",
+    desc: "KKV-knak: API, branding, automatizáció és tömeges műveletek.",
+    features: ["35 szerződés / hó", "5 társfiók", "Tömeges műveletek", "API hozzáférés", "Szerződés branding", "420 időbélyeg/év"],
+    cta: "Prémium csomag választása",
     popular: true,
-  },
-  {
-    name: "Profi",
-    price: "14 990",
-    period: "Ft / hó",
-    desc: "Növekvő cégeknek, korlátok nélkül.",
-    features: ["Korlátlan szerződés", "10 felhasználó", "5 GB tárolás", "Korlátlan API", "Webhookok", "Prioritásos támogatás", "AI elemzés"],
-    cta: "Profi csomag választása",
-    popular: false,
   },
 ];
 
@@ -398,7 +398,7 @@ function PricingPreview() {
             <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white mb-4">
               Átlátható árak, rejtett költségek nélkül
             </h2>
-            <p className="text-gray-500 dark:text-gray-400 text-lg">Kezdd ingyen, fizess akkor, amikor a céged nő.</p>
+            <p className="text-gray-500 dark:text-gray-400 text-lg">Válasszon havi vagy éves díjcsomagjaink között. Éves fizetésnél 23% kedvezmény.</p>
           </div>
         </Reveal>
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">

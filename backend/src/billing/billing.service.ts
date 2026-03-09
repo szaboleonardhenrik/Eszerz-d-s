@@ -7,10 +7,9 @@ import Stripe from 'stripe';
 export class BillingService {
   private stripe: Stripe;
   private readonly logger = new Logger(BillingService.name);
-  private readonly priceBasic: string;
-  private readonly pricePro: string;
   private readonly frontendUrl: string;
   private readonly webhookSecret: string;
+  private readonly priceMap: Record<string, string>;
 
   constructor(
     private readonly config: ConfigService,
@@ -18,10 +17,18 @@ export class BillingService {
   ) {
     const secretKey = this.config.get<string>('STRIPE_SECRET_KEY', '');
     this.stripe = new Stripe(secretKey);
-    this.priceBasic = this.config.get<string>('STRIPE_PRICE_BASIC', '');
-    this.pricePro = this.config.get<string>('STRIPE_PRICE_PRO', '');
     this.frontendUrl = this.config.get<string>('FRONTEND_URL', 'http://localhost:3000');
     this.webhookSecret = this.config.get<string>('STRIPE_WEBHOOK_SECRET', '');
+    this.priceMap = {
+      starter_monthly: this.config.get<string>('STRIPE_PRICE_STARTER_M', ''),
+      starter_yearly: this.config.get<string>('STRIPE_PRICE_STARTER_Y', ''),
+      medium_monthly: this.config.get<string>('STRIPE_PRICE_MEDIUM_M', ''),
+      medium_yearly: this.config.get<string>('STRIPE_PRICE_MEDIUM_Y', ''),
+      premium_monthly: this.config.get<string>('STRIPE_PRICE_PREMIUM_M', ''),
+      premium_yearly: this.config.get<string>('STRIPE_PRICE_PREMIUM_Y', ''),
+      enterprise_monthly: this.config.get<string>('STRIPE_PRICE_ENTERPRISE_M', ''),
+      enterprise_yearly: this.config.get<string>('STRIPE_PRICE_ENTERPRISE_Y', ''),
+    };
   }
 
   async createCheckoutSession(userId: string, priceId: string): Promise<string> {
@@ -42,7 +49,7 @@ export class BillingService {
       });
     }
 
-    // Resolve the actual Stripe price ID
+    // Resolve: accept direct Stripe price IDs or tier keys like "starter_monthly"
     const resolvedPriceId = this.resolvePriceId(priceId);
 
     const session = await this.stripe.checkout.sessions.create({
@@ -140,19 +147,22 @@ export class BillingService {
   }
 
   private resolvePriceId(priceId: string): string {
-    switch (priceId) {
-      case 'basic':
-        return this.priceBasic;
-      case 'pro':
-        return this.pricePro;
-      default:
-        return priceId; // Allow passing actual Stripe price IDs directly
+    // If it's a known tier key, resolve to Stripe price ID
+    if (this.priceMap[priceId]) {
+      return this.priceMap[priceId];
     }
+    // Otherwise assume it's already a Stripe price ID (price_...)
+    return priceId;
   }
 
   private mapPriceToTier(priceId: string): string {
-    if (priceId === this.priceBasic) return 'basic';
-    if (priceId === this.pricePro) return 'pro';
+    // Check which tier this price belongs to
+    for (const [key, value] of Object.entries(this.priceMap)) {
+      if (value === priceId) {
+        // key is like "starter_monthly" or "premium_yearly" — extract tier
+        return key.split('_')[0];
+      }
+    }
     return 'free';
   }
 }
