@@ -31,6 +31,7 @@ import { NotificationsGatewayModule } from './notifications-gateway/notification
 import { ChatModule } from './chat/chat.module';
 import { PortalModule } from './portal/portal.module';
 import { AdminModule } from './admin/admin.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -65,6 +66,7 @@ import { AdminModule } from './admin/admin.module';
     ChatModule,
     PortalModule,
     AdminModule,
+    HealthModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

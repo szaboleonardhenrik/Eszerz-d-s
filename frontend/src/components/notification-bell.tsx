@@ -163,7 +163,7 @@ export default function NotificationBell() {
                 </button>
               )}
             </div>
-            <div className="overflow-y-auto flex-1">
+            <div className="overflow-y-auto flex-1" style={{ maxHeight: "20rem" }}>
               {notifications.length === 0 ? (
                 <div className="p-8 text-center text-gray-400 text-sm">
                   Nincs értesítés
@@ -204,6 +204,13 @@ export default function NotificationBell() {
                 })
               )}
             </div>
+            <Link
+              href="/notifications"
+              onClick={() => setOpen(false)}
+              className="block text-center py-2.5 text-xs font-medium text-[#198296] hover:bg-gray-50 dark:hover:bg-gray-700 border-t dark:border-gray-700 transition"
+            >
+              Összes értesítés
+            </Link>
           </div>
         </>
       )}

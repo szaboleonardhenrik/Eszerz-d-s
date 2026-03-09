@@ -28,6 +28,24 @@ export class InAppNotificationsController {
     return ApiResponse.ok(notifications);
   }
 
+  @Get('all')
+  async findAllPaginated(
+    @Req() req: any,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('type') type?: string,
+    @Query('unreadOnly') unreadOnly?: string,
+  ) {
+    const result = await this.inAppNotificationsService.findAllPaginated(
+      req.user.userId,
+      page ? parseInt(page) : 1,
+      limit ? parseInt(limit) : 20,
+      type || undefined,
+      unreadOnly === 'true',
+    );
+    return ApiResponse.ok(result);
+  }
+
   @Get('unread-count')
   async getUnreadCount(@Req() req: any) {
     const count = await this.inAppNotificationsService.getUnreadCount(
@@ -48,6 +66,14 @@ export class InAppNotificationsController {
   async markAsRead(@Param('id') id: string, @Req() req: any) {
     const result = await this.inAppNotificationsService.markAsRead(
       id,
+      req.user.userId,
+    );
+    return ApiResponse.ok(result);
+  }
+
+  @Delete('clear-read')
+  async clearRead(@Req() req: any) {
+    const result = await this.inAppNotificationsService.clearRead(
       req.user.userId,
     );
     return ApiResponse.ok(result);

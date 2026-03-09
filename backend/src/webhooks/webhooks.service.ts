@@ -1,9 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { randomBytes, createHmac } from 'crypto';
 
+const MAX_RETRIES = 3;
+const BACKOFF_BASE_MS = 2000;
+const BACKOFF_MULTIPLIER = 4;
+const AUTO_DISABLE_THRESHOLD = 5;
+
 @Injectable()
 export class WebhooksService {
+  private readonly logger = new Logger(WebhooksService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   async findAllByUser(userId: string) {
@@ -54,7 +61,6 @@ export class WebhooksService {
       },
     });
 
-    // Return full secret only on creation
     return webhook;
   }
 
@@ -102,52 +108,102 @@ export class WebhooksService {
     );
 
     for (const webhook of matching) {
-      // Fire and forget
-      const body = JSON.stringify({
-          event,
-          timestamp: new Date().toISOString(),
-          data: payload,
+      this.deliverWithRetry(webhook, event, payload).catch(() => {
+        // Background task - errors handled internally
+      });
+    }
+  }
+
+  private async deliverWithRetry(
+    webhook: { id: string; url: string; secret: string; failedCount: number },
+    event: string,
+    payload: any,
+  ) {
+    const body = JSON.stringify({
+      event,
+      timestamp: new Date().toISOString(),
+      data: payload,
+    });
+    const signature = createHmac('sha256', webhook.secret)
+      .update(body)
+      .digest('hex');
+
+    const headers = {
+      'Content-Type': 'application/json',
+      'X-Webhook-Signature': signature,
+      'X-Webhook-Event': event,
+    };
+
+    let lastError: string | null = null;
+
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      if (attempt > 0) {
+        const delay = BACKOFF_BASE_MS * Math.pow(BACKOFF_MULTIPLIER, attempt - 1);
+        this.logger.debug(
+          `Webhook ${webhook.id} retry ${attempt}/${MAX_RETRIES} in ${delay}ms`,
+        );
+        await this.sleep(delay);
+      }
+
+      try {
+        const res = await fetch(webhook.url, {
+          method: 'POST',
+          headers,
+          body,
+          signal: AbortSignal.timeout(10000),
         });
-      const signature = createHmac('sha256', webhook.secret)
-        .update(body)
-        .digest('hex');
-      fetch(webhook.url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Webhook-Signature': signature,
-          'X-Webhook-Event': event,
-        },
-        body,
-      })
-        .then(async (res) => {
-          if (!res.ok) {
-            await this.prisma.webhook.update({
-              where: { id: webhook.id },
-              data: {
-                lastError: `HTTP ${res.status}: ${res.statusText}`,
-                lastTriggeredAt: new Date(),
-              },
-            });
-          } else {
-            await this.prisma.webhook.update({
-              where: { id: webhook.id },
-              data: {
-                lastError: null,
-                lastTriggeredAt: new Date(),
-              },
-            });
-          }
-        })
-        .catch(async (err) => {
+
+        if (res.ok) {
           await this.prisma.webhook.update({
             where: { id: webhook.id },
             data: {
-              lastError: err.message || 'Kapcsolódási hiba',
+              lastError: null,
               lastTriggeredAt: new Date(),
+              failedCount: 0,
             },
           });
-        });
+          this.logger.debug(
+            `Webhook ${webhook.id} delivered (attempt ${attempt + 1})`,
+          );
+          return;
+        }
+
+        lastError = `HTTP ${res.status}: ${res.statusText}`;
+      } catch (err: any) {
+        lastError = err.message || 'Kapcsolódási hiba';
+      }
+
+      this.logger.warn(
+        `Webhook ${webhook.id} attempt ${attempt + 1} failed: ${lastError}`,
+      );
     }
+
+    // All retries exhausted
+    const newFailedCount = webhook.failedCount + 1;
+    const shouldDisable = newFailedCount >= AUTO_DISABLE_THRESHOLD;
+
+    const errorMessage = shouldDisable
+      ? `Automatikusan kikapcsolva ${AUTO_DISABLE_THRESHOLD} egymást követő hiba után. Utolsó hiba: ${lastError}`
+      : `${MAX_RETRIES + 1} próba sikertelen. Hiba: ${lastError} (${newFailedCount}/${AUTO_DISABLE_THRESHOLD} hiba)`;
+
+    await this.prisma.webhook.update({
+      where: { id: webhook.id },
+      data: {
+        lastError: errorMessage,
+        lastTriggeredAt: new Date(),
+        failedCount: newFailedCount,
+        ...(shouldDisable ? { active: false } : {}),
+      },
+    });
+
+    if (shouldDisable) {
+      this.logger.error(
+        `Webhook ${webhook.id} auto-disabled after ${AUTO_DISABLE_THRESHOLD} consecutive failures`,
+      );
+    }
+  }
+
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

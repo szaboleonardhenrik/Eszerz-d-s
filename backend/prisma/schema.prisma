@@ -362,6 +362,7 @@ model Webhook {
   active          Boolean   @default(true)
   lastError       String?   @map("last_error")
   lastTriggeredAt DateTime? @map("last_triggered_at")
+  failedCount     Int       @default(0) @map("failed_count")
   createdAt       DateTime  @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

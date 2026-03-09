@@ -83,4 +83,40 @@ export class InAppNotificationsService {
       where: { id: notificationId, userId },
     });
   }
+
+  async findAllPaginated(
+    userId: string,
+    page = 1,
+    limit = 20,
+    type?: string,
+    unreadOnly?: boolean,
+  ) {
+    const where: any = { userId };
+    if (type) where.type = type;
+    if (unreadOnly) where.read = false;
+
+    const [items, total] = await Promise.all([
+      this.prisma.notification.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.notification.count({ where }),
+    ]);
+
+    return {
+      items,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  async clearRead(userId: string) {
+    return this.prisma.notification.deleteMany({
+      where: { userId, read: true },
+    });
+  }
 }
