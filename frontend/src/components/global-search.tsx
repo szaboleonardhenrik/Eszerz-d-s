@@ -17,7 +17,7 @@ export default function GlobalSearch() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const ref = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const search = useCallback(async (q: string) => {
     if (q.length < 2) {
