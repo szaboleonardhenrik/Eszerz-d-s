@@ -12,6 +12,7 @@ import LanguageSwitcher from "@/components/language-switcher";
 import KeyboardShortcutsHelp, { useKeyboardShortcuts } from "@/components/keyboard-shortcuts";
 import ChatWidget from "@/components/chat-widget";
 import { useI18n } from "@/lib/i18n";
+import GlobalSearch from "@/components/global-search";
 
 const navItemKeys = [
   { href: "/dashboard", labelKey: "nav.home", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" },
@@ -77,6 +78,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </span>
             </Link>
             <div className="flex items-center gap-1.5 sm:gap-2">
+              <GlobalSearch />
               <LanguageSwitcher />
               <ThemeToggle />
               <NotificationBell />

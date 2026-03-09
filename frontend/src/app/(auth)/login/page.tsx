@@ -68,45 +68,45 @@ export default function LoginPage() {
       </div>
 
       {/* Right — form */}
-      <div className="flex-1 flex items-center justify-center px-4 py-12 bg-gray-50">
+      <div className="flex-1 flex items-center justify-center px-4 py-12 bg-gray-50 dark:bg-gray-900">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <Link href="/landing" className="inline-flex items-center gap-2 mb-6">
               <div className="w-8 h-8 rounded-lg bg-brand-teal-dark flex items-center justify-center">
                 <span className="text-white font-bold text-sm">SZ</span>
               </div>
-              <span className="text-lg font-bold text-gray-900">
+              <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
                 <span className="text-brand-teal-dark">Szerződés</span>Portál
               </span>
             </Link>
-            <h1 className="text-2xl font-bold text-gray-900">Bejelentkezés</h1>
-            <p className="text-gray-500 mt-1 text-sm">Lépj be a fiókodba a folytatáshoz</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Bejelentkezés</h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Lépj be a fiókodba a folytatáshoz</p>
           </div>
 
           <form
             onSubmit={handleSubmit}
-            className="bg-white rounded-2xl shadow-sm border p-8 space-y-5"
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border dark:border-gray-700 p-8 space-y-5"
           >
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email cím</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email cím</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-brand-teal/50 focus:border-brand-teal outline-none transition"
+                className="w-full px-4 py-2.5 border dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-brand-teal/50 focus:border-brand-teal outline-none transition dark:bg-gray-700 dark:text-gray-100"
                 placeholder="pelda@ceg.hu"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Jelszó</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Jelszó</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-brand-teal/50 focus:border-brand-teal outline-none transition"
+                className="w-full px-4 py-2.5 border dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-brand-teal/50 focus:border-brand-teal outline-none transition dark:bg-gray-700 dark:text-gray-100"
                 placeholder="••••••••"
               />
             </div>
@@ -126,13 +126,13 @@ export default function LoginPage() {
             </div>
           </form>
 
-          <p className="text-center text-sm text-gray-500 mt-6">
+          <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
             Nincs még fiókod?{" "}
             <Link href="/register" className="text-brand-teal-dark font-semibold hover:underline">
               Regisztráció
             </Link>
           </p>
-          <p className="text-center text-sm text-gray-400 mt-3">
+          <p className="text-center text-sm text-gray-400 dark:text-gray-500 mt-3">
             <Link href="/portal" className="hover:text-brand-teal-dark transition hover:underline">
               Ügyfélportál (aláíróknak)
             </Link>

@@ -24,32 +24,32 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center px-4 bg-gray-50 dark:bg-gray-900">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/landing" className="inline-flex items-center gap-2 mb-6">
             <div className="w-8 h-8 rounded-lg bg-brand-teal-dark flex items-center justify-center">
               <span className="text-white font-bold text-sm">SZ</span>
             </div>
-            <span className="text-lg font-bold text-gray-900">
+            <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
               <span className="text-brand-teal-dark">Szerződés</span>Portál
             </span>
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">Elfelejtett jelszó</h1>
-          <p className="text-gray-500 mt-1 text-sm">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Elfelejtett jelszó</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
             Add meg az email címedet és küldünk egy jelszó-visszaállító linket
           </p>
         </div>
 
         {sent ? (
-          <div className="bg-white rounded-2xl shadow-sm border p-8 text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border dark:border-gray-700 p-8 text-center">
+            <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
             </div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">Email elküldve!</h2>
-            <p className="text-sm text-gray-500 mb-4">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Email elküldve!</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
               Ha a megadott email cím regisztrálva van, küldtünk egy jelszó-visszaállító linket.
               Nézd meg a postafiókodat (és a spam mappát is).
             </p>
@@ -58,15 +58,15 @@ export default function ForgotPasswordPage() {
             </Link>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border p-8 space-y-5">
+          <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border dark:border-gray-700 p-8 space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email cím</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email cím</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-brand-teal/50 focus:border-brand-teal outline-none transition"
+                className="w-full px-4 py-2.5 border dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-brand-teal/50 focus:border-brand-teal outline-none transition dark:bg-gray-700 dark:text-gray-100"
                 placeholder="pelda@ceg.hu"
               />
             </div>
@@ -80,7 +80,7 @@ export default function ForgotPasswordPage() {
           </form>
         )}
 
-        <p className="text-center text-sm text-gray-500 mt-6">
+        <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
           <Link href="/login" className="text-brand-teal-dark font-semibold hover:underline">
             Vissza a bejelentkezéshez
           </Link>

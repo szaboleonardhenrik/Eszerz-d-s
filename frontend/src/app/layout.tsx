@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import CookieConsent from "@/components/cookie-consent";
+import ServiceWorkerRegister from "@/components/sw-register";
 import { ThemeProvider } from "@/components/theme-provider";
 import { I18nProvider } from "@/lib/i18n";
 
@@ -33,6 +34,12 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "SzerződésPortál",
+  },
 };
 
 export default function RootLayout({
@@ -48,6 +55,7 @@ export default function RootLayout({
             <Toaster position="top-right" />
             {children}
             <CookieConsent />
+            <ServiceWorkerRegister />
           </I18nProvider>
         </ThemeProvider>
       </body>

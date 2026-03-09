@@ -32,6 +32,7 @@ import { ChatModule } from './chat/chat.module';
 import { PortalModule } from './portal/portal.module';
 import { AdminModule } from './admin/admin.module';
 import { HealthModule } from './health/health.module';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import { HealthModule } from './health/health.module';
     PortalModule,
     AdminModule,
     HealthModule,
+    SearchModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

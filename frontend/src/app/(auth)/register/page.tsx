@@ -77,80 +77,80 @@ export default function RegisterPage() {
       </div>
 
       {/* Right — form */}
-      <div className="flex-1 flex items-center justify-center px-4 py-12 bg-gray-50">
+      <div className="flex-1 flex items-center justify-center px-4 py-12 bg-gray-50 dark:bg-gray-900">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <Link href="/landing" className="inline-flex items-center gap-2 mb-6">
               <div className="w-8 h-8 rounded-lg bg-brand-teal-dark flex items-center justify-center">
                 <span className="text-white font-bold text-sm">SZ</span>
               </div>
-              <span className="text-lg font-bold text-gray-900">
+              <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
                 <span className="text-brand-teal-dark">Szerződés</span>Portál
               </span>
             </Link>
-            <h1 className="text-2xl font-bold text-gray-900">Fiók létrehozása</h1>
-            <p className="text-gray-500 mt-1 text-sm">Regisztrálj és kezdj el szerződni digitálisan</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Fiók létrehozása</h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Regisztrálj és kezdj el szerződni digitálisan</p>
           </div>
 
           <form
             onSubmit={handleSubmit}
-            className="bg-white rounded-2xl shadow-sm border p-8 space-y-4"
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border dark:border-gray-700 p-8 space-y-4"
           >
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Teljes név *</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Teljes név *</label>
               <input
                 type="text"
                 value={form.name}
                 onChange={(e) => update("name", e.target.value)}
                 required
-                className="w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-brand-teal/50 focus:border-brand-teal outline-none transition"
+                className="w-full px-4 py-2.5 border dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-brand-teal/50 focus:border-brand-teal outline-none transition dark:bg-gray-700 dark:text-gray-100"
                 placeholder="Kovács János"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email cím *</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email cím *</label>
               <input
                 type="email"
                 value={form.email}
                 onChange={(e) => update("email", e.target.value)}
                 required
-                className="w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-brand-teal/50 focus:border-brand-teal outline-none transition"
+                className="w-full px-4 py-2.5 border dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-brand-teal/50 focus:border-brand-teal outline-none transition dark:bg-gray-700 dark:text-gray-100"
                 placeholder="kovacs@ceg.hu"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Jelszó *</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Jelszó *</label>
               <input
                 type="password"
                 value={form.password}
                 onChange={(e) => update("password", e.target.value)}
                 required
                 minLength={8}
-                className="w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-brand-teal/50 focus:border-brand-teal outline-none transition"
+                className="w-full px-4 py-2.5 border dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-brand-teal/50 focus:border-brand-teal outline-none transition dark:bg-gray-700 dark:text-gray-100"
                 placeholder="Legalább 8 karakter"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Cégnév</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cégnév</label>
                 <input
                   type="text"
                   value={form.companyName}
                   onChange={(e) => update("companyName", e.target.value)}
-                  className="w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-brand-teal/50 focus:border-brand-teal outline-none transition"
+                  className="w-full px-4 py-2.5 border dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-brand-teal/50 focus:border-brand-teal outline-none transition dark:bg-gray-700 dark:text-gray-100"
                   placeholder="Példa Kft."
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Adószám</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Adószám</label>
                 <input
                   type="text"
                   value={form.taxNumber}
                   onChange={(e) => update("taxNumber", e.target.value)}
-                  className="w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-brand-teal/50 focus:border-brand-teal outline-none transition"
+                  className="w-full px-4 py-2.5 border dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-brand-teal/50 focus:border-brand-teal outline-none transition dark:bg-gray-700 dark:text-gray-100"
                   placeholder="12345678-1-23"
                 />
               </div>
@@ -161,9 +161,9 @@ export default function RegisterPage() {
                 type="checkbox"
                 checked={form.acceptTerms}
                 onChange={(e) => setForm((f) => ({ ...f, acceptTerms: e.target.checked }))}
-                className="mt-0.5 w-4 h-4 rounded border-gray-300 accent-brand-teal-dark"
+                className="mt-0.5 w-4 h-4 rounded border-gray-300 dark:border-gray-600 accent-brand-teal-dark"
               />
-              <span className="text-xs text-gray-600 leading-relaxed">
+              <span className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
                 Elolvastam és elfogadom az{" "}
                 <Link href="/aszf" target="_blank" className="text-brand-teal-dark font-medium underline hover:text-brand-teal">
                   Általános Szerződési Feltételeket
@@ -185,7 +185,7 @@ export default function RegisterPage() {
             </button>
           </form>
 
-          <p className="text-center text-sm text-gray-500 mt-6">
+          <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
             Már van fiókod?{" "}
             <Link href="/login" className="text-brand-teal-dark font-semibold hover:underline">
               Bejelentkezés
