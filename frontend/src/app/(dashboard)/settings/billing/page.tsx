@@ -230,17 +230,17 @@ export default function BillingSettings() {
   return (
     <div className="max-w-6xl space-y-6">
       {/* Header + Billing Cycle Toggle */}
-      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            <h2 className="text-lg font-semibold text-gray-900">
               Előfizetés
             </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-sm text-gray-500 mt-1">
               Válassz a csomagok közül. Minden ár + ÁFA.
             </p>
           </div>
-          <span className="inline-block bg-brand-teal/10 dark:bg-brand-teal/20 text-brand-teal-dark dark:text-brand-teal-light text-xs font-semibold px-3 py-1 rounded-full">
+          <span className="inline-block bg-brand-teal/10 text-brand-teal-dark text-xs font-semibold px-3 py-1 rounded-full">
             {planNameMap[currentPlan] ?? currentPlan} csomag
           </span>
         </div>
@@ -250,8 +250,8 @@ export default function BillingSettings() {
           <span
             className={`text-sm font-medium ${
               cycle === "monthly"
-                ? "text-gray-900 dark:text-gray-100"
-                : "text-gray-400 dark:text-gray-500"
+                ? "text-gray-900"
+                : "text-gray-400"
             }`}
           >
             Havi
@@ -261,7 +261,7 @@ export default function BillingSettings() {
             className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
               cycle === "yearly"
                 ? "bg-brand-teal-dark"
-                : "bg-gray-300 dark:bg-gray-600"
+                : "bg-gray-300"
             }`}
             aria-label="Számlázási időszak váltás"
           >
@@ -274,14 +274,14 @@ export default function BillingSettings() {
           <span
             className={`text-sm font-medium ${
               cycle === "yearly"
-                ? "text-gray-900 dark:text-gray-100"
-                : "text-gray-400 dark:text-gray-500"
+                ? "text-gray-900"
+                : "text-gray-400"
             }`}
           >
             Éves
           </span>
           {cycle === "yearly" && (
-            <span className="ml-1 inline-flex items-center bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 text-xs font-semibold px-2.5 py-0.5 rounded-full">
+            <span className="ml-1 inline-flex items-center bg-green-100 text-green-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">
               ~23% kedvezmény
             </span>
           )}
@@ -304,15 +304,15 @@ export default function BillingSettings() {
                 key={plan.id}
                 className={`relative rounded-xl border-2 p-5 transition flex flex-col ${
                   plan.popular
-                    ? "border-brand-teal dark:border-brand-teal shadow-lg shadow-brand-teal/10"
+                    ? "border-brand-teal shadow-lg shadow-brand-teal/10"
                     : isCurrent
-                    ? "border-brand-teal dark:border-brand-teal bg-brand-teal/5 dark:bg-brand-teal/10"
-                    : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                    ? "border-brand-teal bg-brand-teal/5"
+                    : "border-gray-200 hover:border-gray-300"
                 }`}
               >
                 {/* Popular badge */}
                 {plan.popular && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand-teal-dark text-white text-xs font-semibold px-3 py-0.5 rounded-full whitespace-nowrap">
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand-gold text-white text-xs font-semibold px-3 py-0.5 rounded-full whitespace-nowrap">
                     Legnépszerűbb
                   </span>
                 )}
@@ -324,25 +324,25 @@ export default function BillingSettings() {
                   </span>
                 )}
 
-                <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">
+                <h3 className="text-base font-bold text-gray-900">
                   {plan.name}
                 </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                <p className="text-xs text-gray-500 mt-0.5">
                   {plan.description}
                 </p>
 
                 <p className="mt-3">
-                  <span className="text-2xl font-extrabold text-gray-900 dark:text-gray-100">
+                  <span className="text-2xl font-extrabold text-gray-900">
                     {formatPrice(price)} Ft
                   </span>
-                  <span className="text-xs text-gray-400 dark:text-gray-500">
+                  <span className="text-xs text-gray-400">
                     {" "}
                     + áfa {periodLabel}
                   </span>
                 </p>
 
                 {cycle === "yearly" && (
-                  <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                  <p className="text-xs text-green-600 mt-1">
                     {formatPrice(Math.round(plan.yearlyPrice / 12))} Ft + áfa /
                     hó-ra vetítve
                   </p>
@@ -350,37 +350,37 @@ export default function BillingSettings() {
 
                 {/* Key stats */}
                 <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg px-2 py-1.5 text-center">
-                    <span className="block font-bold text-gray-900 dark:text-gray-100">
+                  <div className="bg-gray-50 rounded-lg px-2 py-1.5 text-center">
+                    <span className="block font-bold text-gray-900">
                       {plan.contractsPerMonth}
                     </span>
-                    <span className="text-gray-500 dark:text-gray-400">
+                    <span className="text-gray-500">
                       szerz./hó
                     </span>
                   </div>
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg px-2 py-1.5 text-center">
-                    <span className="block font-bold text-gray-900 dark:text-gray-100">
+                  <div className="bg-gray-50 rounded-lg px-2 py-1.5 text-center">
+                    <span className="block font-bold text-gray-900">
                       {plan.subAccounts === 0
                         ? "—"
                         : plan.subAccounts}
                     </span>
-                    <span className="text-gray-500 dark:text-gray-400">
+                    <span className="text-gray-500">
                       társfiók
                     </span>
                   </div>
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg px-2 py-1.5 text-center">
-                    <span className="block font-bold text-gray-900 dark:text-gray-100">
+                  <div className="bg-gray-50 rounded-lg px-2 py-1.5 text-center">
+                    <span className="block font-bold text-gray-900">
                       {plan.timestampsPerYear}
                     </span>
-                    <span className="text-gray-500 dark:text-gray-400">
+                    <span className="text-gray-500">
                       időbélyeg/év
                     </span>
                   </div>
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg px-2 py-1.5 text-center">
-                    <span className="block font-bold text-gray-900 dark:text-gray-100">
+                  <div className="bg-gray-50 rounded-lg px-2 py-1.5 text-center">
+                    <span className="block font-bold text-gray-900">
                       {plan.supportResponseTime}
                     </span>
-                    <span className="text-gray-500 dark:text-gray-400">
+                    <span className="text-gray-500">
                       válaszidő
                     </span>
                   </div>
@@ -391,10 +391,10 @@ export default function BillingSettings() {
                   {plan.features.map((f) => (
                     <li
                       key={f}
-                      className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-300"
+                      className="flex items-start gap-2 text-sm text-gray-600"
                     >
                       <svg
-                        className="w-4 h-4 text-brand-teal-dark dark:text-brand-teal shrink-0 mt-0.5"
+                        className="w-4 h-4 text-brand-teal shrink-0 mt-0.5"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -412,7 +412,7 @@ export default function BillingSettings() {
                   {plan.notIncluded.map((f) => (
                     <li
                       key={f}
-                      className="flex items-start gap-2 text-sm text-gray-300 dark:text-gray-600"
+                      className="flex items-start gap-2 text-sm text-gray-300"
                     >
                       <svg
                         className="w-4 h-4 shrink-0 mt-0.5"
@@ -438,12 +438,12 @@ export default function BillingSettings() {
                     <button
                       onClick={handlePortal}
                       disabled={loading === "portal"}
-                      className="w-full text-center py-2.5 text-sm font-medium text-brand-teal-dark dark:text-brand-teal bg-brand-teal/10 dark:bg-brand-teal/15 rounded-lg hover:bg-brand-teal/20 dark:hover:bg-brand-teal/25 transition disabled:opacity-50"
+                      className="w-full text-center py-2.5 text-sm font-medium text-brand-teal-dark bg-brand-teal/10 rounded-lg hover:bg-brand-teal/20 transition disabled:opacity-50"
                     >
                       {loading === "portal" ? "Betöltés..." : "Kezelés"}
                     </button>
                   ) : isCurrent ? (
-                    <div className="w-full text-center py-2.5 text-sm font-medium text-brand-teal-dark dark:text-brand-teal bg-brand-teal/10 dark:bg-brand-teal/15 rounded-lg">
+                    <div className="w-full text-center py-2.5 text-sm font-medium text-brand-teal-dark bg-brand-teal/10 rounded-lg">
                       Jelenlegi csomag
                     </div>
                   ) : (
@@ -452,8 +452,8 @@ export default function BillingSettings() {
                       disabled={loading === priceId}
                       className={`w-full py-2.5 rounded-lg text-sm font-medium transition disabled:opacity-50 ${
                         plan.popular
-                          ? "bg-brand-teal-dark text-white hover:bg-brand-teal-dark/90 dark:bg-brand-teal dark:hover:bg-brand-teal/90"
-                          : "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200"
+                          ? "bg-brand-gold hover:bg-brand-gold-dark text-white shadow-lg shadow-brand-gold/30"
+                          : "bg-brand-teal-dark text-white hover:bg-brand-teal-darker"
                       }`}
                     >
                       {loading === priceId
@@ -471,8 +471,8 @@ export default function BillingSettings() {
       </div>
 
       {/* Usage */}
-      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">
           Használat (aktuális hónap)
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -482,6 +482,24 @@ export default function BillingSettings() {
             limit={limits.contracts}
           />
           <UsageMeter label="Felhasználók" used={1} limit={limits.users} />
+        </div>
+      </div>
+
+      {/* Annual discount banner */}
+      <div className="bg-gradient-to-r from-brand-teal-dark to-brand-teal rounded-xl p-6 text-white">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h3 className="font-semibold text-lg">Spórolj éves fizetéssel</h3>
+            <p className="text-white/70 text-sm mt-1">
+              Éves előfizetésnél ~23% kedvezményt kapsz a havi árhoz képest!
+            </p>
+          </div>
+          <button
+            onClick={() => setCycle("yearly")}
+            className="bg-brand-gold hover:bg-brand-gold-dark text-white px-6 py-2.5 rounded-lg font-medium transition whitespace-nowrap shadow-lg shadow-brand-gold/30"
+          >
+            Váltás éves fizetésre
+          </button>
         </div>
       </div>
     </div>
@@ -499,13 +517,13 @@ function UsageMeter({
 }) {
   const pct = limit <= 0 ? 5 : Math.min((used / limit) * 100, 100);
   return (
-    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+    <div className="bg-gray-50 rounded-lg p-4">
+      <p className="text-sm font-medium text-gray-700">
         {label}
       </p>
-      <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+      <p className="text-2xl font-bold text-gray-900 mt-1">
         {used}
-        <span className="text-sm font-normal text-gray-400 dark:text-gray-500">
+        <span className="text-sm font-normal text-gray-400">
           {limit > 0
             ? ` / ${limit}`
             : limit === 0
@@ -513,7 +531,7 @@ function UsageMeter({
             : " / korlátlan"}
         </span>
       </p>
-      <div className="mt-2 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+      <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all ${
             pct > 80 ? "bg-red-500" : "bg-brand-teal"
