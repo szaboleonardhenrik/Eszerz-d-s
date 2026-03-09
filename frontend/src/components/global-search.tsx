@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 
 interface SearchResults {
-  contracts: { id: string; title: string; status: string; partyAName?: string; partyBName?: string }[];
+  contracts: { id: string; title: string; status: string; signers?: { name: string; email: string }[] }[];
   contacts: { id: string; name: string; email: string; company?: string }[];
   templates: { id: string; name: string; category?: string }[];
 }
@@ -139,7 +139,7 @@ export default function GlobalSearch() {
                               </svg>
                               <div className="min-w-0 flex-1">
                                 <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{c.title}</p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">{c.partyAName} &rarr; {c.partyBName}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{c.signers?.map(s => s.name).join(", ") || "—"}</p>
                               </div>
                               <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
                                 c.status === "signed" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :

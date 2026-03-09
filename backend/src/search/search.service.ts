@@ -6,25 +6,21 @@ export class SearchService {
   constructor(private readonly prisma: PrismaService) {}
 
   async globalSearch(query: string, userId: string) {
-    const searchTerm = `%${query}%`;
-
     const [contracts, contacts, templates] = await Promise.all([
       this.prisma.contract.findMany({
         where: {
-          userId,
-          OR: [
-            { title: { contains: query, mode: 'insensitive' } },
-            { partyAName: { contains: query, mode: 'insensitive' } },
-            { partyBName: { contains: query, mode: 'insensitive' } },
-          ],
+          ownerId: userId,
+          title: { contains: query, mode: 'insensitive' },
         },
         select: {
           id: true,
           title: true,
           status: true,
-          partyAName: true,
-          partyBName: true,
           createdAt: true,
+          signers: {
+            select: { name: true, email: true },
+            take: 2,
+          },
         },
         take: 5,
         orderBy: { updatedAt: 'desc' },
@@ -50,7 +46,7 @@ export class SearchService {
       this.prisma.template.findMany({
         where: {
           OR: [
-            { userId },
+            { ownerId: userId },
             { isPublic: true },
           ],
           name: { contains: query, mode: 'insensitive' },
@@ -61,7 +57,7 @@ export class SearchService {
           category: true,
         },
         take: 5,
-        orderBy: { updatedAt: 'desc' },
+        orderBy: { createdAt: 'desc' },
       }),
     ]);
 
