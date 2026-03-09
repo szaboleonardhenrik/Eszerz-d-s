@@ -240,7 +240,7 @@ export default function BillingSettings() {
               Válassz a csomagok közül. Minden ár + ÁFA.
             </p>
           </div>
-          <span className="inline-block bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-xs font-semibold px-3 py-1 rounded-full">
+          <span className="inline-block bg-brand-teal/10 dark:bg-brand-teal/20 text-brand-teal-dark dark:text-brand-teal-light text-xs font-semibold px-3 py-1 rounded-full">
             {planNameMap[currentPlan] ?? currentPlan} csomag
           </span>
         </div>
@@ -260,7 +260,7 @@ export default function BillingSettings() {
             onClick={() => setCycle(cycle === "monthly" ? "yearly" : "monthly")}
             className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
               cycle === "yearly"
-                ? "bg-blue-600"
+                ? "bg-brand-teal-dark"
                 : "bg-gray-300 dark:bg-gray-600"
             }`}
             aria-label="Számlázási időszak váltás"
@@ -304,22 +304,22 @@ export default function BillingSettings() {
                 key={plan.id}
                 className={`relative rounded-xl border-2 p-5 transition flex flex-col ${
                   plan.popular
-                    ? "border-blue-500 dark:border-blue-400 shadow-lg shadow-blue-500/10"
+                    ? "border-brand-teal dark:border-brand-teal shadow-lg shadow-brand-teal/10"
                     : isCurrent
-                    ? "border-blue-500 dark:border-blue-400 bg-blue-50/50 dark:bg-blue-950/20"
+                    ? "border-brand-teal dark:border-brand-teal bg-brand-teal/5 dark:bg-brand-teal/10"
                     : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
                 }`}
               >
                 {/* Popular badge */}
                 {plan.popular && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs font-semibold px-3 py-0.5 rounded-full whitespace-nowrap">
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand-teal-dark text-white text-xs font-semibold px-3 py-0.5 rounded-full whitespace-nowrap">
                     Legnépszerűbb
                   </span>
                 )}
 
                 {/* Current badge */}
                 {isCurrent && (
-                  <span className="inline-block bg-blue-600 text-white text-xs font-medium px-2.5 py-0.5 rounded-full mb-3 w-fit">
+                  <span className="inline-block bg-brand-teal-dark text-white text-xs font-medium px-2.5 py-0.5 rounded-full mb-3 w-fit">
                     Jelenlegi
                   </span>
                 )}
@@ -394,7 +394,7 @@ export default function BillingSettings() {
                       className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-300"
                     >
                       <svg
-                        className="w-4 h-4 text-blue-500 dark:text-blue-400 shrink-0 mt-0.5"
+                        className="w-4 h-4 text-brand-teal-dark dark:text-brand-teal shrink-0 mt-0.5"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -438,12 +438,12 @@ export default function BillingSettings() {
                     <button
                       onClick={handlePortal}
                       disabled={loading === "portal"}
-                      className="w-full text-center py-2.5 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition disabled:opacity-50"
+                      className="w-full text-center py-2.5 text-sm font-medium text-brand-teal-dark dark:text-brand-teal bg-brand-teal/10 dark:bg-brand-teal/15 rounded-lg hover:bg-brand-teal/20 dark:hover:bg-brand-teal/25 transition disabled:opacity-50"
                     >
                       {loading === "portal" ? "Betöltés..." : "Kezelés"}
                     </button>
                   ) : isCurrent ? (
-                    <div className="w-full text-center py-2.5 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                    <div className="w-full text-center py-2.5 text-sm font-medium text-brand-teal-dark dark:text-brand-teal bg-brand-teal/10 dark:bg-brand-teal/15 rounded-lg">
                       Jelenlegi csomag
                     </div>
                   ) : (
@@ -452,7 +452,7 @@ export default function BillingSettings() {
                       disabled={loading === priceId}
                       className={`w-full py-2.5 rounded-lg text-sm font-medium transition disabled:opacity-50 ${
                         plan.popular
-                          ? "bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                          ? "bg-brand-teal-dark text-white hover:bg-brand-teal-dark/90 dark:bg-brand-teal dark:hover:bg-brand-teal/90"
                           : "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200"
                       }`}
                     >
@@ -516,7 +516,7 @@ function UsageMeter({
       <div className="mt-2 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all ${
-            pct > 80 ? "bg-red-500" : "bg-blue-500"
+            pct > 80 ? "bg-red-500" : "bg-brand-teal"
           }`}
           style={{ width: `${pct}%` }}
         />

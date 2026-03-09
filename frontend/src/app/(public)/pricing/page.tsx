@@ -209,7 +209,7 @@ export default function PricingPage() {
       <section className="pt-20 pb-12 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <Reveal>
-            <p className="text-blue-600 dark:text-cyan-400 font-semibold text-sm uppercase tracking-wider mb-3">{"\u00c1raz\u00e1s"}</p>
+            <p className="text-brand-teal-dark dark:text-brand-teal font-semibold text-sm uppercase tracking-wider mb-3">{"\u00c1raz\u00e1s"}</p>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 dark:text-white mb-4">
               {"\u00c1rak \u00e9s csomagok"}
             </h1>
@@ -225,7 +225,7 @@ export default function PricingPage() {
                 onClick={() => setYearly(false)}
                 className={`px-5 py-2 rounded-full text-sm font-semibold transition ${
                   !yearly
-                    ? "bg-blue-700 text-white shadow-md"
+                    ? "bg-brand-teal-dark text-white shadow-md"
                     : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                 }`}
               >
@@ -235,7 +235,7 @@ export default function PricingPage() {
                 onClick={() => setYearly(true)}
                 className={`px-5 py-2 rounded-full text-sm font-semibold transition flex items-center gap-2 ${
                   yearly
-                    ? "bg-blue-700 text-white shadow-md"
+                    ? "bg-brand-teal-dark text-white shadow-md"
                     : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                 }`}
               >
@@ -263,20 +263,20 @@ export default function PricingPage() {
                 <Reveal key={i} delay={i * 100}>
                   <div className={`relative rounded-2xl p-8 flex flex-col h-full transition-all duration-300 ${
                     plan.popular
-                      ? "bg-gradient-to-br from-blue-700 to-cyan-600 dark:from-blue-600 dark:to-cyan-500 text-white shadow-2xl shadow-blue-500/25 scale-[1.04] ring-2 ring-cyan-300/50"
-                      : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-700 hover:shadow-lg"
+                      ? "bg-gradient-to-br from-brand-teal-dark to-brand-teal dark:from-brand-teal dark:to-brand-teal-light text-white shadow-2xl shadow-brand-teal/25 scale-[1.04] ring-2 ring-brand-teal/50"
+                      : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-brand-teal/30 dark:hover:border-brand-teal/40 hover:shadow-lg"
                   }`}>
                     {plan.popular && (
-                      <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-cyan-300 text-blue-900 text-xs font-bold px-4 py-1 rounded-full shadow-sm">
+                      <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-brand-teal-light text-white text-xs font-bold px-4 py-1 rounded-full shadow-sm">
                         {"Legn\u00e9pszer\u0171bb"}
                       </span>
                     )}
 
                     {/* Icon */}
                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${
-                      plan.popular ? "bg-white/15" : "bg-blue-100 dark:bg-blue-900/30"
+                      plan.popular ? "bg-white/15" : "bg-brand-teal/10 dark:bg-brand-teal/20"
                     }`}>
-                      <svg className={`w-6 h-6 ${plan.popular ? "text-cyan-300" : "text-blue-700 dark:text-cyan-400"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className={`w-6 h-6 ${plan.popular ? "text-brand-teal-light" : "text-brand-teal-dark dark:text-brand-teal"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={plan.iconPath} />
                       </svg>
                     </div>
@@ -322,7 +322,7 @@ export default function PricingPage() {
                     <ul className="space-y-2.5 mb-4 flex-1">
                       {plan.features.map((f, j) => (
                         <li key={j} className="flex items-start gap-2.5 text-sm">
-                          <svg className={`w-4 h-4 mt-0.5 shrink-0 ${plan.popular ? "text-cyan-300" : "text-blue-600 dark:text-cyan-400"}`} fill="currentColor" viewBox="0 0 20 20">
+                          <svg className={`w-4 h-4 mt-0.5 shrink-0 ${plan.popular ? "text-brand-teal-light" : "text-brand-teal-dark dark:text-brand-teal"}`} fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                           </svg>
                           <span className={plan.popular ? "text-white/90" : "text-gray-600 dark:text-gray-300"}>{f}</span>
@@ -340,8 +340,8 @@ export default function PricingPage() {
                       href={plan.href}
                       className={`block text-center py-3.5 rounded-xl font-semibold text-sm transition mt-auto ${
                         plan.popular
-                          ? "bg-white text-blue-700 hover:bg-gray-100 shadow-lg"
-                          : "bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-700 text-white"
+                          ? "bg-white text-brand-teal-dark hover:bg-gray-100 shadow-lg"
+                          : "bg-brand-teal-dark dark:bg-brand-teal hover:bg-brand-teal-dark/90 dark:hover:bg-brand-teal/90 text-white"
                       }`}
                     >
                       {plan.cta}
@@ -360,7 +360,7 @@ export default function PricingPage() {
           <div className="text-center mb-8">
             <button
               onClick={() => setShowComparison(!showComparison)}
-              className="inline-flex items-center gap-2 text-blue-700 dark:text-cyan-400 font-semibold text-sm hover:underline"
+              className="inline-flex items-center gap-2 text-brand-teal-dark dark:text-brand-teal font-semibold text-sm hover:underline"
             >
               {showComparison ? "\u00d6sszehasonl\u00edt\u00e1s elrejt\u00e9se" : "R\u00e9szletes \u00f6sszehasonl\u00edt\u00e1s megtekint\u00e9se"}
               <svg className={`w-4 h-4 transition-transform ${showComparison ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -378,7 +378,7 @@ export default function PricingPage() {
                       <th className="text-left px-6 py-4 font-semibold text-gray-900 dark:text-white min-w-[200px]">{`Funkci\u00f3`}</th>
                       <th className="px-4 py-4 font-semibold text-gray-900 dark:text-white text-center">{`Kezd\u0151`}</th>
                       <th className="px-4 py-4 font-semibold text-gray-900 dark:text-white text-center">{`K\u00f6z\u00e9pes`}</th>
-                      <th className="px-4 py-4 font-semibold text-blue-700 dark:text-cyan-400 text-center bg-blue-50/50 dark:bg-blue-900/20">{`Pr\u00e9mium`}</th>
+                      <th className="px-4 py-4 font-semibold text-brand-teal-dark dark:text-brand-teal text-center bg-brand-teal/5 dark:bg-brand-teal/10">{`Pr\u00e9mium`}</th>
                       <th className="px-4 py-4 font-semibold text-gray-900 dark:text-white text-center">{`Nagyv\u00e1llalati`}</th>
                     </tr>
                   </thead>
@@ -387,7 +387,7 @@ export default function PricingPage() {
                       <tr key={i} className="border-b border-gray-50 dark:border-gray-700/50 hover:bg-gray-50/50 dark:hover:bg-gray-700/30">
                         <td className="px-6 py-3 text-gray-700 dark:text-gray-300 font-medium">{f.name}</td>
                         {(["kezdo", "kozepes", "premium", "nagyvallalati"] as const).map((tier) => (
-                          <td key={tier} className={`px-4 py-3 text-center ${tier === "premium" ? "bg-blue-50/50 dark:bg-blue-900/20" : ""}`}>
+                          <td key={tier} className={`px-4 py-3 text-center ${tier === "premium" ? "bg-brand-teal/5 dark:bg-brand-teal/10" : ""}`}>
                             {typeof f[tier] === "boolean" ? (
                               f[tier] ? (
                                 <svg className="w-5 h-5 text-green-500 mx-auto" fill="currentColor" viewBox="0 0 20 20">
@@ -418,7 +418,7 @@ export default function PricingPage() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <Reveal>
             <div className="text-center mb-12">
-              <p className="text-blue-600 dark:text-cyan-400 font-semibold text-sm uppercase tracking-wider mb-3">GYIK</p>
+              <p className="text-brand-teal-dark dark:text-brand-teal font-semibold text-sm uppercase tracking-wider mb-3">GYIK</p>
               <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">{"Gyakran ism\u00e9telt k\u00e9rd\u00e9sek"}</h2>
             </div>
           </Reveal>
@@ -426,7 +426,7 @@ export default function PricingPage() {
             {faqs.map((faq, i) => (
               <Reveal key={i} delay={i * 60}>
                 <details className="group bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 overflow-hidden">
-                  <summary className="flex items-center justify-between px-6 py-5 cursor-pointer list-none font-semibold text-gray-900 dark:text-white hover:text-blue-700 dark:hover:text-cyan-400 transition">
+                  <summary className="flex items-center justify-between px-6 py-5 cursor-pointer list-none font-semibold text-gray-900 dark:text-white hover:text-brand-teal-dark dark:hover:text-brand-teal transition">
                     {faq.q}
                     <svg className="w-5 h-5 text-gray-400 group-open:rotate-45 transition-transform shrink-0 ml-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -443,9 +443,9 @@ export default function PricingPage() {
       </section>
 
       {/* Bottom CTA */}
-      <section className="py-20 bg-gradient-to-br from-blue-700 via-blue-600 to-cyan-600 dark:from-blue-900 dark:via-blue-800 dark:to-cyan-800 relative overflow-hidden">
+      <section className="py-20 bg-gradient-to-br from-brand-teal-dark via-brand-teal to-brand-teal-light dark:from-brand-teal-dark dark:via-brand-teal-dark/80 dark:to-brand-teal relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 right-20 w-72 h-72 bg-cyan-300 rounded-full blur-3xl" />
+          <div className="absolute top-10 right-20 w-72 h-72 bg-brand-teal-light rounded-full blur-3xl" />
           <div className="absolute bottom-10 left-20 w-64 h-64 bg-white rounded-full blur-3xl" />
         </div>
         <div className="relative max-w-3xl mx-auto px-4 text-center">
@@ -459,7 +459,7 @@ export default function PricingPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/register"
-                className="inline-flex items-center justify-center gap-2 bg-white text-blue-700 font-bold px-10 py-4 rounded-xl transition shadow-lg hover:bg-gray-100 text-lg"
+                className="inline-flex items-center justify-center gap-2 bg-white text-brand-teal-dark font-bold px-10 py-4 rounded-xl transition shadow-lg hover:bg-gray-100 text-lg"
               >
                 {"Ingyenes regisztr\u00e1ci\u00f3"}
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
