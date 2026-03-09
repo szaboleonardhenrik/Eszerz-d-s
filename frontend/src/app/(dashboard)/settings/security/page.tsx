@@ -64,6 +64,12 @@ export default function SecuritySettings() {
   const [deletePassword, setDeletePassword] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [twoFaSetup, setTwoFaSetup] = useState<{ qrCode: string; secret: string } | null>(null);
+  const [twoFaCode, setTwoFaCode] = useState("");
+  const [twoFaEnabled, setTwoFaEnabled] = useState(false);
+  const [backupCodes, setBackupCodes] = useState<string[] | null>(null);
+  const [twoFaLoading, setTwoFaLoading] = useState(false);
+  const [disablePassword, setDisablePassword] = useState("");
 
   const strength = useMemo(() => getPasswordStrength(newPassword), [newPassword]);
 
@@ -75,7 +81,59 @@ export default function SecuritySettings() {
 
   useEffect(() => {
     loadSessions();
+    load2faStatus();
   }, []);
+
+  const load2faStatus = async () => {
+    try {
+      const res = await api.get("/auth/profile");
+      setTwoFaEnabled(res.data.data.twoFactorEnabled ?? false);
+    } catch {}
+  };
+
+  const handleSetup2fa = async () => {
+    setTwoFaLoading(true);
+    try {
+      const res = await api.post("/auth/2fa/setup");
+      setTwoFaSetup(res.data.data);
+    } catch (err: any) {
+      toast.error(err.response?.data?.error?.message ?? "Hiba a 2FA beállításkor");
+    } finally {
+      setTwoFaLoading(false);
+    }
+  };
+
+  const handleVerify2fa = async () => {
+    if (!twoFaCode.trim()) return;
+    setTwoFaLoading(true);
+    try {
+      const res = await api.post("/auth/2fa/verify", { code: twoFaCode.trim() });
+      setBackupCodes(res.data.data.backupCodes);
+      setTwoFaEnabled(true);
+      setTwoFaSetup(null);
+      setTwoFaCode("");
+      toast.success("Kétfaktoros hitelesítés bekapcsolva!");
+    } catch (err: any) {
+      toast.error(err.response?.data?.error?.message ?? "Érvénytelen kód");
+    } finally {
+      setTwoFaLoading(false);
+    }
+  };
+
+  const handleDisable2fa = async () => {
+    if (!disablePassword) { toast.error("Add meg a jelszavadat"); return; }
+    setTwoFaLoading(true);
+    try {
+      await api.post("/auth/2fa/disable", { password: disablePassword });
+      setTwoFaEnabled(false);
+      setDisablePassword("");
+      toast.success("Kétfaktoros hitelesítés kikapcsolva");
+    } catch (err: any) {
+      toast.error(err.response?.data?.error?.message ?? "Hiba");
+    } finally {
+      setTwoFaLoading(false);
+    }
+  };
 
   const loadSessions = async () => {
     try {
@@ -322,19 +380,132 @@ export default function SecuritySettings() {
           </div>
         )}
 
-        <div className="flex items-center justify-between py-3 border-t">
+      </div>
+
+      {/* 2FA Section */}
+      <div className="bg-white rounded-xl border p-6 space-y-5">
+        <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-900">
-              Kétfaktoros hitelesítés
-            </p>
-            <p className="text-sm text-gray-500">
-              Extra biztonsági réteg a fiókodhoz
-            </p>
+            <h2 className="text-lg font-semibold text-gray-900">Kétfaktoros hitelesítés (2FA)</h2>
+            <p className="text-sm text-gray-500 mt-1">Extra biztonsági réteg a fiókodhoz</p>
           </div>
-          <span className="text-xs font-medium bg-gray-100 text-gray-600 px-3 py-1 rounded-full">
-            Hamarosan
-          </span>
+          {twoFaEnabled && (
+            <span className="text-xs font-semibold bg-green-100 text-green-700 px-3 py-1 rounded-full">
+              Aktív
+            </span>
+          )}
         </div>
+
+        {/* Backup codes display after setup */}
+        {backupCodes && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-3">
+            <p className="text-sm font-semibold text-amber-800">Tartalék kódok — mentsd el biztonságos helyre!</p>
+            <p className="text-xs text-amber-700">Ezek a kódok csak egyszer használhatók. Ha elveszíted a hitelesítő alkalmazásod, ezekkel tudsz bejelentkezni.</p>
+            <div className="grid grid-cols-2 gap-2">
+              {backupCodes.map((code, i) => (
+                <code key={i} className="bg-white border rounded px-3 py-1.5 text-sm font-mono text-center select-all">
+                  {code}
+                </code>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(backupCodes.join("\n"));
+                  toast.success("Kódok vágólapra másolva");
+                }}
+                className="text-sm text-amber-700 font-medium hover:text-amber-900"
+              >
+                Másolás
+              </button>
+              <button
+                onClick={() => setBackupCodes(null)}
+                className="text-sm text-gray-500 hover:text-gray-700"
+              >
+                Bezárás
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!twoFaEnabled ? (
+          <>
+            {!twoFaSetup ? (
+              <button
+                onClick={handleSetup2fa}
+                disabled={twoFaLoading}
+                className="bg-[#198296] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-[#14697a] disabled:opacity-50 transition"
+              >
+                {twoFaLoading ? "Betöltés..." : "2FA bekapcsolása"}
+              </button>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-sm text-gray-600">
+                  Szkenneld be a QR kódot egy hitelesítő alkalmazással (pl. Google Authenticator, Authy):
+                </p>
+                <div className="flex justify-center">
+                  <img src={twoFaSetup.qrCode} alt="2FA QR kód" className="w-48 h-48 rounded-lg border" />
+                </div>
+                <details className="text-sm">
+                  <summary className="text-gray-500 cursor-pointer hover:text-gray-700">Kézi bevitel</summary>
+                  <code className="block mt-2 bg-gray-100 rounded px-3 py-2 text-xs font-mono select-all break-all">
+                    {twoFaSetup.secret}
+                  </code>
+                </details>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Ellenőrző kód az alkalmazásból
+                  </label>
+                  <input
+                    type="text"
+                    value={twoFaCode}
+                    onChange={(e) => setTwoFaCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    placeholder="000000"
+                    maxLength={6}
+                    className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-[#198296] outline-none text-center text-xl tracking-widest font-mono"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleVerify2fa}
+                    disabled={twoFaLoading || twoFaCode.length !== 6}
+                    className="bg-[#198296] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-[#14697a] disabled:opacity-50 transition"
+                  >
+                    {twoFaLoading ? "Ellenőrzés..." : "Megerősítés és bekapcsolás"}
+                  </button>
+                  <button
+                    onClick={() => { setTwoFaSetup(null); setTwoFaCode(""); }}
+                    className="px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg transition"
+                  >
+                    Mégse
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-sm text-gray-600">
+              A kétfaktoros hitelesítés aktív. Kikapcsolásához add meg a jelszavadat.
+            </p>
+            <div className="flex gap-2">
+              <input
+                type="password"
+                value={disablePassword}
+                onChange={(e) => setDisablePassword(e.target.value)}
+                placeholder="Jelszó"
+                className="flex-1 px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+              />
+              <button
+                onClick={handleDisable2fa}
+                disabled={twoFaLoading || !disablePassword}
+                className="text-red-600 border border-red-300 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-red-50 disabled:opacity-50 transition"
+              >
+                2FA kikapcsolása
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* GDPR Data Export */}

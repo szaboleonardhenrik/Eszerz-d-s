@@ -17,8 +17,12 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await login(email, password);
-      router.push("/dashboard");
+      const result = await login(email, password);
+      if (result?.requiresMfa) {
+        router.push(`/2fa-verify?t=${encodeURIComponent(result.mfaToken)}`);
+      } else {
+        router.push("/dashboard");
+      }
     } catch (err: any) {
       toast.error(
         err.response?.data?.error?.message ?? "Hiba történt a bejelentkezéskor"
@@ -114,6 +118,12 @@ export default function LoginPage() {
             >
               {loading ? "Bejelentkezés..." : "Bejelentkezés"}
             </button>
+
+            <div className="text-right">
+              <Link href="/forgot-password" className="text-sm text-brand-teal-dark hover:underline">
+                Elfelejtett jelszó?
+              </Link>
+            </div>
           </form>
 
           <p className="text-center text-sm text-gray-500 mt-6">

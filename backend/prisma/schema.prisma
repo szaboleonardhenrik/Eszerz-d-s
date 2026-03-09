@@ -31,6 +31,12 @@ model User {
   consentGivenAt   DateTime?  @map("consent_given_at")
   consentVersion   String?    @map("consent_version") // e.g. "2026-03-01"
   consentIp        String?    @map("consent_ip")
+  emailVerified    Boolean    @default(false) @map("email_verified")
+  emailVerifyToken String?    @map("email_verify_token")
+  emailVerifyExp   DateTime?  @map("email_verify_exp")
+  twoFactorEnabled Boolean    @default(false) @map("two_factor_enabled")
+  twoFactorSecret  String?    @map("two_factor_secret")
+  twoFactorBackup  String[]   @default([]) @map("two_factor_backup")
   createdAt        DateTime   @default(now()) @map("created_at")
   updatedAt        DateTime   @updatedAt @map("updated_at")
 
@@ -46,6 +52,7 @@ model User {
   contacts      Contact[]
   notifications Notification[]
   sessions      Session[]
+  passwordResets PasswordReset[]
   referralsSent Referral[] @relation("ReferralsSent")
   referralsReceived Referral[] @relation("ReferralsReceived")
   quotes          Quote[]
@@ -339,6 +346,20 @@ model Contact {
 
   @@unique([userId, email])
   @@map("contacts")
+}
+
+model PasswordReset {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  used      Boolean  @default(false)
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@map("password_resets")
 }
 
 model Notification {

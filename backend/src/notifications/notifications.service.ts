@@ -135,6 +135,78 @@ export class NotificationsService {
     }
   }
 
+  // ─── AUTH NOTIFICATIONS ──────────────────────────────
+
+  async sendVerificationEmail(params: {
+    to: string;
+    name: string;
+    verifyUrl: string;
+  }) {
+    try {
+      await this.resend.emails.send({
+        from: this.fromEmail,
+        to: params.to,
+        subject: 'Email cím megerősítése – SzerződésPortál',
+        html: `
+          <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
+            <h2>Kedves ${params.name}!</h2>
+            <p>Köszönjük a regisztrációt a <strong>SzerződésPortálon</strong>!</p>
+            <p>Kérjük, erősítse meg az email címét az alábbi gombra kattintva:</p>
+            <div style="text-align:center;margin:24px 0;">
+              <a href="${params.verifyUrl}"
+                 style="display:inline-block;background:#198296;color:white;padding:14px 40px;border-radius:8px;text-decoration:none;font-weight:bold;">
+                Email megerősítése
+              </a>
+            </div>
+            <p style="font-size:12px;color:#999;">
+              Ha nem Ön regisztrált, kérjük hagyja figyelmen kívül ezt az emailt.
+              A link 7 napig érvényes.
+            </p>
+          </div>
+        `,
+      });
+      this.logger.log(`Verification email sent to ${params.to}`);
+    } catch (error) {
+      this.logger.error(`Failed to send verification email to ${params.to}`, error);
+      throw error;
+    }
+  }
+
+  async sendPasswordResetEmail(params: {
+    to: string;
+    name: string;
+    resetUrl: string;
+  }) {
+    try {
+      await this.resend.emails.send({
+        from: this.fromEmail,
+        to: params.to,
+        subject: 'Jelszó visszaállítás – SzerződésPortál',
+        html: `
+          <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
+            <h2>Kedves ${params.name}!</h2>
+            <p>Jelszó-visszaállítási kérelmet kaptunk a fiókjához.</p>
+            <p>Az alábbi gombra kattintva állíthat be új jelszót:</p>
+            <div style="text-align:center;margin:24px 0;">
+              <a href="${params.resetUrl}"
+                 style="display:inline-block;background:#198296;color:white;padding:14px 40px;border-radius:8px;text-decoration:none;font-weight:bold;">
+                Új jelszó beállítása
+              </a>
+            </div>
+            <p style="font-size:12px;color:#999;">
+              Ha nem Ön kérte a jelszó-visszaállítást, hagyja figyelmen kívül ezt az emailt.
+              A link 24 óráig érvényes.
+            </p>
+          </div>
+        `,
+      });
+      this.logger.log(`Password reset email sent to ${params.to}`);
+    } catch (error) {
+      this.logger.error(`Failed to send password reset email to ${params.to}`, error);
+      throw error;
+    }
+  }
+
   // ─── QUOTE NOTIFICATIONS ─────────────────────────────
 
   async sendQuoteToClient(params: {

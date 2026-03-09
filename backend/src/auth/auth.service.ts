@@ -7,18 +7,28 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
+import { TOTP, generateSecret, generateURI, verifySync } from 'otplib';
+import * as QRCode from 'qrcode';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
+  private readonly frontendUrl: string;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-  ) {}
+    private readonly config: ConfigService,
+    private readonly notificationsService: NotificationsService,
+  ) {
+    this.frontendUrl = config.get<string>('FRONTEND_URL', 'http://localhost:3000');
+  }
 
   async register(dto: RegisterDto, ip?: string, userAgent?: string) {
     if (!dto.acceptTerms) {
@@ -33,6 +43,7 @@ export class AuthService {
     }
 
     const passwordHash = await bcrypt.hash(dto.password, 12);
+    const emailVerifyToken = crypto.randomBytes(32).toString('hex');
     const user = await this.prisma.user.create({
       data: {
         email: dto.email,
@@ -43,8 +54,17 @@ export class AuthService {
         consentGivenAt: new Date(),
         consentVersion: '2026-03-01',
         consentIp: ip || null,
+        emailVerifyToken,
+        emailVerifyExp: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       },
     });
+
+    // Send verification email (non-blocking)
+    this.notificationsService.sendVerificationEmail({
+      to: user.email,
+      name: user.name,
+      verifyUrl: `${this.frontendUrl}/verify-email/${emailVerifyToken}`,
+    }).catch(() => {});
 
     const token = this.generateToken(user.id, user.email);
     await this.createSession(user.id, token, ip, userAgent);
@@ -65,6 +85,59 @@ export class AuthService {
     const valid = await bcrypt.compare(dto.password, user.passwordHash);
     if (!valid) {
       throw new UnauthorizedException('Hibás email vagy jelszó');
+    }
+
+    // If 2FA enabled, return a temporary MFA token instead
+    if (user.twoFactorEnabled) {
+      const mfaToken = this.jwtService.sign(
+        { sub: user.id, email: user.email, mfa: true },
+        { expiresIn: '5m' },
+      );
+      return { requiresMfa: true, mfaToken };
+    }
+
+    const token = this.generateToken(user.id, user.email);
+    await this.createSession(user.id, token, ip, userAgent);
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        companyName: user.companyName,
+        subscriptionTier: user.subscriptionTier,
+      },
+      token,
+    };
+  }
+
+  async verifyMfaLogin(mfaToken: string, code: string, ip?: string, userAgent?: string) {
+    let payload: any;
+    try {
+      payload = this.jwtService.verify(mfaToken);
+    } catch {
+      throw new UnauthorizedException('Érvénytelen vagy lejárt MFA token');
+    }
+    if (!payload.mfa) throw new UnauthorizedException('Érvénytelen MFA token');
+
+    const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
+    if (!user || !user.twoFactorSecret) throw new UnauthorizedException('2FA nincs beállítva');
+
+    // Try TOTP code first
+    const isValid = verifySync({ token: code, secret: user.twoFactorSecret });
+
+    if (!isValid) {
+      // Try backup codes
+      const codeHash = crypto.createHash('sha256').update(code).digest('hex');
+      const backupIdx = user.twoFactorBackup.indexOf(codeHash);
+      if (backupIdx === -1) throw new UnauthorizedException('Érvénytelen kód');
+
+      // Remove used backup code
+      const newBackup = [...user.twoFactorBackup];
+      newBackup.splice(backupIdx, 1);
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { twoFactorBackup: newBackup },
+      });
     }
 
     const token = this.generateToken(user.id, user.email);
@@ -94,6 +167,8 @@ export class AuthService {
         subscriptionTier: true,
         role: true,
         dapLinked: true,
+        emailVerified: true,
+        twoFactorEnabled: true,
         notifyOnSign: true,
         notifyOnDecline: true,
         notifyOnExpire: true,
@@ -211,6 +286,143 @@ export class AuthService {
     });
     return { message: `${result.count} munkamenet törölve` };
   }
+
+  // ─── EMAIL VERIFICATION ────────────────────────────
+
+  async verifyEmail(verifyToken: string) {
+    const user = await this.prisma.user.findFirst({
+      where: { emailVerifyToken: verifyToken, emailVerifyExp: { gt: new Date() } },
+    });
+    if (!user) throw new BadRequestException('Érvénytelen vagy lejárt megerősítő link');
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { emailVerified: true, emailVerifyToken: null, emailVerifyExp: null },
+    });
+    return { verified: true };
+  }
+
+  async resendVerificationEmail(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('Felhasználó nem található');
+    if (user.emailVerified) throw new BadRequestException('Az email cím már megerősítve');
+
+    const emailVerifyToken = crypto.randomBytes(32).toString('hex');
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { emailVerifyToken, emailVerifyExp: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) },
+    });
+
+    await this.notificationsService.sendVerificationEmail({
+      to: user.email,
+      name: user.name,
+      verifyUrl: `${this.frontendUrl}/verify-email/${emailVerifyToken}`,
+    });
+    return { sent: true };
+  }
+
+  // ─── FORGOT PASSWORD ─────────────────────────────
+
+  async forgotPassword(email: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    // Always return success to prevent email enumeration
+    if (!user) return { sent: true };
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    await this.prisma.passwordReset.create({
+      data: {
+        userId: user.id,
+        token: resetToken,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      },
+    });
+
+    await this.notificationsService.sendPasswordResetEmail({
+      to: user.email,
+      name: user.name,
+      resetUrl: `${this.frontendUrl}/reset-password/${resetToken}`,
+    });
+    return { sent: true };
+  }
+
+  async resetPassword(resetToken: string, newPassword: string) {
+    if (!newPassword || newPassword.length < 8) {
+      throw new BadRequestException('A jelszónak legalább 8 karakter hosszúnak kell lennie');
+    }
+
+    const reset = await this.prisma.passwordReset.findFirst({
+      where: { token: resetToken, used: false, expiresAt: { gt: new Date() } },
+    });
+    if (!reset) throw new BadRequestException('Érvénytelen vagy lejárt jelszó-visszaállítási link');
+
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+    await this.prisma.$transaction([
+      this.prisma.user.update({ where: { id: reset.userId }, data: { passwordHash } }),
+      this.prisma.passwordReset.update({ where: { id: reset.id }, data: { used: true } }),
+      this.prisma.session.deleteMany({ where: { userId: reset.userId } }),
+    ]);
+
+    return { reset: true };
+  }
+
+  // ─── 2FA / TOTP ──────────────────────────────────
+
+  async setup2fa(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('Felhasználó nem található');
+    if (user.twoFactorEnabled) throw new BadRequestException('2FA már engedélyezve van');
+
+    const secret = generateSecret();
+    const otpAuthUrl = generateURI({ issuer: 'SzerződésPortál', label: user.email, secret });
+    const qrCodeDataUrl = await QRCode.toDataURL(otpAuthUrl);
+
+    // Store secret temporarily (not enabled yet until verify)
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { twoFactorSecret: secret },
+    });
+
+    return { qrCode: qrCodeDataUrl, secret, manualEntry: secret };
+  }
+
+  async verify2fa(userId: string, code: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user || !user.twoFactorSecret) throw new BadRequestException('Először állítsa be a 2FA-t');
+
+    const isValid = verifySync({ token: code, secret: user.twoFactorSecret });
+    if (!isValid) throw new UnauthorizedException('Érvénytelen kód');
+
+    // Generate backup codes
+    const backupCodes: string[] = [];
+    const backupHashes: string[] = [];
+    for (let i = 0; i < 8; i++) {
+      const code = crypto.randomBytes(4).toString('hex').toUpperCase();
+      backupCodes.push(code);
+      backupHashes.push(crypto.createHash('sha256').update(code).digest('hex'));
+    }
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { twoFactorEnabled: true, twoFactorBackup: backupHashes },
+    });
+
+    return { enabled: true, backupCodes };
+  }
+
+  async disable2fa(userId: string, password: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('Felhasználó nem található');
+
+    const valid = await bcrypt.compare(password, user.passwordHash);
+    if (!valid) throw new UnauthorizedException('Hibás jelszó');
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { twoFactorEnabled: false, twoFactorSecret: null, twoFactorBackup: [] },
+    });
+    return { disabled: true };
+  }
+
+  // ─── ACCOUNT MANAGEMENT ──────────────────────────
 
   async deleteAccount(userId: string, password: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });

@@ -14,13 +14,14 @@ interface AuthState {
   user: User | null;
   token: string | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<any>;
   register: (data: {
     email: string;
     password: string;
     name: string;
     companyName?: string;
     taxNumber?: string;
+    acceptTerms: boolean;
   }) => Promise<void>;
   loadProfile: () => Promise<void>;
   logout: () => void;
@@ -33,9 +34,14 @@ export const useAuth = create<AuthState>((set) => ({
 
   login: async (email, password) => {
     const res = await api.post('/auth/login', { email, password });
-    const { user, token } = res.data.data;
+    const data = res.data.data;
+    if (data.requiresMfa) {
+      return { requiresMfa: true, mfaToken: data.mfaToken };
+    }
+    const { user, token } = data;
     localStorage.setItem('token', token);
     set({ user, token });
+    return null;
   },
 
   register: async (data) => {

@@ -25,6 +25,60 @@ export class AuthController {
     return ApiResponse.ok(result);
   }
 
+  @Post('verify-mfa')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  async verifyMfa(@Body() body: { mfaToken: string; code: string }, @Req() req: any) {
+    const result = await this.authService.verifyMfaLogin(body.mfaToken, body.code, req.ip, req.headers['user-agent']);
+    return ApiResponse.ok(result);
+  }
+
+  @Post('verify-email')
+  async verifyEmail(@Body() body: { token: string }) {
+    const result = await this.authService.verifyEmail(body.token);
+    return ApiResponse.ok(result);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('resend-verification')
+  async resendVerification(@Req() req: any) {
+    const result = await this.authService.resendVerificationEmail(req.user.userId);
+    return ApiResponse.ok(result);
+  }
+
+  @Post('forgot-password')
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  async forgotPassword(@Body() body: { email: string }) {
+    const result = await this.authService.forgotPassword(body.email);
+    return ApiResponse.ok(result);
+  }
+
+  @Post('reset-password')
+  async resetPassword(@Body() body: { token: string; password: string }) {
+    const result = await this.authService.resetPassword(body.token, body.password);
+    return ApiResponse.ok(result);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('2fa/setup')
+  async setup2fa(@Req() req: any) {
+    const result = await this.authService.setup2fa(req.user.userId);
+    return ApiResponse.ok(result);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('2fa/verify')
+  async verify2fa(@Req() req: any, @Body() body: { code: string }) {
+    const result = await this.authService.verify2fa(req.user.userId, body.code);
+    return ApiResponse.ok(result);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('2fa/disable')
+  async disable2fa(@Req() req: any, @Body() body: { password: string }) {
+    const result = await this.authService.disable2fa(req.user.userId, body.password);
+    return ApiResponse.ok(result);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   async getProfile(@Req() req: any) {
