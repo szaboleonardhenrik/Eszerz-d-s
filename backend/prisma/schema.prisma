@@ -328,6 +328,7 @@ model Contact {
   taxNumber   String?  @map("tax_number")
   address     String?
   notes       String?
+  group       String?  // Ügyfelek, Beszállítók, Alvállalkozók, Partnerek, Egyéb
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 

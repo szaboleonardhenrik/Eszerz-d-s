@@ -33,13 +33,16 @@ function CreateWizardInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const templateIdParam = searchParams.get("templateId");
+  const signerNameParam = searchParams.get("signerName");
+  const signerEmailParam = searchParams.get("signerEmail");
+  const signerCompanyParam = searchParams.get("signerCompany");
 
   const [step, setStep] = useState(1);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [variables, setVariables] = useState<Record<string, string>>({});
   const [signers, setSigners] = useState<Signer[]>([
-    { name: "", email: "", role: "", signingOrder: 1 },
+    { name: signerNameParam ?? "", email: signerEmailParam ?? "", role: "", signingOrder: 1 },
   ]);
   const [title, setTitle] = useState("");
   const [expiresAt, setExpiresAt] = useState("");
