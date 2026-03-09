@@ -56,7 +56,28 @@ export default function AdatvedelemPage() {
           </tbody>
         </table>
 
-        <h3>3.3. Technikai adatok</h3>
+        <h3>3.3. Partnerkezelés</h3>
+        <p>
+          A rendszer az aláírási folyamat során automatikusan menti az aláírók adatait a felhasználó
+          partneri nyilvántartásába. Ennek jogalapja a <strong>jogos érdek</strong> (GDPR 6. cikk (1) f) —
+          az üzleti kapcsolatok nyilvántartása és a jövőbeli szerződéskötés megkönnyítése érdekében.
+        </p>
+        <table>
+          <thead>
+            <tr><th>Adat</th><th>Cél</th><th>Megőrzési idő</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Partner neve, e-mail</td><td>Üzleti kapcsolattartás</td><td>Fiók törléséig</td></tr>
+            <tr><td>Cég, telefon, adószám, cím</td><td>Szerződésadatok (opcionális)</td><td>Fiók törléséig</td></tr>
+            <tr><td>Csoport/címke</td><td>Rendszerezés</td><td>Fiók törléséig</td></tr>
+          </tbody>
+        </table>
+        <p>
+          Az érintett partner bármikor kérheti adatai törlését a felhasználótól vagy közvetlenül
+          a hello@szerzodes.cegverzum.hu címen.
+        </p>
+
+        <h3>3.4. Technikai adatok</h3>
         <ul>
           <li>IP cím és böngésző user agent — biztonsági naplózás</li>
           <li>Cookie-k — munkamenet kezelés, preferenciák</li>
@@ -71,6 +92,9 @@ export default function AdatvedelemPage() {
           <li><strong>Resend Inc.</strong> — email küldés (GDPR DPA aláírva)</li>
           <li><strong>Stripe Inc.</strong> — fizetéskezelés (PCI DSS tanúsított)</li>
           <li><strong>Anthropic</strong> — AI elemzés (a szerződés tartalmát csak az elemzés idejére továbbítjuk, nem tároljuk)</li>
+          <li><strong>Webhook végpontok</strong> — a felhasználó által megadott harmadik fél URL-ekre továbbíthatunk
+            aláírói adatokat (név, e-mail, aláírási státusz). A felhasználó felelős a fogadó fél
+            GDPR-megfelelőségéért és adatfeldolgozási megállapodás meglétéért.</li>
         </ul>
         <p>
           Harmadik országba (EU-n kívülre) csak megfelelő garanciák mellett továbbítunk adatot
@@ -89,8 +113,17 @@ export default function AdatvedelemPage() {
           <li><strong>Hozzájárulás visszavonása</strong> — a hozzájáruláson alapuló adatkezelés bármikor visszavonható</li>
         </ul>
         <p>
-          Jogai gyakorlásához írjon a <strong>hello@szerzodes.cegverzum.hu</strong> címre.
+          A <strong>törlés jogát</strong> és az <strong>adathordozhatóságot</strong> a Beállítások &gt; Biztonság
+          menüpontban önkiszolgáló módon gyakorolhatja (fiók törlése, teljes adatexport letöltése).
+          Egyéb jogai gyakorlásához írjon a <strong>hello@szerzodes.cegverzum.hu</strong> címre.
           Kérelmét 30 napon belül teljesítjük.
+        </p>
+
+        <h3>5.1. Hozzájárulás nyilvántartása</h3>
+        <p>
+          A regisztrációkor adott hozzájárulást (ÁSZF és Adatvédelmi tájékoztató elfogadása)
+          a rendszer nyilvántartja, beleértve az elfogadás időpontját, a tájékoztató verzióját
+          és az IP címet, a GDPR 7. cikk (1) bekezdésében foglalt igazolási kötelezettségnek megfelelően.
         </p>
 
         <h2>6. Cookie-k (sütik)</h2>

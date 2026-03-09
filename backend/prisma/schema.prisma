@@ -28,6 +28,9 @@ model User {
   emailDigest      String     @default("instant") @map("email_digest") // instant | daily | weekly | none
   brandLogoUrl     String?    @map("brand_logo_url")
   brandColor       String?    @map("brand_color") // hex color for PDF branding
+  consentGivenAt   DateTime?  @map("consent_given_at")
+  consentVersion   String?    @map("consent_version") // e.g. "2026-03-01"
+  consentIp        String?    @map("consent_ip")
   createdAt        DateTime   @default(now()) @map("created_at")
   updatedAt        DateTime   @updatedAt @map("updated_at")
 

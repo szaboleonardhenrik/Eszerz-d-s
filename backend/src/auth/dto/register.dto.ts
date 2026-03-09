@@ -1,4 +1,4 @@
-import { IsEmail, IsString, MinLength, IsOptional, Matches } from 'class-validator';
+import { IsEmail, IsString, MinLength, IsOptional, IsBoolean, Matches } from 'class-validator';
 
 export class RegisterDto {
   @IsEmail({}, { message: 'Érvényes email címet adj meg' })
@@ -21,4 +21,7 @@ export class RegisterDto {
   @IsOptional()
   @IsString()
   taxNumber?: string;
+
+  @IsBoolean({ message: 'Az ÁSZF és Adatvédelmi tájékoztató elfogadása kötelező' })
+  acceptTerms: boolean;
 }

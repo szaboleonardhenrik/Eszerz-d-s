@@ -13,6 +13,7 @@ export default function RegisterPage() {
     password: "",
     companyName: "",
     taxNumber: "",
+    acceptTerms: false,
   });
   const [loading, setLoading] = useState(false);
   const register = useAuth((s) => s.register);
@@ -155,19 +156,33 @@ export default function RegisterPage() {
               </div>
             </div>
 
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.acceptTerms}
+                onChange={(e) => setForm((f) => ({ ...f, acceptTerms: e.target.checked }))}
+                className="mt-0.5 w-4 h-4 rounded border-gray-300 accent-brand-teal-dark"
+              />
+              <span className="text-xs text-gray-600 leading-relaxed">
+                Elolvastam és elfogadom az{" "}
+                <Link href="/aszf" target="_blank" className="text-brand-teal-dark font-medium underline hover:text-brand-teal">
+                  Általános Szerződési Feltételeket
+                </Link>{" "}
+                és az{" "}
+                <Link href="/adatvedelem" target="_blank" className="text-brand-teal-dark font-medium underline hover:text-brand-teal">
+                  Adatvédelmi Tájékoztatót
+                </Link>
+                . *
+              </span>
+            </label>
+
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !form.acceptTerms}
               className="w-full bg-brand-gold text-white py-3 rounded-xl font-semibold hover:bg-brand-gold-dark disabled:opacity-50 transition shadow-sm"
             >
               {loading ? "Regisztráció..." : "Ingyenes regisztráció"}
             </button>
-
-            <p className="text-xs text-gray-400 text-center">
-              A regisztrációval elfogadod az{" "}
-              <span className="text-gray-500 underline cursor-pointer">ÁSZF</span>-et és az{" "}
-              <span className="text-gray-500 underline cursor-pointer">Adatvédelmi tájékoztatót</span>.
-            </p>
           </form>
 
           <p className="text-center text-sm text-gray-500 mt-6">

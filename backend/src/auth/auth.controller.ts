@@ -1,4 +1,5 @@
-import { Controller, Post, Get, Patch, Delete, Body, Param, UseGuards, Req, Headers } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Delete, Body, Param, Res, UseGuards, Req, Headers } from '@nestjs/common';
+import type { Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -89,5 +90,22 @@ export class AuthController {
     const currentTokenHash = this.authService.hashToken(token);
     const result = await this.authService.revokeAllOtherSessions(req.user.userId, currentTokenHash);
     return ApiResponse.ok(result);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('delete-account')
+  async deleteAccount(@Req() req: any, @Body() body: { password: string }) {
+    const result = await this.authService.deleteAccount(req.user.userId, body.password);
+    return ApiResponse.ok(result);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('export-data')
+  async exportData(@Req() req: any, @Res() res: Response) {
+    const data = await this.authService.exportAllData(req.user.userId);
+    const filename = `szerzodes-portal-adatexport-${new Date().toISOString().slice(0, 10)}.json`;
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    return res.send(JSON.stringify(data, null, 2));
   }
 }

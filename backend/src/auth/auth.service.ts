@@ -21,6 +21,10 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto, ip?: string, userAgent?: string) {
+    if (!dto.acceptTerms) {
+      throw new BadRequestException('Az ÁSZF és Adatvédelmi tájékoztató elfogadása kötelező');
+    }
+
     const existing = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -36,6 +40,9 @@ export class AuthService {
         name: dto.name,
         companyName: dto.companyName,
         taxNumber: dto.taxNumber,
+        consentGivenAt: new Date(),
+        consentVersion: '2026-03-01',
+        consentIp: ip || null,
       },
     });
 
@@ -203,6 +210,94 @@ export class AuthService {
       },
     });
     return { message: `${result.count} munkamenet törölve` };
+  }
+
+  async deleteAccount(userId: string, password: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('Felhasználó nem található');
+
+    const valid = await bcrypt.compare(password, user.passwordHash);
+    if (!valid) throw new UnauthorizedException('Hibás jelszó');
+
+    // Delete in order respecting foreign keys
+    await this.prisma.$transaction([
+      this.prisma.notification.deleteMany({ where: { userId } }),
+      this.prisma.session.deleteMany({ where: { userId } }),
+      this.prisma.contact.deleteMany({ where: { userId } }),
+      this.prisma.webhook.deleteMany({ where: { userId } }),
+      this.prisma.apiKey.deleteMany({ where: { userId } }),
+      this.prisma.referral.deleteMany({ where: { referrerId: userId } }),
+      this.prisma.comment.deleteMany({ where: { userId } }),
+      this.prisma.tag.deleteMany({ where: { userId } }),
+      this.prisma.folder.deleteMany({ where: { userId } }),
+      this.prisma.teamMember.deleteMany({ where: { userId } }),
+      // Delete contracts and their children
+      this.prisma.auditLog.deleteMany({ where: { contract: { ownerId: userId } } }),
+      this.prisma.signer.deleteMany({ where: { contract: { ownerId: userId } } }),
+      this.prisma.contractTag.deleteMany({ where: { contract: { ownerId: userId } } }),
+      this.prisma.contractVersion.deleteMany({ where: { contract: { ownerId: userId } } }),
+      this.prisma.contractReminder.deleteMany({ where: { contract: { ownerId: userId } } }),
+      this.prisma.contract.deleteMany({ where: { ownerId: userId } }),
+      this.prisma.quoteItem.deleteMany({ where: { quote: { ownerId: userId } } }),
+      this.prisma.quoteComment.deleteMany({ where: { quote: { ownerId: userId } } }),
+      this.prisma.quote.deleteMany({ where: { ownerId: userId } }),
+      this.prisma.quoteTemplate.deleteMany({ where: { ownerId: userId } }),
+      this.prisma.templateVersion.deleteMany({ where: { template: { ownerId: userId } } }),
+      this.prisma.template.deleteMany({ where: { ownerId: userId } }),
+      this.prisma.team.deleteMany({ where: { ownerId: userId } }),
+      this.prisma.user.delete({ where: { id: userId } }),
+    ]);
+
+    return { deleted: true };
+  }
+
+  async exportAllData(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true, email: true, name: true, companyName: true, taxNumber: true,
+        phone: true, subscriptionTier: true, role: true, createdAt: true,
+        consentGivenAt: true, consentVersion: true,
+        notifyOnSign: true, notifyOnDecline: true, notifyOnExpire: true,
+        notifyOnComment: true, emailDigest: true,
+      },
+    });
+    if (!user) throw new NotFoundException('Felhasználó nem található');
+
+    const contacts = await this.prisma.contact.findMany({
+      where: { userId },
+      select: { name: true, email: true, company: true, phone: true, taxNumber: true, address: true, notes: true, group: true, createdAt: true },
+    });
+
+    const contracts = await this.prisma.contract.findMany({
+      where: { ownerId: userId },
+      select: {
+        id: true, title: true, status: true, createdAt: true, expiresAt: true,
+        signers: { select: { name: true, email: true, role: true, status: true, signedAt: true, signatureMethod: true } },
+      },
+    });
+
+    const auditLogs = await this.prisma.auditLog.findMany({
+      where: { contract: { ownerId: userId } },
+      select: { eventType: true, ipAddress: true, createdAt: true, contract: { select: { title: true } } },
+      orderBy: { createdAt: 'desc' },
+      take: 1000,
+    });
+
+    const sessions = await this.prisma.session.findMany({
+      where: { userId },
+      select: { ipAddress: true, device: true, lastActive: true, createdAt: true },
+    });
+
+    return {
+      exportDate: new Date().toISOString(),
+      gdprNote: 'GDPR 20. cikk szerinti adathordozhatóság — géppel olvasható formátum',
+      profile: user,
+      contacts,
+      contracts,
+      auditLogs: auditLogs.map(l => ({ ...l, contractTitle: l.contract?.title })),
+      sessions,
+    };
   }
 
   hashToken(token: string): string {

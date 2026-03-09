@@ -61,6 +61,9 @@ export default function SecuritySettings() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [sessionsLoading, setSessionsLoading] = useState(true);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const strength = useMemo(() => getPasswordStrength(newPassword), [newPassword]);
 
@@ -125,12 +128,41 @@ export default function SecuritySettings() {
     }
   };
 
-  const handleDeleteAccount = () => {
-    setShowDeleteConfirm(false);
-    toast("Kérjük vegye fel a kapcsolatot: hello@szerzodes.cegverzum.hu", {
-      icon: "📧",
-      duration: 5000,
-    });
+  const handleDeleteAccount = async () => {
+    if (!deletePassword) {
+      toast.error("Add meg a jelszavadat a törléshez");
+      return;
+    }
+    setDeleting(true);
+    try {
+      await api.post("/auth/delete-account", { password: deletePassword });
+      toast.success("Fiók sikeresen törölve");
+      localStorage.clear();
+      window.location.href = "/login";
+    } catch (err: any) {
+      const msg = err.response?.data?.error?.message ?? "Hiba a fiók törlésekor";
+      toast.error(msg);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleExportData = async () => {
+    setExporting(true);
+    try {
+      const res = await api.get("/auth/export-data", { responseType: "blob" });
+      const url = URL.createObjectURL(res.data);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `szerzodes-portal-adatexport-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Adatexport letöltve");
+    } catch {
+      toast.error("Hiba az adatexportnál");
+    } finally {
+      setExporting(false);
+    }
   };
 
   const otherSessions = sessions.filter((s) => !s.current);
@@ -305,15 +337,35 @@ export default function SecuritySettings() {
         </div>
       </div>
 
+      {/* GDPR Data Export */}
+      <div className="bg-white rounded-xl border p-6 space-y-4">
+        <h2 className="text-lg font-semibold text-gray-900">Adataim</h2>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-900">Adathordozhatóság (GDPR 20. cikk)</p>
+            <p className="text-sm text-gray-500">
+              Az összes személyes adatod letöltése géppel olvasható JSON formátumban
+            </p>
+          </div>
+          <button
+            onClick={handleExportData}
+            disabled={exporting}
+            className="bg-[#198296] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#14697a] disabled:opacity-50 transition"
+          >
+            {exporting ? "Exportálás..." : "Adatok letöltése"}
+          </button>
+        </div>
+      </div>
+
       {/* Danger Zone */}
       <div className="bg-white rounded-xl border border-red-200 p-6 space-y-4">
         <h2 className="text-lg font-semibold text-red-600">Veszélyzóna</h2>
 
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-900">Fiók törlése</p>
+            <p className="text-sm font-medium text-gray-900">Fiók törlése (GDPR 17. cikk)</p>
             <p className="text-sm text-gray-500">
-              A fiók és az összes adat véglegesen törlődik
+              A fiók és az összes személyes adat véglegesen és visszavonhatatlanul törlődik
             </p>
           </div>
           <button
@@ -326,19 +378,36 @@ export default function SecuritySettings() {
 
         {showDeleteConfirm && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-3">
-            <p className="text-sm text-red-800">
-              Biztosan törölni szeretnéd a fiókodat? Ez a művelet nem
-              visszavonható.
+            <p className="text-sm text-red-800 font-medium">
+              Biztosan törölni szeretnéd a fiókodat? Ez a művelet nem visszavonható.
             </p>
+            <p className="text-xs text-red-700">
+              Minden szerződésed, partnered, sablonod és napló bejegyzésed véglegesen törlődik.
+              A jogszabály által előírt adatmegőrzési kötelezettségek (pl. számviteli adatok 8 év)
+              ettől függetlenül érvényesek maradnak.
+            </p>
+            <div>
+              <label className="block text-sm font-medium text-red-800 mb-1">
+                Add meg a jelszavadat a megerősítéshez
+              </label>
+              <input
+                type="password"
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+                placeholder="Jelszó"
+                className="w-full px-4 py-2.5 border border-red-300 rounded-lg outline-none focus:ring-2 focus:ring-red-500 bg-white"
+              />
+            </div>
             <div className="flex gap-3">
               <button
                 onClick={handleDeleteAccount}
-                className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition"
+                disabled={deleting || !deletePassword}
+                className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50 transition"
               >
-                Igen, törlöm
+                {deleting ? "Törlés..." : "Véglegesen törlöm a fiókomat"}
               </button>
               <button
-                onClick={() => setShowDeleteConfirm(false)}
+                onClick={() => { setShowDeleteConfirm(false); setDeletePassword(""); }}
                 className="bg-white text-gray-700 border px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
               >
                 Mégsem
