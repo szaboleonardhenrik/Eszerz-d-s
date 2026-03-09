@@ -7,6 +7,7 @@ set -euo pipefail
 
 DB_NAME="szerzodes_portal"
 DB_USER="szerzodes"
+DB_PASS="szerzodes2026"
 BACKUP_DIR="/opt/szerzodes-portal/backups"
 RETENTION_DAYS=30
 DATE=$(date +%Y-%m-%d_%H%M%S)
@@ -17,7 +18,9 @@ mkdir -p "$BACKUP_DIR"
 
 # Create compressed backup
 echo "[$(date)] Starting backup of ${DB_NAME}..."
-pg_dump -U "$DB_USER" -d "$DB_NAME" --no-owner --no-acl | gzip > "$BACKUP_FILE"
+export PGPASSWORD="$DB_PASS"
+pg_dump -h localhost -U "$DB_USER" -d "$DB_NAME" --no-owner --no-acl | gzip > "$BACKUP_FILE"
+unset PGPASSWORD
 
 # Verify backup was created and has content
 if [ -s "$BACKUP_FILE" ]; then
