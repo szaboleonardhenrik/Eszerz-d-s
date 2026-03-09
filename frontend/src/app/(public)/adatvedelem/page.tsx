@@ -52,7 +52,7 @@ export default function AdatvedelemPage() {
             <tr><td>Szerződés tartalma</td><td>Szolgáltatás nyújtása</td><td>Fiók törléséig</td></tr>
             <tr><td>Aláírók neve, e-mail</td><td>Aláírási folyamat</td><td>Fiók törléséig</td></tr>
             <tr><td>Aláírási adat (rajz/gépelt)</td><td>E-aláírás rögzítése</td><td>Fiók törléséig</td></tr>
-            <tr><td>IP cím, böngésző</td><td>Audit napló, biztonság</td><td>5 év</td></tr>
+            <tr><td>IP cím, böngésző</td><td>Audit napló, biztonság</td><td>2 év (utána anonimizálva)</td></tr>
           </tbody>
         </table>
 
@@ -96,6 +96,11 @@ export default function AdatvedelemPage() {
             aláírói adatokat (név, e-mail, aláírási státusz). A felhasználó felelős a fogadó fél
             GDPR-megfelelőségéért és adatfeldolgozási megállapodás meglétéért.</li>
         </ul>
+        <p>
+          Az adatfeldolgozás részleteit az{" "}
+          <a href="/dpa" className="text-[#198296] underline">Adatfeldolgozási Megállapodás (DPA)</a>{" "}
+          tartalmazza, amely a GDPR 28. cikke alapján automatikusan érvényes a Szolgáltatás igénybevételével.
+        </p>
         <p>
           Harmadik országba (EU-n kívülre) csak megfelelő garanciák mellett továbbítunk adatot
           (Standard Contractual Clauses vagy EU megfelelőségi határozat alapján).

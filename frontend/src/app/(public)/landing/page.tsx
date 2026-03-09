@@ -606,6 +606,7 @@ function Footer() {
               <li><Link href="/adatvedelem" className="hover:text-white transition">Adatvédelmi tájékoztató</Link></li>
               <li><Link href="/aszf" className="hover:text-white transition">ÁSZF</Link></li>
               <li><Link href="/cookie" className="hover:text-white transition">Cookie szabályzat</Link></li>
+              <li><Link href="/dpa" className="hover:text-white transition">DPA (Adatfeldolgozás)</Link></li>
             </ul>
           </div>
           <div>

@@ -268,20 +268,28 @@ export default function SignPage() {
                 </div>
               )}
 
-              <p className="text-xs text-gray-400 mb-4">
-                Az aláírással elfogadom a szerződés feltételeit. Az aláírás
-                időbélyeggel, IP címmel és böngésző adatokkal kerül rögzítésre.
-              </p>
+              <div className="bg-gray-50 border rounded-lg p-3 mb-4 space-y-1">
+                <p className="text-xs text-gray-500">
+                  Az aláírással elfogadom a szerződés feltételeit. Az aláírás
+                  időbélyeggel, IP címmel és böngésző adatokkal kerül rögzítésre.
+                </p>
+                <p className="text-xs text-gray-400">
+                  <strong>Jogi tájékoztatás:</strong> Jelen elektronikus aláírás az eIDAS rendelet (EU 910/2014) szerinti
+                  egyszerű elektronikus aláírásnak minősül. Nem minősül minősített elektronikus aláírásnak (QES),
+                  így joghatása a Ptk. 6:7. § (3) bekezdése alapján a felek megállapodásától függ. A platform
+                  SHA-256 dokumentum hash-t és audit naplót biztosít a hitelesség igazolásához.
+                </p>
+              </div>
 
               {/* Optional signer note */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Megjegyzes (opcionalis)
+                  Megjegyzés (opcionális)
                 </label>
                 <textarea
                   value={signerNote}
                   onChange={(e) => setSignerNote(e.target.value)}
-                  placeholder="Ha szeretne megjegyzest fuzni az alairasahoz..."
+                  placeholder="Ha szeretne megjegyzést fűzni az aláírásához..."
                   rows={2}
                   className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-[#198296] outline-none resize-none dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                   onFocus={(e) => (e.target.style.borderColor = "#198296")}

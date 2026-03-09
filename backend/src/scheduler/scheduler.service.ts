@@ -307,6 +307,30 @@ export class SchedulerService {
     }
   }
 
+  /** Weekly Sunday 3:00 AM - anonymize IP addresses in audit logs older than 2 years (GDPR proportionality) */
+  @Cron('0 3 * * 0')
+  async anonymizeOldAuditLogs() {
+    this.logger.log('Running audit log IP anonymization job...');
+
+    const twoYearsAgo = new Date();
+    twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+
+    const result = await this.prisma.auditLog.updateMany({
+      where: {
+        createdAt: { lt: twoYearsAgo },
+        ipAddress: { not: null },
+      },
+      data: {
+        ipAddress: null,
+        userAgent: null,
+      },
+    });
+
+    if (result.count > 0) {
+      this.logger.log(`Anonymized IP/UA in ${result.count} audit log entries older than 2 years`);
+    }
+  }
+
   /** Daily at 8:00 AM - send contract expiry warnings (30, 14, 7 days before) */
   @Cron('0 8 * * *')
   async sendExpiryWarnings() {
