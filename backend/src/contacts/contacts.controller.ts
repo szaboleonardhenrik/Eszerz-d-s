@@ -9,13 +9,21 @@ export class ContactsController {
   constructor(private readonly contactsService: ContactsService) {}
 
   @Get()
-  async findAll(@Query('search') search: string, @Req() req: any) {
+  async findAll(@Query('search') search: string, @Query('withStats') withStats: string, @Req() req: any) {
+    if (withStats === 'true') {
+      const contacts = await this.contactsService.findAllWithStats(req.user.userId, search);
+      return ApiResponse.ok(contacts);
+    }
     const contacts = await this.contactsService.findAllByUser(req.user.userId, search);
     return ApiResponse.ok(contacts);
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string, @Req() req: any) {
+  async findOne(@Param('id') id: string, @Query('withContracts') withContracts: string, @Req() req: any) {
+    if (withContracts === 'true') {
+      const contact = await this.contactsService.findOneWithContracts(id, req.user.userId);
+      return ApiResponse.ok(contact);
+    }
     const contact = await this.contactsService.findOne(id, req.user.userId);
     return ApiResponse.ok(contact);
   }

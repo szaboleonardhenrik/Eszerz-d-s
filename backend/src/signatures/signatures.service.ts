@@ -9,6 +9,7 @@ import { PdfService } from '../pdf/pdf.service';
 import { StorageService } from '../storage/storage.service';
 import { AuditService } from '../audit/audit.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { ContactsService } from '../contacts/contacts.service';
 import { SignContractDto } from './dto/sign.dto';
 import { randomUUID } from 'crypto';
 
@@ -20,6 +21,7 @@ export class SignaturesService {
     private readonly storageService: StorageService,
     private readonly auditService: AuditService,
     private readonly notificationsService: NotificationsService,
+    private readonly contactsService: ContactsService,
   ) {}
 
   async getContractByToken(token: string) {
@@ -141,6 +143,16 @@ export class SignaturesService {
       userAgent,
       documentHash,
     });
+
+    // Auto-sync signer as partner/contact
+    try {
+      await this.contactsService.upsertFromSigner(
+        signer.contract.ownerId,
+        { name: signer.name, email: signer.email, role: signer.role ?? undefined },
+      );
+    } catch {
+      // Non-critical, don't fail the signing process
+    }
 
     // Check if all signers have signed
     const allSigners = await this.prisma.signer.findMany({

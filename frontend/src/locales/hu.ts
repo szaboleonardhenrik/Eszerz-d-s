@@ -29,7 +29,7 @@ const hu = {
     home: "Kezdőlap",
     templates: "Sablonok",
     newContract: "Új szerződés",
-    contacts: "Névjegyek",
+    contacts: "Partnerek",
     bulkSend: "Tömeges küldés",
     analytics: "Analitika",
     calendar: "Naptar",

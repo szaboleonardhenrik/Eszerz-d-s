@@ -31,7 +31,7 @@ const en: Translations = {
     home: "Home",
     templates: "Templates",
     newContract: "New Contract",
-    contacts: "Contacts",
+    contacts: "Partners",
     bulkSend: "Bulk Send",
     analytics: "Analytics",
     calendar: "Calendar",
