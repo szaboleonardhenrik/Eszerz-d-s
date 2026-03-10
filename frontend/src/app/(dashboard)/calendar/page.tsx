@@ -116,7 +116,7 @@ export default function CalendarPage() {
       const pagination = res.data.data;
       setContracts(pagination.items ?? []);
     } catch {
-      toast.error("Hiba a szerzodesek betoltesekor");
+      toast.error("Hiba a szerződések betöltésekor");
     } finally {
       setLoading(false);
     }

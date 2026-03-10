@@ -32,9 +32,9 @@ export default function BrandingSettings() {
         brandColor: brandColor || null,
       });
       await loadProfile();
-      toast.success("Arculat mentve");
+      toast.success("Arculat mentve!");
     } catch {
-      toast.error("Hiba a menteskor");
+      toast.error("Hiba a mentéskor");
     } finally {
       setSaving(false);
     }
@@ -49,7 +49,7 @@ export default function BrandingSettings() {
             PDF arculat
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Testreszabhatja a generalt PDF dokumentumok megjeleneset a sajat logoval es szineivel.
+            Testreszabhatja a generált PDF dokumentumok megjelenését a saját logóval és színeivel.
           </p>
         </div>
 
@@ -64,13 +64,13 @@ export default function BrandingSettings() {
             className="w-full px-4 py-2.5 border dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#198296] outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
           />
           <p className="text-xs text-gray-400 mt-1">
-            Ajanlott meret: max 200x60 px, PNG vagy SVG formatum
+            Ajánlott méret: max 200x60 px, PNG vagy SVG formátum
           </p>
         </div>
 
         {logoUrl && (
           <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-            <span className="text-sm text-gray-500 dark:text-gray-400">Elonezet:</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">Előnézet:</span>
             <img
               src={logoUrl}
               alt="Logo"
@@ -84,7 +84,7 @@ export default function BrandingSettings() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Marka szin
+            Márka szín
           </label>
           <div className="flex items-center gap-3 flex-wrap">
             {PRESET_COLORS.map((c) => (
@@ -118,7 +118,7 @@ export default function BrandingSettings() {
         {/* Preview */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            PDF elonezet
+            PDF előnézet
           </label>
           <div className="border dark:border-gray-600 rounded-lg p-6 bg-white dark:bg-gray-900">
             <div className="flex items-center justify-between pb-3 mb-4" style={{ borderBottom: `2px solid ${brandColor}` }}>
@@ -128,11 +128,11 @@ export default function BrandingSettings() {
                 <div className="w-8 h-8 rounded" style={{ backgroundColor: brandColor, opacity: 0.2 }} />
               )}
               <span className="text-sm font-semibold" style={{ color: brandColor }}>
-                {(user as any)?.companyName || "Ceged neve"}
+                {(user as any)?.companyName || "Céged neve"}
               </span>
             </div>
             <h3 className="text-base font-bold mb-2" style={{ color: brandColor }}>
-              Minta szerzodes cim
+              Minta szerződés cím
             </h3>
             <div className="space-y-1">
               <div className="h-2.5 bg-gray-200 dark:bg-gray-700 rounded w-full" />
@@ -142,7 +142,7 @@ export default function BrandingSettings() {
             </div>
             <div className="mt-4 pt-3 border-t dark:border-gray-700 text-center">
               <span className="text-[10px] text-gray-400">
-                {(user as any)?.companyName || "Legitas"} — Elektronikusan generalt dokumentum — 1/1. oldal
+                {(user as any)?.companyName || "Legitas"} — Elektronikusan generált dokumentum — 1/1. oldal
               </span>
             </div>
           </div>
@@ -155,7 +155,7 @@ export default function BrandingSettings() {
             className="text-white px-6 py-2.5 rounded-lg font-medium hover:opacity-90 disabled:opacity-50 transition"
             style={{ backgroundColor: brandColor }}
           >
-            {saving ? "Mentes..." : "Mentes"}
+            {saving ? "Mentés..." : "Mentés"}
           </button>
         </div>
       </div>

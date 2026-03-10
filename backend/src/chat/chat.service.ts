@@ -66,10 +66,10 @@ export class ChatService {
       })),
     }));
 
-    const systemPrompt = `Te egy szerzodeskotesi asszisztens vagy. A felhasznalo szerzodesei alapjan valaszolj a kerdesekre magyarul.
-Legy tomor es hasznos. Ha nem talalsz relevansat, mond el.
+    const systemPrompt = `Te egy szerződéskötési asszisztens vagy. A felhasználó szerződései alapján válaszolj a kérdésekre magyarul.
+Légy tömör és hasznos. Ha nem találsz relevánsot, mondd el.
 
-A felhasznalonak osszesen ${contracts.length} szerződese van. Ime az adatok:
+A felhasználónak összesen ${contracts.length} szerződése van. Íme az adatok:
 
 ${JSON.stringify(contractsSummary, null, 2)}
 

@@ -171,7 +171,7 @@ export default function DashboardPage() {
       setQuoteStats(quoteStatsRes.data.data);
       setAlerts(alertsRes.data.data);
     } catch {
-      toast.error("Hiba az adatok betoltesekor");
+      toast.error("Hiba az adatok betöltésekor");
     } finally {
       setLoading(false);
     }
@@ -221,7 +221,7 @@ export default function DashboardPage() {
             <div>
               <div className="flex items-center gap-2.5">
                 <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-                  Udvozollek, {user?.name ?? "Felhasznalo"}
+                  Üdvözöllek, {user?.name ?? "Felhasználó"}
                 </h1>
                 <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wide ${tierBadgeColors[tier] ?? tierBadgeColors.free}`}>
                   {tier}

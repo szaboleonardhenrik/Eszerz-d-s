@@ -13,9 +13,9 @@ interface Message {
 }
 
 const EXAMPLE_QUESTIONS = [
-  "Mely szerzodesek jarnak le hamarosan?",
-  "Hany szerzodes var alairasra?",
-  "Mi a legutobbi szerzodes statusza?",
+  "Mely szerződések járnak le hamarosan?",
+  "Hány szerződés vár aláírásra?",
+  "Mi a legutóbbi szerződés státusza?",
 ];
 
 export default function ChatWidget() {
@@ -61,7 +61,7 @@ export default function ChatWidget() {
 
     try {
       const res = await api.post("/chat", { question: text });
-      const answer = res.data?.data?.answer ?? "Nem sikerult valaszt kapni.";
+      const answer = res.data?.data?.answer ?? "Nem sikerült választ kapni.";
 
       const aiMessage: Message = {
         id: crypto.randomUUID(),
@@ -73,8 +73,8 @@ export default function ChatWidget() {
     } catch (err: any) {
       const errorMsg =
         err?.response?.status === 429
-          ? "Tul sok keres. Kerjuk, varj egy percet es probald ujra."
-          : "Hiba tortent. Kerjuk, probald ujra kesobb.";
+          ? "Túl sok kérés. Kérjük, várj egy percet és próbáld újra."
+          : "Hiba történt. Kérjük, próbáld újra később.";
 
       setMessages((prev) => [
         ...prev,
@@ -107,7 +107,7 @@ export default function ChatWidget() {
             ? "bg-gray-600 hover:bg-gray-700 rotate-0"
             : "bg-blue-600 hover:bg-blue-700 hover:scale-110"
         }`}
-        aria-label={open ? "Chat bezarasa" : "Chat megnyitasa"}
+        aria-label={open ? "Chat bezárása" : "Chat megnyitása"}
       >
         {open ? (
           <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -174,7 +174,7 @@ export default function ChatWidget() {
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                   </svg>
-                  Csomag frissitese
+                  Csomag frissítése
                 </Link>
               </div>
             </div>
@@ -190,7 +190,7 @@ export default function ChatWidget() {
                       </svg>
                     </div>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                      Kerdezz barmit a szerzodeseiddel kapcsolatban!
+                      Kérdezz bármit a szerződéseiddel kapcsolatban!
                     </p>
                     <div className="space-y-2 w-full">
                       {EXAMPLE_QUESTIONS.map((q) => (

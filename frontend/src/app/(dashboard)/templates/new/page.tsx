@@ -8,9 +8,9 @@ import { sanitizeHtml } from "@/lib/sanitize";
 
 const categoryOptions = [
   { value: "munkajogi", label: "Munkajogi" },
-  { value: "b2b", label: "Vallalati B2B" },
+  { value: "b2b", label: "Vállalati B2B" },
   { value: "ingatlan", label: "Ingatlan" },
-  { value: "fogyasztoi", label: "Fogyasztoi" },
+  { value: "fogyasztoi", label: "Fogyasztói" },
 ];
 
 interface Variable {
@@ -51,7 +51,7 @@ export default function NewTemplatePage() {
 
   const handleSave = async () => {
     if (!name.trim() || !contentHtml.trim()) {
-      toast.error("A nev es a tartalom megadasa kotelezo");
+      toast.error("A név és a tartalom megadása kötelező");
       return;
     }
     setSaving(true);
@@ -65,10 +65,10 @@ export default function NewTemplatePage() {
         variables,
         legalBasis: legalBasis || undefined,
       });
-      toast.success("Sablon sikeresen letrehozva");
+      toast.success("Sablon sikeresen létrehozva");
       router.push("/templates");
     } catch {
-      toast.error("Hiba a sablon mentese kozben");
+      toast.error("Hiba a sablon mentése közben");
     } finally {
       setSaving(false);
     }
@@ -90,7 +90,7 @@ export default function NewTemplatePage() {
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Uj sablon letrehozasa</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Új sablon létrehozása</h1>
         <button
           onClick={() => router.push("/templates")}
           className="text-sm text-gray-500 hover:text-gray-700"
@@ -111,14 +111,14 @@ export default function NewTemplatePage() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="pl. Munkaszerz\u0151des - hatarozott ideju"
+                placeholder="pl. Munkaszerződés - határozott idejű"
                 className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-brand-teal outline-none"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Kategoria
+                Kategória
               </label>
               <select
                 value={category}
@@ -135,20 +135,20 @@ export default function NewTemplatePage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Leiras
+                Leírás
               </label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={2}
-                placeholder="Rovid leiras a sablonrol..."
+                placeholder="Rövid leírás a sablonról..."
                 className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-brand-teal outline-none resize-none"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Jogi alap (opcionalis)
+                Jogi alap (opcionális)
               </label>
               <input
                 type="text"
@@ -165,7 +165,7 @@ export default function NewTemplatePage() {
               Tartalom (HTML) *
             </label>
             <p className="text-xs text-gray-400 mb-2">
-              Hasznalj {"{{valtozo_neve}}"} szintaxist a valtozokhoz.
+              Használj {"{{valtozo_neve}}"} szintaxist a változókhoz.
             </p>
 
             {/* HU / EN language toggle */}
@@ -201,7 +201,7 @@ export default function NewTemplatePage() {
                 value={contentHtml}
                 onChange={(e) => setContentHtml(e.target.value)}
                 rows={16}
-                placeholder={'<h2>Munkaszerz\u0151des</h2>\n<p>amely letrejott egyreszt <strong>{{munkaltato_neve}}</strong>...</p>'}
+                placeholder={'<h2>Munkaszerződés</h2>\n<p>amely létrejött egyrészt <strong>{{munkaltato_neve}}</strong>...</p>'}
                 className="w-full px-4 py-3 border dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-brand-teal outline-none resize-y font-mono text-sm leading-relaxed dark:bg-gray-900 dark:text-gray-100"
               />
             ) : (
@@ -219,20 +219,20 @@ export default function NewTemplatePage() {
           <div className="bg-white rounded-2xl border p-6">
             <div className="flex justify-between items-center mb-4">
               <label className="text-sm font-medium text-gray-700">
-                Valtozok
+                Változók
               </label>
               <button
                 type="button"
                 onClick={addVariable}
                 className="text-sm font-medium text-brand-teal hover:text-brand-teal-dark"
               >
-                + Uj valtozo
+                + Új változó
               </button>
             </div>
 
             {variables.length === 0 && (
               <p className="text-sm text-gray-400">
-                Meg nincsenek valtozok. Adj hozza egyet a tartalom dinamikus kitoltesehez.
+                Még nincsenek változók. Adj hozzá egyet a tartalom dinamikus kitöltéséhez.
               </p>
             )}
 
@@ -259,7 +259,7 @@ export default function NewTemplatePage() {
                         onChange={(e) =>
                           updateVariable(i, "label", e.target.value)
                         }
-                        placeholder="Megjelenített nev"
+                        placeholder="Megjelenített név"
                         className="px-3 py-1.5 border rounded-lg text-sm focus:ring-2 focus:ring-brand-teal outline-none"
                       />
                     </div>
@@ -271,10 +271,10 @@ export default function NewTemplatePage() {
                         }
                         className="px-3 py-1.5 border rounded-lg text-sm focus:ring-2 focus:ring-brand-teal outline-none"
                       >
-                        <option value="text">Szoveg</option>
-                        <option value="date">Datum</option>
-                        <option value="number">Szam</option>
-                        <option value="select">Valaszto</option>
+                        <option value="text">Szöveg</option>
+                        <option value="date">Dátum</option>
+                        <option value="number">Szám</option>
+                        <option value="select">Választó</option>
                       </select>
                       <label className="flex items-center gap-1.5 text-sm text-gray-600">
                         <input
@@ -285,7 +285,7 @@ export default function NewTemplatePage() {
                           }
                           className="rounded"
                         />
-                        Kotelezo
+                        Kötelező
                       </label>
                     </div>
                   </div>
@@ -294,7 +294,7 @@ export default function NewTemplatePage() {
                     onClick={() => removeVariable(i)}
                     className="text-red-400 hover:text-red-600 mt-1 text-sm"
                   >
-                    Torles
+                    Törlés
                   </button>
                 </div>
               ))}
@@ -306,7 +306,7 @@ export default function NewTemplatePage() {
         <div className="space-y-4">
           <div className="bg-white rounded-2xl border p-6 sticky top-6">
             <h2 className="text-sm font-medium text-gray-700 mb-3">
-              Elonezet
+              Előnézet
             </h2>
             <div
               className="prose prose-sm max-w-none border rounded-xl p-4 bg-gray-50 min-h-[300px]"
@@ -319,7 +319,7 @@ export default function NewTemplatePage() {
             disabled={saving}
             className="w-full bg-brand-teal-dark text-white py-3 rounded-xl text-sm font-semibold hover:bg-brand-teal transition disabled:opacity-50"
           >
-            {saving ? "Mentes..." : "Sablon mentese"}
+            {saving ? "Mentés..." : "Sablon mentése"}
           </button>
         </div>
       </div>

@@ -95,7 +95,7 @@ export default function QuoteViewPage() {
       const res = await axios.get(`${API}/quote-view/${token}`);
       setQuote(res.data.data);
     } catch (err: any) {
-      setError(err.response?.data?.error?.message ?? "Az ajanlat nem talalhato vagy mar nem ervenyes.");
+      setError(err.response?.data?.error?.message ?? "Az ajánlat nem található vagy már nem érvényes.");
     } finally {
       setLoading(false);
     }
@@ -107,7 +107,7 @@ export default function QuoteViewPage() {
       await axios.post(`${API}/quote-view/${token}/accept`);
       setActionDone("accepted");
     } catch (err: any) {
-      setError(err.response?.data?.error?.message ?? "Hiba tortent");
+      setError(err.response?.data?.error?.message ?? "Hiba történt");
     } finally {
       setActing(false);
     }
@@ -119,7 +119,7 @@ export default function QuoteViewPage() {
       await axios.post(`${API}/quote-view/${token}/decline`, { reason: declineReason });
       setActionDone("declined");
     } catch (err: any) {
-      setError(err.response?.data?.error?.message ?? "Hiba tortent");
+      setError(err.response?.data?.error?.message ?? "Hiba történt");
     } finally {
       setActing(false);
     }
@@ -513,7 +513,7 @@ export default function QuoteViewPage() {
                 className="text-white px-6 py-2.5 rounded-xl text-sm font-semibold transition disabled:opacity-50"
                 style={{ backgroundColor: brandColor }}
               >
-                {sendingComment ? "Kuldes..." : "Kerdes kuldese"}
+                {sendingComment ? "Küldés..." : "Kérdés küldése"}
               </button>
             </div>
           </div>

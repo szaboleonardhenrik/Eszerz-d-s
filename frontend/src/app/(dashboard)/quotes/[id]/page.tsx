@@ -55,10 +55,10 @@ interface Quote {
 
 const statusLabels: Record<string, string> = {
   draft: "Piszkozat",
-  sent: "Elkuldve",
+  sent: "Elküldve",
   accepted: "Elfogadva",
-  declined: "Visszautasitva",
-  expired: "Lejart",
+  declined: "Visszautasítva",
+  expired: "Lejárt",
 };
 
 const statusColors: Record<string, string> = {
@@ -100,7 +100,7 @@ export default function QuoteDetailPage() {
       const res = await api.get(`/quotes/${id}`);
       setQuote(res.data.data);
     } catch {
-      toast.error("Hiba az ajanlat betoltesekor");
+      toast.error("Hiba az ajánlat betöltésekor");
       router.push("/quotes");
     } finally {
       setLoading(false);
@@ -119,7 +119,7 @@ export default function QuoteDetailPage() {
       if (action === "delete" || method === "delete") router.push("/quotes");
       else loadQuote();
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba tortent");
+      toast.error(err.response?.data?.error?.message ?? "Hiba történt");
     } finally {
       setActionLoading(null);
     }
@@ -129,10 +129,10 @@ export default function QuoteDetailPage() {
     setActionLoading("duplicate");
     try {
       const res = await api.post(`/quotes/${id}/duplicate`);
-      toast.success("Ajanlat duplikalva!");
+      toast.success("Ajánlat duplikálva!");
       router.push(`/quotes/${res.data.data?.id ?? ""}`);
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba a duplikalaskor");
+      toast.error(err.response?.data?.error?.message ?? "Hiba a duplikáláskor");
     } finally {
       setActionLoading(null);
     }
@@ -152,7 +152,7 @@ export default function QuoteDetailPage() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch {
-      toast.error("Hiba a PDF generalasakor");
+      toast.error("Hiba a PDF generálásakor");
     } finally {
       setPdfLoading(false);
     }
@@ -206,7 +206,7 @@ export default function QuoteDetailPage() {
   return (
     <div>
       <Link href="/quotes" className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mb-4 inline-block">
-        &larr; Vissza az ajanlatokhoz
+        &larr; Vissza az ajánlatokhoz
       </Link>
 
       {/* Header */}
@@ -219,11 +219,11 @@ export default function QuoteDetailPage() {
               {statusLabels[quote.status] ?? quote.status}
             </span>
             <span className="text-sm text-gray-400 dark:text-gray-500">
-              Letrehozva: {new Date(quote.createdAt).toLocaleDateString("hu-HU")}
+              Létrehozva: {new Date(quote.createdAt).toLocaleDateString("hu-HU")}
             </span>
             {quote.updatedAt !== quote.createdAt && (
               <span className="text-sm text-gray-400 dark:text-gray-500">
-                Modositva: {new Date(quote.updatedAt).toLocaleDateString("hu-HU")}
+                Módosítva: {new Date(quote.updatedAt).toLocaleDateString("hu-HU")}
               </span>
             )}
           </div>
@@ -235,23 +235,23 @@ export default function QuoteDetailPage() {
               href={`/quotes/new?edit=${quote.id}`}
               className="border border-gray-300 dark:border-gray-600 px-5 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
             >
-              Szerkesztes
+              Szerkesztés
             </Link>
           )}
 
           {quote.status === "draft" && (
-            <button onClick={() => doAction("send", "Ajanlat elkuldve!")} disabled={actionLoading === "send"} className={brandBtn} style={{ backgroundColor: brandColor }}>
-              {actionLoading === "send" ? "Kuldes..." : "Kuldes"}
+            <button onClick={() => doAction("send", "Ajánlat elküldve!")} disabled={actionLoading === "send"} className={brandBtn} style={{ backgroundColor: brandColor }}>
+              {actionLoading === "send" ? "Küldés..." : "Küldés"}
             </button>
           )}
 
           {quote.status === "sent" && (
             <>
-              <button onClick={() => doAction("accept", "Ajanlat elfogadva!")} disabled={actionLoading === "accept"} className={brandBtn + " bg-green-600 hover:bg-green-700"}>
-                {actionLoading === "accept" ? "Elfogadas..." : "Elfogadas"}
+              <button onClick={() => doAction("accept", "Ajánlat elfogadva!")} disabled={actionLoading === "accept"} className={brandBtn + " bg-green-600 hover:bg-green-700"}>
+                {actionLoading === "accept" ? "Elfogadás..." : "Elfogadás"}
               </button>
-              <button onClick={() => { if (confirm("Biztosan visszautasitja?")) doAction("decline", "Ajanlat visszautasitva"); }} disabled={actionLoading === "decline"} className="border border-red-200 dark:border-red-800 px-5 py-2 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition disabled:opacity-50">
-                {actionLoading === "decline" ? "Visszautasitas..." : "Visszautasitas"}
+              <button onClick={() => { if (confirm("Biztosan visszautasítja?")) doAction("decline", "Ajánlat visszautasítva"); }} disabled={actionLoading === "decline"} className="border border-red-200 dark:border-red-800 px-5 py-2 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition disabled:opacity-50">
+                {actionLoading === "decline" ? "Visszautasítás..." : "Visszautasítás"}
               </button>
             </>
           )}
@@ -260,7 +260,7 @@ export default function QuoteDetailPage() {
             {pdfLoading ? (
               <><div className="w-3.5 h-3.5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />PDF...</>
             ) : (
-              <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>PDF letoltes</>
+              <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>PDF letöltés</>
             )}
           </button>
 
@@ -270,10 +270,10 @@ export default function QuoteDetailPage() {
                 setActionLoading("convert");
                 try {
                   const res = await api.post(`/quotes/${id}/convert-to-contract`);
-                  toast.success("Szerzodes letrehozva az ajanlatbol!");
+                  toast.success("Szerződés létrehozva az ajánlatból!");
                   router.push(`/contracts/${res.data.data?.id}`);
                 } catch (err: any) {
-                  toast.error(err.response?.data?.error?.message ?? "Hiba a konverziokor");
+                  toast.error(err.response?.data?.error?.message ?? "Hiba a konverziókor");
                 } finally {
                   setActionLoading(null);
                 }
@@ -281,26 +281,26 @@ export default function QuoteDetailPage() {
               disabled={actionLoading === "convert"}
               className={brandBtn + " bg-purple-600 hover:bg-purple-700"}
             >
-              {actionLoading === "convert" ? "Letrehozas..." : "Szerzodes letrehozasa"}
+              {actionLoading === "convert" ? "Létrehozás..." : "Szerződés létrehozása"}
             </button>
           )}
 
           <button onClick={handleDuplicate} disabled={actionLoading === "duplicate"} className="border border-gray-300 dark:border-gray-600 px-5 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-50">
-            {actionLoading === "duplicate" ? "Duplikalas..." : "Duplikalas"}
+            {actionLoading === "duplicate" ? "Duplikálás..." : "Duplikálás"}
           </button>
 
-          <button onClick={() => { if (confirm("Biztosan torli az ajanlatot?")) doAction("", "Ajanlat torolve!", "delete"); }} disabled={actionLoading === "delete"} className="border border-red-200 dark:border-red-800 px-5 py-2 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition disabled:opacity-50">
-            {actionLoading === "delete" ? "Torles..." : "Torles"}
+          <button onClick={() => { if (confirm("Biztosan törli az ajánlatot?")) doAction("", "Ajánlat törölve!", "delete"); }} disabled={actionLoading === "delete"} className="border border-red-200 dark:border-red-800 px-5 py-2 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition disabled:opacity-50">
+            {actionLoading === "delete" ? "Törlés..." : "Törlés"}
           </button>
         </div>
       </div>
 
       {/* Client info */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Ugyfel adatok</h2>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Ügyfél adatok</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Nev</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Név</p>
             <p className="text-sm font-medium text-gray-900 dark:text-white">{quote.clientName}</p>
           </div>
           <div>
@@ -309,7 +309,7 @@ export default function QuoteDetailPage() {
           </div>
           {quote.clientCompany && (
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Ceg</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Cég</p>
               <p className="text-sm text-gray-900 dark:text-white">{quote.clientCompany}</p>
             </div>
           )}
@@ -321,18 +321,18 @@ export default function QuoteDetailPage() {
           )}
           {quote.clientAddress && (
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Cim</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Cím</p>
               <p className="text-sm text-gray-900 dark:text-white">{quote.clientAddress}</p>
             </div>
           )}
           {quote.clientTaxNumber && (
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Adoszam</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Adószám</p>
               <p className="text-sm text-gray-900 dark:text-white">{quote.clientTaxNumber}</p>
             </div>
           )}
           <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Ervenyesseg</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Érvényesség</p>
             <p className="text-sm text-gray-900 dark:text-white">
               {quote.validUntil ? new Date(quote.validUntil).toLocaleDateString("hu-HU") : "Nincs megadva"}
             </p>
@@ -343,30 +343,30 @@ export default function QuoteDetailPage() {
       {/* Intro text */}
       {quote.introText && (
         <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 font-medium">Bevezeto</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 font-medium">Bevezető</p>
           <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{quote.introText}</p>
         </div>
       )}
 
       {/* Line items */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Tetelek</h2>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Tételek</h2>
 
         {items.length === 0 ? (
-          <p className="text-sm text-gray-400 dark:text-gray-500">Nincsenek tetelek</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500">Nincsenek tételek</p>
         ) : (
           <>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="text-left text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                    <th className="pb-2 pr-2 font-medium">Leiras</th>
-                    <th className="pb-2 px-2 font-medium text-right">Mennyiseg</th>
-                    <th className="pb-2 px-2 font-medium">Egyseg</th>
-                    <th className="pb-2 px-2 font-medium text-right">Egysegar</th>
-                    <th className="pb-2 px-2 font-medium text-right">AFA</th>
-                    <th className="pb-2 px-2 font-medium text-right">Netto</th>
-                    <th className="pb-2 pl-2 font-medium text-right">Brutto</th>
+                    <th className="pb-2 pr-2 font-medium">Leírás</th>
+                    <th className="pb-2 px-2 font-medium text-right">Mennyiség</th>
+                    <th className="pb-2 px-2 font-medium">Egység</th>
+                    <th className="pb-2 px-2 font-medium text-right">Egységár</th>
+                    <th className="pb-2 px-2 font-medium text-right">ÁFA</th>
+                    <th className="pb-2 px-2 font-medium text-right">Nettó</th>
+                    <th className="pb-2 pl-2 font-medium text-right">Bruttó</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -381,12 +381,12 @@ export default function QuoteDetailPage() {
             <div className="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
               <div className="flex flex-col items-end gap-1">
                 <div className="flex justify-between w-full max-w-xs text-sm">
-                  <span className="text-gray-500 dark:text-gray-400">Netto osszeg:</span>
+                  <span className="text-gray-500 dark:text-gray-400">Nettó összeg:</span>
                   <span className="font-medium text-gray-900 dark:text-white">{formatCurrency(totalNetto, quote.currency)}</span>
                 </div>
                 {quote.discount && quote.discountType && (
                   <div className="flex justify-between w-full max-w-xs text-sm text-red-500">
-                    <span>Kedvezmeny ({quote.discountType === "percent" ? `${quote.discount}%` : formatCurrency(quote.discount, quote.currency)}):</span>
+                    <span>Kedvezmény ({quote.discountType === "percent" ? `${quote.discount}%` : formatCurrency(quote.discount, quote.currency)}):</span>
                     <span>-{formatCurrency(
                       quote.discountType === "percent"
                         ? activeItems.reduce((s, i) => s + calcItemNetto(i), 0) * quote.discount / 100
@@ -400,12 +400,12 @@ export default function QuoteDetailPage() {
                   <span className="font-medium text-gray-900 dark:text-white">{formatCurrency(totalVat, quote.currency)}</span>
                 </div>
                 <div className="flex justify-between w-full max-w-xs text-base border-t border-gray-200 dark:border-gray-700 pt-2 mt-1">
-                  <span className="font-semibold text-gray-900 dark:text-white">Brutto osszeg:</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">Bruttó összeg:</span>
                   <span className="font-bold" style={{ color: brandColor }}>{formatCurrency(totalBrutto, quote.currency)}</span>
                 </div>
                 {optionalItems.length > 0 && (
                   <div className="flex justify-between w-full max-w-xs text-sm mt-2 text-amber-600">
-                    <span>Opcionalis tetelek:</span>
+                    <span>Opcionális tételek:</span>
                     <span>{formatCurrency(optionalItems.reduce((s, i) => s + calcItemNetto(i), 0), quote.currency)} netto</span>
                   </div>
                 )}
@@ -418,7 +418,7 @@ export default function QuoteDetailPage() {
       {/* Outro text */}
       {quote.outroText && (
         <div className="rounded-xl border-l-4 p-6 mb-6 bg-green-50 dark:bg-green-900/10" style={{ borderColor: brandColor }}>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 font-medium">Zaro szoveg</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 font-medium">Záró szöveg</p>
           <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{quote.outroText}</p>
         </div>
       )}
@@ -426,7 +426,7 @@ export default function QuoteDetailPage() {
       {/* Notes */}
       {quote.notes && (
         <div className="bg-amber-50 dark:bg-amber-900/10 rounded-xl border border-amber-200 dark:border-amber-800 p-6">
-          <p className="text-xs text-amber-600 dark:text-amber-400 mb-2 font-medium">Belso megjegyzes</p>
+          <p className="text-xs text-amber-600 dark:text-amber-400 mb-2 font-medium">Belső megjegyzés</p>
           <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{quote.notes}</p>
         </div>
       )}
@@ -451,7 +451,7 @@ function SectionBlock({ name, items, currency, brandColor }: { name: string; ite
           <tr key={idx} className={`border-b border-gray-100 dark:border-gray-700 last:border-0 ${item.isOptional ? "opacity-60" : ""}`}>
             <td className="py-3 pr-2 text-sm text-gray-900 dark:text-white">
               {item.description}
-              {item.isOptional && <span className="ml-2 text-xs px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded">opcionalis</span>}
+              {item.isOptional && <span className="ml-2 text-xs px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded">opcionális</span>}
               {item.discount && item.discountType && (
                 <span className="ml-2 text-xs text-red-500">
                   ({item.discountType === "percent" ? `-${item.discount}%` : `-${formatCurrency(item.discount, currency)}`})

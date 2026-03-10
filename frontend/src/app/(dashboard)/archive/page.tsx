@@ -69,7 +69,7 @@ export default function ArchivePage() {
         setContracts(res.data.data.items ?? []);
       })
       .catch(() => {
-        toast.error("Nem sikerult betolteni az archivalt szerzodeseket.");
+        toast.error("Nem sikerült betölteni az archivált szerződéseket.");
       })
       .finally(() => setLoading(false));
   }, []);
@@ -143,11 +143,11 @@ export default function ArchivePage() {
             />
           </svg>
           <p className="text-gray-500 dark:text-gray-400 text-lg font-medium">
-            Nincs archivalt szerzodes
+            Nincs archivált szerződés
           </p>
           {search && (
             <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">
-              Probald mas keresesi feltetellel.
+              Próbáld más keresési feltétellel.
             </p>
           )}
         </div>

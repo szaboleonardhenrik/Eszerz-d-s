@@ -42,9 +42,9 @@ interface ContractOption {
 }
 
 const typeLabels: Record<string, string> = {
-  expiry: "Lejarati emlekezeto",
-  renewal: "Megujitas",
-  signing_deadline: "Alairasi hatarido",
+  expiry: "Lejárati emlékeztető",
+  renewal: "Megújítás",
+  signing_deadline: "Aláírási határidő",
   custom: "Egyedi",
 };
 
@@ -77,7 +77,7 @@ export default function RemindersPage() {
       const items = contractsRes.data.data?.items ?? [];
       setContracts(items.map((c: any) => ({ id: c.id, title: c.title })));
     } catch {
-      toast.error("Hiba az adatok betoltesekor");
+      toast.error("Hiba az adatok betöltésekor");
     } finally {
       setLoading(false);
     }
@@ -90,7 +90,7 @@ export default function RemindersPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formContractId || !formDate || !formMessage) {
-      toast.error("Toltsd ki az osszes mezot!");
+      toast.error("Töltsd ki az összes mezőt!");
       return;
     }
     setSubmitting(true);
@@ -101,14 +101,14 @@ export default function RemindersPage() {
         message: formMessage,
         remindAt: new Date(formDate).toISOString(),
       });
-      toast.success("Emlekezeto letrehozva!");
+      toast.success("Emlékeztető létrehozva!");
       setFormContractId("");
       setFormType("custom");
       setFormMessage("");
       setFormDate("");
       loadData();
     } catch {
-      toast.error("Hiba az emlekezeto letrehozasakor");
+      toast.error("Hiba az emlékeztető létrehozásakor");
     } finally {
       setSubmitting(false);
     }
@@ -117,10 +117,10 @@ export default function RemindersPage() {
   const handleDelete = async (id: string) => {
     try {
       await api.delete(`/reminders/${id}`);
-      toast.success("Emlekezeto torolve");
+      toast.success("Emlékeztető törölve");
       setReminders((prev) => prev.filter((r) => r.id !== id));
     } catch {
-      toast.error("Hiba a torleskor");
+      toast.error("Hiba a törléskor");
     }
   };
 
@@ -144,10 +144,10 @@ export default function RemindersPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-            Emlekeztetok es figyelmezteteseek
+            Emlékeztetők és figyelmeztetések
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Kovetsd a lejaro es alairas nelkuli szerzodeseidet
+            Követsd a lejáró és aláírás nélküli szerződéseidet
           </p>
         </div>
         {alerts && alerts.totalAlerts > 0 && (
@@ -155,7 +155,7 @@ export default function RemindersPage() {
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
-            {alerts.totalAlerts} aktiv figyelmezetes
+            {alerts.totalAlerts} aktív figyelmeztetés
           </span>
         )}
       </div>
@@ -171,8 +171,8 @@ export default function RemindersPage() {
               </svg>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-red-700 dark:text-red-400">Hamarosan lejar</h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400">7 napon belul</p>
+              <h3 className="text-sm font-semibold text-red-700 dark:text-red-400">Hamarosan lejár</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400">7 napon belül</p>
             </div>
             <span className="ml-auto text-lg font-bold text-red-600 dark:text-red-400">
               {alerts?.expiringIn7Days.length ?? 0}
@@ -188,13 +188,13 @@ export default function RemindersPage() {
                 >
                   <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{c.title}</p>
                   <p className="text-xs text-red-600 dark:text-red-400 mt-0.5">
-                    {c.daysUntilExpiry === 0 ? "Ma lejar!" : `${c.daysUntilExpiry} nap mulva jar le`}
+                    {c.daysUntilExpiry === 0 ? "Ma lejár!" : `${c.daysUntilExpiry} nap múlva jár le`}
                   </p>
                 </Link>
               ))}
             </div>
           ) : (
-            <p className="text-xs text-gray-400 italic">Nincs lejaro szerzodes</p>
+            <p className="text-xs text-gray-400 italic">Nincs lejáró szerződés</p>
           )}
         </div>
 
@@ -207,8 +207,8 @@ export default function RemindersPage() {
               </svg>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-yellow-700 dark:text-yellow-400">Figyelmeztetes</h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400">30 napon belul</p>
+              <h3 className="text-sm font-semibold text-yellow-700 dark:text-yellow-400">Figyelmeztetés</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400">30 napon belül</p>
             </div>
             <span className="ml-auto text-lg font-bold text-yellow-600 dark:text-yellow-400">
               {alerts?.expiringIn30Days.length ?? 0}
@@ -224,13 +224,13 @@ export default function RemindersPage() {
                 >
                   <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{c.title}</p>
                   <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-0.5">
-                    {c.daysUntilExpiry} nap mulva jar le
+                    {c.daysUntilExpiry} nap múlva jár le
                   </p>
                 </Link>
               ))}
             </div>
           ) : (
-            <p className="text-xs text-gray-400 italic">Nincs figyelmeztetes</p>
+            <p className="text-xs text-gray-400 italic">Nincs figyelmeztetés</p>
           )}
         </div>
 
@@ -243,7 +243,7 @@ export default function RemindersPage() {
               </svg>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-blue-700 dark:text-blue-400">Alairasra var</h3>
+              <h3 className="text-sm font-semibold text-blue-700 dark:text-blue-400">Aláírásra vár</h3>
               <p className="text-xs text-gray-500 dark:text-gray-400">3+ napja elkuldve</p>
             </div>
             <span className="ml-auto text-lg font-bold text-blue-600 dark:text-blue-400">
@@ -260,7 +260,7 @@ export default function RemindersPage() {
                 >
                   <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{c.title}</p>
                   <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">
-                    {c.daysSinceCreated} napja var alairasra
+                    {c.daysSinceCreated} napja vár aláírásra
                     {c.signers && c.signers.length > 0 && (
                       <span className="text-gray-400"> - {c.signers.map((s) => s.name).join(", ")}</span>
                     )}
@@ -269,7 +269,7 @@ export default function RemindersPage() {
               ))}
             </div>
           ) : (
-            <p className="text-xs text-gray-400 italic">Nincs varakozo szerzodes</p>
+            <p className="text-xs text-gray-400 italic">Nincs várakozó szerződés</p>
           )}
         </div>
       </div>
@@ -281,7 +281,7 @@ export default function RemindersPage() {
         <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
           <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
             <h2 className="font-semibold text-sm text-gray-900 dark:text-gray-100">
-              Kozelgo emlekeztetok (kovetkezo 7 nap)
+              Közelgő emlékeztetők (következő 7 nap)
             </h2>
           </div>
           {reminders.length > 0 ? (
@@ -329,7 +329,7 @@ export default function RemindersPage() {
                   <button
                     onClick={() => handleDelete(r.id)}
                     className="shrink-0 p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
-                    title="Torles"
+                    title="Törlés"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -343,8 +343,8 @@ export default function RemindersPage() {
               <svg className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
               </svg>
-              <p className="text-sm text-gray-400">Nincs kozelgo emlekezeto</p>
-              <p className="text-xs text-gray-400 mt-1">Hozz letre egyet a jobb oldali urlap segitsegevel</p>
+              <p className="text-sm text-gray-400">Nincs közelgő emlékeztető</p>
+              <p className="text-xs text-gray-400 mt-1">Hozz létre egyet a jobb oldali űrlap segítségével</p>
             </div>
           )}
         </div>
@@ -352,20 +352,20 @@ export default function RemindersPage() {
         {/* RIGHT: Add Reminder Form */}
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
           <h2 className="font-semibold text-sm text-gray-900 dark:text-gray-100 mb-4">
-            Uj emlekezeto
+            Új emlékeztető
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Contract select */}
             <div>
               <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Szerzodes
+                Szerződés
               </label>
               <select
                 value={formContractId}
                 onChange={(e) => setFormContractId(e.target.value)}
                 className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-gray-100 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
               >
-                <option value="">Valassz szerzodest...</option>
+                <option value="">Válassz szerződést...</option>
                 {contracts.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.title}
@@ -377,7 +377,7 @@ export default function RemindersPage() {
             {/* Type select */}
             <div>
               <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Tipus
+                Típus
               </label>
               <select
                 value={formType}
@@ -395,7 +395,7 @@ export default function RemindersPage() {
             {/* Date picker */}
             <div>
               <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Datum
+                Dátum
               </label>
               <input
                 type="datetime-local"
@@ -408,13 +408,13 @@ export default function RemindersPage() {
             {/* Message */}
             <div>
               <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Uzenet
+                Üzenet
               </label>
               <textarea
                 value={formMessage}
                 onChange={(e) => setFormMessage(e.target.value)}
                 rows={3}
-                placeholder="Pl.: Szerzodes megujitasa szukseges..."
+                placeholder="Pl.: Szerződés megújítása szükséges..."
                 className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-gray-100 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
               />
             </div>
@@ -425,7 +425,7 @@ export default function RemindersPage() {
               disabled={submitting}
               className="w-full bg-gray-900 dark:bg-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition disabled:opacity-50"
             >
-              {submitting ? "Mentes..." : "Emlekezeto letrehozasa"}
+              {submitting ? "Mentés..." : "Emlékeztető létrehozása"}
             </button>
           </form>
         </div>

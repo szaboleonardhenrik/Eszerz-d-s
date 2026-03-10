@@ -159,7 +159,7 @@ export default function KanbanPage() {
       const res = await api.get("/contracts", { params: { limit: "100" } });
       setContracts(res.data.data.items ?? []);
     } catch {
-      toast.error("Nem sikerult betolteni a szerzod\u00e9seket.");
+      toast.error("Nem sikerült betölteni a szerződéseket.");
     } finally {
       setLoading(false);
     }

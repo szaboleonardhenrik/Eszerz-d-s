@@ -8,9 +8,9 @@ import { sanitizeHtml } from "@/lib/sanitize";
 
 const categoryOptions = [
   { value: "munkajogi", label: "Munkajogi" },
-  { value: "b2b", label: "Vallalati B2B" },
+  { value: "b2b", label: "Vállalati B2B" },
   { value: "ingatlan", label: "Ingatlan" },
-  { value: "fogyasztoi", label: "Fogyasztoi" },
+  { value: "fogyasztoi", label: "Fogyasztói" },
 ];
 
 interface Variable {
@@ -55,7 +55,7 @@ export default function EditTemplatePage() {
       setLegalBasis(t.legalBasis ?? "");
       setVariables(t.variables ?? []);
     } catch {
-      toast.error("Nem sikerult betolteni a sablont");
+      toast.error("Nem sikerült betölteni a sablont");
       router.push("/templates");
     } finally {
       setLoading(false);
@@ -81,7 +81,7 @@ export default function EditTemplatePage() {
 
   const handleSave = async () => {
     if (!name.trim() || !contentHtml.trim()) {
-      toast.error("A nev es a tartalom megadasa kotelezo");
+      toast.error("A név és a tartalom megadása kötelező");
       return;
     }
     setSaving(true);
@@ -95,10 +95,10 @@ export default function EditTemplatePage() {
         variables,
         legalBasis: legalBasis || undefined,
       });
-      toast.success("Sablon sikeresen frissitve");
+      toast.success("Sablon sikeresen frissítve");
       router.push("/templates");
     } catch (err: any) {
-      const msg = err?.response?.data?.error?.message ?? "Hiba a sablon mentese kozben";
+      const msg = err?.response?.data?.error?.message ?? "Hiba a sablon mentése közben";
       toast.error(msg);
     } finally {
       setSaving(false);
@@ -125,21 +125,21 @@ export default function EditTemplatePage() {
       setVersions(res.data.data ?? []);
       setShowVersions(true);
     } catch {
-      toast.error("Nem sikerult betolteni a verziokat");
+      toast.error("Nem sikerült betölteni a verziókat");
     } finally {
       setVersionsLoading(false);
     }
   };
 
   const handleRevert = async (versionId: string) => {
-    if (!confirm("Biztosan visszaallitod ezt a verziot?")) return;
+    if (!confirm("Biztosan visszaállítod ezt a verziót?")) return;
     try {
       await api.post(`/templates/${id}/revert/${versionId}`);
-      toast.success("Verzio visszaallitva");
+      toast.success("Verzió visszaállítva");
       setShowVersions(false);
       await loadTemplate();
     } catch {
-      toast.error("Hiba a verzio visszaallitasakor");
+      toast.error("Hiba a verzió visszaállításakor");
     }
   };
 
@@ -154,14 +154,14 @@ export default function EditTemplatePage() {
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Sablon szerkesztese</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Sablon szerkesztése</h1>
         <div className="flex items-center gap-3">
           <button
             onClick={loadVersions}
             disabled={versionsLoading}
             className="text-sm font-medium px-4 py-2 rounded-lg border hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 disabled:opacity-50"
           >
-            {versionsLoading ? "Betoltes..." : "Verziok"}
+            {versionsLoading ? "Betöltés..." : "Verziók"}
           </button>
           <button
             onClick={() => router.push("/templates")}
@@ -176,7 +176,7 @@ export default function EditTemplatePage() {
       {showVersions && (
         <div className="mb-6 bg-white dark:bg-gray-800 rounded-2xl border dark:border-gray-700 p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Verzio elozmények</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Verzió előzmények</h2>
             <button onClick={() => setShowVersions(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -184,7 +184,7 @@ export default function EditTemplatePage() {
             </button>
           </div>
           {versions.length === 0 ? (
-            <p className="text-sm text-gray-400">Nincs korabbi verzio</p>
+            <p className="text-sm text-gray-400">Nincs korábbi verzió</p>
           ) : (
             <div className="space-y-2">
               {versions.map((v) => (
@@ -205,7 +205,7 @@ export default function EditTemplatePage() {
                     onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = "#0e5f6e"}
                     onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = "#198296"}
                   >
-                    Visszaallitas
+                    Visszaállítás
                   </button>
                 </div>
               ))}
@@ -232,7 +232,7 @@ export default function EditTemplatePage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Kategoria
+                Kategória
               </label>
               <select
                 value={category}
@@ -249,7 +249,7 @@ export default function EditTemplatePage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Leiras
+                Leírás
               </label>
               <textarea
                 value={description}
@@ -261,7 +261,7 @@ export default function EditTemplatePage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Jogi alap (opcionalis)
+                Jogi alap (opcionális)
               </label>
               <input
                 type="text"
@@ -277,7 +277,7 @@ export default function EditTemplatePage() {
               Tartalom (HTML) *
             </label>
             <p className="text-xs text-gray-400 mb-2">
-              Hasznalj {"{{valtozo_neve}}"} szintaxist a valtozokhoz.
+              Használj {"{{valtozo_neve}}"} szintaxist a változókhoz.
             </p>
 
             {/* HU / EN language toggle */}
@@ -330,20 +330,20 @@ export default function EditTemplatePage() {
           <div className="bg-white rounded-2xl border p-6">
             <div className="flex justify-between items-center mb-4">
               <label className="text-sm font-medium text-gray-700">
-                Valtozok
+                Változók
               </label>
               <button
                 type="button"
                 onClick={addVariable}
                 className="text-sm font-medium text-brand-teal hover:text-brand-teal-dark"
               >
-                + Uj valtozo
+                + Új változó
               </button>
             </div>
 
             {variables.length === 0 && (
               <p className="text-sm text-gray-400">
-                Meg nincsenek valtozok.
+                Még nincsenek változók.
               </p>
             )}
 
@@ -370,7 +370,7 @@ export default function EditTemplatePage() {
                         onChange={(e) =>
                           updateVariable(i, "label", e.target.value)
                         }
-                        placeholder="Megjelenített nev"
+                        placeholder="Megjelenített név"
                         className="px-3 py-1.5 border rounded-lg text-sm focus:ring-2 focus:ring-brand-teal outline-none"
                       />
                     </div>
@@ -382,10 +382,10 @@ export default function EditTemplatePage() {
                         }
                         className="px-3 py-1.5 border rounded-lg text-sm focus:ring-2 focus:ring-brand-teal outline-none"
                       >
-                        <option value="text">Szoveg</option>
-                        <option value="date">Datum</option>
-                        <option value="number">Szam</option>
-                        <option value="select">Valaszto</option>
+                        <option value="text">Szöveg</option>
+                        <option value="date">Dátum</option>
+                        <option value="number">Szám</option>
+                        <option value="select">Választó</option>
                       </select>
                       <label className="flex items-center gap-1.5 text-sm text-gray-600">
                         <input
@@ -396,7 +396,7 @@ export default function EditTemplatePage() {
                           }
                           className="rounded"
                         />
-                        Kotelezo
+                        Kötelező
                       </label>
                     </div>
                   </div>
@@ -405,7 +405,7 @@ export default function EditTemplatePage() {
                     onClick={() => removeVariable(i)}
                     className="text-red-400 hover:text-red-600 mt-1 text-sm"
                   >
-                    Torles
+                    Törlés
                   </button>
                 </div>
               ))}
@@ -417,7 +417,7 @@ export default function EditTemplatePage() {
         <div className="space-y-4">
           <div className="bg-white rounded-2xl border p-6 sticky top-6">
             <h2 className="text-sm font-medium text-gray-700 mb-3">
-              Elonezet
+              Előnézet
             </h2>
             <div
               className="prose prose-sm max-w-none border rounded-xl p-4 bg-gray-50 min-h-[300px]"
@@ -430,7 +430,7 @@ export default function EditTemplatePage() {
             disabled={saving}
             className="w-full bg-brand-teal-dark text-white py-3 rounded-xl text-sm font-semibold hover:bg-brand-teal transition disabled:opacity-50"
           >
-            {saving ? "Mentes..." : "Valtozasok mentese"}
+            {saving ? "Mentés..." : "Változások mentése"}
           </button>
         </div>
       </div>

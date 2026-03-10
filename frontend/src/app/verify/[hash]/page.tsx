@@ -70,7 +70,7 @@ export default function VerifyPage() {
             Ervenytelen hivatkozas
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mb-6">
-            Ez a szerzodes nem talalhato vagy ervenytelen.
+            Ez a szerződés nem található vagy érvénytelen.
           </p>
           <Link
             href="/"
@@ -98,7 +98,7 @@ export default function VerifyPage() {
             Legitas
           </Link>
           <span className="text-xs text-gray-400 dark:text-gray-500 font-mono">
-            Hitelesites
+            Hitelesítés
           </span>
         </div>
       </header>
@@ -113,10 +113,10 @@ export default function VerifyPage() {
               </svg>
             </div>
             <h1 className="text-xl font-bold text-white mb-1">
-              Szerzodes hitelesitett
+              Szerződés hitelesített
             </h1>
             <p className="text-white/70 text-sm">
-              Ez a dokumentum a Legitas rendszerben van nyilvantartva
+              Ez a dokumentum a Legitas rendszerben van nyilvántartva
             </p>
           </div>
 
@@ -208,7 +208,7 @@ export default function VerifyPage() {
             {/* Verification Hash */}
             <div>
               <label className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-                Hitelesitesi azonosito
+                Hitelesítési azonosito
               </label>
               <p className="text-sm font-mono text-gray-600 dark:text-gray-400 mt-1 bg-gray-50 dark:bg-gray-800 px-3 py-2 rounded-lg break-all">
                 {data.verificationHash}
@@ -218,7 +218,7 @@ export default function VerifyPage() {
             {/* Footer note */}
             <div className="border-t border-gray-100 dark:border-gray-800 pt-5">
               <p className="text-xs text-gray-400 dark:text-gray-500 leading-relaxed">
-                Ez a szerzodes a Legitas rendszerben lett letrehozva es hitelesitve. A hitelesitesi azonosito egyedi, es a szerzodes valtozoatlansagat garantalja.
+                Ez a szerződés a Legitas rendszerben lett létrehozva és hitelesítve. A hitelesítési azonosító egyedi, és a szerződés változatlanságát garantálja.
               </p>
             </div>
           </div>

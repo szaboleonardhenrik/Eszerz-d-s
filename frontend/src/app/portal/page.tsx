@@ -59,7 +59,7 @@ export default function PortalPage() {
       setPortalEmail(contractsRes.data.data.email);
     } catch (err: any) {
       setError(
-        err.response?.data?.error?.message ?? "Hiba tortent. Probald ujra."
+        err.response?.data?.error?.message ?? "Hiba történt. Próbáld újra."
       );
     } finally {
       setLoading(false);
@@ -119,17 +119,17 @@ export default function PortalPage() {
                     </svg>
                   </div>
                   <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                    Ugyfelportal
+                    Ügyfélportál
                   </h1>
                   <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
-                    Adja meg az email cimet a szerzodesek megtekintegesehez
+                    Adja meg az email címét a szerződések megtekintéséhez
                   </p>
                 </div>
 
                 <form onSubmit={handleRequestAccess} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                      Email cim
+                      Email cím
                     </label>
                     <input
                       type="email"
@@ -158,21 +158,21 @@ export default function PortalPage() {
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                         </svg>
-                        Betoltes...
+                        Betöltés...
                       </>
                     ) : (
                       <>
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                         </svg>
-                        Hozzaferes kerese
+                        Hozzáférés kérése
                       </>
                     )}
                   </button>
                 </form>
 
                 <p className="text-center text-xs text-gray-400 dark:text-gray-500 mt-6">
-                  Csak azok a szerzodesek jelennek meg, amelyeknel On alairoként szerepel.
+                  Csak azok a szerződések jelennek meg, amelyeknél Ön aláíróként szerepel.
                 </p>
               </div>
 
@@ -200,7 +200,7 @@ export default function PortalPage() {
                     {portalEmail}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {contracts.length} szerzodes talalhato
+                    {contracts.length} szerződés található
                   </p>
                 </div>
               </div>
@@ -215,10 +215,10 @@ export default function PortalPage() {
                   </svg>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  Nincsenek szerzodesek
+                  Nincsenek szerződések
                 </h3>
                 <p className="text-gray-500 dark:text-gray-400 text-sm max-w-sm mx-auto">
-                  Ehhez az email cimhez jelenleg nem tartozik egyetlen szerzodes sem.
+                  Ehhez az email címhez jelenleg nem tartozik egyetlen szerződés sem.
                 </p>
               </div>
             ) : (

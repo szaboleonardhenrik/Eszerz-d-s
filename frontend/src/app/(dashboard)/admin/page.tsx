@@ -35,14 +35,14 @@ interface ActivityEntry {
 }
 
 const eventLabels: Record<string, string> = {
-  "contract.created": "Szerzodes letrehozva",
-  "contract.sent": "Szerzodes elkuldve",
-  "contract.completed": "Szerzodes befejezve",
-  "contract.cancelled": "Szerzodes visszavonva",
-  "signer.signed": "Alairas megtortent",
-  "signer.declined": "Alairas elutasitva",
-  "signer.viewed": "Szerzodes megtekintve",
-  "contract.expired": "Szerzodes lejart",
+  "contract.created": "Szerződés létrehozva",
+  "contract.sent": "Szerződés elküldve",
+  "contract.completed": "Szerződés befejezve",
+  "contract.cancelled": "Szerződés visszavonva",
+  "signer.signed": "Aláírás megtörtént",
+  "signer.declined": "Aláírás elutasítva",
+  "signer.viewed": "Szerződés megtekintve",
+  "contract.expired": "Szerződés lejárt",
 };
 
 const eventColors: Record<string, string> = {
@@ -58,11 +58,11 @@ const eventColors: Record<string, string> = {
 
 const statusLabels: Record<string, string> = {
   draft: "Piszkozat",
-  sent: "Elkuldve",
-  partially_signed: "Reszben alairt",
-  completed: "Kesz",
-  declined: "Visszautasitva",
-  expired: "Lejart",
+  sent: "Elküldve",
+  partially_signed: "Részben aláírt",
+  completed: "Kész",
+  declined: "Visszautasítva",
+  expired: "Lejárt",
   cancelled: "Visszavonva",
 };
 
@@ -90,11 +90,11 @@ function timeAgo(dateStr: string) {
   if (diffMin < 1) return "most";
   if (diffMin < 60) return `${diffMin} perce`;
   const diffH = Math.floor(diffMin / 60);
-  if (diffH < 24) return `${diffH} oraja`;
+  if (diffH < 24) return `${diffH} órája`;
   const diffD = Math.floor(diffH / 24);
   if (diffD < 30) return `${diffD} napja`;
   const diffM = Math.floor(diffD / 30);
-  return `${diffM} honapja`;
+  return `${diffM} hónapja`;
 }
 
 export default function AdminDashboard() {
@@ -136,10 +136,10 @@ export default function AdminDashboard() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Nincs jogosultsagod</h2>
-          <p className="text-gray-500 dark:text-gray-400">Ez az oldal csak adminisztratorok szamara erheto el.</p>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Nincs jogosultságod</h2>
+          <p className="text-gray-500 dark:text-gray-400">Ez az oldal csak adminisztrátorok számára érhető el.</p>
           <Link href="/dashboard" className="inline-block mt-4 px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition">
-            Vissza a kezdolapra
+            Vissza a kezdőlapra
           </Link>
         </div>
       </div>
@@ -151,7 +151,7 @@ export default function AdminDashboard() {
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-violet-600 mx-auto" />
-          <p className="mt-4 text-sm text-gray-400">Admin panel betoltese...</p>
+          <p className="mt-4 text-sm text-gray-400">Admin panel betöltése...</p>
         </div>
       </div>
     );
@@ -165,7 +165,7 @@ export default function AdminDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Admin panel</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Rendszer attekintes es felhasznalokezeles</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Rendszer áttekintés és felhasználókezelés</p>
         </div>
         <Link
           href="/admin/users"
@@ -174,7 +174,7 @@ export default function AdminDashboard() {
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
           </svg>
-          Felhasznalok kezelese
+          Felhasználók kezelése
         </Link>
       </div>
 
@@ -182,28 +182,28 @@ export default function AdminDashboard() {
       {stats && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
-            label="Osszes felhasznalo"
+            label="Összes felhasználó"
             value={stats.totalUsers}
             icon="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
             color="violet"
           />
           <StatCard
-            label="Osszes szerzodes"
+            label="Összes szerződés"
             value={stats.totalContracts}
             icon="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
             color="indigo"
           />
           <StatCard
-            label="Mai szerzodes"
+            label="Mai szerződés"
             value={stats.contractsToday}
             sub={`Heti: ${stats.contractsThisWeek} | Havi: ${stats.contractsThisMonth}`}
             icon="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
             color="blue"
           />
           <StatCard
-            label="Tarolt fajlok"
+            label="Tárolt fájlok"
             value={`${stats.estimatedStorageMb} MB`}
-            sub={`${stats.totalQuotes} ajanlat | ${stats.totalSigners} alairo`}
+            sub={`${stats.totalQuotes} ajánlat | ${stats.totalSigners} aláíró`}
             icon="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"
             color="emerald"
           />
@@ -214,7 +214,7 @@ export default function AdminDashboard() {
         {/* Contract Status Breakdown */}
         {stats && (
           <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Szerzodesek statusz szerint</h3>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Szerződések státusz szerint</h3>
             <div className="space-y-3">
               {Object.entries(stats.contractsByStatus).map(([status, count]) => {
                 const pct = stats.totalContracts > 0 ? (count / stats.totalContracts) * 100 : 0;
@@ -240,7 +240,7 @@ export default function AdminDashboard() {
         {/* Subscription Breakdown */}
         {subs && (
           <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Elofizetesi szintek</h3>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Előfizetési szintek</h3>
             <div className="space-y-4">
               {["free", "basic", "pro"].map((tier) => {
                 const count = subs.breakdown[tier] || 0;
@@ -255,7 +255,7 @@ export default function AdminDashboard() {
                         />
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300 uppercase">{tier}</span>
                       </div>
-                      <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{count} felhasznalo</span>
+                      <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{count} felhasználó</span>
                     </div>
                     <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2.5">
                       <div
@@ -269,7 +269,7 @@ export default function AdminDashboard() {
             </div>
             <div className="mt-4 pt-4 border-t dark:border-gray-700">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500 dark:text-gray-400">Osszes felhasznalo</span>
+                <span className="text-gray-500 dark:text-gray-400">Összes felhasználó</span>
                 <span className="font-bold text-gray-900 dark:text-gray-100">{subs.total}</span>
               </div>
             </div>
@@ -279,19 +279,19 @@ export default function AdminDashboard() {
         {/* System Health */}
         {stats && (
           <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Rendszer allapot</h3>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Rendszer állapot</h3>
             <div className="space-y-3">
-              <HealthItem label="Adatbazis" status="ok" detail="Kapcsolodva" />
-              <HealthItem label="API" status="ok" detail="Mukodokepses" />
+              <HealthItem label="Adatbázis" status="ok" detail="Kapcsolódva" />
+              <HealthItem label="API" status="ok" detail="Működőképes" />
               <HealthItem
-                label="Tarolas"
+                label="Tárolás"
                 status={stats.estimatedStorageMb > 5000 ? "warning" : "ok"}
-                detail={`${stats.estimatedStorageMb} MB hasznalva`}
+                detail={`${stats.estimatedStorageMb} MB használva`}
               />
               <HealthItem
-                label="Aktivitas"
+                label="Aktivitás"
                 status={stats.contractsToday > 0 ? "ok" : "info"}
-                detail={`${stats.contractsToday} szerzodes ma`}
+                detail={`${stats.contractsToday} szerződés ma`}
               />
             </div>
           </div>
@@ -300,9 +300,9 @@ export default function AdminDashboard() {
 
       {/* Recent Activity */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Legutolso tevekenyseegek</h3>
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Legutolsó tevékenységek</h3>
         {activity.length === 0 ? (
-          <p className="text-sm text-gray-400">Nincs recentebb tevekenyseg.</p>
+          <p className="text-sm text-gray-400">Nincs újabb tevékenység.</p>
         ) : (
           <div className="space-y-3">
             {activity.map((entry) => (
@@ -312,7 +312,7 @@ export default function AdminDashboard() {
                 </span>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-gray-800 dark:text-gray-200 truncate">
-                    {entry.contractTitle || "Ismeretlen szerzodes"}
+                    {entry.contractTitle || "Ismeretlen szerződés"}
                   </p>
                   <p className="text-xs text-gray-400 mt-0.5">
                     {entry.ownerName || entry.signerName || "-"}

@@ -27,7 +27,7 @@ const STATUS_CONFIG: Record<
   { icon: React.ReactNode; label: string; color: string }
 > = {
   draft: {
-    label: "Piszkozat letrehozva",
+    label: "Piszkozat létrehozva",
     color: "text-gray-500 dark:text-gray-400",
     icon: (
       <svg
@@ -46,7 +46,7 @@ const STATUS_CONFIG: Record<
     ),
   },
   sent: {
-    label: "Elkuldve alairasra",
+    label: "Elküldve aláírásra",
     color: "text-blue-500 dark:text-blue-400",
     icon: (
       <svg
@@ -178,7 +178,7 @@ export default function ActivityFeed({ limit = 10 }: ActivityFeedProps) {
   if (contracts.length === 0) {
     return (
       <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-8">
-        Nincs megjelenitendo aktivitas.
+        Nincs megjeleníthető aktivitás.
       </p>
     );
   }

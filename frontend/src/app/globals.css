@@ -29,6 +29,9 @@
   --color-brand-teal-muted: #46A0A0;
   --color-brand-teal-dark: #198296;
   --color-brand-teal-darker: #0e5f6e;
+  --color-brand-navy: #2F6482;
+  --color-brand-navy-light: #3d7a9e;
+  --color-brand-navy-dark: #1e4a62;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

@@ -191,7 +191,7 @@ export default function WidgetReorder({
               (e.currentTarget.style.backgroundColor = "#198296")
             }
           >
-            Mentes
+            Mentés
           </button>
         </div>
       </div>

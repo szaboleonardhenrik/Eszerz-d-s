@@ -91,11 +91,11 @@ export default function AdminUsersPage() {
         role: editRole,
         subscriptionTier: editTier,
       });
-      toast.success("Felhasznalo frissitve");
+      toast.success("Felhasználó frissítve");
       setEditingId(null);
       loadUsers();
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || "Hiba tortent");
+      toast.error(err.response?.data?.error?.message || "Hiba történt");
     } finally {
       setSaving(false);
     }
@@ -127,10 +127,10 @@ export default function AdminUsersPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Nincs jogosultsagod</h2>
-          <p className="text-gray-500 dark:text-gray-400">Ez az oldal csak adminisztratorok szamara erheto el.</p>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Nincs jogosultságod</h2>
+          <p className="text-gray-500 dark:text-gray-400">Ez az oldal csak adminisztrátorok számára érhető el.</p>
           <Link href="/dashboard" className="inline-block mt-4 px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition">
-            Vissza a kezdolapra
+            Vissza a kezdőlapra
           </Link>
         </div>
       </div>
@@ -148,10 +148,10 @@ export default function AdminUsersPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </Link>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Felhasznalok kezelese</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Felhasználók kezelése</h1>
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Osszes felhasznalo: {data?.total ?? "..."}
+            Összes felhasználó: {data?.total ?? "..."}
           </p>
         </div>
 
@@ -184,7 +184,7 @@ export default function AdminUsersPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Felhasznalo</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Felhasználó</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Szint</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Szerepkor</th>
                   <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Szerzodesek</th>

@@ -33,11 +33,11 @@ export default function NotFound() {
 
         {/* Message */}
         <h2 className="mt-4 text-2xl font-bold text-gray-900 dark:text-white">
-          Az oldal nem talalhato
+          Az oldal nem található
         </h2>
         <p className="mt-3 text-gray-600 dark:text-gray-400 text-base leading-relaxed">
-          A keresett oldal nem letezik, vagy at lett helyezve.
-          Ellenorizd a cimet, vagy terj vissza a fooldalra.
+          A keresett oldal nem létezik, vagy át lett helyezve.
+          Ellenőrizd a címet, vagy térj vissza a főoldalra.
         </p>
 
         {/* Button */}
@@ -49,7 +49,7 @@ export default function NotFound() {
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
               <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
             </svg>
-            Vissza a fooldalra
+            Vissza a főoldalra
           </Link>
         </div>
       </div>

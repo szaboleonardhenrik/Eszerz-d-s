@@ -72,14 +72,14 @@ const unitOptions = [
 ];
 
 const categoryLabels: Record<string, string> = {
-  altalanos: "Altalanos",
-  it: "IT / Szoftverfejlesztes",
+  altalanos: "Általános",
+  it: "IT / Szoftverfejlesztés",
   marketing: "Marketing",
-  epiteszet: "Epiteszet / Kivetelezés",
-  tanacsadas: "Tanacsadas",
-  design: "Design / Kreativ",
-  oktatas: "Oktatas / Kepzes",
-  karbantartas: "Karbantartas / Uzemeltetes",
+  epiteszet: "Építészet / Kivitelezés",
+  tanacsadas: "Tanácsadás",
+  design: "Design / Kreatív",
+  oktatas: "Oktatás / Képzés",
+  karbantartas: "Karbantartás / Üzemeltetés",
 };
 
 function formatCurrency(value: number, currency: string) {
@@ -151,7 +151,7 @@ export default function NewQuotePage() {
     setClientAddress(c.address ?? "");
     setClientTaxNumber(c.taxNumber ?? "");
     setShowContacts(false);
-    toast.success(`Kontakt betoltve: ${c.name}`);
+    toast.success(`Kontakt betöltve: ${c.name}`);
   };
 
   const filteredContacts = contacts.filter((c) => {
@@ -208,7 +208,7 @@ export default function NewQuotePage() {
       );
       setShowTemplates(false);
     } catch {
-      toast.error("Hiba az ajanlat betoltesekor");
+      toast.error("Hiba az ajánlat betöltésekor");
     } finally {
       setLoadingEdit(false);
     }
@@ -304,10 +304,10 @@ export default function NewQuotePage() {
   };
 
   const handleSave = async () => {
-    if (!title.trim()) { toast.error("A cim megadasa kotelezo"); return; }
-    if (!clientName.trim()) { toast.error("Az ugyfel neve kotelezo"); return; }
-    if (!clientEmail.trim()) { toast.error("Az ugyfel email cime kotelezo"); return; }
-    if (items.length === 0 || items.every((i) => !i.description.trim())) { toast.error("Legalabb egy tetel megadasa kotelezo"); return; }
+    if (!title.trim()) { toast.error("A cím megadása kötelező"); return; }
+    if (!clientName.trim()) { toast.error("Az ügyfél neve kötelező"); return; }
+    if (!clientEmail.trim()) { toast.error("Az ügyfél email címe kötelező"); return; }
+    if (items.length === 0 || items.every((i) => !i.description.trim())) { toast.error("Legalább egy tétel megadása kötelező"); return; }
 
     setSaving(true);
     try {
@@ -347,15 +347,15 @@ export default function NewQuotePage() {
 
       if (editId) {
         await api.put(`/quotes/${editId}`, payload);
-        toast.success("Ajanlat frissitve!");
+        toast.success("Ajánlat frissítve!");
         router.push(`/quotes/${editId}`);
       } else {
         const res = await api.post("/quotes", payload);
-        toast.success("Ajanlat letrehozva!");
+        toast.success("Ajánlat létrehozva!");
         router.push(`/quotes/${res.data.data.id}`);
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba az ajanlat mentesekor");
+      toast.error(err.response?.data?.error?.message ?? "Hiba az ajánlat mentésekor");
     } finally {
       setSaving(false);
     }
@@ -395,23 +395,23 @@ export default function NewQuotePage() {
         href="/quotes"
         className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mb-4 inline-block"
       >
-        &larr; Vissza az ajanlatokhoz
+        &larr; Vissza az ajánlatokhoz
       </Link>
 
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-        {editId ? "Ajanlat szerkesztese" : "Uj ajanlat"}
+        {editId ? "Ajánlat szerkesztése" : "Új ajánlat"}
       </h1>
 
       {/* Template selector */}
       {showTemplates && templates.length > 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Sablon valasztas</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Sablon választás</h2>
             <button
               onClick={() => setShowTemplates(false)}
               className="text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
             >
-              Kihagyas
+              Kihagyás
             </button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -445,9 +445,9 @@ export default function NewQuotePage() {
       {/* Template variables */}
       {templateVariables.length > 0 && (
         <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800 p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Valtozok kitoltese</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Változók kitöltése</h2>
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-            Ezek a valtozok automatikusan behelyettesitodnek az ajanlat szovegebe ({"{{valtozo_nev}}"} formaban).
+            Ezek a változók automatikusan behelyettesítődnek az ajánlat szövegébe ({"{{valtozo_nev}}"} formában).
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {templateVariables.map((v) => (
@@ -471,13 +471,13 @@ export default function NewQuotePage() {
       {/* General info */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Altalanos adatok</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Általános adatok</h2>
           {contacts.length > 0 && (
             <button
               onClick={() => setShowContacts(!showContacts)}
               className="text-sm px-3 py-1.5 rounded-lg border border-[#198296] text-[#198296] hover:bg-[#198296]/5 transition font-medium"
             >
-              Kontaktbol betoltes
+              Kontaktból betöltés
             </button>
           )}
         </div>
@@ -489,12 +489,12 @@ export default function NewQuotePage() {
               type="text"
               value={contactSearch}
               onChange={(e) => setContactSearch(e.target.value)}
-              placeholder="Kontakt keresese..."
+              placeholder="Kontakt keresése..."
               className={inputClass + " mb-2"}
             />
             <div className="max-h-48 overflow-y-auto space-y-1">
               {filteredContacts.length === 0 ? (
-                <p className="text-sm text-gray-400 py-2">Nincs talalat</p>
+                <p className="text-sm text-gray-400 py-2">Nincs találat</p>
               ) : (
                 filteredContacts.map((c) => (
                   <button
@@ -515,45 +515,45 @@ export default function NewQuotePage() {
         )}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="sm:col-span-2 lg:col-span-3">
-            <label className={labelClass}>Cim *</label>
+            <label className={labelClass}>Cím *</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Pl. Weboldal fejlesztes ajanlat"
+              placeholder="Pl. Weboldal fejlesztés ajánlat"
               className={inputClass}
             />
           </div>
           <div>
-            <label className={labelClass}>Ugyfel neve *</label>
-            <input type="text" value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="Pl. Kovacs Janos" className={inputClass} />
+            <label className={labelClass}>Ügyfél neve *</label>
+            <input type="text" value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="Pl. Kovács János" className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>Ugyfel email *</label>
+            <label className={labelClass}>Ügyfél email *</label>
             <input type="email" value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} placeholder="Pl. kovacs@ceg.hu" className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>Cegnev</label>
-            <input type="text" value={clientCompany} onChange={(e) => setClientCompany(e.target.value)} placeholder="Pl. Pelda Kft." className={inputClass} />
+            <label className={labelClass}>Cégnév</label>
+            <input type="text" value={clientCompany} onChange={(e) => setClientCompany(e.target.value)} placeholder="Pl. Példa Kft." className={inputClass} />
           </div>
           <div>
             <label className={labelClass}>Telefon</label>
             <input type="text" value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} placeholder="+36 30 123 4567" className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>Cim</label>
-            <input type="text" value={clientAddress} onChange={(e) => setClientAddress(e.target.value)} placeholder="1234 Budapest, Pelda u. 1." className={inputClass} />
+            <label className={labelClass}>Cím</label>
+            <input type="text" value={clientAddress} onChange={(e) => setClientAddress(e.target.value)} placeholder="1234 Budapest, Példa u. 1." className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>Adoszam</label>
+            <label className={labelClass}>Adószám</label>
             <input type="text" value={clientTaxNumber} onChange={(e) => setClientTaxNumber(e.target.value)} placeholder="12345678-1-23" className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>Ervenyesseg</label>
+            <label className={labelClass}>Érvényesség</label>
             <input type="date" value={validUntil} onChange={(e) => setValidUntil(e.target.value)} className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>Penznem</label>
+            <label className={labelClass}>Pénznem</label>
             <select value={currency} onChange={(e) => setCurrency(e.target.value)} className={inputClass}>
               <option value="HUF">HUF (Forint)</option>
               <option value="EUR">EUR (Euro)</option>
@@ -572,13 +572,13 @@ export default function NewQuotePage() {
 
       {/* Intro text */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Bevezeto szoveg</h2>
-        <p className="text-xs text-gray-400 dark:text-gray-500 mb-3">Megjelenik az ajanlat elsolapon a tetelek elott.</p>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Bevezető szöveg</h2>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mb-3">Megjelenik az ajánlat első oldalon a tételek előtt.</p>
         <textarea
           value={introText}
           onChange={(e) => setIntroText(e.target.value)}
           rows={3}
-          placeholder="Pl. Koszonjuk az erdeklodest! Az alabbiakban reszletezzuk ajanltatunkat..."
+          placeholder="Pl. Köszönjük az érdeklődést! Az alábbiakban részletezzük ajánlatunkat..."
           className={inputClass + " resize-none"}
         />
       </div>
@@ -586,7 +586,7 @@ export default function NewQuotePage() {
       {/* Line items */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Tetelek</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Tételek</h2>
           <div className="flex gap-2">
             <button
               onClick={() => setShowSections(!showSections)}
@@ -596,7 +596,7 @@ export default function NewQuotePage() {
                   : "border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-[#198296]"
               }`}
             >
-              Szekciok
+              Szekciók
             </button>
           </div>
         </div>
@@ -621,7 +621,7 @@ export default function NewQuotePage() {
                           )
                         );
                       }}
-                      placeholder="Szekcio neve (pl. Fejlesztes)"
+                      placeholder="Szekció neve (pl. Fejlesztés)"
                       className="text-sm font-semibold bg-transparent border-b-2 border-[#198296] text-[#198296] outline-none px-1 py-0.5 w-64"
                     />
                   </div>
@@ -645,7 +645,7 @@ export default function NewQuotePage() {
                       type="text"
                       value={item.description}
                       onChange={(e) => updateItem(idx, "description", e.target.value)}
-                      placeholder="Tetel leirasa"
+                      placeholder="Tétel leírása"
                       className={inputClass}
                     />
                   </div>
@@ -675,7 +675,7 @@ export default function NewQuotePage() {
                       min={0}
                       value={item.unitPrice}
                       onChange={(e) => updateItem(idx, "unitPrice", Number(e.target.value))}
-                      placeholder="Egysegar"
+                      placeholder="Egységár"
                       className={inputClass + " text-right"}
                     />
                   </div>
@@ -705,7 +705,7 @@ export default function NewQuotePage() {
                           ? "text-amber-500 bg-amber-50 dark:bg-amber-900/30"
                           : "text-gray-300 hover:text-amber-400"
                       }`}
-                      title={item.isOptional ? "Kotelezove tetel" : "Opcionalissa tetel"}
+                      title={item.isOptional ? "Kötelezővé tétel" : "Opcionálissá tétel"}
                     >
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
                     </button>
@@ -725,7 +725,7 @@ export default function NewQuotePage() {
                           ? "text-red-500 bg-red-50 dark:bg-red-900/30"
                           : "text-gray-300 hover:text-red-400"
                       }`}
-                      title="Kedvezmeny"
+                      title="Kedvezmény"
                     >
                       %
                     </button>
@@ -735,7 +735,7 @@ export default function NewQuotePage() {
                       onClick={() => removeItem(idx)}
                       disabled={items.length <= 1}
                       className="text-gray-400 hover:text-red-500 disabled:opacity-30 transition p-1"
-                      title="Sor torlese"
+                      title="Sor törlése"
                     >
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
@@ -745,7 +745,7 @@ export default function NewQuotePage() {
                 {/* Inline item discount */}
                 {item.discountType && (
                   <div className="flex items-center gap-2 pl-12 pb-1">
-                    <span className="text-xs text-red-500">Kedvezmeny:</span>
+                    <span className="text-xs text-red-500">Kedvezmény:</span>
                     <input
                       type="number"
                       min={0}
@@ -770,11 +770,11 @@ export default function NewQuotePage() {
 
         <div className="flex gap-2 mt-3">
           <button onClick={() => addItem(showSections && items.length > 0 ? items[items.length - 1].sectionName : "")} className="text-sm font-medium px-4 py-2 rounded-lg transition text-[#198296] hover:bg-[#198296]/5">
-            + Sor hozzaadasa
+            + Sor hozzáadása
           </button>
           {showSections && (
             <button onClick={() => addItem("")} className="text-sm font-medium px-4 py-2 rounded-lg transition text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20">
-              + Uj szekcio
+              + Új szekció
             </button>
           )}
         </div>
@@ -782,15 +782,15 @@ export default function NewQuotePage() {
         {/* Global discount */}
         <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3 mb-3">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Osszesitett kedvezmeny</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Összesített kedvezmény</label>
             <select
               value={discountType}
               onChange={(e) => setDiscountType(e.target.value)}
               className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-xs bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none"
             >
               <option value="">Nincs</option>
-              <option value="percent">Szazalekos (%)</option>
-              <option value="fixed">Fix osszeg ({currency})</option>
+              <option value="percent">Százalékos (%)</option>
+              <option value="fixed">Fix összeg ({currency})</option>
             </select>
             {discountType && (
               <input
@@ -808,12 +808,12 @@ export default function NewQuotePage() {
         <div className="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
           <div className="flex flex-col items-end gap-1">
             <div className="flex justify-between w-full max-w-xs text-sm">
-              <span className="text-gray-500 dark:text-gray-400">Netto osszeg:</span>
+              <span className="text-gray-500 dark:text-gray-400">Nettó összeg:</span>
               <span className="font-medium text-gray-900 dark:text-white">{formatCurrency(totalNetto, currency)}</span>
             </div>
             {discount > 0 && discountType && (
               <div className="flex justify-between w-full max-w-xs text-sm text-red-500">
-                <span>Kedvezmeny ({discountType === "percent" ? `${discount}%` : formatCurrency(discount, currency)}):</span>
+                <span>Kedvezmény ({discountType === "percent" ? `${discount}%` : formatCurrency(discount, currency)}):</span>
                 <span>-{formatCurrency(discountType === "percent" ? (activeItems.reduce((s, i) => s + calcLineNetto(i), 0) * discount / 100) : discount, currency)}</span>
               </div>
             )}
@@ -822,12 +822,12 @@ export default function NewQuotePage() {
               <span className="font-medium text-gray-900 dark:text-white">{formatCurrency(totalVat, currency)}</span>
             </div>
             <div className="flex justify-between w-full max-w-xs text-base border-t border-gray-200 dark:border-gray-700 pt-2 mt-1">
-              <span className="font-semibold text-gray-900 dark:text-white">Brutto osszeg:</span>
+              <span className="font-semibold text-gray-900 dark:text-white">Bruttó összeg:</span>
               <span className="font-bold text-gray-900 dark:text-white">{formatCurrency(totalBrutto, currency)}</span>
             </div>
             {optionalItems.length > 0 && (
               <div className="flex justify-between w-full max-w-xs text-sm mt-2 text-amber-600">
-                <span>Opcionalis tetelek:</span>
+                <span>Opcionális tételek:</span>
                 <span>{formatCurrency(optionalItems.reduce((s, i) => s + calcLineNetto(i), 0), currency)} netto</span>
               </div>
             )}
@@ -839,22 +839,22 @@ export default function NewQuotePage() {
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
         <div className="space-y-4">
           <div>
-            <label className={labelClass}>Zaro szoveg</label>
+            <label className={labelClass}>Záró szöveg</label>
             <textarea
               value={outroText}
               onChange={(e) => setOutroText(e.target.value)}
               rows={3}
-              placeholder="Pl. Remeljuk ajanlatunk elnyerte tetszeset. Kerjuk, jelezze, ha kerdesei vannak..."
+              placeholder="Pl. Reméljük ajánlatunk elnyerte tetszését. Kérjük, jelezze, ha kérdései vannak..."
               className={inputClass + " resize-none"}
             />
           </div>
           <div>
-            <label className={labelClass}>Belso megjegyzes (nem jelenik meg a PDF-ben)</label>
+            <label className={labelClass}>Belső megjegyzés (nem jelenik meg a PDF-ben)</label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
-              placeholder="Belso megjegyzes..."
+              placeholder="Belső megjegyzés..."
               className={inputClass + " resize-none"}
             />
           </div>
@@ -869,7 +869,7 @@ export default function NewQuotePage() {
               onClick={() => setShowTemplates(true)}
               className="px-4 py-2.5 rounded-lg text-sm font-medium text-[#198296] border border-[#198296] hover:bg-[#198296]/5 transition"
             >
-              Sablon valasztas
+              Sablon választás
             </button>
           )}
         </div>
@@ -878,7 +878,7 @@ export default function NewQuotePage() {
             href="/quotes"
             className="px-5 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
           >
-            Megse
+            Mégse
           </Link>
           <button
             onClick={handleSave}
@@ -888,7 +888,7 @@ export default function NewQuotePage() {
             onMouseEnter={(e) => { if (!saving) (e.target as HTMLElement).style.backgroundColor = "#0e5f6e"; }}
             onMouseLeave={(e) => { if (!saving) (e.target as HTMLElement).style.backgroundColor = "#198296"; }}
           >
-            {saving ? "Mentes..." : editId ? "Ajanlat frissitese" : "Ajanlat mentese"}
+            {saving ? "Mentés..." : editId ? "Ajánlat frissítése" : "Ajánlat mentése"}
           </button>
         </div>
       </div>

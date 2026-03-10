@@ -53,10 +53,10 @@ interface Pagination {
 
 const statusLabels: Record<string, string> = {
   draft: "Piszkozat",
-  sent: "Elkuldve",
+  sent: "Elküldve",
   accepted: "Elfogadva",
-  declined: "Visszautasitva",
-  expired: "Lejart",
+  declined: "Visszautasítva",
+  expired: "Lejárt",
 };
 
 const statusColors: Record<string, string> = {
@@ -150,7 +150,7 @@ export default function QuotesPage() {
         setTotal(data.total ?? 0);
       }
     } catch {
-      toast.error("Hiba az ajanlatok betoltesekor");
+      toast.error("Hiba az ajánlatok betöltésekor");
     } finally {
       setLoading(false);
     }
@@ -176,22 +176,22 @@ export default function QuotesPage() {
     if (!confirm("Biztosan torli az ajanlatot?")) return;
     try {
       await api.delete(`/quotes/${id}`);
-      toast.success("Ajanlat torolve!");
+      toast.success("Ajánlat törölve!");
       loadQuotes();
       loadStats();
     } catch {
-      toast.error("Hiba a torleskor");
+      toast.error("Hiba a törléskor");
     }
   };
 
   const statCards = stats
     ? [
-        { label: "Osszes", value: stats.total, color: "bg-white dark:bg-gray-800" },
+        { label: "Összes", value: stats.total, color: "bg-white dark:bg-gray-800" },
         { label: "Piszkozat", value: stats.draft, color: "bg-gray-50 dark:bg-gray-800" },
-        { label: "Elkuldve", value: stats.sent, color: "bg-teal-50 dark:bg-teal-900/20" },
+        { label: "Elküldve", value: stats.sent, color: "bg-teal-50 dark:bg-teal-900/20" },
         { label: "Elfogadva", value: stats.accepted, color: "bg-green-50 dark:bg-green-900/20" },
-        { label: "Visszautasitva", value: stats.declined, color: "bg-red-50 dark:bg-red-900/20" },
-        { label: "Osszes bevetel", value: formatCurrency(stats.totalRevenue, "HUF"), color: "bg-white dark:bg-gray-800", isRevenue: true },
+        { label: "Visszautasítva", value: stats.declined, color: "bg-red-50 dark:bg-red-900/20" },
+        { label: "Összes bevétel", value: formatCurrency(stats.totalRevenue, "HUF"), color: "bg-white dark:bg-gray-800", isRevenue: true },
       ]
     : null;
 
@@ -316,11 +316,11 @@ export default function QuotesPage() {
               <table className="w-full">
                 <thead>
                   <tr className="text-left text-sm text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                    <th className="px-4 py-3 font-medium">Cim</th>
-                    <th className="px-4 py-3 font-medium">Ugyfel</th>
-                    <th className="px-4 py-3 font-medium hidden md:table-cell">Osszeg</th>
-                    <th className="px-4 py-3 font-medium">Statusz</th>
-                    <th className="px-4 py-3 font-medium hidden lg:table-cell">Ervenyes</th>
+                    <th className="px-4 py-3 font-medium">Cím</th>
+                    <th className="px-4 py-3 font-medium">Ügyfél</th>
+                    <th className="px-4 py-3 font-medium hidden md:table-cell">Összeg</th>
+                    <th className="px-4 py-3 font-medium">Státusz</th>
+                    <th className="px-4 py-3 font-medium hidden lg:table-cell">Érvényes</th>
                     <th className="px-4 py-3 font-medium w-32 sm:w-40 md:w-48">Muveletek</th>
                   </tr>
                 </thead>

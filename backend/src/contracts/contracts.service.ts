@@ -807,7 +807,7 @@ export class ContractsService {
     });
 
     if (!contract) {
-      throw new NotFoundException('A szerzodes nem talalhato vagy ervenytelen.');
+      throw new NotFoundException('A szerződés nem található vagy érvénytelen.');
     }
 
     return contract;

@@ -39,7 +39,7 @@ export default function BulkSendPage() {
     api
       .get("/templates")
       .then((res) => setTemplates(res.data.data ?? []))
-      .catch(() => toast.error("Nem sikerult a sablonok betoltese"))
+      .catch(() => toast.error("Nem sikerült a sablonok betöltése"))
       .finally(() => setTemplatesLoading(false));
   }, []);
 
@@ -83,11 +83,11 @@ export default function BulkSendPage() {
         return;
       }
       if (emailEmpty) {
-        errors.push(`${row}. sor: az email megadasa kotelezo`);
+        errors.push(`${row}. sor: az email megadása kötelező`);
         return;
       }
       if (!EMAIL_REGEX.test(r.email.trim())) {
-        errors.push(`${row}. sor: ervenytelen email cim (${r.email})`);
+        errors.push(`${row}. sor: érvénytelen email cím (${r.email})`);
         return;
       }
 
@@ -115,7 +115,7 @@ export default function BulkSendPage() {
     }
 
     if (valid.length === 0) {
-      toast.error("Adj meg legalabb egy cimzettet!");
+      toast.error("Adj meg legalább egy címzettet!");
       return;
     }
 
@@ -143,7 +143,7 @@ export default function BulkSendPage() {
         });
 
         const contractId = createRes.data.data?.id;
-        if (!contractId) throw new Error("Nem sikerult a szerzodes letrehozasa");
+        if (!contractId) throw new Error("Nem sikerült a szerződés létrehozása");
 
         await api.post(`/contracts/${contractId}/send`);
         successCount++;
@@ -194,11 +194,11 @@ export default function BulkSendPage() {
       const [name, email] = parts;
 
       if (!name) {
-        errors.push(`${i + 1}. sor: ures nev`);
+        errors.push(`${i + 1}. sor: üres név`);
         return;
       }
       if (!EMAIL_REGEX.test(email)) {
-        errors.push(`${i + 1}. sor: ervenytelen email (${email})`);
+        errors.push(`${i + 1}. sor: érvénytelen email (${email})`);
         return;
       }
 
@@ -364,7 +364,7 @@ export default function BulkSendPage() {
                   onClick={() => removeRecipient(i)}
                   disabled={recipients.length <= 1}
                   className="p-1.5 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 transition disabled:opacity-30 disabled:cursor-not-allowed rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
-                  title="Sor torlese"
+                  title="Sor törlése"
                 >
                   <svg
                     className="w-4 h-4"
