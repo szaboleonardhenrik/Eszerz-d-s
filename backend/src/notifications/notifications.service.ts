@@ -7,6 +7,7 @@ export class NotificationsService {
   private resend: Resend;
   private readonly logger = new Logger(NotificationsService.name);
   private fromEmail: string;
+  private readonly frontendUrl: string;
 
   constructor(private readonly config: ConfigService) {
     this.resend = new Resend(config.get<string>('RESEND_API_KEY'));
@@ -14,6 +15,16 @@ export class NotificationsService {
       'FROM_EMAIL',
       'SzerződésPortál <noreply@szerzodes-portal.hu>',
     );
+    this.frontendUrl = config.get<string>('FRONTEND_URL', 'http://localhost:3000');
+  }
+
+  private get unsubscribeFooter(): string {
+    return `<div style="margin-top: 32px; padding-top: 16px; border-top: 1px solid #e5e7eb; text-align: center;">
+  <p style="font-size: 12px; color: #9ca3af;">
+    Ha nem szeretnél több ilyen értesítést kapni, módosítsd az
+    <a href="${this.frontendUrl}/settings/notifications" style="color: #198296;">értesítési beállításaidat</a>.
+  </p>
+</div>`;
   }
 
   async sendSigningInvitation(params: {
@@ -108,6 +119,7 @@ export class NotificationsService {
                style="display:inline-block;background:#2563eb;color:white;padding:12px 32px;border-radius:6px;text-decoration:none;font-weight:bold;">
               Aláírás most
             </a>
+            ${this.unsubscribeFooter}
           </div>
         `,
       });
@@ -127,7 +139,7 @@ export class NotificationsService {
         from: this.fromEmail,
         to: params.to,
         subject: params.subject,
-        html: params.html,
+        html: params.html + this.unsubscribeFooter,
       });
       this.logger.log(`Onboarding email sent to ${params.to}: "${params.subject}"`);
     } catch (error) {
@@ -248,6 +260,7 @@ export class NotificationsService {
               <p style="font-size:13px;color:#999;margin-top:24px;">
                 Az ajánlatot online megtekintheti, elfogadhatja vagy visszautasíthatja a fenti gomb segítségével.
               </p>
+              ${this.unsubscribeFooter}
             </div>
           </div>
         `,
@@ -280,6 +293,7 @@ export class NotificationsService {
               ${params.quoteNumber ? `<p style="margin:0;font-size:13px;color:#666;">Azonosító: ${params.quoteNumber}</p>` : ''}
             </div>
             <p>Javasoljuk, hogy hozza létre a szerződést az elfogadott ajánlat alapján.</p>
+            ${this.unsubscribeFooter}
           </div>
         `,
       });
@@ -310,6 +324,7 @@ export class NotificationsService {
               ${params.quoteNumber ? `<p style="margin:0 0 4px;font-size:13px;color:#666;">Azonosító: ${params.quoteNumber}</p>` : ''}
               ${params.reason ? `<p style="margin:8px 0 0;font-size:13px;"><strong>Indok:</strong> ${params.reason}</p>` : ''}
             </div>
+            ${this.unsubscribeFooter}
           </div>
         `,
       });
@@ -340,9 +355,7 @@ export class NotificationsService {
                style="display:inline-block;background:#D29B01;color:white;padding:12px 32px;border-radius:6px;text-decoration:none;font-weight:bold;">
               Szerződés megtekintése
             </a>
-            <p style="margin-top:24px;font-size:12px;color:#999;">
-              Ezt az értesítést a Beállítások > Értesítések menüben kikapcsolhatja.
-            </p>
+            ${this.unsubscribeFooter}
           </div>
         `,
       });

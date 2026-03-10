@@ -17,6 +17,8 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 
+const CURRENT_CONSENT_VERSION = '2026-03-07';
+
 @Injectable()
 export class AuthService {
   private readonly frontendUrl: string;
@@ -52,7 +54,7 @@ export class AuthService {
         companyName: dto.companyName,
         taxNumber: dto.taxNumber,
         consentGivenAt: new Date(),
-        consentVersion: '2026-03-01',
+        consentVersion: CURRENT_CONSENT_VERSION,
         consentIp: ip || null,
         emailVerifyToken,
         emailVerifyExp: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
@@ -98,6 +100,10 @@ export class AuthService {
 
     const token = this.generateToken(user.id, user.email);
     await this.createSession(user.id, token, ip, userAgent);
+
+    // Check if user needs to re-accept updated terms
+    const needsConsent = !user.consentVersion || user.consentVersion !== CURRENT_CONSENT_VERSION;
+
     return {
       user: {
         id: user.id,
@@ -107,6 +113,10 @@ export class AuthService {
         subscriptionTier: user.subscriptionTier,
       },
       token,
+      ...(needsConsent && {
+        requiresConsentUpdate: true,
+        consentVersion: CURRENT_CONSENT_VERSION,
+      }),
     };
   }
 
@@ -142,6 +152,10 @@ export class AuthService {
 
     const token = this.generateToken(user.id, user.email);
     await this.createSession(user.id, token, ip, userAgent);
+
+    // Check if user needs to re-accept updated terms
+    const needsConsent = !user.consentVersion || user.consentVersion !== CURRENT_CONSENT_VERSION;
+
     return {
       user: {
         id: user.id,
@@ -151,6 +165,10 @@ export class AuthService {
         subscriptionTier: user.subscriptionTier,
       },
       token,
+      ...(needsConsent && {
+        requiresConsentUpdate: true,
+        consentVersion: CURRENT_CONSENT_VERSION,
+      }),
     };
   }
 
@@ -472,6 +490,8 @@ export class AuthService {
         consentGivenAt: true, consentVersion: true,
         notifyOnSign: true, notifyOnDecline: true, notifyOnExpire: true,
         notifyOnComment: true, emailDigest: true,
+        emailVerified: true, twoFactorEnabled: true,
+        brandLogoUrl: true, brandColor: true,
       },
     });
     if (!user) throw new NotFoundException('Felhasználó nem található');
@@ -501,6 +521,11 @@ export class AuthService {
       select: { ipAddress: true, device: true, lastActive: true, createdAt: true },
     });
 
+    const teamMembers = await this.prisma.teamMember.findMany({
+      where: { userId },
+      select: { role: true, joinedAt: true, team: { select: { name: true } } },
+    });
+
     return {
       exportDate: new Date().toISOString(),
       gdprNote: 'GDPR 20. cikk szerinti adathordozhatóság — géppel olvasható formátum',
@@ -509,7 +534,19 @@ export class AuthService {
       contracts,
       auditLogs: auditLogs.map(l => ({ ...l, contractTitle: l.contract?.title })),
       sessions,
+      teamMembers: teamMembers.map(tm => ({ role: tm.role, teamName: tm.team?.name, joinedAt: tm.joinedAt })),
     };
+  }
+
+  async updateConsent(userId: string, ip: string): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        consentGivenAt: new Date(),
+        consentVersion: CURRENT_CONSENT_VERSION,
+        consentIp: ip,
+      },
+    });
   }
 
   hashToken(token: string): string {

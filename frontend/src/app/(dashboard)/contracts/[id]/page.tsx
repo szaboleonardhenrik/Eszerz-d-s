@@ -616,6 +616,10 @@ export default function ContractDetailPage() {
                 </>
               )}
             </button>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-xs">
+              Az elemzés során a szerződés szövege az Anthropic (USA) szerverére kerül feldolgozásra. Részletek az{" "}
+              <a href="/adatvedelem" target="_blank" className="underline hover:text-gray-700 dark:hover:text-gray-300">Adatvédelmi tájékoztatóban</a>.
+            </p>
 
             {/* PDF Download */}
             {contract.pdfUrl && (
@@ -1006,6 +1010,13 @@ export default function ContractDetailPage() {
 
       {aiAnalysis && !aiLoading && (
         <div className="space-y-4">
+          {/* AI Disclaimer */}
+          <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 rounded-lg px-4 py-3">
+            <p className="text-xs text-amber-800 dark:text-amber-300">
+              {"\u26A0\uFE0F"} Az AI elemzés tájékoztató jellegű, és nem minősül jogi véleménynek vagy tanácsadásnak. A szerződés jogi értékeléshez kérjük, forduljon ügyvédhez.
+            </p>
+          </div>
+
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-[#198296]/10 dark:bg-[#198296]/20 flex items-center justify-center">
               <svg className="h-5 w-5 text-[#198296]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

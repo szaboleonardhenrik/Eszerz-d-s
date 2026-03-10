@@ -10,6 +10,7 @@ import { sanitizeHtml } from "@/lib/sanitize";
 import { SkeletonTemplateCard } from "@/components/skeleton";
 import EmptyState from "@/components/empty-state";
 import { isFavorite, toggleFavorite } from "@/lib/favorites";
+import { getEsignWarning } from "@/lib/esign-warnings";
 
 interface Template {
   id: string;
@@ -251,6 +252,17 @@ export default function TemplatesPage() {
                   {template.legalBasis}
                 </p>
               )}
+              {(() => {
+                const esignWarning = getEsignWarning(template.category, template.name);
+                return esignWarning ? (
+                  <div className="mb-3 flex items-start gap-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg px-3 py-2 text-xs text-amber-800 dark:text-amber-300">
+                    <svg className="w-4 h-4 shrink-0 mt-0.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span>{esignWarning}</span>
+                  </div>
+                ) : null;
+              })()}
               <div className="flex gap-2">
                 <button
                   onClick={() =>
@@ -331,6 +343,17 @@ export default function TemplatesPage() {
                 {preview.legalBasis && (
                   <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">{preview.legalBasis}</p>
                 )}
+                {(() => {
+                  const esignWarning = getEsignWarning(preview.category, preview.name);
+                  return esignWarning ? (
+                    <div className="mb-4 flex items-start gap-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg px-3 py-2 text-xs text-amber-800 dark:text-amber-300">
+                      <svg className="w-4 h-4 shrink-0 mt-0.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      <span>{esignWarning}</span>
+                    </div>
+                  ) : null;
+                })()}
                 {preview.variables?.length > 0 && (
                   <div className="mb-4">
                     <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Kitöltendő mezők:</h3>

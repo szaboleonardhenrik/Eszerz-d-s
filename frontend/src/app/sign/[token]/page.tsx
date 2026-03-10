@@ -37,6 +37,7 @@ export default function SignPage() {
   const [declining, setDeclining] = useState(false);
   const [declineReason, setDeclineReason] = useState("");
   const [signerNote, setSignerNote] = useState("");
+  const [dataConsent, setDataConsent] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const padRef = useRef<SignaturePad | null>(null);
@@ -297,10 +298,27 @@ export default function SignPage() {
                 />
               </div>
 
+              {/* Data collection consent */}
+              <div className="flex items-start gap-2 mb-4">
+                <input
+                  type="checkbox"
+                  id="dataConsent"
+                  checked={dataConsent}
+                  onChange={(e) => setDataConsent(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 mt-0.5"
+                />
+                <label htmlFor="dataConsent" className="text-sm text-gray-700">
+                  Tudomásul veszem, hogy az aláírás során a rendszer rögzíti az IP-címemet, böngészőadataimat, az aláírás időpontját és az aláírásképemet az eIDAS rendelet és a GDPR előírásainak megfelelően. Részletek:{" "}
+                  <a href="/adatvedelem" target="_blank" className="text-blue-600 underline hover:text-blue-800">
+                    Adatvédelmi tájékoztató
+                  </a>
+                </label>
+              </div>
+
               <div className="flex gap-3">
                 <button
                   onClick={handleSign}
-                  disabled={signing}
+                  disabled={signing || !dataConsent}
                   className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50"
                 >
                   {signing ? "Aláírás..." : "Elfogadom és aláírom"}

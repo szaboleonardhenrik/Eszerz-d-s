@@ -30,7 +30,8 @@ function TwoFactorVerifyContent() {
     try {
       const res = await api.post("/auth/verify-mfa", { mfaToken, code: code.trim() });
       const { user, token } = res.data.data;
-      localStorage.setItem("token", token);
+      // Keep localStorage as fallback during transition period (httpOnly cookie is set by backend)
+      if (token) localStorage.setItem("token", token);
       useAuth.setState({ user, token });
       router.push("/dashboard");
     } catch (err: any) {

@@ -11,6 +11,7 @@ import ThemeToggle from "@/components/theme-toggle";
 import LanguageSwitcher from "@/components/language-switcher";
 import KeyboardShortcutsHelp, { useKeyboardShortcuts } from "@/components/keyboard-shortcuts";
 import ChatWidget from "@/components/chat-widget";
+import ConsentUpdateModal from "@/components/consent-update-modal";
 import { useI18n } from "@/lib/i18n";
 import GlobalSearch from "@/components/global-search";
 
@@ -250,6 +251,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <OnboardingTour />
       <KeyboardShortcutsHelp open={showHelp} onClose={() => setShowHelp(false)} />
       <ChatWidget />
+      <ConsentUpdateModal />
     </div>
   );
 }
