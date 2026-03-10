@@ -390,7 +390,7 @@ export class AuthService {
     if (user.twoFactorEnabled) throw new BadRequestException('2FA már engedélyezve van');
 
     const secret = generateSecret();
-    const otpAuthUrl = generateURI({ issuer: 'SzerződésPortál', label: user.email, secret });
+    const otpAuthUrl = generateURI({ issuer: 'Legitas', label: user.email, secret });
     const qrCodeDataUrl = await QRCode.toDataURL(otpAuthUrl);
 
     // Store secret temporarily (not enabled yet until verify)

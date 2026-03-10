@@ -95,7 +95,7 @@ export default function VerifyPage() {
       <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 py-4 px-6">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <Link href="/" className="text-lg font-bold text-[#198296]">
-            SzerzodesPortal
+            Legitas
           </Link>
           <span className="text-xs text-gray-400 dark:text-gray-500 font-mono">
             Hitelesites
@@ -116,7 +116,7 @@ export default function VerifyPage() {
               Szerzodes hitelesitett
             </h1>
             <p className="text-white/70 text-sm">
-              Ez a dokumentum a SzerzodesPortal rendszerben van nyilvantartva
+              Ez a dokumentum a Legitas rendszerben van nyilvantartva
             </p>
           </div>
 
@@ -218,7 +218,7 @@ export default function VerifyPage() {
             {/* Footer note */}
             <div className="border-t border-gray-100 dark:border-gray-800 pt-5">
               <p className="text-xs text-gray-400 dark:text-gray-500 leading-relaxed">
-                Ez a szerzodes a SzerzodesPortal rendszerben lett letrehozva es hitelesitve. A hitelesitesi azonosito egyedi, es a szerzodes valtozoatlansagat garantalja.
+                Ez a szerzodes a Legitas rendszerben lett letrehozva es hitelesitve. A hitelesitesi azonosito egyedi, es a szerzodes valtozoatlansagat garantalja.
               </p>
             </div>
           </div>

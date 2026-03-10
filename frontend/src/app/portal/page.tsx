@@ -85,7 +85,7 @@ export default function PortalPage() {
             </div>
             <div className="flex items-baseline gap-1">
               <span className="font-bold text-gray-900 dark:text-white">
-                SzerzodesPortal
+                Legitas
               </span>
               <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
                 Ugyfelportal
@@ -320,7 +320,7 @@ export default function PortalPage() {
       <footer className="border-t border-gray-200 dark:border-gray-700 mt-auto">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row justify-between items-center gap-3">
           <p className="text-xs text-gray-400 dark:text-gray-500">
-            &copy; {new Date().getFullYear()} SzerzodesPortal. Minden jog fenntartva.
+            &copy; {new Date().getFullYear()} Legitas. Minden jog fenntartva.
           </p>
           <div className="flex items-center gap-4 text-xs text-gray-400 dark:text-gray-500">
             <Link href="/adatvedelem" className="hover:text-gray-600 dark:hover:text-gray-300 transition">

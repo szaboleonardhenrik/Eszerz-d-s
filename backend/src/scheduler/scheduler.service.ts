@@ -171,11 +171,11 @@ export class SchedulerService {
     const onboardingSteps = [
       {
         daysAgo: 1,
-        subject: 'Üdvözöljük a SzerződésPortálon!',
+        subject: 'Üdvözöljük a Legitason!',
         buildHtml: (name: string) => `
           <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
             <h2>Kedves ${name}!</h2>
-            <p>Köszönjük, hogy regisztrált a <strong>SzerződésPortálon</strong>! Örülünk, hogy velünk van.</p>
+            <p>Köszönjük, hogy regisztrált a <strong>Legitason</strong>! Örülünk, hogy velünk van.</p>
             <p>Íme néhány tipp az induláshoz:</p>
             <div style="background:#f5f5f5;padding:16px;border-radius:8px;margin:16px 0;">
               <ul style="margin:0;padding-left:20px;line-height:1.8;">
@@ -200,7 +200,7 @@ export class SchedulerService {
         buildHtml: (name: string) => `
           <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
             <h2>Kedves ${name}!</h2>
-            <p>Tudta, hogy a SzerződésPortálon <strong>15+ kész szerződéssablon</strong> várja?</p>
+            <p>Tudta, hogy a Legitason <strong>15+ kész szerződéssablon</strong> várja?</p>
             <p>Munkajogi, B2B, ingatlan, IT, GDPR és sok más – mind magyar jogszabályoknak megfelelően.</p>
             <div style="background:#f5f5f5;padding:16px;border-radius:8px;margin:16px 0;">
               <h3 style="margin:0 0 8px 0;">Népszerű sablonok:</h3>
@@ -224,7 +224,7 @@ export class SchedulerService {
       },
       {
         daysAgo: 7,
-        subject: 'Hozza ki a legtöbbet a SzerződésPortálból!',
+        subject: 'Hozza ki a legtöbbet a Legitasból!',
         buildHtml: (name: string) => `
           <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
             <h2>Kedves ${name}!</h2>

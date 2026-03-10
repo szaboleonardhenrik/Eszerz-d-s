@@ -1014,7 +1014,7 @@ td { font-size: 13px; }
 
   ${outroHtml}
 
-  <div class="footer">${labels.generated}: SzerzodesPortal · ${new Date().toLocaleDateString(locale)}</div>
+  <div class="footer">${labels.generated}: Legitas · ${new Date().toLocaleDateString(locale)}</div>
 </body>
 </html>`;
   }

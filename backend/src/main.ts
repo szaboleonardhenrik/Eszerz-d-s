@@ -37,7 +37,7 @@ async function bootstrap() {
   // Only enable Swagger in development
   if (process.env.NODE_ENV !== 'production') {
     const swaggerConfig = new DocumentBuilder()
-      .setTitle('SzerződésPortál API')
+      .setTitle('Legitas API')
       .setDescription('Magyar KKV-knak szánt SaaS szerződéskezelő platform API dokumentáció')
       .setVersion('1.0')
       .addBearerAuth()

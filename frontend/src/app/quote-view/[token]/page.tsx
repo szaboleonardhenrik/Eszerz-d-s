@@ -521,7 +521,7 @@ export default function QuoteViewPage() {
 
         {/* Footer */}
         <div className="text-center text-xs text-gray-400 py-6">
-          SzerzodesPortal · {new Date().getFullYear()}
+          Legitas · {new Date().getFullYear()}
         </div>
       </div>
     </div>

@@ -13,7 +13,7 @@ export class NotificationsService {
     this.resend = new Resend(config.get<string>('RESEND_API_KEY'));
     this.fromEmail = config.get<string>(
       'FROM_EMAIL',
-      'SzerződésPortál <noreply@szerzodes-portal.hu>',
+      'Legitas <noreply@legitas.hu>',
     );
     this.frontendUrl = config.get<string>('FRONTEND_URL', 'http://localhost:3000');
   }
@@ -158,11 +158,11 @@ export class NotificationsService {
       await this.resend.emails.send({
         from: this.fromEmail,
         to: params.to,
-        subject: 'Email cím megerősítése – SzerződésPortál',
+        subject: 'Email cím megerősítése – Legitas',
         html: `
           <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
             <h2>Kedves ${params.name}!</h2>
-            <p>Köszönjük a regisztrációt a <strong>SzerződésPortálon</strong>!</p>
+            <p>Köszönjük a regisztrációt a <strong>Legitason</strong>!</p>
             <p>Kérjük, erősítse meg az email címét az alábbi gombra kattintva:</p>
             <div style="text-align:center;margin:24px 0;">
               <a href="${params.verifyUrl}"
@@ -193,7 +193,7 @@ export class NotificationsService {
       await this.resend.emails.send({
         from: this.fromEmail,
         to: params.to,
-        subject: 'Jelszó visszaállítás – SzerződésPortál',
+        subject: 'Jelszó visszaállítás – Legitas',
         html: `
           <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
             <h2>Kedves ${params.name}!</h2>
@@ -341,7 +341,7 @@ export class NotificationsService {
       await this.resend.emails.send({
         from: this.fromEmail,
         to: params.to,
-        subject: 'Portál hozzáférés – SzerződésPortál',
+        subject: 'Portál hozzáférés – Legitas',
         html: `
           <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
             <h2>Portál hozzáférés</h2>

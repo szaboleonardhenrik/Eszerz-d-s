@@ -142,7 +142,7 @@ export default function BrandingSettings() {
             </div>
             <div className="mt-4 pt-3 border-t dark:border-gray-700 text-center">
               <span className="text-[10px] text-gray-400">
-                {(user as any)?.companyName || "SzerzodesPortal"} — Elektronikusan generalt dokumentum — 1/1. oldal
+                {(user as any)?.companyName || "Legitas"} — Elektronikusan generalt dokumentum — 1/1. oldal
               </span>
             </div>
           </div>

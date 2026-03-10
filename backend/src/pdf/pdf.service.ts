@@ -26,8 +26,8 @@ export class PdfService {
             <img src="${qrDataUrl}" style="width:80px;height:80px;flex-shrink:0;" />
             <div style="font-size:10px;color:#6b7280;line-height:1.5;">
               <strong style="color:#374151;">Ellenorizze:</strong><br/>
-              szerzodes.cegverzum.hu/verify/${this.escapeHtml(verificationHash)}<br/>
-              <span style="font-size:9px;color:#9ca3af;">Ez a szerzodes a SzerzodesPortal rendszerben lett letrehozva es hitelesitve.</span>
+              legitas.hu/verify/${this.escapeHtml(verificationHash)}<br/>
+              <span style="font-size:9px;color:#9ca3af;">Ez a szerzodes a Legitas rendszerben lett letrehozva es hitelesitve.</span>
             </div>
           </div>`;
       } catch {
@@ -41,7 +41,7 @@ export class PdfService {
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
 
-    const footerName = branding?.companyName ? this.escapeHtml(branding.companyName) : 'SzerződésPortál';
+    const footerName = branding?.companyName ? this.escapeHtml(branding.companyName) : 'Legitas';
 
     try {
       const page = await browser.newPage();
