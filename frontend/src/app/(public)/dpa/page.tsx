@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Adatfeldolgozási Megállapodás (DPA) - SzerződésPortál",
-  description: "Adatfeldolgozási megállapodás sablon a SzerződésPortál felhasználói számára (GDPR 28. cikk)",
+  title: "Adatfeldolgozási Megállapodás (DPA) - Legitas",
+  description: "Adatfeldolgozási megállapodás sablon a Legitas felhasználói számára (GDPR 28. cikk)",
 };
 
 export default function DpaPage() {
@@ -15,7 +15,7 @@ export default function DpaPage() {
         GDPR 28. cikk szerinti adatfeldolgozási megállapodás
       </p>
       <p className="text-sm text-gray-500 mb-10">
-        Ez a megállapodás automatikusan érvénybe lép a SzerződésPortál szolgáltatás igénybevételével.
+        Ez a megállapodás automatikusan érvénybe lép a Legitas szolgáltatás igénybevételével.
         Hatályos: 2026. március 1.
       </p>
 
@@ -23,20 +23,20 @@ export default function DpaPage() {
         <h2>1. Felek</h2>
         <ul>
           <li>
-            <strong>Adatkezelő:</strong> A SzerződésPortál regisztrált felhasználója
+            <strong>Adatkezelő:</strong> A Legitas regisztrált felhasználója
             (a továbbiakban: &quot;Adatkezelő&quot;), aki a Szolgáltatáson keresztül
             személyes adatokat kezel (pl. szerződéseket hoz létre, aláírókat jelöl ki).
           </li>
           <li>
-            <strong>Adatfeldolgozó:</strong> SzerződésPortál (Szabó Leonárd Henrik e.v.),
-            e-mail: hello@szerzodes.cegverzum.hu (a továbbiakban: &quot;Adatfeldolgozó&quot;).
+            <strong>Adatfeldolgozó:</strong> T-DIGITAL Solutions Kft. (Legitas),
+            e-mail: info@legitas.hu (a továbbiakban: &quot;Adatfeldolgozó&quot;).
           </li>
         </ul>
 
         <h2>2. A megállapodás tárgya</h2>
         <p>
           Az Adatfeldolgozó az Adatkezelő megbízásából és utasítása szerint személyes adatokat
-          dolgoz fel a SzerződésPortál szolgáltatás (a továbbiakban: &quot;Szolgáltatás&quot;) keretében,
+          dolgoz fel a Legitas szolgáltatás (a továbbiakban: &quot;Szolgáltatás&quot;) keretében,
           a GDPR 28. cikk rendelkezéseinek megfelelően.
         </p>
 
@@ -140,7 +140,7 @@ export default function DpaPage() {
 
         <hr />
         <p className="text-sm text-gray-400">
-          Utolsó módosítás: 2026. március 1. | SzerződésPortál &copy; {new Date().getFullYear()}
+          Utolsó módosítás: 2026. március 1. | Legitas &copy; {new Date().getFullYear()}
         </p>
       </div>
     </div>

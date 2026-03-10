@@ -11,23 +11,23 @@ const inter = Inter({ subsets: ["latin", "latin-ext"] });
 
 export const metadata: Metadata = {
   title: {
-    default: "SzerződésPortál - Online Szerződéskezelő",
-    template: "%s | SzerződésPortál",
+    default: "Legitas - Online Szerződéskezelő",
+    template: "%s | Legitas",
   },
   description:
     "Magyar KKV-knak szánt online szerződéskészítő és aláíró platform. Ptk.-konform sablonok, e-aláírás, DÁP integráció.",
-  metadataBase: new URL("https://szerzodes.cegverzum.hu"),
+  metadataBase: new URL("https://legitas.hu"),
   openGraph: {
-    title: "SzerződésPortál - Online Szerződéskezelő",
+    title: "Legitas - Online Szerződéskezelő",
     description: "Magyar KKV-knak szánt platform: Ptk.-konform sablonok, digitális aláírás, automatikus PDF.",
-    url: "https://szerzodes.cegverzum.hu",
-    siteName: "SzerződésPortál",
+    url: "https://legitas.hu",
+    siteName: "Legitas",
     locale: "hu_HU",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "SzerződésPortál - Online Szerződéskezelő",
+    title: "Legitas - Online Szerződéskezelő",
     description: "Szerződéskötés percek alatt, bárhonnan. Magyar KKV-knak.",
   },
   robots: {
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "SzerződésPortál",
+    title: "Legitas",
   },
 };
 

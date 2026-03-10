@@ -230,7 +230,7 @@ export default function VerifyPage() {
             href="/"
             className="text-sm text-[#198296] hover:underline font-medium"
           >
-            szerzodes.cegverzum.hu
+            legitas.hu
           </Link>
         </div>
       </div>

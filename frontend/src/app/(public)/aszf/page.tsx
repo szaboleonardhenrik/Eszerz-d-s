@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "ÁSZF - SzerződésPortál",
-  description: "A SzerződésPortál Általános Szerződési Feltételei",
+  title: "ÁSZF - Legitas",
+  description: "A Legitas Általános Szerződési Feltételei",
 };
 
 export default function AszfPage() {
@@ -14,15 +14,19 @@ export default function AszfPage() {
       <div className="prose prose-gray max-w-none prose-headings:text-gray-900 prose-p:text-gray-600 prose-li:text-gray-600 prose-a:text-brand-teal-dark">
         <h2>1. Szolgáltató adatai</h2>
         <ul>
-          <li><strong>Szolgáltató neve:</strong> SzerződésPortál (Szabó Leonárd Henrik e.v.)</li>
-          <li><strong>Székhely:</strong> Magyarország</li>
-          <li><strong>E-mail:</strong> hello@szerzodes.cegverzum.hu</li>
-          <li><strong>Weboldal:</strong> https://szerzodes.cegverzum.hu</li>
+          <li><strong>Szolgáltató neve:</strong> T-DIGITAL Solutions Korlátolt Felelősségű Társaság (Legitas)</li>
+          <li><strong>Székhely:</strong> 1117 Budapest, Nándorfejérvári út 32. 1. em. 4. ajtó</li>
+          <li><strong>Cégjegyzékszám:</strong> 01-09-428831</li>
+          <li><strong>Adószám:</strong> 32526620-2-43</li>
+          <li><strong>Képviselő:</strong> Yilmaz Attila Zoltán ügyvezető</li>
+          <li><strong>E-mail:</strong> info@legitas.hu</li>
+          <li><strong>Telefon:</strong> +36 70 560 0637</li>
+          <li><strong>Weboldal:</strong> https://legitas.hu</li>
         </ul>
 
         <h2>2. A szolgáltatás leírása</h2>
         <p>
-          A SzerződésPortál (továbbiakban: Szolgáltatás) egy webalapú (SaaS) szerződéskezelő platform,
+          A Legitas (továbbiakban: Szolgáltatás) egy webalapú (SaaS) szerződéskezelő platform,
           amely lehetővé teszi a felhasználók számára, hogy online szerződéseket hozzanak létre előre
           elkészített sablonokból, azokat kitöltsék, elektronikusan aláírják és kezeljék.
         </p>
@@ -66,7 +70,7 @@ export default function AszfPage() {
 
         <h2>5. Az elektronikus aláírás érvényessége</h2>
         <p>
-          A SzerződésPortálon létrehozott egyszerű elektronikus aláírás az eIDAS rendelet (EU 910/2014)
+          A Legitason létrehozott egyszerű elektronikus aláírás az eIDAS rendelet (EU 910/2014)
           és a Polgári Törvénykönyv (2013. évi V. törvény) alapján jogilag érvényes a legtöbb
           szerződéstípusnál.
         </p>
@@ -131,10 +135,10 @@ export default function AszfPage() {
         </p>
         <p>
           <strong>Minta elállási nyilatkozat:</strong><br />
-          &ldquo;Alulírott [név] kijelentem, hogy elállási jogomat gyakorlom a SzerződésPortál [csomag neve]
+          &ldquo;Alulírott [név] kijelentem, hogy elállási jogomat gyakorlom a Legitas [csomag neve]
           előfizetésére vonatkozó szerződés tekintetében. Kelt: [dátum]. Aláírás: [aláírás (csak papíron
           benyújtott nyilatkozat esetén)].&rdquo;<br />
-          Az elállási nyilatkozatot a hello@szerzodes.cegverzum.hu email-címre kell megküldeni.
+          Az elállási nyilatkozatot a info@legitas.hu email-címre kell megküldeni.
         </p>
 
         <h2>12. Irányadó jog és jogviták</h2>
@@ -146,7 +150,7 @@ export default function AszfPage() {
 
         <hr />
         <p className="text-sm text-gray-400">
-          Utolsó módosítás: 2026. március 1. | SzerződésPortál &copy; {new Date().getFullYear()}
+          Utolsó módosítás: 2026. március 1. | Legitas &copy; {new Date().getFullYear()}
         </p>
       </div>
     </div>

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Adatvédelmi Tájékoztató - SzerződésPortál",
-  description: "A SzerződésPortál adatvédelmi tájékoztatója - GDPR megfelelőség",
+  title: "Adatvédelmi Tájékoztató - Legitas",
+  description: "A Legitas adatvédelmi tájékoztatója - GDPR megfelelőség",
 };
 
 export default function AdatvedelemPage() {
@@ -14,9 +14,9 @@ export default function AdatvedelemPage() {
       <div className="prose prose-gray max-w-none prose-headings:text-gray-900 prose-p:text-gray-600 prose-li:text-gray-600">
         <h2>1. Adatkezelő</h2>
         <ul>
-          <li><strong>Név:</strong> SzerződésPortál (Szabó Leonárd Henrik e.v.)</li>
-          <li><strong>E-mail:</strong> hello@szerzodes.cegverzum.hu</li>
-          <li><strong>Weboldal:</strong> https://szerzodes.cegverzum.hu</li>
+          <li><strong>Név:</strong> T-DIGITAL Solutions Kft. (Legitas)</li>
+          <li><strong>E-mail:</strong> info@legitas.hu</li>
+          <li><strong>Weboldal:</strong> https://legitas.hu</li>
         </ul>
 
         <h2>2. Az adatkezelés jogalapja</h2>
@@ -74,7 +74,7 @@ export default function AdatvedelemPage() {
         </table>
         <p>
           Az érintett partner bármikor kérheti adatai törlését a felhasználótól vagy közvetlenül
-          a hello@szerzodes.cegverzum.hu címen.
+          a info@legitas.hu címen.
         </p>
 
         <h3>3.4. Technikai adatok</h3>
@@ -120,7 +120,7 @@ export default function AdatvedelemPage() {
         <p>
           A <strong>törlés jogát</strong> és az <strong>adathordozhatóságot</strong> a Beállítások &gt; Biztonság
           menüpontban önkiszolgáló módon gyakorolhatja (fiók törlése, teljes adatexport letöltése).
-          Egyéb jogai gyakorlásához írjon a <strong>hello@szerzodes.cegverzum.hu</strong> címre.
+          Egyéb jogai gyakorlásához írjon a <strong>info@legitas.hu</strong> címre.
           Kérelmét 30 napon belül teljesítjük.
         </p>
 
@@ -176,7 +176,7 @@ export default function AdatvedelemPage() {
 
         <hr />
         <p className="text-sm text-gray-400">
-          Utolsó módosítás: 2026. március 1. | SzerződésPortál &copy; {new Date().getFullYear()}
+          Utolsó módosítás: 2026. március 1. | Legitas &copy; {new Date().getFullYear()}
         </p>
       </div>
     </div>

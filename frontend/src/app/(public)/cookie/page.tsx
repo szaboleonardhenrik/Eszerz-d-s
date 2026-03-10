@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Cookie (Süti) Szabályzat - SzerződésPortál",
-  description: "A SzerződésPortál cookie (süti) szabályzata",
+  title: "Cookie (Süti) Szabályzat - Legitas",
+  description: "A Legitas cookie (süti) szabályzata",
 };
 
 export default function CookiePage() {
@@ -68,7 +68,7 @@ export default function CookiePage() {
 
         <h2>3. Harmadik féltől származó cookie-k</h2>
         <p>
-          A SzerződésPortál az alábbi harmadik féltől származó szolgáltatásokat használja,
+          A Legitas az alábbi harmadik féltől származó szolgáltatásokat használja,
           amelyek saját cookie-kat helyezhetnek el:
         </p>
         <table>
@@ -93,7 +93,7 @@ export default function CookiePage() {
           <li><strong>Microsoft Edge:</strong> Beállítások → Cookie-k és webhelyadatok</li>
         </ul>
         <p>
-          <strong>Figyelem:</strong> Ha letiltod a szükséges cookie-kat, a SzerződésPortál
+          <strong>Figyelem:</strong> Ha letiltod a szükséges cookie-kat, a Legitas
           egyes funkciói nem fognak megfelelően működni (pl. nem tudsz bejelentkezni).
         </p>
 
@@ -142,7 +142,7 @@ export default function CookiePage() {
 
         <hr />
         <p className="text-sm text-gray-400">
-          Utolsó módosítás: 2026. március 1. | SzerződésPortál &copy; {new Date().getFullYear()}
+          Utolsó módosítás: 2026. március 1. | Legitas &copy; {new Date().getFullYear()}
         </p>
       </div>
     </div>

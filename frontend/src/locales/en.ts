@@ -159,7 +159,7 @@ const en: Translations = {
     gdpr: "GDPR Compliance",
     contact: "Contact",
     location: "Budapest, Hungary",
-    copyright: "SzerződésPortál. All rights reserved.",
+    copyright: "Legitas. All rights reserved.",
     disclaimer: "The platform does not replace legal advice. Templates are lawyer-verified.",
   },
 };

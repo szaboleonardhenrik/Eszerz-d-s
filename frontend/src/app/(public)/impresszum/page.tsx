@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Impresszum – SzerződésPortál",
+  title: "Impresszum – Legitas",
   description:
-    "SzerződésPortál impresszum – szolgáltató adatai, tárhelyszolgáltató, szerzői jogok és felelősségkizárás.",
+    "Legitas impresszum – szolgáltató adatai, tárhelyszolgáltató, szerzői jogok és felelősségkizárás.",
 };
 
 export default function ImpresszumPage() {
@@ -15,13 +15,14 @@ export default function ImpresszumPage() {
       <div className="prose prose-gray max-w-none prose-headings:text-gray-900 prose-p:text-gray-600 prose-li:text-gray-600 prose-a:text-brand-teal-dark">
         <h2>1. Szolgáltató adatai</h2>
         <ul>
-          <li><strong>Név:</strong> Szabó Leonárd Henrik egyéni vállalkozó</li>
-          {/* TODO: Replace with real business data before launch */}
-          <li><strong>Székhely:</strong> <span className="bg-yellow-100 text-yellow-800 px-1 rounded font-semibold">[KITÖLTENDŐ - pontos cím]</span></li>
-          <li><strong>Adószám:</strong> <span className="bg-yellow-100 text-yellow-800 px-1 rounded font-semibold">[KITÖLTENDŐ - adószám]</span></li>
-          <li><strong>Nyilvántartási szám:</strong> <span className="bg-yellow-100 text-yellow-800 px-1 rounded font-semibold">[KITÖLTENDŐ - nyilvántartási szám]</span></li>
-          <li><strong>Email:</strong> hello@szerzodes.cegverzum.hu</li>
-          <li><strong>Weboldal:</strong> <a href="https://szerzodes.cegverzum.hu">https://szerzodes.cegverzum.hu</a></li>
+          <li><strong>Név:</strong> T-DIGITAL Solutions Korlátolt Felelősségű Társaság</li>
+          <li><strong>Székhely:</strong> 1117 Budapest, Nándorfejérvári út 32. 1. em. 4. ajtó</li>
+          <li><strong>Cégjegyzékszám:</strong> 01-09-428831</li>
+          <li><strong>Adószám:</strong> 32526620-2-43</li>
+          <li><strong>Képviselő:</strong> Yilmaz Attila Zoltán ügyvezető</li>
+          <li><strong>Email:</strong> info@legitas.hu</li>
+          <li><strong>Telefon:</strong> +36 70 560 0637</li>
+          <li><strong>Weboldal:</strong> <a href="https://legitas.hu">https://legitas.hu</a></li>
         </ul>
 
         <h2>2. Tárhelyszolgáltató</h2>
@@ -35,12 +36,12 @@ export default function ImpresszumPage() {
         <h2>3. Felelős személy</h2>
         <ul>
           <li><strong>A weboldal tartalmáért felelős személy:</strong> Szabó Leonárd Henrik</li>
-          <li><strong>Kapcsolat:</strong> hello@szerzodes.cegverzum.hu</li>
+          <li><strong>Kapcsolat:</strong> info@legitas.hu</li>
         </ul>
 
         <h2>4. Szerzői jogok</h2>
         <p>
-          A szerzodes.cegverzum.hu weboldal és annak tartalma (szövegek, grafikai elemek, logók,
+          A legitas.hu weboldal és annak tartalma (szövegek, grafikai elemek, logók,
           szoftver) szerzői jogi védelem alatt áll. A tartalom másolása, terjesztése vagy
           felhasználása kizárólag a szolgáltató előzetes írásbeli engedélyével lehetséges.
         </p>
@@ -75,7 +76,7 @@ export default function ImpresszumPage() {
 
         <hr />
         <p className="text-sm text-gray-400">
-          Utolsó módosítás: 2026. március 1. | SzerződésPortál &copy; {new Date().getFullYear()}
+          Utolsó módosítás: 2026. március 1. | Legitas &copy; {new Date().getFullYear()}
         </p>
       </div>
     </div>

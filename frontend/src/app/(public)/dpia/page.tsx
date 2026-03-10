@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Adatvédelmi Hatásvizsgálat (DPIA) - SzerződésPortál",
-  description: "A SzerződésPortál adatvédelmi hatásvizsgálata a GDPR 35. cikk alapján",
+  title: "Adatvédelmi Hatásvizsgálat (DPIA) - Legitas",
+  description: "A Legitas adatvédelmi hatásvizsgálata a GDPR 35. cikk alapján",
 };
 
 export default function DpiaPage() {
@@ -11,12 +11,12 @@ export default function DpiaPage() {
       <h1 className="text-3xl font-extrabold text-gray-900 mb-1">Adatvédelmi Hatásvizsgálat (DPIA)</h1>
       <p className="text-sm text-gray-500 mb-1">GDPR 35. cikk alapján</p>
       <p className="text-sm text-gray-400 mb-1">Hatályos: 2026. március 7.</p>
-      <p className="text-sm text-gray-400 mb-10">Készítette: Szabó Leonárd Henrik e.v.</p>
+      <p className="text-sm text-gray-400 mb-10">Készítette: T-DIGITAL Solutions Kft.</p>
 
       <div className="prose prose-gray max-w-none prose-headings:text-gray-900 prose-p:text-gray-600 prose-li:text-gray-600 prose-a:text-brand-teal-dark">
         <h2>1. A vizsgálat célja</h2>
         <p>
-          Az adatvédelmi hatásvizsgálat célja a SzerződésPortál platform adatkezelési tevékenységeinek
+          Az adatvédelmi hatásvizsgálat célja a Legitas platform adatkezelési tevékenységeinek
           értékelése, különös tekintettel a magas kockázatú adatfeldolgozási műveletekre.
         </p>
 
@@ -154,7 +154,7 @@ export default function DpiaPage() {
           <li><strong>Hozzáférés joga</strong> (GDPR 15. cikk) — Beállítások &gt; Biztonság &gt; Adat export</li>
           <li><strong>Helyesbítés joga</strong> (GDPR 16. cikk) — Profil szerkesztése</li>
           <li><strong>Törlés joga</strong> (GDPR 17. cikk) — Fiók törlése</li>
-          <li><strong>Korlátozás joga</strong> (GDPR 18. cikk) — Email: hello@szerzodes.cegverzum.hu</li>
+          <li><strong>Korlátozás joga</strong> (GDPR 18. cikk) — Email: info@legitas.hu</li>
           <li><strong>Adathordozhatóság</strong> (GDPR 20. cikk) — JSON export</li>
           <li><strong>Tiltakozás joga</strong> (GDPR 21. cikk) — Email leiratkozás + kapcsolatfelvétel</li>
           <li><strong>Hozzájárulás visszavonása</strong> (GDPR 7. cikk) — Fiók törlése</li>
@@ -182,7 +182,7 @@ export default function DpiaPage() {
 
         <hr />
         <p className="text-sm text-gray-400">
-          Készítette: Szabó Leonárd Henrik | Dátum: 2026. március 7. | SzerződésPortál &copy; {new Date().getFullYear()}
+          Készítette: Szabó Leonárd Henrik | Dátum: 2026. március 7. | Legitas &copy; {new Date().getFullYear()}
         </p>
       </div>
     </div>

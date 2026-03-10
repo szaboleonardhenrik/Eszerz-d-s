@@ -33,8 +33,8 @@ const articles: Record<string, { title: string; category: string; date: string; 
         <li>Kezességi szerződés</li>
       </ul>
 
-      <h2>A SzerződésPortál megoldása</h2>
-      <p>A SzerződésPortál mindhárom szintet támogatja. Az ingyenes csomagban egyszerű e-aláírás érhető el (rajzolt és gépelt), míg a Profi csomagban fokozott és minősített aláírás is használható DÁP és Microsec integráción keresztül.</p>
+      <h2>A Legitas megoldása</h2>
+      <p>A Legitas mindhárom szintet támogatja. Az ingyenes csomagban egyszerű e-aláírás érhető el (rajzolt és gépelt), míg a Profi csomagban fokozott és minősített aláírás is használható DÁP és Microsec integráción keresztül.</p>
       <p>Minden aláíráshoz audit napló készül: rögzítjük az IP-címet, a böngészőt, az időbélyeget és a dokumentum SHA-256 hash-ét. Ez bizonyítási szempontból fontos lehet egy esetleges jogvitában.</p>
 
       <h2>Összefoglalás</h2>
@@ -54,7 +54,7 @@ const articles: Record<string, { title: string; category: string; date: string; 
       <p>Egy hagyományos szerződéskötés átlagosan 5-7 munkanapot vesz igénybe: megszövegezés, egyeztetés, nyomtatás, postázás vagy személyes találkozó, visszaküldés. Digitálisan? 10-15 perc. Az aláíró emailben kapja a linket, és mobilról is aláírhatja.</p>
 
       <h2>2. Költségcsökkentés</h2>
-      <p>A papír, nyomtató, toner, postai díjak és archiválási költségek évente akár több százezer forintot is kitehetnek egy KKV-nál. A digitális megoldás ezeket nullára csökkenti. A SzerződésPortál ingyenes csomagjával havi 5 szerződés teljesen ingyen kezelhető.</p>
+      <p>A papír, nyomtató, toner, postai díjak és archiválási költségek évente akár több százezer forintot is kitehetnek egy KKV-nál. A digitális megoldás ezeket nullára csökkenti. A Legitas ingyenes csomagjával havi 5 szerződés teljesen ingyen kezelhető.</p>
 
       <h2>3. Jogi biztonság</h2>
       <p>A digitális szerződéskezelő rendszerek automatikusan biztosítják, ami papíron a te felelősséged lenne: semmit nem lehet utólag módosítani (SHA-256 hash), minden lépés naplózva van (audit trail), és a sablonok jogász által ellenőrzöttek.</p>
@@ -66,7 +66,7 @@ const articles: Record<string, { title: string; category: string; date: string; 
       <p>A home office és a távmunka ma már alap. Ha a szerződéseid papíron vannak az irodai fiókban, nem férsz hozzájuk otthonról. A felhőalapú szerződéskezelő bárhonnan elérhető, mobilról is.</p>
 
       <h2>Hogyan kezdj hozzá?</h2>
-      <p>Nem kell egyszerre mindent digitalizálni. Kezdd az új szerződésekkel — a meglévőket fokozatosan szkenneld be és töltsd fel. A SzerződésPortál ingyenes csomagjával kockázat nélkül kipróbálhatod a rendszert.</p>
+      <p>Nem kell egyszerre mindent digitalizálni. Kezdd az új szerződésekkel — a meglévőket fokozatosan szkenneld be és töltsd fel. A Legitas ingyenes csomagjával kockázat nélkül kipróbálhatod a rendszert.</p>
     `,
   },
   "ptk-szerzodeskotes-alapjai": {
@@ -136,8 +136,8 @@ const articles: Record<string, { title: string; category: string; date: string; 
       <h2>Egyoldalú vs. kétoldalú NDA</h2>
       <p>Az egyoldalú NDA-ban csak az egyik fél ad át bizalmas információt (pl. munkáltató → munkavállaló). A kétoldalú (mutual) NDA mindkét felet védi — ez a gyakoribb üzleti tárgyalásoknál.</p>
 
-      <h2>NDA készítése a SzerződésPortálon</h2>
-      <p>A SzerződésPortálon kétoldalú NDA sablon áll rendelkezésre. Válaszd ki a sablont, töltsd ki a felek adatait és a specifikus feltételeket, majd küldd el aláírásra. Az egész folyamat 5 perc.</p>
+      <h2>NDA készítése a Legitason</h2>
+      <p>A Legitason kétoldalú NDA sablon áll rendelkezésre. Válaszd ki a sablont, töltsd ki a felek adatait és a specifikus feltételeket, majd küldd el aláírásra. Az egész folyamat 5 perc.</p>
     `,
   },
   "gdpr-szerzodes-adatvedelem": {
@@ -175,8 +175,8 @@ const articles: Record<string, { title: string; category: string; date: string; 
       <h2>Szankciók</h2>
       <p>A GDPR megsértéséért a NAIH (Nemzeti Adatvédelmi és Információszabadság Hatóság) komoly bírságot szabhat ki — akár az éves árbevétel 4%-áig. KKV-k számára is akár milliós nagyságrendű büntetés lehetséges.</p>
 
-      <h2>A SzerződésPortál és a GDPR</h2>
-      <p>A SzerződésPortál sablonjai tartalmazzák a szükséges adatvédelmi záradékokat. Az adatfeldolgozói megállapodás sablon is elérhető. A platform maga is GDPR-kompatibilis: EU szerveren tárolunk, audit naplót vezetünk, és az adatok bármikor törölhetők.</p>
+      <h2>A Legitas és a GDPR</h2>
+      <p>A Legitas sablonjai tartalmazzák a szükséges adatvédelmi záradékokat. Az adatfeldolgozói megállapodás sablon is elérhető. A platform maga is GDPR-kompatibilis: EU szerveren tárolunk, audit naplót vezetünk, és az adatok bármikor törölhetők.</p>
     `,
   },
   "munkaszerodes-2026-valtozasok": {
@@ -226,8 +226,8 @@ const articles: Record<string, { title: string; category: string; date: string; 
         <li>Jogellenes versenytilalmi kikötés (kompenzáció nélkül)</li>
       </ul>
 
-      <h2>Munkaszerződés a SzerződésPortálon</h2>
-      <p>A SzerződésPortálon határozatlan és határozott idejű munkaszerződés sablon is elérhető, a 2026-os jogszabályoknak megfelelően. A sablon automatikusan tartalmazza a kötelező elemeket, és figyelmeztet, ha valami hiányzik.</p>
+      <h2>Munkaszerződés a Legitason</h2>
+      <p>A Legitason határozatlan és határozott idejű munkaszerződés sablon is elérhető, a 2026-os jogszabályoknak megfelelően. A sablon automatikusan tartalmazza a kötelező elemeket, és figyelmeztet, ha valami hiányzik.</p>
     `,
   },
 };

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "TIA / SCC - SzerződésPortál",
+  title: "TIA / SCC - Legitas",
   description: "Nemzetközi Adattovábbítási Értékelés és Standard Contractual Clauses dokumentáció",
 };
 
@@ -15,7 +15,7 @@ export default function SccPage() {
       <div className="prose prose-gray max-w-none prose-headings:text-gray-900 prose-p:text-gray-600 prose-li:text-gray-600 prose-a:text-brand-teal-dark">
         <h2>1. Bevezetés</h2>
         <p>
-          A SzerződésPortál platform bizonyos szolgáltatásaihoz az Európai Gazdasági Térségen (EGT)
+          A Legitas platform bizonyos szolgáltatásaihoz az Európai Gazdasági Térségen (EGT)
           kívüli, egyesült államokbeli adatfeldolgozókat vesz igénybe. A GDPR 46. cikk (2) c) pontja
           és a Schrems II ítélet (C-311/18) alapján az alábbi értékelést készítettük az adattovábbítás
           jogszerűségéről és biztonságáról.
@@ -152,7 +152,7 @@ export default function SccPage() {
 
         <hr />
         <p className="text-sm text-gray-400">
-          Utolsó módosítás: 2026. március 7. | SzerződésPortál &copy; {new Date().getFullYear()}
+          Utolsó módosítás: 2026. március 7. | Legitas &copy; {new Date().getFullYear()}
         </p>
       </div>
     </div>

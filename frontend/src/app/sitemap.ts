@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const BASE_URL = "https://szerzodes.cegverzum.hu";
+const BASE_URL = "https://legitas.hu";
 
 const blogSlugs = [
   "elektronikus-alairas-magyarorszagon-2026",

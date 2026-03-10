@@ -50,7 +50,7 @@ export default function ReferralSettings() {
   };
 
   const copyCode = () => {
-    const url = `https://szerzodes.cegverzum.hu/register?ref=${code}`;
+    const url = `https://legitas.hu/register?ref=${code}`;
     navigator.clipboard.writeText(url);
     toast.success("Ajánló link másolva!");
   };
@@ -74,7 +74,7 @@ export default function ReferralSettings() {
         </p>
         <div className="flex gap-2">
           <div className="flex-1 bg-white/10 rounded-lg px-4 py-3 font-mono text-sm backdrop-blur">
-            szerzodes.cegverzum.hu/register?ref={code}
+            legitas.hu/register?ref={code}
           </div>
           <button
             onClick={copyCode}

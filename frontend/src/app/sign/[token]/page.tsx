@@ -150,7 +150,7 @@ export default function SignPage() {
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            SzerződésPortál
+            Legitas
           </h1>
           <p className="text-gray-500">{error}</p>
         </div>
@@ -183,7 +183,7 @@ export default function SignPage() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b py-4 px-6">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
-          <h1 className="text-lg font-bold text-blue-600">SzerződésPortál</h1>
+          <h1 className="text-lg font-bold text-blue-600">Legitas</h1>
           <div className="text-sm text-gray-500">
             <span className="font-medium text-gray-700">{signer.name}</span>
             {signer.role && <span className="ml-1">({signer.role})</span>}

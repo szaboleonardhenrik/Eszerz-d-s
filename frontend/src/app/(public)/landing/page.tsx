@@ -460,7 +460,7 @@ function PricingPreview() {
 /* -- 6. TESTIMONIALS ----------------------------------------------------- */
 const testimonials = [
   {
-    quote: "Korábban napokat vett igénybe egy-egy szerződés. A SzerződésPortállal 10 perc alatt kész vagyunk, és az ügyfelek is egyszerűen aláírják mobilról.",
+    quote: "Korábban napokat vett igénybe egy-egy szerződés. A Legitaslal 10 perc alatt kész vagyunk, és az ügyfelek is egyszerűen aláírják mobilról.",
     name: "Kovács Márta",
     role: "Ügyvezető, DigitalFlow Kft.",
     initials: "KM",
@@ -586,7 +586,7 @@ function Footer() {
               <div className="w-7 h-7 rounded-md bg-blue-600 flex items-center justify-center">
                 <span className="text-white font-bold text-xs">SZ</span>
               </div>
-              <span className="text-white font-bold">SzerződésPortál</span>
+              <span className="text-white font-bold">Legitas</span>
             </div>
             <p className="text-sm leading-relaxed">A magyar KKV-k szerződéskezelő platformja. Ptk.-conform sablonok, e-aláírás, egy helyen.</p>
           </div>
@@ -615,14 +615,14 @@ function Footer() {
           <div>
             <h3 className="text-white font-semibold mb-4">Kapcsolat</h3>
             <ul className="space-y-2.5 text-sm">
-              <li><a href="mailto:hello@szerzodes.cegverzum.hu" className="hover:text-white transition">hello@szerzodes.cegverzum.hu</a></li>
+              <li><a href="mailto:info@legitas.hu" className="hover:text-white transition">info@legitas.hu</a></li>
               <li><span>Budapest, Magyarország</span></li>
             </ul>
           </div>
         </div>
         <div className="border-t border-gray-800 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-sm">
-            &copy; {new Date().getFullYear()} SzerződésPortál. Minden jog fenntartva.
+            &copy; {new Date().getFullYear()} Legitas. Minden jog fenntartva.
           </p>
           <p className="text-xs text-gray-500">
             A platform nem helyettesíti a jogi tanácsadást.

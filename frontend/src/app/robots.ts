@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/dashboard", "/contracts", "/settings", "/analytics", "/create", "/templates", "/sign", "/api"],
       },
     ],
-    sitemap: "https://szerzodes.cegverzum.hu/sitemap.xml",
+    sitemap: "https://legitas.hu/sitemap.xml",
   };
 }

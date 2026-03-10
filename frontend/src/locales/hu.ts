@@ -157,7 +157,7 @@ const hu = {
     gdpr: "GDPR megfelelőség",
     contact: "Kapcsolat",
     location: "Budapest, Magyarország",
-    copyright: "SzerződésPortál. Minden jog fenntartva.",
+    copyright: "Legitas. Minden jog fenntartva.",
     disclaimer: "A platform nem helyettesíti a jogi tanácsadást. A sablonokat jogász ellenőrizte.",
   },
 };
