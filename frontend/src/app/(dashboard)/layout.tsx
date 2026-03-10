@@ -71,11 +71,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {/* Top row: logo + actions */}
           <div className="flex justify-between items-center h-14">
             <Link href="/dashboard" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">SZ</span>
+              <div className="w-8 h-8 rounded-lg bg-brand-teal-dark flex items-center justify-center">
+                <span className="text-white font-bold text-sm">L</span>
               </div>
               <span className="text-lg font-bold text-gray-900 dark:text-gray-100 hidden sm:inline">
-                <span className="text-blue-600">Szerzodes</span>Portal
+                <span className="text-brand-teal-dark">Legitas</span>
               </span>
             </Link>
             <div className="flex items-center gap-1.5 sm:gap-2">
@@ -122,7 +122,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       <div className="px-4 py-2 border-b dark:border-gray-700">
                         <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.name}</p>
                         <p className="text-xs text-gray-400">{user.email}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">Szerepkor: {user.role ?? "owner"}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">Szerepkör: {user.role ?? "owner"}</p>
                       </div>
                       <Link
                         href="/settings"
@@ -201,11 +201,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="fixed inset-y-0 left-0 w-64 sm:w-72 bg-white dark:bg-gray-800 border-r dark:border-gray-700 shadow-xl z-50 lg:hidden overflow-y-auto">
             <div className="flex items-center justify-between px-4 h-16 border-b border-gray-100 dark:border-gray-700">
               <Link href="/dashboard" className="flex items-center gap-2" onClick={() => setMobileNav(false)}>
-                <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">SZ</span>
+                <div className="w-8 h-8 rounded-lg bg-brand-teal-dark flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">L</span>
                 </div>
                 <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                  <span className="text-blue-600">Szerződés</span>Portál
+                  <span className="text-brand-teal-dark">Legitas</span>
                 </span>
               </Link>
               <button onClick={() => setMobileNav(false)} className="p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
