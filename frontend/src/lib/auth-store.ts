@@ -32,7 +32,7 @@ interface AuthState {
 
 export const useAuth = create<AuthState>((set) => ({
   user: null,
-  token: typeof window !== 'undefined' ? localStorage.getItem('token') : null,
+  token: null,
   loading: true,
   requiresConsentUpdate: false,
   consentVersion: null,
@@ -43,12 +43,10 @@ export const useAuth = create<AuthState>((set) => ({
     if (data.requiresMfa) {
       return { requiresMfa: true, mfaToken: data.mfaToken };
     }
-    const { user, token } = data;
-    // Keep localStorage as fallback during transition period
-    if (token) localStorage.setItem('token', token);
+    const { user } = data;
     set({
       user,
-      token,
+      token: null,
       requiresConsentUpdate: !!data.requiresConsentUpdate,
       consentVersion: data.consentVersion || null,
     });
@@ -57,21 +55,16 @@ export const useAuth = create<AuthState>((set) => ({
 
   register: async (data) => {
     const res = await api.post('/auth/register', data);
-    const { user, token } = res.data.data;
-    // Keep localStorage as fallback during transition period
-    if (token) localStorage.setItem('token', token);
-    set({ user, token });
+    const { user } = res.data.data;
+    set({ user, token: null });
   },
 
   loadProfile: async () => {
     try {
       // httpOnly cookie is sent automatically via withCredentials.
-      // Also check localStorage for backward compat (transition period).
       const res = await api.get('/auth/profile');
-      const localToken = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      set({ user: res.data.data, token: localToken, loading: false });
+      set({ user: res.data.data, token: null, loading: false });
     } catch {
-      localStorage.removeItem('token');
       set({ user: null, token: null, loading: false });
     }
   },
@@ -82,7 +75,6 @@ export const useAuth = create<AuthState>((set) => ({
     } catch {
       // Ignore errors — clear local state regardless
     }
-    localStorage.removeItem('token');
     set({ user: null, token: null, requiresConsentUpdate: false, consentVersion: null });
     window.location.href = '/login';
   },

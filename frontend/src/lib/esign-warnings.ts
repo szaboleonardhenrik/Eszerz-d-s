@@ -14,12 +14,12 @@ export function getEsignWarning(
   const cat = category?.toLowerCase() ?? "";
   const title = name?.toLowerCase() ?? "";
 
-  // Real estate contracts may require QES
+  // Real estate contracts require QES
   if (cat.includes("ingatlan") || title.includes("ingatlan")) {
-    return "Ingatlan szerződésekhez minősített elektronikus aláírás (QES) szükséges lehet.";
+    return "Ingatlan szerződésekhez minősített elektronikus aláírás (QES) szükséges. Ingatlan adásvételhez ügyvédi ellenjegyzés is szükséges (Inytv. 32. §).";
   }
 
-  // Loan / credit contracts may require QES
+  // Loan / credit contracts require QES
   if (
     cat.includes("hitel") ||
     cat.includes("kölcsön") ||
@@ -29,16 +29,16 @@ export function getEsignWarning(
     title.includes("kölcsön") ||
     title.includes("kolcson")
   ) {
-    return "Hitel- és kölcsönszerződésekhez minősített elektronikus aláírás (QES) szükséges lehet.";
+    return "Hitel- és kölcsönszerződésekhez minősített elektronikus aláírás (QES) szükséges.";
   }
 
-  // Employment contracts may require AES
+  // Employment contracts require AES
   if (
     cat.includes("munka") ||
     title.includes("munkaszerződés") ||
     title.includes("munkaszerzodes")
   ) {
-    return "Egyes munkaügyi dokumentumokhoz fokozott biztonságú aláírás (AES) szükséges lehet.";
+    return "Munkaszerződésekhez fokozott biztonságú elektronikus aláírás (AES) szükséges a Ptk. 6:7. § (3) bekezdése szerint.";
   }
 
   return null;

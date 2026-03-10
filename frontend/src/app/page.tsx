@@ -7,8 +7,7 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    router.replace(token ? "/dashboard" : "/landing");
+    router.replace("/landing");
   }, [router]);
 
   return (

@@ -114,9 +114,9 @@ export class SignaturesService {
       signatureImageUrl = imageKey;
     }
 
-    // Update signer
-    await this.prisma.signer.update({
-      where: { id: signer.id },
+    // Atomic update: only update if signer is still 'pending' (prevents race condition)
+    const updateResult = await this.prisma.signer.updateMany({
+      where: { id: signer.id, status: 'pending' },
       data: {
         status: 'signed',
         signedAt: new Date(),
@@ -128,6 +128,10 @@ export class SignaturesService {
         signerNote: dto.note ?? null,
       },
     });
+
+    if (updateResult.count === 0) {
+      throw new BadRequestException('Ez az aláírás már megtörtént vagy nem módosítható');
+    }
 
     // Get current document hash
     const documentHash = this.pdfService.hashDocument(

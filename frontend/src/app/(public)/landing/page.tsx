@@ -203,16 +203,16 @@ function StatsBar() {
         <Reveal>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
-              { value: 500, suffix: "+", label: "Elégedett ügyfél" },
-              { value: 12000, suffix: "+", label: "Aláírt szerződés" },
-              { value: 15, suffix: "+", label: "Kész sablon" },
-              { value: 5, suffix: " perc", label: "Átlagos aláírási idő" },
+              { label: "Egyszerű és biztonságos", sublabel: "szerződéskezelés" },
+              { label: "eIDAS-kompatibilis", sublabel: "elektronikus aláírás" },
+              { label: "15+ kész sablon", sublabel: "magyar joghoz igazítva" },
+              { label: "Percek alatt kész", sublabel: "papír nélkül, bárhonnan" },
             ].map((stat, i) => (
               <div key={i}>
-                <p className="text-3xl sm:text-4xl font-extrabold text-blue-700 dark:text-cyan-400">
-                  <Counter end={stat.value} suffix={stat.suffix} />
+                <p className="text-lg sm:text-xl font-extrabold text-blue-700 dark:text-cyan-400">
+                  {stat.label}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 font-medium">{stat.label}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 font-medium">{stat.sublabel}</p>
               </div>
             ))}
           </div>
@@ -226,7 +226,7 @@ function StatsBar() {
 const features = [
   {
     title: "Sablonok",
-    desc: "15+ kész, jogász által ellenőrzött szerződéssablon: munkaszerződés, megbízási, NDA, bérleti, vállalkozási és még sok más.",
+    desc: "15+ kész, szakértők által összeállított szerződéssablon: munkaszerződés, megbízási, NDA, bérleti, vállalkozási és még sok más.",
     iconPath: "M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z",
     color: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",
   },
@@ -302,7 +302,7 @@ const steps = [
   {
     num: "01",
     title: "Válassz sablont",
-    desc: "Böngészd a 15+ jogász által ellenőrzött magyar sablont, vagy töltsd fel a sajátodat. Munkajogi, B2B, ingatlan, IT - minden területre.",
+    desc: "Böngészd a 15+ szakértők által összeállított magyar sablont, vagy töltsd fel a sajátodat. Munkajogi, B2B, ingatlan, IT - minden területre.",
     iconPath: "M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5z",
   },
   {
@@ -466,7 +466,7 @@ const testimonials = [
     initials: "KM",
   },
   {
-    quote: "Az audit napló és a jogász által ellenőrzött sablonok nyugalmat adnak. Végre nem kell azon aggódnunk, hogy valami hiányzik a szerződésből.",
+    quote: "Az audit napló és a szakértők által összeállított sablonok nyugalmat adnak. Végre nem kell azon aggódnunk, hogy valami hiányzik a szerződésből.",
     name: "Tóth Balázs",
     role: "Pénzügyi vezető, BuildTech Zrt.",
     initials: "TB",
@@ -540,7 +540,7 @@ function FinalCTA() {
         </Reveal>
         <Reveal delay={100}>
           <p className="text-white/70 text-lg mb-10 max-w-xl mx-auto">
-            Csatlakozz a 500+ magyar vállalkozáshoz, akik már papír nélkül szerződnek.
+            Csatlakozz a magyar vállalkozásokhoz, akik már papír nélkül szerződnek.
           </p>
         </Reveal>
         <Reveal delay={200}>

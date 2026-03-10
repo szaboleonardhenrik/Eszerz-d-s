@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/
 import { ConfigService } from '@nestjs/config';
 import * as jwt from 'jsonwebtoken';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 interface PortalTokenPayload {
   email: string;
@@ -15,11 +16,12 @@ export class PortalService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
+    private readonly notificationsService: NotificationsService,
   ) {
     this.jwtSecret = this.config.get<string>('JWT_SECRET') ?? 'fallback-secret';
   }
 
-  async requestAccess(email: string): Promise<{ token: string; message: string }> {
+  async requestAccess(email: string): Promise<{ message: string }> {
     if (!email || !email.includes('@')) {
       throw new BadRequestException('Ervenytelen email cim');
     }
@@ -31,18 +33,30 @@ export class PortalService {
       where: { email: normalizedEmail },
     });
 
-    // Always return success (don't reveal whether email exists for security)
-    const token = jwt.sign(
-      { email: normalizedEmail, type: 'portal_access' } as PortalTokenPayload,
-      this.jwtSecret,
-      { expiresIn: '24h' },
-    );
+    // Only generate and send token if email actually exists as a signer
+    if (signerCount > 0) {
+      const token = jwt.sign(
+        { email: normalizedEmail, type: 'portal_access' } as PortalTokenPayload,
+        this.jwtSecret,
+        { expiresIn: '24h' },
+      );
 
+      const frontendUrl = this.config.get<string>('FRONTEND_URL', 'http://localhost:3000');
+      const portalUrl = `${frontendUrl}/portal?token=${token}`;
+
+      try {
+        await this.notificationsService.sendPortalAccessToken({
+          to: normalizedEmail,
+          portalUrl,
+        });
+      } catch {
+        // Don't fail — don't reveal whether the email exists
+      }
+    }
+
+    // Always return the same generic message regardless of whether the email exists
     return {
-      token,
-      message: signerCount > 0
-        ? 'Hozzaferes megadva. A token 24 oraig ervenyes.'
-        : 'Ha ez az email cim szerepel alairoként, a token 24 oraig ervenyes.',
+      message: 'Ha ez az email cim szerepel alairoként, a hozzaferesi linket elkuldtuk emailben. A link 24 oraig ervenyes.',
     };
   }
 
@@ -91,7 +105,7 @@ export class PortalService {
       ownerCompany: signer.contract.owner.companyName,
       signerStatus: signer.status,
       signedAt: signer.signedAt,
-      signToken: signer.status === 'pending' ? signer.signToken : null,
+      // signToken intentionally omitted — never expose signing tokens in portal responses
     }));
 
     return {

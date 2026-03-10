@@ -32,7 +32,7 @@ export default function CookiePage() {
           </thead>
           <tbody>
             <tr><td>session_id</td><td>Munkamenet azonosítása</td><td>Munkamenet végéig</td></tr>
-            <tr><td>jwt_token</td><td>Felhasználó hitelesítése (bejelentkezés)</td><td>7 nap</td></tr>
+            <tr><td>jwt_token</td><td>Felhasználó hitelesítése (bejelentkezés)</td><td>30 nap</td></tr>
             <tr><td>csrf_token</td><td>CSRF támadások elleni védelem</td><td>Munkamenet végéig</td></tr>
             <tr><td>cookie_consent</td><td>Cookie-hozzájárulás állapotának tárolása</td><td>1 év</td></tr>
           </tbody>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useCallback } from "react";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 interface WysiwygEditorProps {
   value: string;
@@ -75,7 +76,7 @@ export default function WysiwygEditor({ value, onChange, placeholder, variables 
   const handlePaste = useCallback((e: React.ClipboardEvent) => {
     e.preventDefault();
     const text = e.clipboardData.getData("text/html") || e.clipboardData.getData("text/plain");
-    document.execCommand("insertHTML", false, text);
+    document.execCommand("insertHTML", false, sanitizeHtml(text));
     if (editorRef.current) {
       onChange(editorRef.current.innerHTML);
     }

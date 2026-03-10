@@ -131,7 +131,7 @@ export default function GlobalSearch() {
                           {results!.contracts.map((c) => (
                             <button
                               key={c.id}
-                              onClick={() => navigate(`/dashboard/${c.id}`)}
+                              onClick={() => navigate(`/contracts/${c.id}`)}
                               className="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3"
                             >
                               <svg className="w-4 h-4 text-blue-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -177,7 +177,7 @@ export default function GlobalSearch() {
                           {results!.templates.map((t) => (
                             <button
                               key={t.id}
-                              onClick={() => navigate(`/create?template=${t.id}`)}
+                              onClick={() => navigate(`/create?templateId=${t.id}`)}
                               className="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3"
                             >
                               <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">

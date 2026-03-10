@@ -28,16 +28,13 @@ export function useSocket(options: UseSocketOptions = {}) {
   const connect = useCallback(async () => {
     if (typeof window === "undefined") return;
 
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
     if (socketRef.current?.connected) return;
 
     try {
       const { io } = await import("socket.io-client");
       const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") ?? "http://localhost:3001";
       const socket = io(`${baseUrl}/ws`, {
-        auth: { token },
+        withCredentials: true,
         transports: ["websocket", "polling"],
         reconnection: true,
         reconnectionAttempts: 5,

@@ -26,13 +26,31 @@ export class QuotesService {
 
   private async generateQuoteNumber(userId: string): Promise<string> {
     const year = new Date().getFullYear();
-    const count = await this.prisma.quote.count({
-      where: {
-        ownerId: userId,
-        createdAt: { gte: new Date(`${year}-01-01`) },
-      },
-    });
-    return `AJ-${year}-${String(count + 1).padStart(4, '0')}`;
+    const maxRetries = 10;
+
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      const count = await this.prisma.quote.count({
+        where: {
+          ownerId: userId,
+          createdAt: { gte: new Date(`${year}-01-01`) },
+        },
+      });
+      const candidate = `AJ-${year}-${String(count + 1 + attempt).padStart(4, '0')}`;
+
+      // Check uniqueness
+      const existing = await this.prisma.quote.findFirst({
+        where: { quoteNumber: candidate },
+        select: { id: true },
+      });
+
+      if (!existing) {
+        return candidate;
+      }
+    }
+
+    // Fallback: append random suffix to guarantee uniqueness
+    const fallback = `AJ-${year}-${Date.now().toString(36).toUpperCase()}`;
+    return fallback;
   }
 
   // ─── SUBSCRIPTION TIER LIMITS ────────────────────────

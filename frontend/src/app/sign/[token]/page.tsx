@@ -3,9 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import SignaturePad from "signature_pad";
-import api from "@/lib/api";
+import axios from "axios";
 import toast from "react-hot-toast";
 import { sanitizeHtml } from "@/lib/sanitize";
+
+const publicApi = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api",
+});
 
 interface SignerInfo {
   id: string;
@@ -66,7 +70,7 @@ export default function SignPage() {
 
   const loadContract = async () => {
     try {
-      const res = await api.get(`/sign/${token}`);
+      const res = await publicApi.get(`/sign/${token}`);
       setContract(res.data.data.contract);
       setSigner(res.data.data.signer);
     } catch (err: any) {
@@ -106,7 +110,7 @@ export default function SignPage() {
 
     setSigning(true);
     try {
-      await api.post(`/sign/${token}`, {
+      await publicApi.post(`/sign/${token}`, {
         signatureMethod: "simple",
         signatureImageBase64,
         typedName: signMethod === "type" ? typedName : undefined,
@@ -124,7 +128,7 @@ export default function SignPage() {
   const handleDecline = async () => {
     setSigning(true);
     try {
-      await api.post(`/sign/${token}/decline`, { reason: declineReason, note: signerNote || undefined });
+      await publicApi.post(`/sign/${token}/decline`, { reason: declineReason, note: signerNote || undefined });
       setError("Visszautasította a szerződést");
     } catch (err: any) {
       toast.error(err.response?.data?.error?.message ?? "Hiba");

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 const articles: Record<string, { title: string; category: string; date: string; readTime: string; content: string }> = {
   "elektronikus-alairas-magyarorszagon-2026": {
@@ -271,7 +272,7 @@ export default function BlogArticlePage() {
 
       <div
         className="prose prose-gray max-w-none prose-headings:text-gray-900 prose-p:text-gray-600 prose-li:text-gray-600 prose-a:text-brand-teal-dark"
-        dangerouslySetInnerHTML={{ __html: article.content }}
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }}
       />
 
       <div className="mt-16 pt-8 border-t">

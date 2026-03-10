@@ -29,10 +29,8 @@ function TwoFactorVerifyContent() {
     setLoading(true);
     try {
       const res = await api.post("/auth/verify-mfa", { mfaToken, code: code.trim() });
-      const { user, token } = res.data.data;
-      // Keep localStorage as fallback during transition period (httpOnly cookie is set by backend)
-      if (token) localStorage.setItem("token", token);
-      useAuth.setState({ user, token });
+      const { user } = res.data.data;
+      useAuth.setState({ user, token: null });
       router.push("/dashboard");
     } catch (err: any) {
       toast.error(err.response?.data?.error?.message ?? "Érvénytelen kód");

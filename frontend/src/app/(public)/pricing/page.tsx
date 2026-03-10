@@ -179,7 +179,7 @@ const faqs = [
   },
   {
     q: "Jogilag érvényes az elektronikus aláírás?",
-    a: "Igen. Az eIDAS rendelet és a magyar Ptk. szerint az elektronikus aláírás jogilag egyenlő értékű a kézzel írott aláírással a legtöbb szerződéstípusnál. A rendszer teljes audit naplót vezet.",
+    a: "Az egyszerű elektronikus aláírás (SES) az eIDAS rendelet 25. cikk (1) bekezdése alapján bírósági eljárásban bizonyítékként elfogadható, és joghatása nem utasítható el kizárólag elektronikus formája miatt. Ugyanakkor az írásbeli alakhoz kötött jognyilatkozatokhoz (pl. ingatlan, munkaszerződés) fokozott (AES) vagy minősített (QES) elektronikus aláírás szükséges a Ptk. 6:7. § (3) bekezdése szerint.",
   },
   {
     q: "Mi az időbélyeg?",

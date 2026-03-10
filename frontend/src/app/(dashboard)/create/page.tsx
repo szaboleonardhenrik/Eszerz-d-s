@@ -599,7 +599,7 @@ function CreateWizardInner() {
       )}
 
       {/* Step 4: Summary */}
-      {step === 4 && selectedTemplate && (
+      {step === 4 && (selectedTemplate || uploadedHtml) && (
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 max-w-2xl">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Összegzés</h2>
 
@@ -608,30 +608,39 @@ function CreateWizardInner() {
               <p className="text-sm text-gray-500 dark:text-gray-400">Szerzodes neve</p>
               <p className="font-medium text-gray-900 dark:text-gray-100">{title}</p>
             </div>
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Sablon</p>
-              <p className="font-medium text-gray-900 dark:text-gray-100">{selectedTemplate.name}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Kitoltott adatok</p>
-              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 text-sm space-y-1">
-                {Object.entries(variables)
-                  .filter(([, v]) => v)
-                  .map(([key, value]) => {
-                    const varDef = selectedTemplate.variables.find(
-                      (v) => v.name === key
-                    );
-                    return (
-                      <div key={key} className="flex">
-                        <span className="text-gray-500 dark:text-gray-400 w-32 sm:w-48 shrink-0">
-                          {varDef?.label ?? key}:
-                        </span>
-                        <span className="text-gray-900 dark:text-gray-100">{value}</span>
-                      </div>
-                    );
-                  })}
+            {selectedTemplate ? (
+              <>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Sablon</p>
+                  <p className="font-medium text-gray-900 dark:text-gray-100">{selectedTemplate.name}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Kitoltott adatok</p>
+                  <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 text-sm space-y-1">
+                    {Object.entries(variables)
+                      .filter(([, v]) => v)
+                      .map(([key, value]) => {
+                        const varDef = selectedTemplate.variables.find(
+                          (v) => v.name === key
+                        );
+                        return (
+                          <div key={key} className="flex">
+                            <span className="text-gray-500 dark:text-gray-400 w-32 sm:w-48 shrink-0">
+                              {varDef?.label ?? key}:
+                            </span>
+                            <span className="text-gray-900 dark:text-gray-100">{value}</span>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Forras</p>
+                <p className="font-medium text-gray-900 dark:text-gray-100">Sajat feltoltes / szerkeszto</p>
               </div>
-            </div>
+            )}
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Alairok</p>
               <div className="space-y-2">

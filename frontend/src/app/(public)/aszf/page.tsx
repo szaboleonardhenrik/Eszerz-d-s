@@ -29,12 +29,16 @@ export default function AszfPage() {
         <p>A Szolgáltatás főbb funkciói:</p>
         <ul>
           <li>Szerződéssablonok használata és testreszabása</li>
-          <li>Elektronikus aláírás (egyszerű és fokozott)</li>
+          <li>Egyszerű elektronikus aláírás (SES)</li>
           <li>PDF generálás és letöltés</li>
           <li>Csapatkezelés és jogosultsági szintek</li>
           <li>Emlékeztetők és értesítések</li>
           <li>AI-alapú szerződéselemzés</li>
         </ul>
+
+        <p className="text-sm bg-amber-50 border border-amber-200 rounded-lg p-3 mt-2">
+          <strong>Megjegyzés:</strong> A platform kizárólag egyszerű elektronikus aláírást (SES) támogat az eIDAS rendelet értelmében. Fokozott (AES) vagy minősített (QES) aláíráshoz tanúsítványkiadó szolgáltató szükséges.
+        </p>
 
         <h2>3. Regisztráció és felhasználói fiók</h2>
         <p>
@@ -50,14 +54,14 @@ export default function AszfPage() {
         <h2>4. Előfizetési csomagok és díjak</h2>
         <p>A Szolgáltatás az alábbi csomagokban érhető el:</p>
         <ul>
-          <li><strong>Ingyenes:</strong> Havi 5 szerződés, 1 felhasználó, alap sablonok</li>
-          <li><strong>Kezdő (2 990 Ft/hó):</strong> Havi 30 szerződés, 3 felhasználó, egyéni sablonok</li>
-          <li><strong>Profi (9 990 Ft/hó):</strong> Korlátlan szerződés, 10 felhasználó, AI elemzés, analytics</li>
-          <li><strong>Nagyvállalati:</strong> Egyedi árazás, korlátlan felhasználó, SLA garancia</li>
+          <li><strong>Kezdő (975 Ft + áfa/hó):</strong> 2 szerződés/hó, 0 társfiók, 2 fő/szerződés, 24 időbélyeg/év, AI asszisztens, kézi e-aláírás</li>
+          <li><strong>Közepes (14 950 Ft + áfa/hó):</strong> 12 szerződés/hó, 2 társfiók, 10 fő/szerződés, 144 időbélyeg/év, sablontár, CRM, email követés</li>
+          <li><strong>Prémium (26 000 Ft + áfa/hó):</strong> 35 szerződés/hó, 5 társfiók, 10 fő/szerződés, 420 időbélyeg/év, API, branding, automatizáció</li>
+          <li><strong>Nagyvállalati (149 500 Ft + áfa/hó):</strong> 500 szerződés/hó, 20 társfiók, 10 fő/szerződés, 6 000 időbélyeg/év, VIP support, onboarding</li>
         </ul>
         <p>
-          Az árak bruttó árak, magyar ÁFA-t tartalmaznak. Az éves előfizetés esetén 2 hónap kedvezményt biztosítunk.
-          A díjfizetés bankkártyával vagy átutalással történik.
+          Az árak nettó árak, nem tartalmazzák a 27% ÁFÁ-t. Az éves előfizetés esetén ~23% kedvezményt biztosítunk.
+          A díjfizetés bankkártyával (Stripe) vagy éves fizetés esetén banki átutalással történik.
         </p>
 
         <h2>5. Az elektronikus aláírás érvényessége</h2>
@@ -115,7 +119,25 @@ export default function AszfPage() {
           használata a módosított feltételek elfogadásának minősül.
         </p>
 
-        <h2>11. Irányadó jog és jogviták</h2>
+        <h2>11. Elállási jog</h2>
+        <p>
+          A fogyasztót a 45/2014. (II. 26.) Korm. rendelet 20. §-a alapján 14 napos elállási jog illeti meg
+          az előfizetés megkezdésétől számítva, indokolás nélkül.
+        </p>
+        <p>
+          Digitális tartalom szolgáltatása esetén a fogyasztó kifejezett, előzetes hozzájárulásával a teljesítés
+          a 14 napos elállási határidő lejárta előtt megkezdődhet. Ebben az esetben a fogyasztó tudomásul veszi,
+          hogy a teljesítés megkezdését követően az elállási jogát elveszíti (45/2014. Korm. rendelet 29. § (1) m)).
+        </p>
+        <p>
+          <strong>Minta elállási nyilatkozat:</strong><br />
+          &ldquo;Alulírott [név] kijelentem, hogy elállási jogomat gyakorlom a SzerződésPortál [csomag neve]
+          előfizetésére vonatkozó szerződés tekintetében. Kelt: [dátum]. Aláírás: [aláírás (csak papíron
+          benyújtott nyilatkozat esetén)].&rdquo;<br />
+          Az elállási nyilatkozatot a hello@szerzodes.cegverzum.hu email-címre kell megküldeni.
+        </p>
+
+        <h2>12. Irányadó jog és jogviták</h2>
         <p>
           Jelen ÁSZF-re a magyar jog az irányadó. A felek vitáikat elsősorban békés úton
           rendezik. Ennek sikertelensége esetén a Budapesti II. és III. Kerületi Bíróság,

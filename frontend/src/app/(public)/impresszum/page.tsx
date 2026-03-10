@@ -16,9 +16,10 @@ export default function ImpresszumPage() {
         <h2>1. Szolgáltató adatai</h2>
         <ul>
           <li><strong>Név:</strong> Szabó Leonárd Henrik egyéni vállalkozó</li>
-          <li><strong>Székhely:</strong> Magyarország (pontos cím a nyilvántartásban)</li>
-          <li><strong>Adószám:</strong> [adószám helye]</li>
-          <li><strong>Nyilvántartási szám:</strong> [nyilvántartási szám helye]</li>
+          {/* TODO: Replace with real business data before launch */}
+          <li><strong>Székhely:</strong> <span className="bg-yellow-100 text-yellow-800 px-1 rounded font-semibold">[KITÖLTENDŐ - pontos cím]</span></li>
+          <li><strong>Adószám:</strong> <span className="bg-yellow-100 text-yellow-800 px-1 rounded font-semibold">[KITÖLTENDŐ - adószám]</span></li>
+          <li><strong>Nyilvántartási szám:</strong> <span className="bg-yellow-100 text-yellow-800 px-1 rounded font-semibold">[KITÖLTENDŐ - nyilvántartási szám]</span></li>
           <li><strong>Email:</strong> hello@szerzodes.cegverzum.hu</li>
           <li><strong>Weboldal:</strong> <a href="https://szerzodes.cegverzum.hu">https://szerzodes.cegverzum.hu</a></li>
         </ul>

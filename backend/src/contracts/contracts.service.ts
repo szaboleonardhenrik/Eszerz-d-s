@@ -5,6 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { randomBytes, createHash } from 'crypto';
+import sanitizeHtmlLib from 'sanitize-html';
 import { PrismaService } from '../prisma/prisma.service';
 import { PdfService, PdfBranding } from '../pdf/pdf.service';
 import { StorageService } from '../storage/storage.service';
@@ -42,6 +43,32 @@ export class ContractsService {
     };
   }
 
+  /**
+   * Sanitize HTML content to prevent XSS attacks.
+   * Preserves formatting tags but strips scripts, event handlers, and dangerous elements.
+   * NOTE: requires `npm install sanitize-html @types/sanitize-html`
+   */
+  private sanitizeHtml(html: string): string {
+    return sanitizeHtmlLib(html, {
+      allowedTags: sanitizeHtmlLib.defaults.allowedTags.concat([
+        'img', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+        'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td',
+        'span', 'div', 'br', 'hr', 'p', 'strong', 'em', 'u',
+        'ul', 'ol', 'li', 'blockquote', 'pre', 'code', 'a',
+      ]),
+      allowedAttributes: {
+        '*': ['style', 'class', 'id'],
+        'a': ['href', 'target', 'rel'],
+        'img': ['src', 'alt', 'width', 'height'],
+        'td': ['colspan', 'rowspan'],
+        'th': ['colspan', 'rowspan'],
+      },
+      allowedSchemes: ['http', 'https', 'data'],
+      // Strip all script tags, event handlers (on*), etc.
+      disallowedTagsMode: 'discard',
+    });
+  }
+
   async create(dto: CreateContractDto, userId: string) {
     // Subscription limit check
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
@@ -73,7 +100,7 @@ export class ContractsService {
         dto.variables,
       );
     } else if (dto.contentHtml) {
-      contentHtml = dto.contentHtml;
+      contentHtml = this.sanitizeHtml(dto.contentHtml);
     } else {
       throw new BadRequestException(
         'Adj meg sablont és változókat, vagy egyedi HTML tartalmat',
@@ -138,6 +165,9 @@ export class ContractsService {
     if (contract.status !== 'draft') {
       throw new BadRequestException('Csak piszkozat státuszú szerződés szerkeszthető');
     }
+
+    // Sanitize user-provided HTML
+    contentHtml = this.sanitizeHtml(contentHtml);
 
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     const branding = this.getUserBranding(user);
@@ -232,7 +262,12 @@ export class ContractsService {
       'http://localhost:3000',
     );
 
-    for (const signer of contract.signers) {
+    // Only send email to signers with the lowest signing order (first in line).
+    // Subsequent signers get notified when previous ones sign.
+    const minOrder = Math.min(...contract.signers.map((s) => s.signingOrder));
+    const firstSigners = contract.signers.filter((s) => s.signingOrder === minOrder);
+
+    for (const signer of firstSigners) {
       const signUrl = `${frontendUrl}/sign/${signer.signToken}`;
       await this.notificationsService.sendSigningInvitation({
         to: signer.email,
@@ -481,16 +516,35 @@ export class ContractsService {
   async unarchive(contractId: string, userId: string) {
     const contract = await this.findOneOwned(contractId, userId);
 
+    // Restore the status from before archiving by reading the last archive audit log
+    let restoredStatus = 'draft';
+    try {
+      const archiveLog = await this.prisma.auditLog.findFirst({
+        where: { contractId, eventType: 'contract_archived' },
+        orderBy: { createdAt: 'desc' },
+      });
+      if (archiveLog?.eventData) {
+        const eventData = typeof archiveLog.eventData === 'string'
+          ? JSON.parse(archiveLog.eventData)
+          : archiveLog.eventData;
+        if (eventData.previousStatus && eventData.previousStatus !== 'archived') {
+          restoredStatus = eventData.previousStatus;
+        }
+      }
+    } catch {
+      // If reading audit log fails, default to 'draft'
+    }
+
     const updated = await this.prisma.contract.update({
       where: { id: contractId },
-      data: { status: 'draft' },
+      data: { status: restoredStatus },
       include: { signers: true },
     });
 
     await this.auditService.log({
       contractId,
       eventType: 'contract_unarchived',
-      eventData: { previousStatus: contract.status },
+      eventData: { previousStatus: contract.status, restoredStatus },
     });
 
     return updated;

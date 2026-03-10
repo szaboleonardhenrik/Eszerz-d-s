@@ -333,6 +333,38 @@ export class NotificationsService {
     }
   }
 
+  async sendPortalAccessToken(params: {
+    to: string;
+    portalUrl: string;
+  }) {
+    try {
+      await this.resend.emails.send({
+        from: this.fromEmail,
+        to: params.to,
+        subject: 'Portál hozzáférés – SzerződésPortál',
+        html: `
+          <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
+            <h2>Portál hozzáférés</h2>
+            <p>Az alábbi linkre kattintva megtekintheti az Önnek küldött szerződéseket:</p>
+            <div style="text-align:center;margin:24px 0;">
+              <a href="${params.portalUrl}"
+                 style="display:inline-block;background:#198296;color:white;padding:14px 40px;border-radius:8px;text-decoration:none;font-weight:bold;">
+                Portál megnyitása
+              </a>
+            </div>
+            <p style="font-size:12px;color:#999;">
+              Ez a link 24 óráig érvényes. Ha nem Ön kérte, kérjük hagyja figyelmen kívül.
+            </p>
+          </div>
+        `,
+      });
+      this.logger.log(`Portal access token sent to ${params.to}`);
+    } catch (error) {
+      this.logger.error(`Failed to send portal access token to ${params.to}`, error);
+      throw error;
+    }
+  }
+
   async sendExpiryWarning(params: {
     to: string;
     ownerName: string;
