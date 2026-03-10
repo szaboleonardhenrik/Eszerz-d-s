@@ -27,9 +27,8 @@ export default function RegisterPage() {
       toast.success("Sikeres regisztráció!");
       router.push("/dashboard");
     } catch (err: any) {
-      toast.error(
-        err.response?.data?.error?.message ?? "Hiba történt a regisztrációkor"
-      );
+      const msg = err.response?.data?.message || err.response?.data?.error?.message || "Hiba történt a regisztrációkor";
+      toast.error(Array.isArray(msg) ? msg[0] : msg);
     } finally {
       setLoading(false);
     }

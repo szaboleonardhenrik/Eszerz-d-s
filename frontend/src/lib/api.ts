@@ -7,22 +7,10 @@ const api = axios.create({
   withCredentials: true, // Send httpOnly cookies with every request
 });
 
-// Fallback: if localStorage token exists (transition period), send as Bearer header
-api.interceptors.request.use((config) => {
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-  }
-  return config;
-});
-
 api.interceptors.response.use(
   (res) => res,
   (error) => {
     if (error.response?.status === 401 && typeof window !== 'undefined') {
-      localStorage.removeItem('token');
       window.location.href = '/login';
     }
     if (error.response?.status >= 500) {
