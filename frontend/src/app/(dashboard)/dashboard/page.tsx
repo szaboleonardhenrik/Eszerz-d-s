@@ -23,11 +23,11 @@ const tierBadgeColors: Record<string, string> = {
 
 const statusLabels: Record<string, string> = {
   draft: "Piszkozat",
-  sent: "Elkuldve",
-  partially_signed: "Reszben alairt",
+  sent: "Elküldve",
+  partially_signed: "Részben aláírt",
   completed: "Befejezett",
-  declined: "Elutasitott",
-  expired: "Lejart",
+  declined: "Elutasított",
+  expired: "Lejárt",
   cancelled: "Visszavont",
 };
 
@@ -97,7 +97,7 @@ function ProgressBar({ used, limit, label, sublabel }: { used: number; limit: nu
         <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</p>
         <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
           {isUnlimited ? (
-            <>{used} / <span className="text-purple-600 dark:text-purple-400">Korlatlan</span></>
+            <>{used} / <span className="text-purple-600 dark:text-purple-400">Korlátlan</span></>
           ) : (
             <>{used} <span className="text-gray-400 font-normal">/ {limit}</span></>
           )}
@@ -240,7 +240,7 @@ export default function DashboardPage() {
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
               </svg>
-              Uj szerzodes
+              Új szerződés
             </Link>
             <Link
               href="/quotes/new"
@@ -249,7 +249,7 @@ export default function DashboardPage() {
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
               </svg>
-              Uj ajanlat
+              Új ajánlat
             </Link>
             {tier !== "pro" && (
               <Link
@@ -277,14 +277,14 @@ export default function DashboardPage() {
                 </svg>
               </div>
               <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                Figyelmezteteseek ({alerts.totalAlerts})
+                Figyelmeztetések ({alerts.totalAlerts})
               </h2>
             </div>
             <Link
               href="/reminders"
               className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium"
             >
-              Osszes megtekintese &rarr;
+              Összes megtekintése &rarr;
             </Link>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -294,7 +294,7 @@ export default function DashboardPage() {
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30 transition"
               >
                 <span className="w-2 h-2 rounded-full bg-red-500" />
-                {alerts.expiringIn7Days.length} szerzodes 7 napon belul lejar
+                {alerts.expiringIn7Days.length} szerződés 7 napon belül lejár
               </Link>
             )}
             {alerts.expiringIn30Days.length > 0 && (
@@ -303,7 +303,7 @@ export default function DashboardPage() {
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-800 hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition"
               >
                 <span className="w-2 h-2 rounded-full bg-yellow-500" />
-                {alerts.expiringIn30Days.length} szerzodes 30 napon belul lejar
+                {alerts.expiringIn30Days.length} szerződés 30 napon belül lejár
               </Link>
             )}
             {alerts.staleUnsigned.length > 0 && (
@@ -312,7 +312,7 @@ export default function DashboardPage() {
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition"
               >
                 <span className="w-2 h-2 rounded-full bg-blue-500" />
-                {alerts.staleUnsigned.length} szerzodes 3+ napja alairatlan
+                {alerts.staleUnsigned.length} szerződés 3+ napja aláíratlan
               </Link>
             )}
           </div>
@@ -324,47 +324,47 @@ export default function DashboardPage() {
         <ProgressBar
           used={contractsUsed}
           limit={limits.contracts}
-          label="Szerzodesek"
-          sublabel="Aktiv szerzodesek szama"
+          label="Szerződések"
+          sublabel="Aktív szerződések száma"
         />
         <ProgressBar
           used={teamUsed}
           limit={limits.team}
           label="Csapattagok"
-          sublabel="Meghivott felhasznalok"
+          sublabel="Meghívott felhasználók"
         />
         <ProgressBar
           used={apiUsed}
           limit={limits.api}
-          label="API hivasok"
-          sublabel="Mai napi hivasok"
+          label="API hívások"
+          sublabel="Mai napi hívások"
         />
         <ProgressBar
           used={storageUsed}
           limit={limits.storage}
-          label="Tarolas"
-          sublabel={`${storageUsed} MB hasznalva`}
+          label="Tárolás"
+          sublabel={`${storageUsed} MB használva`}
         />
       </div>
 
       {/* ── 3. Stats Overview Row ──────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          label="Osszes szerzodes"
+          label="Összes szerződés"
           value={stats?.total ?? 0}
         />
         <StatCard
-          label="Alairasra var"
+          label="Aláírásra vár"
           value={stats?.awaitingSignature ?? 0}
           accent="yellow"
         />
         <StatCard
-          label="Elfogadott ajanlatok"
+          label="Elfogadott ajánlatok"
           value={quoteStats?.accepted ?? 0}
           accent="green"
         />
         <StatCard
-          label="Havi bevetel"
+          label="Havi bevétel"
           value={quoteStats?.totalRevenue ? formatHuf(quoteStats.totalRevenue) : "0 Ft"}
           accent="blue"
         />
@@ -376,9 +376,9 @@ export default function DashboardPage() {
         {/* LEFT: Recent Contracts Table */}
         <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-700">
-            <h2 className="font-semibold text-sm text-gray-900 dark:text-gray-100">Legutóbbi szerzodesek</h2>
+            <h2 className="font-semibold text-sm text-gray-900 dark:text-gray-100">Legutóbbi szerződések</h2>
             <Link href="/contracts" className="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 font-medium transition">
-              Osszes megtekintese &rarr;
+              Összes megtekintése &rarr;
             </Link>
           </div>
           {contracts.length > 0 ? (
@@ -399,7 +399,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     <span className="text-xs text-gray-400">
-                      {c.signers?.length ?? 0} alairo
+                      {c.signers?.length ?? 0} aláíró
                     </span>
                     <span className={`inline-flex px-2 py-0.5 rounded-full text-[11px] font-medium ${statusColors[c.status] ?? "bg-gray-100 text-gray-600"}`}>
                       {statusLabels[c.status] ?? c.status}
@@ -410,9 +410,9 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="px-5 py-12 text-center">
-              <p className="text-sm text-gray-400">Meg nincs szerzodes</p>
+              <p className="text-sm text-gray-400">Még nincs szerződés</p>
               <Link href="/create" className="text-sm text-blue-600 hover:text-blue-700 font-medium mt-1 inline-block">
-                Elso szerzodes letrehozasa &rarr;
+                Első szerződés létrehozása &rarr;
               </Link>
             </div>
           )}
@@ -420,7 +420,7 @@ export default function DashboardPage() {
 
         {/* RIGHT: Recent Activity Feed */}
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
-          <h2 className="font-semibold text-sm text-gray-900 dark:text-gray-100 mb-4">Legutobbi esemenyek</h2>
+          <h2 className="font-semibold text-sm text-gray-900 dark:text-gray-100 mb-4">Legutóbbi események</h2>
           <ActivityFeed limit={8} />
         </div>
       </div>
@@ -429,18 +429,18 @@ export default function DashboardPage() {
       {quoteStats && quoteStats.total > 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-sm text-gray-900 dark:text-gray-100">Ajanlat statisztikak</h2>
+            <h2 className="font-semibold text-sm text-gray-900 dark:text-gray-100">Ajánlat statisztikák</h2>
             <Link href="/quotes" className="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 font-medium transition">
-              Osszes ajanlat &rarr;
+              Összes ajánlat &rarr;
             </Link>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {[
               { label: "Piszkozat", value: quoteStats.draft, color: "text-gray-500" },
-              { label: "Elkuldve", value: quoteStats.sent, color: "text-blue-600 dark:text-blue-400" },
+              { label: "Elküldve", value: quoteStats.sent, color: "text-blue-600 dark:text-blue-400" },
               { label: "Elfogadva", value: quoteStats.accepted, color: "text-green-600 dark:text-green-400" },
-              { label: "Elutasitva", value: quoteStats.declined, color: "text-red-500 dark:text-red-400" },
-              { label: "Lejart", value: quoteStats.expired, color: "text-orange-500 dark:text-orange-400" },
+              { label: "Elutasítva", value: quoteStats.declined, color: "text-red-500 dark:text-red-400" },
+              { label: "Lejárt", value: quoteStats.expired, color: "text-orange-500 dark:text-orange-400" },
             ].map((s, i) => (
               <div key={i} className="text-center p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
                 <p className="text-[11px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">{s.label}</p>
