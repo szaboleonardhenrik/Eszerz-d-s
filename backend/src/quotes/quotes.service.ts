@@ -3,6 +3,7 @@ import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PdfService } from '../pdf/pdf.service';
+import { WebhooksService } from '../webhooks/webhooks.service';
 import { ConfigService } from '@nestjs/config';
 import { CreateQuoteDto } from './dto/create-quote.dto';
 import { CreateQuoteTemplateDto } from './dto/create-quote-template.dto';
@@ -15,6 +16,7 @@ export class QuotesService {
     private prisma: PrismaService,
     private notifications: NotificationsService,
     private pdfService: PdfService,
+    private webhooksService: WebhooksService,
     private config: ConfigService,
   ) {}
 
@@ -31,7 +33,40 @@ export class QuotesService {
     return `AJ-${year}-${String(count + 1).padStart(4, '0')}`;
   }
 
+  // ─── SUBSCRIPTION TIER LIMITS ────────────────────────
+  private readonly quoteTierLimits: Record<string, number> = {
+    free: 3,
+    starter: 5,
+    medium: 20,
+    premium: 50,
+    enterprise: 500,
+    basic: 20,   // legacy
+    pro: 50,     // legacy
+  };
+
   async create(userId: string, dto: CreateQuoteDto) {
+    // Subscription limit check
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const tier = user?.subscriptionTier ?? 'free';
+    const maxQuotes = this.quoteTierLimits[tier] ?? 3;
+
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const monthlyCount = await this.prisma.quote.count({
+      where: {
+        ownerId: userId,
+        createdAt: { gte: startOfMonth },
+      },
+    });
+
+    if (monthlyCount >= maxQuotes) {
+      throw new ForbiddenException(
+        'Elérted a havi ajánlat limitedet. Frissíts magasabb csomagra a további ajánlatokhoz.',
+      );
+    }
+
     const quoteNumber = await this.generateQuoteNumber(userId);
 
     return this.prisma.quote.create({
@@ -217,6 +252,16 @@ export class QuotesService {
       // Don't fail the status update if email fails
     }
 
+    // Dispatch webhook
+    this.webhooksService.triggerWebhooks(quote.ownerId, 'quote.sent', {
+      quoteId: updated.id,
+      quoteNumber: updated.quoteNumber,
+      title: updated.title,
+      clientName: updated.clientName,
+      clientEmail: updated.clientEmail,
+      status: updated.status,
+    });
+
     return updated;
   }
 
@@ -338,6 +383,17 @@ export class QuotesService {
       }
     }
 
+    // Dispatch webhook
+    this.webhooksService.triggerWebhooks(quote.ownerId, 'quote.accepted', {
+      quoteId: updated.id,
+      quoteNumber: quote.quoteNumber,
+      title: quote.title,
+      clientName: quote.clientName,
+      clientEmail: quote.clientEmail,
+      status: updated.status,
+      acceptedAt: updated.acceptedAt,
+    });
+
     return updated;
   }
 
@@ -372,6 +428,18 @@ export class QuotesService {
       }
     }
 
+    // Dispatch webhook
+    this.webhooksService.triggerWebhooks(quote.ownerId, 'quote.declined', {
+      quoteId: updated.id,
+      quoteNumber: quote.quoteNumber,
+      title: quote.title,
+      clientName: quote.clientName,
+      clientEmail: quote.clientEmail,
+      status: updated.status,
+      declinedAt: updated.declinedAt,
+      declineReason: updated.declineReason,
+    });
+
     return updated;
   }
 
@@ -395,6 +463,18 @@ export class QuotesService {
         status: 'draft',
         variablesData: quote.variablesData,
       },
+    });
+
+    // Dispatch webhook
+    this.webhooksService.triggerWebhooks(userId, 'quote.converted', {
+      quoteId: quote.id,
+      quoteNumber: quote.quoteNumber,
+      title: quote.title,
+      clientName: quote.clientName,
+      clientEmail: quote.clientEmail,
+      status: quote.status,
+      contractId: contract.id,
+      contractTitle: contract.title,
     });
 
     return contract;
@@ -493,7 +573,23 @@ ${quote.outroText ? `<h2>4. Egyéb feltételek</h2><p>${esc(quote.outroText)}</p
       return sum + t.brutto;
     }, 0);
 
-    return { draft, sent, accepted, declined, expired, total: draft + sent + accepted + declined + expired, totalRevenue };
+    // Subscription usage
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const tier = user?.subscriptionTier ?? 'free';
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+    const monthlyUsage = await this.prisma.quote.count({
+      where: { ownerId: userId, createdAt: { gte: startOfMonth } },
+    });
+    const monthlyLimit = this.quoteTierLimits[tier] ?? 3;
+
+    return {
+      draft, sent, accepted, declined, expired,
+      total: draft + sent + accepted + declined + expired,
+      totalRevenue,
+      usage: { used: monthlyUsage, limit: monthlyLimit, tier },
+    };
   }
 
   async duplicate(id: string, userId: string) {

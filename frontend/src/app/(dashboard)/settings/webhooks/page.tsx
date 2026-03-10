@@ -23,6 +23,10 @@ const eventOptions = [
   { value: "contract.completed", label: "Teljesítve" },
   { value: "contract.declined", label: "Visszautasítva" },
   { value: "contract.expired", label: "Lejárt" },
+  { value: "quote.sent", label: "Ajánlat elküldve" },
+  { value: "quote.accepted", label: "Ajánlat elfogadva" },
+  { value: "quote.declined", label: "Ajánlat elutasítva" },
+  { value: "quote.converted", label: "Ajánlat szerződéssé alakítva" },
 ];
 
 export default function WebhooksSettings() {

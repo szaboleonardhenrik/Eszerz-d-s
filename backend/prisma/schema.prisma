@@ -383,7 +383,7 @@ model Webhook {
   userId          String    @map("user_id")
   url             String
   secret          String
-  events          String    // comma-separated: contract.created,contract.signed,contract.completed,contract.declined,contract.expired
+  events          String    // comma-separated: contract.created,contract.signed,contract.completed,contract.declined,contract.expired,quote.sent,quote.accepted,quote.declined,quote.converted
   active          Boolean   @default(true)
   lastError       String?   @map("last_error")
   lastTriggeredAt DateTime? @map("last_triggered_at")
