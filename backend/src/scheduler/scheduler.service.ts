@@ -307,15 +307,16 @@ export class SchedulerService {
     }
   }
 
-  /** Weekly Sunday 3:00 AM - anonymize IP addresses in audit logs older than 2 years (GDPR proportionality) */
+  /** Weekly Sunday 3:00 AM - anonymize PII in audit logs older than 2 years (GDPR proportionality) */
   @Cron('0 3 * * 0')
   async anonymizeOldAuditLogs() {
-    this.logger.log('Running audit log IP anonymization job...');
+    this.logger.log('Running audit log anonymization job...');
 
     const twoYearsAgo = new Date();
     twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
 
-    const result = await this.prisma.auditLog.updateMany({
+    // Step 1: Bulk-clear ipAddress and userAgent
+    const bulkResult = await this.prisma.auditLog.updateMany({
       where: {
         createdAt: { lt: twoYearsAgo },
         ipAddress: { not: null },
@@ -326,8 +327,66 @@ export class SchedulerService {
       },
     });
 
-    if (result.count > 0) {
-      this.logger.log(`Anonymized IP/UA in ${result.count} audit log entries older than 2 years`);
+    if (bulkResult.count > 0) {
+      this.logger.log(`Anonymized IP/UA in ${bulkResult.count} audit log entries older than 2 years`);
+    }
+
+    // Step 2: Redact PII fields from eventData JSON
+    const piiFields = [
+      'signerName',
+      'signerEmail',
+      'name',
+      'email',
+      'typedName',
+      'recipientEmail',
+      'recipientName',
+    ];
+    const REDACTED = '[anonimizált]';
+
+    const logsWithEventData = await this.prisma.auditLog.findMany({
+      where: {
+        createdAt: { lt: twoYearsAgo },
+        eventData: { not: null },
+      },
+      select: { id: true, eventData: true },
+    });
+
+    let eventDataCount = 0;
+
+    for (const log of logsWithEventData) {
+      try {
+        const data =
+          typeof log.eventData === 'string'
+            ? JSON.parse(log.eventData)
+            : log.eventData;
+
+        if (!data || typeof data !== 'object') continue;
+
+        let modified = false;
+        for (const field of piiFields) {
+          if (field in data && data[field] !== REDACTED) {
+            data[field] = REDACTED;
+            modified = true;
+          }
+        }
+
+        if (modified) {
+          await this.prisma.auditLog.update({
+            where: { id: log.id },
+            data: { eventData: JSON.stringify(data) },
+          });
+          eventDataCount++;
+        }
+      } catch (error) {
+        this.logger.error(
+          `Failed to redact eventData for audit log ${log.id}`,
+          error,
+        );
+      }
+    }
+
+    if (eventDataCount > 0) {
+      this.logger.log(`Redacted PII in eventData of ${eventDataCount} audit log entries`);
     }
   }
 

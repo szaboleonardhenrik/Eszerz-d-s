@@ -608,6 +608,8 @@ function Footer() {
               <li><Link href="/cookie" className="hover:text-white transition">Cookie szabályzat</Link></li>
               <li><Link href="/dpa" className="hover:text-white transition">DPA (Adatfeldolgozás)</Link></li>
               <li><Link href="/impresszum" className="hover:text-white transition">Impresszum</Link></li>
+              <li><Link href="/dpia" className="hover:text-white transition">DPIA (Hatásvizsgálat)</Link></li>
+              <li><Link href="/scc" className="hover:text-white transition">SCC / TIA</Link></li>
             </ul>
           </div>
           <div>
