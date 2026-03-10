@@ -57,6 +57,8 @@ model User {
   referralsReceived Referral[] @relation("ReferralsReceived")
   quotes          Quote[]
   quoteTemplates  QuoteTemplate[]
+  invoices        Invoice[]
+  autoInvoice     Boolean    @default(false) @map("auto_invoice")
 
   @@map("users")
 }
@@ -501,4 +503,29 @@ model QuoteTemplate {
 
   @@index([ownerId])
   @@map("quote_templates")
+}
+
+model Invoice {
+  id              String    @id @default(uuid())
+  userId          String    @map("user_id")
+  quoteId         String?   @map("quote_id")
+  contractId      String?   @map("contract_id")
+  invoiceNumber   String?   @map("invoice_number") // Számlázz.hu számla szám
+  amount          Float
+  currency        String    @default("HUF")
+  taxRate         Float     @default(27) @map("tax_rate")
+  buyerName       String    @map("buyer_name")
+  buyerEmail      String    @map("buyer_email")
+  buyerTaxNumber  String?   @map("buyer_tax_number")
+  status          String    @default("pending") // pending | issued | failed | cancelled
+  pdfUrl          String?   @map("pdf_url")
+  errorMessage    String?   @map("error_message")
+  szamlazzId      String?   @map("szamlazz_id") // external reference
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([quoteId])
+  @@map("invoices")
 }

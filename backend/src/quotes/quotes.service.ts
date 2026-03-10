@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PdfService } from '../pdf/pdf.service';
 import { WebhooksService } from '../webhooks/webhooks.service';
+import { InvoicingService } from '../invoicing/invoicing.service';
 import { ConfigService } from '@nestjs/config';
 import { CreateQuoteDto } from './dto/create-quote.dto';
 import { CreateQuoteTemplateDto } from './dto/create-quote-template.dto';
@@ -17,6 +18,7 @@ export class QuotesService {
     private notifications: NotificationsService,
     private pdfService: PdfService,
     private webhooksService: WebhooksService,
+    private invoicingService: InvoicingService,
     private config: ConfigService,
   ) {}
 
@@ -394,6 +396,9 @@ export class QuotesService {
       acceptedAt: updated.acceptedAt,
     });
 
+    // Auto-invoice via Számlázz.hu if enabled
+    await this.tryAutoInvoice(quote.ownerId, updated);
+
     return updated;
   }
 
@@ -441,6 +446,71 @@ export class QuotesService {
     });
 
     return updated;
+  }
+
+  // ─── AUTO-INVOICE (SZÁMLÁZZ.HU) ───────────────────────
+
+  private async tryAutoInvoice(ownerId: string, quote: any) {
+    try {
+      const user = await this.prisma.user.findUnique({ where: { id: ownerId } });
+      if (!user?.autoInvoice || !this.invoicingService.isEnabled()) return;
+
+      // Calculate total from items
+      let totalNetto = 0;
+      for (const item of (quote.items ?? [])) {
+        if (item.isOptional) continue;
+        let netto = item.quantity * item.unitPrice;
+        if (item.discount && item.discountType) {
+          netto = item.discountType === 'percent' ? netto * (1 - item.discount / 100) : netto - item.discount;
+        }
+        totalNetto += Math.max(0, netto);
+      }
+      if (quote.discount && quote.discountType) {
+        const disc = quote.discountType === 'percent' ? totalNetto * (quote.discount / 100) : quote.discount;
+        totalNetto = Math.max(0, totalNetto - disc);
+      }
+
+      // Create invoice record
+      const invoice = await this.prisma.invoice.create({
+        data: {
+          userId: ownerId,
+          quoteId: quote.id,
+          amount: totalNetto,
+          currency: quote.currency ?? 'HUF',
+          buyerName: quote.clientName,
+          buyerEmail: quote.clientEmail,
+          buyerTaxNumber: quote.clientTaxNumber,
+          status: 'pending',
+        },
+      });
+
+      // Call Számlázz.hu
+      const result = await this.invoicingService.createInvoiceForContract({
+        contractId: quote.id,
+        contractTitle: quote.title,
+        buyerName: quote.clientName,
+        buyerEmail: quote.clientEmail,
+        buyerTaxNumber: quote.clientTaxNumber,
+        amount: totalNetto,
+        currency: quote.currency ?? 'HUF',
+      });
+
+      // Update invoice record
+      await this.prisma.invoice.update({
+        where: { id: invoice.id },
+        data: result.success
+          ? { status: 'issued', invoiceNumber: result.invoiceNumber, pdfUrl: result.pdfUrl }
+          : { status: 'failed', errorMessage: result.error },
+      });
+
+      if (result.success) {
+        this.logger.log(`Számla kiállítva ajánlathoz: ${quote.quoteNumber} → ${result.invoiceNumber}`);
+      } else {
+        this.logger.warn(`Számlázás sikertelen: ${quote.quoteNumber} — ${result.error}`);
+      }
+    } catch (error) {
+      this.logger.error('Auto-invoice error', error);
+    }
   }
 
   // ─── CONVERT TO CONTRACT ───────────────────────────────

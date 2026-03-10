@@ -1,8 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 
-interface InvoiceData {
+export interface InvoiceData {
   contractId: string;
   contractTitle: string;
   buyerName: string;
@@ -45,7 +45,6 @@ export class InvoicingService {
       return { success: false, error: 'Számlázz.hu nincs konfigurálva' };
     }
 
-    // Build XML for Számlázz.hu Agent API
     const xml = this.buildInvoiceXml(data);
 
     try {
@@ -58,11 +57,10 @@ export class InvoicingService {
       const responseText = await response.text();
 
       if (response.ok && !responseText.includes('<hibakod>')) {
-        // Extract invoice number from response
         const invoiceMatch = responseText.match(/<szamlaszam>(.*?)<\/szamlaszam>/);
         const pdfMatch = responseText.match(/<szamlapdf>(.*?)<\/szamlapdf>/);
 
-        this.logger.log(`Számla kiállítva: ${invoiceMatch?.[1] ?? 'ismeretlen'} — szerződés: ${data.contractTitle}`);
+        this.logger.log(`Számla kiállítva: ${invoiceMatch?.[1] ?? 'ismeretlen'} — ${data.contractTitle}`);
 
         return {
           success: true,
@@ -100,7 +98,7 @@ export class InvoicingService {
     <fizmod>Átutalás</fizmod>
     <ppienznem>${currency}</ppienznem>
     <szamlaNyelve>hu</szamlaNyelve>
-    <megjegyzes>Szerződés: ${this.escapeXml(data.contractTitle)} (${this.escapeXml(data.contractId)})</megjegyzes>
+    <megjegyzes>Ajánlat: ${this.escapeXml(data.contractTitle)} (${this.escapeXml(data.contractId)})</megjegyzes>
   </fejlec>
   <elado />
   <vevo>
@@ -110,7 +108,7 @@ export class InvoicingService {
   </vevo>
   <tetelek>
     <tetel>
-      <megnevezes>Szerződés: ${this.escapeXml(data.contractTitle)}</megnevezes>
+      <megnevezes>Ajánlat: ${this.escapeXml(data.contractTitle)}</megnevezes>
       <mennyiseg>1</mennyiseg>
       <mennyisegiEgyseg>db</mennyisegiEgyseg>
       <nettoEgysegar>${amount}</nettoEgysegar>
@@ -132,11 +130,68 @@ export class InvoicingService {
       .replace(/'/g, '&apos;');
   }
 
+  // ─── SETTINGS ────────────────────────────────────────
+
   async getInvoiceSettings(userId: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     return {
       enabled: this.enabled,
       autoInvoice: (user as any)?.autoInvoice ?? false,
     };
+  }
+
+  async updateInvoiceSettings(userId: string, autoInvoice: boolean) {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { autoInvoice },
+    });
+    return { autoInvoice };
+  }
+
+  // ─── INVOICE LIST ────────────────────────────────────
+
+  async listInvoices(userId: string, page: number, limit: number) {
+    const [invoices, total] = await Promise.all([
+      this.prisma.invoice.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.invoice.count({ where: { userId } }),
+    ]);
+
+    return {
+      invoices,
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+    };
+  }
+
+  // ─── RETRY FAILED INVOICE ───────────────────────────
+
+  async retryInvoice(userId: string, invoiceId: string) {
+    const invoice = await this.prisma.invoice.findUnique({ where: { id: invoiceId } });
+    if (!invoice) throw new NotFoundException('Számla nem található');
+    if (invoice.userId !== userId) throw new ForbiddenException();
+    if (invoice.status !== 'failed') throw new ForbiddenException('Csak sikertelen számla próbálható újra');
+
+    const result = await this.createInvoiceForContract({
+      contractId: invoice.quoteId ?? '',
+      contractTitle: `Számla újrapróbálás — ${invoice.buyerName}`,
+      buyerName: invoice.buyerName,
+      buyerEmail: invoice.buyerEmail,
+      buyerTaxNumber: invoice.buyerTaxNumber ?? undefined,
+      amount: invoice.amount,
+      currency: invoice.currency,
+    });
+
+    await this.prisma.invoice.update({
+      where: { id: invoiceId },
+      data: result.success
+        ? { status: 'issued', invoiceNumber: result.invoiceNumber, pdfUrl: result.pdfUrl, errorMessage: null }
+        : { errorMessage: result.error },
+    });
+
+    return { success: result.success, invoiceNumber: result.invoiceNumber, error: result.error };
   }
 }

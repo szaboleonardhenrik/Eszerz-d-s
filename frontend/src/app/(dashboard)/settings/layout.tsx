@@ -13,6 +13,7 @@ const tabs = [
   { href: "/settings/webhooks", label: "Webhookok" },
   { href: "/settings/branding", label: "Arculat" },
   { href: "/settings/billing", label: "Előfizetés" },
+  { href: "/settings/invoicing", label: "Számlázás" },
   { href: "/settings/referral", label: "Ajánlás" },
 ];
 
