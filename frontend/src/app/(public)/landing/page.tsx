@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import ThemeToggle from "@/components/theme-toggle";
 import LanguageSwitcher from "@/components/language-switcher";
@@ -61,135 +60,199 @@ export default function LandingPage() {
   );
 }
 
-/* ── NAV ────────────────────────────────────────────────────────────── */
+/* ── NAV ───────────────────────────────────────────────────────────── */
 function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-  useEffect(() => { const h = () => setScrolled(window.scrollY > 30); window.addEventListener("scroll", h, { passive: true }); return () => window.removeEventListener("scroll", h); }, []);
+  useEffect(() => { const h = () => setScrolled(window.scrollY > 40); window.addEventListener("scroll", h, { passive: true }); return () => window.removeEventListener("scroll", h); }, []);
 
   const links = [
-    { l: "Funkciók", h: "#funkciok" },
-    { l: "Folyamat", h: "#folyamat" },
-    { l: "Árazás", h: "#arak" },
-    { l: "Blog", h: "/blog" },
+    { l: "Szolgáltatások", h: "#funkciok" },
+    { l: "Működés", h: "#folyamat" },
+    { l: "Csomagok", h: "#arak" },
+    { l: "Tudástár", h: "/blog" },
   ];
 
   return (
-    <nav className={`fixed top-0 inset-x-0 z-50 h-[68px] flex items-center transition-all ${scrolled ? "bg-white/94 dark:bg-[#1F2F3D]/96 backdrop-blur-[10px] shadow-[0_2px_10px_rgba(47,100,130,.07)] border-b border-[#DDE7EC] dark:border-[#446070]" : "bg-transparent"}`}>
-      <div className="w-full max-w-7xl mx-auto px-5 flex items-center justify-between">
-        <Link href="/landing" className="flex items-center gap-2 shrink-0">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#2F6482] to-[#46A0A0] flex items-center justify-center">
-            <span className="text-white font-bold text-sm">L</span>
+    <div className="fixed top-0 inset-x-0 z-50 flex justify-center pointer-events-none" style={{ paddingTop: scrolled ? 0 : 16, transition: "padding 0.3s" }}>
+      <nav
+        className="pointer-events-auto w-full transition-all duration-300"
+        style={{
+          maxWidth: scrolled ? "100%" : "1140px",
+          borderRadius: scrolled ? 0 : 16,
+          background: scrolled ? "rgba(255,255,255,0.97)" : "rgba(255,255,255,0.92)",
+          backdropFilter: "blur(20px) saturate(180%)",
+          WebkitBackdropFilter: "blur(20px) saturate(180%)",
+          boxShadow: scrolled
+            ? "0 1px 0 rgba(0,0,0,0.06)"
+            : "0 4px 20px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)",
+          border: scrolled ? "none" : "1px solid rgba(221,231,236,0.5)",
+          margin: scrolled ? 0 : "0 16px",
+        }}
+      >
+        <div className="h-[60px] px-6 md:px-8 flex items-center justify-between max-w-7xl mx-auto">
+          <Link href="/landing" className="flex items-center gap-2.5 shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#2F6482] to-[#46A0A0] flex items-center justify-center shadow-sm">
+              <span className="text-white font-bold text-sm">L</span>
+            </div>
+            <span className="font-semibold text-[1.1rem] tracking-tight text-[#1E2E38]">
+              Legit<span className="font-bold text-[#2F8A8A]">as</span>
+            </span>
+          </Link>
+
+          <div className="hidden md:flex items-center gap-1">
+            {links.map(l => (
+              <a key={l.h} href={l.h} className={`text-[.84rem] font-medium px-4 py-2 rounded-lg transition-all ${scrolled ? "text-[#4A6575] hover:text-[#1E2E38] hover:bg-[#F0F5F7]" : "text-[#4A6575] hover:text-[#1E2E38] hover:bg-[#F0F5F7]"}`}>{l.l}</a>
+            ))}
           </div>
-          <span className={`font-semibold text-lg ${scrolled ? "text-[#1E2E38] dark:text-white" : "text-white"}`}>
-            Legit<span className="text-[#46A0A0] font-bold">as</span>
-          </span>
-        </Link>
 
-        <div className="hidden md:flex items-center gap-7">
-          {links.map(l => (
-            <a key={l.h} href={l.h} className={`text-[.875rem] font-medium transition ${scrolled ? "text-[#6B8290] hover:text-[#46A0A0]" : "text-white/70 hover:text-white"}`}>{l.l}</a>
-          ))}
+          <div className="hidden md:flex items-center gap-3">
+            <LanguageSwitcher />
+            <ThemeToggle />
+            <Link href="/login" className="text-[.84rem] font-medium px-4 py-2 rounded-lg transition-all text-[#4A6575] hover:text-[#1E2E38] hover:bg-[#F0F5F7]">Bejelentkezés</Link>
+            <Link href="/register" className="text-[.84rem] font-semibold px-5 py-2 rounded-lg bg-[#2F8A8A] hover:bg-[#267070] text-white transition-all shadow-sm shadow-[#2F8A8A]/20">Kezdés ingyen</Link>
+          </div>
+
+          <div className="md:hidden flex items-center gap-1">
+            <ThemeToggle />
+            <button onClick={() => setOpen(!open)} className="p-2 rounded-lg transition-colors text-[#3D5260] hover:bg-[#F0F5F7]" aria-label="Menü">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={open ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+              </svg>
+            </button>
+          </div>
         </div>
 
-        <div className="hidden md:flex items-center gap-2">
-          <LanguageSwitcher />
-          <ThemeToggle />
-          <Link href="/login" className={`text-[.875rem] font-medium px-3 py-2 transition ${scrolled ? "text-[#6B8290] hover:text-[#46A0A0]" : "text-white/70 hover:text-white"}`}>Bejelentkezés</Link>
-          <Link href="/register" className="text-[.875rem] font-semibold px-5 py-2 rounded-lg bg-[#46A0A0] hover:bg-[#357878] text-white transition-all hover:-translate-y-px shadow-sm">Próbáld ki ingyen</Link>
-        </div>
-
-        <div className="md:hidden flex items-center gap-1">
-          <ThemeToggle />
-          <button onClick={() => setOpen(!open)} className={`p-2 ${scrolled ? "text-[#3D5260]" : "text-white"}`} aria-label="Menü">
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={open ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
-            </svg>
-          </button>
-        </div>
-      </div>
-      {open && (
-        <div className="md:hidden absolute top-[68px] left-3 right-3 bg-white dark:bg-[#283D4E] rounded-xl shadow-lg border border-[#DDE7EC] dark:border-[#446070] p-4 flex flex-col gap-1">
-          {links.map(l => <a key={l.h} href={l.h} onClick={() => setOpen(false)} className="text-sm font-medium text-[#3D5260] dark:text-[#C4DAE5] px-3 py-2.5 rounded-lg hover:bg-[#F0F5F7] dark:hover:bg-[#243545]">{l.l}</a>)}
-          <hr className="my-2 border-[#DDE7EC] dark:border-[#446070]" />
-          <div className="flex items-center gap-2 px-3 mb-1"><LanguageSwitcher /></div>
-          <Link href="/login" className="text-sm font-medium text-[#3D5260] dark:text-[#C4DAE5] px-3 py-2.5 rounded-lg hover:bg-[#F0F5F7] dark:hover:bg-[#243545]">Bejelentkezés</Link>
-          <Link href="/register" className="text-center text-sm font-semibold px-3 py-2.5 rounded-lg bg-[#46A0A0] text-white mt-1">Próbáld ki ingyen</Link>
-        </div>
-      )}
-    </nav>
+        {open && (
+          <div className="md:hidden px-5 pb-5 pt-1 flex flex-col gap-0.5 border-t border-[#DDE7EC]/60">
+            {links.map(l => <a key={l.h} href={l.h} onClick={() => setOpen(false)} className="text-sm font-medium px-4 py-3 rounded-lg text-[#3D5260] hover:bg-[#F0F5F7] transition-colors">{l.l}</a>)}
+            <hr className="my-2 border-0 h-px bg-[#DDE7EC]/60" />
+            <div className="flex items-center gap-2 px-4 mb-1"><LanguageSwitcher /></div>
+            <Link href="/login" className="text-sm font-medium px-4 py-3 rounded-lg text-[#3D5260] hover:bg-[#F0F5F7]">Bejelentkezés</Link>
+            <Link href="/register" className="text-center text-sm font-semibold px-4 py-3 rounded-lg bg-[#2F8A8A] text-white mt-1">Kezdés ingyen</Link>
+          </div>
+        )}
+      </nav>
+    </div>
   );
 }
 
 /* ── HERO ───────────────────────────────────────────────────────────── */
 function Hero() {
   return (
-    <section className="relative h-[580px] md:h-[640px] overflow-hidden">
-      {/* Background photo with overlay */}
-      <div className="absolute inset-0">
-        <Image src="/images/hero-bg.jpg" alt="" fill className="object-cover object-[center_30%]" priority onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(30,58,95,0.15) 0%, rgba(30,58,95,0.42) 40%, rgba(30,58,95,0.88) 75%, rgba(15,29,48,0.96) 100%)" }} />
-      </div>
+    <section className="relative overflow-hidden bg-white pt-24 md:pt-28 pb-16 md:pb-24">
+      {/* Blue rectangle behind content — full coverage */}
+      <div
+        className="absolute left-1/2 -translate-x-1/2 top-[48%] -translate-y-1/2 w-[96%] max-w-[1400px] h-[96%] rounded-[2rem] md:rounded-[2.5rem]"
+        style={{
+          background: "linear-gradient(135deg, #133040 0%, #184050 40%, #1B4D5C 70%, #143545 100%)",
+          boxShadow: "0 20px 60px rgba(15,32,39,0.25)",
+        }}
+      />
+      {/* Soft glow on the blue rect */}
+      <div className="absolute left-1/2 -translate-x-1/2 top-[52%] -translate-y-1/2 w-[500px] h-[400px] rounded-full opacity-[0.12] blur-[100px]" style={{ background: "#46A0A0" }} />
 
-      {/* Dot pattern overlay */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(212,160,23,.08)_1px,transparent_0)] bg-[length:28px_28px]" />
+      {/* Content */}
+      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-10">
+        <div className="grid md:grid-cols-2 gap-10 md:gap-14 items-center">
 
-      {/* Content at bottom */}
-      <div className="absolute bottom-0 left-0 right-0">
-        <div className="max-w-7xl mx-auto px-5 pb-12 md:pb-16">
-          {/* Badge */}
-          <Reveal>
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-5" style={{ background: "rgba(70,160,160,0.3)", border: "1px solid rgba(70,160,160,0.7)" }}>
-              <span className="w-2 h-2 rounded-full bg-[#46A0A0] animate-pulse" />
-              <span className="text-white/90 text-xs font-bold uppercase tracking-wider">Szerződéskezelés, újragondolva</span>
-            </div>
-          </Reveal>
+          {/* Left — text */}
+          <div className="max-w-xl">
+            <Reveal>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="h-px w-10 bg-[#2F8A8A]/40" />
+                <span className="text-[#2F8A8A] text-[12px] font-semibold uppercase tracking-[0.15em]">Digitális szerződéskezelés</span>
+              </div>
+            </Reveal>
 
-          {/* Heading */}
-          <Reveal delay={80}>
-            <h1 className="text-[clamp(2rem,5vw,3.5rem)] font-[900] text-white leading-[1.08] mb-4 max-w-2xl" style={{ fontFamily: "'Georgia','Times New Roman',serif" }}>
-              Készíts szerződést{" "}
-              <em className="text-[#46A0A0] not-italic font-[900]">percek alatt,</em>
-              <br />ne napok alatt.
-            </h1>
-          </Reveal>
+            <Reveal delay={60}>
+              <h1 className="text-[clamp(2rem,4.5vw,3.2rem)] font-[800] text-white leading-[1.1] tracking-tight mb-5" style={{ textShadow: "0 2px 20px rgba(0,0,0,0.3)" }}>
+                Szerződések létrehozása,<br />
+                aláírása és kezelése —{" "}
+                <span className="text-[#5FC4C4]">egyetlen platformon.</span>
+              </h1>
+            </Reveal>
 
-          {/* Subtitle */}
-          <Reveal delay={140}>
-            <p className="text-white/65 text-[1rem] md:text-[1.05rem] leading-relaxed mb-7 max-w-xl font-light">
-              Válassz sablont, töltsd ki az adatokat, küldd el aláírásra — mindezt egyetlen felületen, papír és nyomtató nélkül.
-            </p>
-          </Reveal>
+            <Reveal delay={120}>
+              <p className="text-[#A0C4D4] text-[1.05rem] leading-[1.7] mb-8 max-w-lg">
+                Professzionális sablonok, jogilag érvényes e-aláírás és teljes audit trail.
+                Csökkentse a szerződéskötés idejét akár 90%-kal — regisztráció után azonnal használható.
+              </p>
+            </Reveal>
 
-          {/* CTAs */}
-          <Reveal delay={200}>
-            <div className="flex flex-col sm:flex-row gap-3 mb-8">
-              <Link href="/register" className="inline-flex items-center justify-center gap-2 bg-[#D29B01] hover:bg-[#F0C246] text-white font-bold px-8 py-3.5 rounded-xl transition-all hover:-translate-y-px shadow-lg shadow-[#D29B01]/30 text-[.95rem]">
-                Regisztrálok ingyen
-                <Ico d="M13 7l5 5m0 0l-5 5m5-5H6" className="w-4 h-4" />
-              </Link>
-              <a href="#folyamat" className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/15 text-white font-semibold px-7 py-3.5 rounded-xl transition-all text-[.95rem]">
-                Hogyan működik?
-              </a>
-            </div>
-          </Reveal>
+            <Reveal delay={180}>
+              <div className="flex flex-col sm:flex-row gap-3 mb-10">
+                <Link href="/register" className="inline-flex items-center justify-center gap-2.5 bg-[#D29B01] hover:bg-[#E8B320] text-white font-semibold px-7 py-3.5 rounded-lg transition-all shadow-lg shadow-[#D29B01]/25 text-[.9rem]">
+                  Ingyenes fiók létrehozása
+                  <Ico d="M13 7l5 5m0 0l-5 5m5-5H6" className="w-4 h-4" />
+                </Link>
+                <a href="#folyamat" className="inline-flex items-center justify-center gap-2 text-white/60 hover:text-white font-medium px-5 py-3.5 rounded-lg transition-all text-[.9rem] hover:bg-white/8">
+                  <Ico d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" className="w-4 h-4" />
+                  Bemutató megtekintése
+                </a>
+              </div>
+            </Reveal>
 
-          {/* Meta stats row */}
-          <Reveal delay={260}>
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-              {[
-                { label: "Sablonok", value: "15+" },
-                { label: "Aláírás", value: "eIDAS" },
-                { label: "Ár", value: "Ingyenestől" },
-              ].map((s, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  {i > 0 && <span className="text-white/15 hidden sm:inline">&middot;</span>}
-                  <span className="text-white/45 text-[.82rem]">{s.label}:</span>
-                  <span className="text-white/85 text-[.82rem] font-semibold">{s.value}</span>
+            {/* Key metrics */}
+            <Reveal delay={240}>
+              <div className="grid grid-cols-3 gap-5 pt-8 border-t border-white/[0.08]">
+                {[
+                  { value: "15+", label: "jogi sablon" },
+                  { value: "90%", label: "időmegtakarítás" },
+                  { value: "0 Ft", label: "indulás" },
+                ].map((m, i) => (
+                  <div key={i}>
+                    <div className="text-white text-2xl font-bold tracking-tight">{m.value}</div>
+                    <div className="text-[#7BA0B0] text-[.75rem] mt-1 font-medium">{m.label}</div>
+                  </div>
+                ))}
+              </div>
+            </Reveal>
+          </div>
+
+          {/* Right — photo */}
+          <div className="relative">
+            <Reveal delay={100}>
+              <div className="relative">
+                {/* Photo */}
+                <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-black/20">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/images/hero-photo.jpg"
+                    alt="Professzionális szerződéskezelés"
+                    className="object-cover w-full h-[320px] md:h-[400px] lg:h-[460px]"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B1D26]/30 via-transparent to-transparent" />
                 </div>
-              ))}
-            </div>
-          </Reveal>
+
+                {/* Floating card — top right */}
+                <div className="absolute -top-3 -right-3 md:-right-5 rounded-xl p-3.5 shadow-xl border border-white/10" style={{ background: "rgba(18,44,56,0.92)", backdropFilter: "blur(16px)" }}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-[#2F8A8A]/20 flex items-center justify-center">
+                      <Ico d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" className="w-4 h-4 text-[#5FC4C4]" />
+                    </div>
+                    <div>
+                      <div className="text-white text-[13px] font-semibold">Szerződés aláírva</div>
+                      <div className="text-[#6B8FA0] text-[10px] mt-0.5">Mindkét fél jóváhagyta</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Floating card — bottom left */}
+                <div className="absolute -bottom-3 -left-3 md:-left-5 rounded-xl p-3.5 shadow-xl border border-white/10" style={{ background: "rgba(18,44,56,0.92)", backdropFilter: "blur(16px)" }}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-[#D4A017]/15 flex items-center justify-center">
+                      <Ico d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" className="w-4 h-4 text-[#D4A017]" />
+                    </div>
+                    <div>
+                      <div className="text-white text-[13px] font-semibold">3 perc 12 mp</div>
+                      <div className="text-[#6B8FA0] text-[10px] mt-0.5">Átlagos kitöltési idő</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Reveal>
+          </div>
         </div>
       </div>
     </section>
