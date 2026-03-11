@@ -195,3 +195,52 @@ html {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* ── Mobile optimizations ──────────────────────────────── */
+
+/* Minimum touch target size (44px) */
+@media (max-width: 640px) {
+  button, a, select, [role="button"] {
+    min-height: 44px;
+  }
+
+  /* Prevent horizontal overflow on mobile */
+  main {
+    overflow-x: hidden;
+  }
+
+  /* Better tap highlight */
+  * {
+    -webkit-tap-highlight-color: rgba(25, 130, 150, 0.1);
+  }
+
+  /* Full-width tables scroll on mobile */
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Prevent iOS zoom on input focus (font-size >= 16px) */
+@media (max-width: 640px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Safe area insets for notched phones */
+@supports (padding: max(0px)) {
+  .safe-area-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
+
+/* Scrollbar hide for mobile nav */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}

@@ -265,6 +265,7 @@ export default function ContractDetailPage() {
   const [archiving, setArchiving] = useState(false);
   const [cloning, setCloning] = useState(false);
   const [showActions, setShowActions] = useState(false);
+  const [addingSelf, setAddingSelf] = useState(false);
   const { user: currentUser } = useAuth();
 
   useEffect(() => {
@@ -438,6 +439,19 @@ export default function ContractDetailPage() {
       toast.error("Hiba a sablon létrehozásakor");
     } finally {
       setCloning(false);
+    }
+  };
+
+  const handleAddSelfAsSigner = async () => {
+    setAddingSelf(true);
+    try {
+      await api.post(`/contracts/${id}/add-self-signer`);
+      toast.success("Sikeresen hozzáadva aláíróként!");
+      loadContract();
+    } catch (err: any) {
+      toast.error(err.response?.data?.error?.message ?? err.response?.data?.message ?? "Hiba a hozzáadáskor");
+    } finally {
+      setAddingSelf(false);
     }
   };
 
@@ -852,6 +866,34 @@ export default function ContractDetailPage() {
                     </div>
                   );
                 })()}
+
+                {/* Add self as signer button — if owner is NOT yet a signer */}
+                {["draft", "sent", "partially_signed"].includes(contract.status) &&
+                  currentUser?.email &&
+                  !contract.signers.some((s) => s.email.toLowerCase() === currentUser.email.toLowerCase()) && (
+                  <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-700">
+                    <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-amber-100 dark:bg-amber-800 rounded-lg flex items-center justify-center shrink-0">
+                          <svg className="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                          </svg>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">Ön nem aláíró</p>
+                          <p className="text-xs text-amber-600 dark:text-amber-400">Adja hozzá magát aláíróként, ha Ön is szeretné aláírni a szerződést.</p>
+                        </div>
+                        <button
+                          onClick={handleAddSelfAsSigner}
+                          disabled={addingSelf}
+                          className="px-5 py-2.5 bg-amber-600 text-white rounded-lg text-sm font-semibold hover:bg-amber-700 transition shrink-0 disabled:opacity-50"
+                        >
+                          {addingSelf ? "Hozzáadás..." : "Magam hozzáadása"}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Signer action buttons */}
                 {["sent", "partially_signed"].includes(contract.status) && contract.signers.some((s) => s.status === "pending") && (

@@ -147,7 +147,7 @@ export default function AnalyticsPage() {
       {/* Overview row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
         <OverviewCard
-          label="Osszes szerzodes"
+          label="Összes szerződés"
           value={String(data.overview.total)}
           icon="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
         />
@@ -162,7 +162,7 @@ export default function AnalyticsPage() {
           icon="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
         />
         <OverviewCard
-          label="Aktiv e honapban"
+          label="Aktív e hónapban"
           value={String(data.overview.activeThisMonth)}
           icon="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
         />
@@ -173,7 +173,7 @@ export default function AnalyticsPage() {
         {/* Monthly trend */}
         <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">
-            Havi trend (utolso 12 honap)
+            Havi trend (utolsó 12 hónap)
           </h3>
           {data.monthlyTrend.length > 0 ? (
             <>
@@ -187,7 +187,7 @@ export default function AnalyticsPage() {
                           height: `${Math.max((m.created / chartMax) * 100, 4)}%`,
                           backgroundColor: "#41A5B9",
                         }}
-                        title={`Letrehozott: ${m.created}`}
+                        title={`Létrehozott: ${m.created}`}
                       />
                       <div
                         className="flex-1 max-w-4 rounded-t transition-all"
@@ -195,7 +195,7 @@ export default function AnalyticsPage() {
                           height: `${Math.max((m.completed / chartMax) * 100, 4)}%`,
                           backgroundColor: "#D29B01",
                         }}
-                        title={`Teljesitett: ${m.completed}`}
+                        title={`Teljesített: ${m.completed}`}
                       />
                     </div>
                     <span className="text-[10px] text-gray-400 truncate w-full text-center">
@@ -207,17 +207,17 @@ export default function AnalyticsPage() {
               <div className="flex gap-6 mt-4 text-xs text-gray-500">
                 <span className="flex items-center gap-1.5">
                   <span className="w-3 h-3 rounded-sm inline-block" style={{ backgroundColor: "#41A5B9" }} />
-                  Letrehozott
+                  Létrehozott
                 </span>
                 <span className="flex items-center gap-1.5">
                   <span className="w-3 h-3 rounded-sm inline-block" style={{ backgroundColor: "#D29B01" }} />
-                  Teljesitett
+                  Teljesített
                 </span>
               </div>
             </>
           ) : (
             <div className="h-48 flex items-center justify-center text-gray-400 text-sm">
-              Meg nincs eleg adat a grafikonhoz
+              Még nincs elég adat a grafikonhoz
             </div>
           )}
         </div>
@@ -225,7 +225,7 @@ export default function AnalyticsPage() {
         {/* Status donut */}
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">
-            Statusz megoszlas
+            Státusz megoszlás
           </h3>
           <div className="flex justify-center mb-4">
             <div
@@ -237,7 +237,7 @@ export default function AnalyticsPage() {
                   <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                     {data.overview.total}
                   </p>
-                  <p className="text-xs text-gray-400">osszes</p>
+                  <p className="text-xs text-gray-400">összes</p>
                 </div>
               </div>
             </div>
@@ -269,7 +269,7 @@ export default function AnalyticsPage() {
             Top 5 sablon
           </h3>
           {data.topTemplates.length === 0 ? (
-            <p className="text-sm text-gray-400">Meg nincs sablon-hasznalat.</p>
+            <p className="text-sm text-gray-400">Még nincs sablon-használat.</p>
           ) : (
             <div className="space-y-3">
               {data.topTemplates.map((t, i) => (
@@ -296,15 +296,15 @@ export default function AnalyticsPage() {
         {/* Signer stats */}
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">
-            Alairo statisztikak
+            Aláíró statisztikák
           </h3>
           <div className="space-y-4">
             <StatRow
-              label="Atlagos alairok szama / szerzodes"
+              label="Átlagos aláírók száma / szerződés"
               value={String(data.signerStats.avgSignersPerContract)}
             />
             <StatRow
-              label="Leggyorsabb alairo"
+              label="Leggyorsabb aláíró"
               value={
                 data.signerStats.fastestSigner
                   ? `${data.signerStats.fastestSigner.name} (${data.signerStats.fastestSigner.days} nap)`
@@ -313,7 +313,7 @@ export default function AnalyticsPage() {
               sub={data.signerStats.fastestSigner?.email}
             />
             <StatRow
-              label="Legaktivabb alairo"
+              label="Legaktívabb aláíró"
               value={
                 data.signerStats.mostActiveSigner
                   ? `${data.signerStats.mostActiveSigner.email}`
@@ -321,14 +321,14 @@ export default function AnalyticsPage() {
               }
               sub={
                 data.signerStats.mostActiveSigner
-                  ? `${data.signerStats.mostActiveSigner.count} szerzodes`
+                  ? `${data.signerStats.mostActiveSigner.count} szerződés`
                   : undefined
               }
             />
             <StatRow
-              label="Lejarati arany"
+              label="Lejárati arány"
               value={`${data.expirationRate}%`}
-              sub="Lejart / osszes szerzodes"
+              sub="Lejárt / összes szerződés"
             />
           </div>
         </div>

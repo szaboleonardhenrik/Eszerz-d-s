@@ -159,7 +159,7 @@ export default function QuotesPage() {
   const handleDuplicate = async (id: string) => {
     try {
       const res = await api.post(`/quotes/${id}/duplicate`);
-      toast.success("Ajanlat duplikalva!");
+      toast.success("Ajánlat duplikálva!");
       const newId = res.data.data?.id;
       if (newId) {
         router.push(`/quotes/${newId}`);
@@ -168,12 +168,12 @@ export default function QuotesPage() {
         loadStats();
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba a duplikalaskor");
+      toast.error(err.response?.data?.error?.message ?? "Hiba a duplikáláskor");
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Biztosan torli az ajanlatot?")) return;
+    if (!confirm("Biztosan törli az ajánlatot?")) return;
     try {
       await api.delete(`/quotes/${id}`);
       toast.success("Ajánlat törölve!");
@@ -200,9 +200,9 @@ export default function QuotesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Ajanlatok</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Ajánlatok</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Ajanlatok es arajanlatiak kezelese
+            Ajánlatok és árajánlatok kezelése
           </p>
         </div>
         <div className="flex gap-2">
@@ -219,7 +219,7 @@ export default function QuotesPage() {
             onMouseEnter={(e) => ((e.target as HTMLElement).style.backgroundColor = "#0e5f6e")}
             onMouseLeave={(e) => ((e.target as HTMLElement).style.backgroundColor = "#198296")}
           >
-            + Uj ajanlat
+            + Új ajánlat
           </Link>
         </div>
       </div>
@@ -256,7 +256,7 @@ export default function QuotesPage() {
           type="text"
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          placeholder="Kereses cim, ugyfel vagy ceg szerint..."
+          placeholder="Keresés cím, ügyfél vagy cég szerint..."
           className="flex-1 max-w-md px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#198296]"
         />
         <select
@@ -266,10 +266,10 @@ export default function QuotesPage() {
         >
           <option value="">Minden statusz</option>
           <option value="draft">Piszkozat</option>
-          <option value="sent">Elkuldve</option>
+          <option value="sent">Elküldve</option>
           <option value="accepted">Elfogadva</option>
-          <option value="declined">Visszautasitva</option>
-          <option value="expired">Lejart</option>
+          <option value="declined">Visszautasítva</option>
+          <option value="expired">Lejárt</option>
         </select>
       </div>
 
@@ -296,9 +296,9 @@ export default function QuotesPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Nincsenek ajanlatok</h3>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Nincsenek ajánlatok</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 text-center max-w-sm">
-              {search || statusFilter ? "Nincs talalat a szuroknek megfelelo ajanlat." : "Meg nincs ajanlatod. Hozz letre egyet!"}
+              {search || statusFilter ? "Nincs találat a szűrőknek megfelelő ajánlat." : "Még nincs ajánlatod. Hozz létre egyet!"}
             </p>
             {!search && !statusFilter && (
               <Link
@@ -306,7 +306,7 @@ export default function QuotesPage() {
                 className="text-white px-6 py-2.5 rounded-lg font-medium transition text-sm"
                 style={{ backgroundColor: "#198296" }}
               >
-                + Uj ajanlat
+                + Új ajánlat
               </Link>
             )}
           </div>
@@ -321,7 +321,7 @@ export default function QuotesPage() {
                     <th className="px-4 py-3 font-medium hidden md:table-cell">Összeg</th>
                     <th className="px-4 py-3 font-medium">Státusz</th>
                     <th className="px-4 py-3 font-medium hidden lg:table-cell">Érvényes</th>
-                    <th className="px-4 py-3 font-medium w-32 sm:w-40 md:w-48">Muveletek</th>
+                    <th className="px-4 py-3 font-medium w-32 sm:w-40 md:w-48">Műveletek</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -377,19 +377,19 @@ export default function QuotesPage() {
                               href={`/quotes/${q.id}`}
                               className="text-xs px-3 py-1 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 transition"
                             >
-                              Szerkesztes
+                              Szerkesztés
                             </Link>
                             <button
                               onClick={() => handleDuplicate(q.id)}
                               className="text-xs px-3 py-1 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition"
                             >
-                              Duplikalas
+                              Duplikálás
                             </button>
                             <button
                               onClick={() => handleDelete(q.id)}
                               className="text-xs px-3 py-1 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition"
                             >
-                              Torles
+                              Törlés
                             </button>
                           </div>
                         </td>
@@ -404,7 +404,7 @@ export default function QuotesPage() {
             {totalPages > 1 && (
               <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700">
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Ossz.: {total} ajanlat
+                  Össz.: {total} ajánlat
                 </p>
                 <div className="flex gap-1">
                   <button
@@ -412,7 +412,7 @@ export default function QuotesPage() {
                     disabled={page <= 1}
                     className="px-3 py-1 rounded-lg text-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 transition"
                   >
-                    Elozo
+                    Előző
                   </button>
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                     <button
@@ -433,7 +433,7 @@ export default function QuotesPage() {
                     disabled={page >= totalPages}
                     className="px-3 py-1 rounded-lg text-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 transition"
                   >
-                    Kovetkezo
+                    Következő
                   </button>
                 </div>
               </div>

@@ -428,7 +428,7 @@ export default function NewTemplatePage() {
               <WysiwygEditor
                 value={contentHtmlEn}
                 onChange={setContentHtmlEn}
-                placeholder="Paste or type the English version..."
+                placeholder="Illessze be vagy gépelje be az angol verziót..."
                 variables={variableNames}
               />
             )}

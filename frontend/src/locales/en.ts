@@ -41,6 +41,7 @@ const en: Translations = {
     archive: "Archive",
     settings: "Settings",
     admin: "Admin",
+    more: "More",
   },
   auth: {
     login: "Sign In",

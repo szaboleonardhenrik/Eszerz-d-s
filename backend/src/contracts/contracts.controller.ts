@@ -271,6 +271,12 @@ export class ContractsController {
     return ApiResponse.ok(result);
   }
 
+  @Post(':id/add-self-signer')
+  async addSelfAsSigner(@Param('id') id: string, @Req() req: any) {
+    const signer = await this.contractsService.addSelfAsSigner(id, req.user.userId);
+    return ApiResponse.ok(signer);
+  }
+
   @Post(':id/cancel')
   async cancel(@Param('id') id: string, @Req() req: any) {
     const result = await this.contractsService.cancel(id, req.user.userId);

@@ -159,7 +159,7 @@ export default function QuoteViewPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${quote?.quoteNumber || "ajanlat"}.pdf`;
+      a.download = `${quote?.quoteNumber || "ajánlat"}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -207,12 +207,12 @@ export default function QuoteViewPage() {
             )}
           </div>
           <h2 className="text-xl font-bold text-gray-900 mb-2">
-            {actionDone === "accepted" ? "Ajanlat elfogadva!" : "Ajanlat visszautasitva"}
+            {actionDone === "accepted" ? "Ajánlat elfogadva!" : "Ajánlat visszautasítva"}
           </h2>
           <p className="text-gray-500">
             {actionDone === "accepted"
-              ? "Koszonjuk! Az ajanlat keszitoje ertesitest kapott az elfogadasrol."
-              : "Az ajanlat keszitoje ertesitest kapott a visszautasitasrol."}
+              ? "Köszönjük! Az ajánlat készítője értesítést kapott az elfogadásról."
+              : "Az ajánlat készítője értesítést kapott a visszautasításról."}
           </p>
         </div>
       </div>
@@ -285,16 +285,16 @@ export default function QuoteViewPage() {
             quote.status === "expired" ? "bg-amber-100 text-amber-800" :
             "bg-gray-100 text-gray-700"
           }`}>
-            {quote.status === "accepted" && "Ez az ajanlat mar elfogadasra kerult."}
-            {quote.status === "declined" && "Ez az ajanlat visszautasitasra kerult."}
-            {quote.status === "expired" && "Ez az ajanlat lejart."}
-            {quote.status === "draft" && "Ez az ajanlat meg piszkozat allapotban van."}
+            {quote.status === "accepted" && "Ez az ajánlat már elfogadásra került."}
+            {quote.status === "declined" && "Ez az ajánlat visszautasításra került."}
+            {quote.status === "expired" && "Ez az ajánlat lejárt."}
+            {quote.status === "draft" && "Ez az ajánlat még piszkozat állapotban van."}
           </div>
         )}
 
         {isExpired && quote.status === "sent" && (
           <div className="rounded-xl p-4 mb-6 text-center font-medium bg-amber-100 text-amber-800">
-            Ez az ajanlat {new Date(quote.validUntil!).toLocaleDateString("hu-HU")}-en lejart.
+            Ez az ajánlat {new Date(quote.validUntil!).toLocaleDateString("hu-HU")}-én lejárt.
           </div>
         )}
 
@@ -302,31 +302,31 @@ export default function QuoteViewPage() {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 mb-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">{quote.title}</h1>
           <div className="flex flex-wrap gap-4 text-sm text-gray-500">
-            <span>Letrehozva: {new Date(quote.createdAt).toLocaleDateString("hu-HU")}</span>
+            <span>Létrehozva: {new Date(quote.createdAt).toLocaleDateString("hu-HU")}</span>
             {quote.validUntil && (
-              <span>Ervenyes: {new Date(quote.validUntil).toLocaleDateString("hu-HU")}-ig</span>
+              <span>Érvényes: {new Date(quote.validUntil).toLocaleDateString("hu-HU")}-ig</span>
             )}
-            <span>Penznem: {quote.currency}</span>
+            <span>Pénznem: {quote.currency}</span>
           </div>
         </div>
 
         {/* Info grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: brandColor }}>Felado</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: brandColor }}>Feladó</h3>
             <p className="font-semibold text-gray-900">{quote.owner?.companyName || quote.owner?.name}</p>
             {quote.owner?.email && <p className="text-sm text-gray-500">{quote.owner.email}</p>}
             {quote.owner?.phone && <p className="text-sm text-gray-500">{quote.owner.phone}</p>}
-            {quote.owner?.taxNumber && <p className="text-sm text-gray-500">Adoszam: {quote.owner.taxNumber}</p>}
+            {quote.owner?.taxNumber && <p className="text-sm text-gray-500">Adószám: {quote.owner.taxNumber}</p>}
           </div>
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: brandColor }}>Cimzett</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: brandColor }}>Címzett</h3>
             <p className="font-semibold text-gray-900">{quote.clientName}</p>
             {quote.clientCompany && <p className="text-sm text-gray-500">{quote.clientCompany}</p>}
             <p className="text-sm text-gray-500">{quote.clientEmail}</p>
             {quote.clientPhone && <p className="text-sm text-gray-500">{quote.clientPhone}</p>}
             {quote.clientAddress && <p className="text-sm text-gray-500">{quote.clientAddress}</p>}
-            {quote.clientTaxNumber && <p className="text-sm text-gray-500">Adoszam: {quote.clientTaxNumber}</p>}
+            {quote.clientTaxNumber && <p className="text-sm text-gray-500">Adószám: {quote.clientTaxNumber}</p>}
           </div>
         </div>
 
@@ -339,12 +339,12 @@ export default function QuoteViewPage() {
 
         {/* Items */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Tetelek</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Tételek</h2>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="text-xs uppercase tracking-wider border-b-2" style={{ color: brandColor, borderColor: brandColor }}>
-                  <th className="text-left pb-3 pr-2">Leiras</th>
+                  <th className="text-left pb-3 pr-2">Leírás</th>
                   <th className="text-center pb-3 px-2">Menny.</th>
                   <th className="text-right pb-3 px-2">Egysegar</th>
                   <th className="text-center pb-3 px-2">AFA</th>
@@ -363,22 +363,22 @@ export default function QuoteViewPage() {
           {/* Totals */}
           <div className="mt-6 pt-4 border-t-2" style={{ borderColor: brandColor }}>
             <div className="flex flex-col items-end gap-1">
-              <Row label="Netto osszeg" value={formatCurrency(totalNetto, quote.currency)} />
+              <Row label="Nettó összeg" value={formatCurrency(totalNetto, quote.currency)} />
               {quote.discount && quote.discountType && (
                 <Row
-                  label={`Kedvezmeny (${quote.discountType === "percent" ? `${quote.discount}%` : formatCurrency(quote.discount, quote.currency)})`}
+                  label={`Kedvezmény (${quote.discountType === "percent" ? `${quote.discount}%` : formatCurrency(quote.discount, quote.currency)})`}
                   value={`-${formatCurrency(quote.discountType === "percent" ? activeItems.reduce((s, i) => s + calcItemNetto(i), 0) * quote.discount / 100 : quote.discount, quote.currency)}`}
                   className="text-red-500"
                 />
               )}
               <Row label="AFA" value={formatCurrency(totalVat, quote.currency)} />
               <div className="flex justify-between w-full max-w-sm text-lg border-t-2 pt-3 mt-2" style={{ borderColor: brandColor }}>
-                <span className="font-bold text-gray-900">Brutto osszeg</span>
+                <span className="font-bold text-gray-900">Bruttó összeg</span>
                 <span className="font-bold" style={{ color: brandColor }}>{formatCurrency(totalBrutto, quote.currency)}</span>
               </div>
               {optionalItems.length > 0 && (
                 <div className="flex justify-between w-full max-w-sm text-sm mt-2 text-amber-600">
-                  <span>Opcionalis tetelek:</span>
+                  <span>Opcionális tételek:</span>
                   <span>{formatCurrency(optionalItems.reduce((s, i) => s + calcItemNetto(i), 0), quote.currency)} netto</span>
                 </div>
               )}
@@ -404,23 +404,23 @@ export default function QuoteViewPage() {
                   className="text-white px-8 py-3 rounded-xl text-base font-semibold transition disabled:opacity-50 shadow-lg"
                   style={{ backgroundColor: "#22c55e" }}
                 >
-                  {acting ? "Feldolgozas..." : "Ajanlat elfogadasa"}
+                  {acting ? "Feldolgozás..." : "Ajánlat elfogadása"}
                 </button>
                 <button
                   onClick={() => setShowDecline(true)}
                   disabled={acting}
                   className="px-8 py-3 rounded-xl text-base font-semibold border-2 border-red-200 text-red-600 hover:bg-red-50 transition disabled:opacity-50"
                 >
-                  Visszautasitas
+                  Visszautasítás
                 </button>
               </div>
             ) : (
               <div className="max-w-md mx-auto">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Ajanlat visszautasitasa</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Ajánlat visszautasítása</h3>
                 <textarea
                   value={declineReason}
                   onChange={(e) => setDeclineReason(e.target.value)}
-                  placeholder="Indok (opcionalis)..."
+                  placeholder="Indok (opcionális)..."
                   rows={3}
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm outline-none focus:ring-2 focus:ring-red-300 resize-none mb-4"
                 />
@@ -429,14 +429,14 @@ export default function QuoteViewPage() {
                     onClick={() => setShowDecline(false)}
                     className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
                   >
-                    Megse
+                    Mégse
                   </button>
                   <button
                     onClick={handleDecline}
                     disabled={acting}
                     className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-red-600 text-white hover:bg-red-700 transition disabled:opacity-50"
                   >
-                    {acting ? "Feldolgozas..." : "Visszautasitas"}
+                    {acting ? "Feldolgozás..." : "Visszautasítás"}
                   </button>
                 </div>
               </div>
@@ -446,7 +446,7 @@ export default function QuoteViewPage() {
 
         {/* Comments section */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Kerdesek, megjegyzesek</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Kérdések, megjegyzések</h2>
 
           {/* Comments timeline */}
           {comments.length > 0 && (
@@ -481,7 +481,7 @@ export default function QuoteViewPage() {
           )}
 
           {comments.length === 0 && (
-            <p className="text-sm text-gray-400 mb-6">Meg nincsenek hozzaszolasok. Tegyen fel kerdest az ajanlat kapcsanl!</p>
+            <p className="text-sm text-gray-400 mb-6">Még nincsenek hozzászólások. Tegyen fel kérdést az ajánlat kapcsán!</p>
           )}
 
           {/* Add comment form */}
@@ -491,7 +491,7 @@ export default function QuoteViewPage() {
                 type="text"
                 value={commentAuthor}
                 onChange={(e) => setCommentAuthor(e.target.value)}
-                placeholder="Az On neve"
+                placeholder="Az Ön neve"
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm outline-none focus:ring-2 focus:border-transparent"
                 style={{ "--tw-ring-color": brandColor } as React.CSSProperties}
               />
@@ -500,7 +500,7 @@ export default function QuoteViewPage() {
               <textarea
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
-                placeholder="Irja le kerdeset vagy megjegyzeset..."
+                placeholder="Írja le kérdését vagy megjegyzését..."
                 rows={3}
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm outline-none focus:ring-2 focus:border-transparent resize-none"
                 style={{ "--tw-ring-color": brandColor } as React.CSSProperties}
@@ -554,7 +554,7 @@ function SectionRows({ name, items, currency, brandColor }: { name: string; item
           <tr key={idx} className={`border-b border-gray-100 last:border-0 ${item.isOptional ? "opacity-50" : ""}`}>
             <td className="py-3 pr-2 text-sm text-gray-900">
               {item.description}
-              {item.isOptional && <span className="ml-2 text-xs px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded">opcionalis</span>}
+              {item.isOptional && <span className="ml-2 text-xs px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded">opcionális</span>}
               {item.discount && item.discountType && (
                 <span className="ml-2 text-xs text-red-500">({item.discountType === "percent" ? `-${item.discount}%` : `-${formatCurrency(item.discount, currency)}`})</span>
               )}

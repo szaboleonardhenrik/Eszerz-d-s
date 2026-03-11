@@ -64,6 +64,15 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "Legitas",
   },
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 export default function RootLayout({

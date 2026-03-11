@@ -348,7 +348,7 @@ export default function DashboardPage() {
       </div>
 
       {/* ── 3. Stats Overview Row ──────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="Összes szerződés"
           value={stats?.total ?? 0}

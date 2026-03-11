@@ -39,6 +39,7 @@ const hu = {
     archive: "Archívum",
     settings: "Beállítások",
     admin: "Admin",
+    more: "Több",
   },
   auth: {
     login: "Bejelentkezés",

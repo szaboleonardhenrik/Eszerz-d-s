@@ -18,7 +18,7 @@ interface Recipient {
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const emptyRecipient = (): Recipient => ({ name: "", email: "", role: "Alairo" });
+const emptyRecipient = (): Recipient => ({ name: "", email: "", role: "Aláíró" });
 
 export default function BulkSendPage() {
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -79,7 +79,7 @@ export default function BulkSendPage() {
       if (nameEmpty && emailEmpty) return; // skip entirely empty rows
 
       if (nameEmpty) {
-        errors.push(`${row}. sor: a nev megadasa kotelezo`);
+        errors.push(`${row}. sor: a név megadása kötelező`);
         return;
       }
       if (emailEmpty) {
@@ -103,7 +103,7 @@ export default function BulkSendPage() {
 
   const handleSend = async () => {
     if (!selectedTemplate) {
-      toast.error("Valassz ki egy sablont!");
+      toast.error("Válassz ki egy sablont!");
       return;
     }
 
@@ -160,10 +160,10 @@ export default function BulkSendPage() {
     setSending(false);
 
     if (successCount > 0) {
-      toast.success(`${successCount} szerzodes sikeresen elkuldve!`);
+      toast.success(`${successCount} szerződés sikeresen elküldve!`);
     }
     if (failCount > 0 && successCount > 0) {
-      toast.error(`${failCount} kuldes sikertelen volt.`);
+      toast.error(`${failCount} küldés sikertelen volt.`);
     }
   };
 
@@ -174,7 +174,7 @@ export default function BulkSendPage() {
       .filter((l) => l.length > 0);
 
     if (lines.length === 0) {
-      toast.error("A CSV mezo ures!");
+      toast.error("A CSV mező üres!");
       return;
     }
 
@@ -187,7 +187,7 @@ export default function BulkSendPage() {
       const parts = line.split(separator).map((p) => p.trim());
 
       if (parts.length < 2) {
-        errors.push(`${i + 1}. sor: legalabb nev es email szukseges`);
+        errors.push(`${i + 1}. sor: legalább név és email szükséges`);
         return;
       }
 
@@ -212,7 +212,7 @@ export default function BulkSendPage() {
     if (errors.length > 0) {
       errors.slice(0, 5).forEach((e) => toast.error(e));
       if (errors.length > 5) {
-        toast.error(`...es meg ${errors.length - 5} hiba`);
+        toast.error(`...és még ${errors.length - 5} hiba`);
       }
       return;
     }
@@ -223,7 +223,7 @@ export default function BulkSendPage() {
       return [...nonEmpty, ...parsed];
     });
 
-    toast.success(`${parsed.length} cimzett importalva!`);
+    toast.success(`${parsed.length} címzett importálva!`);
     setCsvText("");
     setShowCsvModal(false);
   };
@@ -237,10 +237,10 @@ export default function BulkSendPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Tomeges kuldes
+          Tömeges küldés
         </h1>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Valassz egy sablont, add meg a cimzetteket, es kuld el mindenkinek
+          Válassz egy sablont, add meg a címzetteket, és küld el mindenkinek
           egyszerre.
         </p>
       </div>
@@ -248,12 +248,12 @@ export default function BulkSendPage() {
       {/* Template selector */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Sablon kivalasztasa
+          Sablon kiválasztása
         </label>
         {templatesLoading ? (
           <div className="flex items-center gap-2 text-sm text-gray-400">
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#198296]" />
-            Sablonok betoltese...
+            Sablonok betöltése...
           </div>
         ) : (
           <select
@@ -261,7 +261,7 @@ export default function BulkSendPage() {
             onChange={(e) => setSelectedTemplateId(e.target.value)}
             className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-[#198296] focus:border-transparent transition"
           >
-            <option value="">-- Valassz sablont --</option>
+            <option value="">-- Válassz sablont --</option>
             {templates.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.name} ({t.category})
@@ -276,11 +276,11 @@ export default function BulkSendPage() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Cimzettek
+              Címzettek
             </h2>
             {filledCount > 0 && (
               <span className="text-xs text-gray-400 dark:text-gray-500">
-                {filledCount} cimzett megadva
+                {filledCount} címzett megadva
               </span>
             )}
           </div>
@@ -289,20 +289,20 @@ export default function BulkSendPage() {
             onClick={() => setShowCsvModal(true)}
             className="text-sm font-medium text-[#198296] hover:text-[#146b7c] dark:text-[#2ab0c7] dark:hover:text-[#198296] transition"
           >
-            Contacts importalasa
+            Címzettek importálása
           </button>
         </div>
 
         {/* Table header */}
         <div className="hidden sm:grid sm:grid-cols-[1fr_1fr_150px_40px] gap-3 mb-2 px-1">
           <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
-            Nev
+            Név
           </span>
           <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
             Email
           </span>
           <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
-            Szerepkor
+            Szerepkör
           </span>
           <span />
         </div>
@@ -316,11 +316,11 @@ export default function BulkSendPage() {
             >
               <div>
                 <label className="block sm:hidden text-xs text-gray-500 dark:text-gray-400 mb-1">
-                  Nev
+                  Név
                 </label>
                 <input
                   type="text"
-                  placeholder="Nev"
+                  placeholder="Név"
                   value={r.name}
                   onChange={(e) => updateRecipient(i, "name", e.target.value)}
                   className={`w-full px-3 py-2 border rounded-lg text-sm outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition focus:ring-2 focus:ring-[#198296] focus:border-transparent ${
@@ -348,7 +348,7 @@ export default function BulkSendPage() {
               </div>
               <div>
                 <label className="block sm:hidden text-xs text-gray-500 dark:text-gray-400 mb-1">
-                  Szerepkor
+                  Szerepkör
                 </label>
                 <input
                   type="text"
@@ -403,7 +403,7 @@ export default function BulkSendPage() {
               d="M12 4v16m8-8H4"
             />
           </svg>
-          Sor hozzaadasa
+          Sor hozzáadása
         </button>
       </div>
 
@@ -431,7 +431,7 @@ export default function BulkSendPage() {
             {sending ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                Kuldes... ({progress.current} / {progress.total})
+                Küldés... ({progress.current} / {progress.total})
               </>
             ) : (
               <>
@@ -448,7 +448,7 @@ export default function BulkSendPage() {
                     d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"
                   />
                 </svg>
-                Kuldes mindenkinek
+                Küldés mindenkinek
               </>
             )}
           </span>
@@ -456,7 +456,7 @@ export default function BulkSendPage() {
 
         {!sending && filledCount > 0 && selectedTemplateId && (
           <span className="text-sm text-gray-500 dark:text-gray-400">
-            {filledCount} szerzodes kerul letrehozasra es elkuldestre
+            {filledCount} szerződés kerül létrehozásra és elküldésre
           </span>
         )}
       </div>
@@ -466,12 +466,12 @@ export default function BulkSendPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-lg p-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-              Contacts importalasa
+              Címzettek importálása
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-              Illeszd be a CSV tartalmat. Formatum: <code className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-xs">nev,email</code> vagy{" "}
-              <code className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-xs">nev,email,szerepkor</code>
-              . Soronkent egy cimzett. Pontosvesszo (;) is hasznalhato elvalasztokent.
+              Illessze be a CSV tartalmat. Formátum: <code className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-xs">név,email</code> vagy{" "}
+              <code className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-xs">név,email,szerepkör</code>
+              . Soronként egy címzett. Pontosvessző (;) is használható elválasztóként.
             </p>
             <textarea
               value={csvText}
@@ -489,7 +489,7 @@ export default function BulkSendPage() {
                 }}
                 className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"
               >
-                Megse
+                Mégse
               </button>
               <button
                 type="button"
@@ -497,7 +497,7 @@ export default function BulkSendPage() {
                 disabled={!csvText.trim()}
                 className="px-5 py-2 text-sm font-medium text-white bg-[#198296] hover:bg-[#146b7c] rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Importalas
+                Importálás
               </button>
             </div>
           </div>

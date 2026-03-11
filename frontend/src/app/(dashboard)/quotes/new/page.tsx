@@ -447,7 +447,7 @@ export default function NewQuotePage() {
         <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800 p-6 mb-6">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Változók kitöltése</h2>
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-            Ezek a változók automatikusan behelyettesítődnek az ajánlat szövegébe ({"{{valtozo_nev}}"} formában).
+            Ezek a változók automatikusan behelyettesítődnek az ajánlat szövegébe ({"{{változó_név}}"} formában).
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {templateVariables.map((v) => (

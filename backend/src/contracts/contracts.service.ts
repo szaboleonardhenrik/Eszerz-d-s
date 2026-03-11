@@ -495,6 +495,49 @@ export class ContractsService {
     return template;
   }
 
+  async addSelfAsSigner(contractId: string, userId: string) {
+    const contract = await this.findOneOwned(contractId, userId);
+
+    if (!['draft', 'sent', 'partially_signed'].includes(contract.status)) {
+      throw new BadRequestException('Ebben a státuszban nem adható hozzá aláíró');
+    }
+
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('Felhasználó nem található');
+
+    // Check if already a signer
+    const alreadySigner = contract.signers.some(
+      (s) => s.email.toLowerCase() === user.email.toLowerCase(),
+    );
+    if (alreadySigner) {
+      throw new BadRequestException('Ön már aláíró ezen a szerződésen');
+    }
+
+    const maxOrder = contract.signers.length > 0
+      ? Math.max(...contract.signers.map((s) => s.signingOrder))
+      : 0;
+
+    const signer = await this.prisma.signer.create({
+      data: {
+        contractId,
+        name: user.name ?? user.email,
+        email: user.email,
+        role: 'Kiküldő',
+        signingOrder: maxOrder + 1,
+        signToken: randomBytes(32).toString('hex'),
+        tokenExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      },
+    });
+
+    await this.auditService.log({
+      contractId,
+      eventType: 'contract_updated',
+      eventData: { action: 'owner_added_as_signer', signerEmail: user.email },
+    });
+
+    return signer;
+  }
+
   async archive(contractId: string, userId: string) {
     const contract = await this.findOneOwned(contractId, userId);
 

@@ -41,11 +41,11 @@ function SkeletonTable() {
 
 const STATUS_LABELS: Record<string, string> = {
   draft: "Piszkozat",
-  sent: "Elkuldve",
-  completed: "Alairva",
-  declined: "Visszautasitva",
-  partially_signed: "Reszben alairt",
-  archived: "Archivalt",
+  sent: "Elküldve",
+  completed: "Aláírva",
+  declined: "Visszautasítva",
+  partially_signed: "Részben aláírt",
+  archived: "Archivált",
 };
 
 function formatDate(dateStr: string): string {
@@ -85,9 +85,9 @@ export default function ArchivePage() {
     try {
       await api.post(`/contracts/${id}/unarchive`);
       setContracts((prev) => prev.filter((c) => c.id !== id));
-      toast.success("Szerzodes visszaallitva.");
+      toast.success("Szerződés visszaállítva.");
     } catch {
-      toast.error("Nem sikerult visszaallitani a szerzodest.");
+      toast.error("Nem sikerült visszaállítani a szerződést.");
     } finally {
       setRestoringIds((prev) => {
         const next = new Set(prev);
@@ -102,10 +102,10 @@ export default function ArchivePage() {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-          Archivum
+          Archívum
         </h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Archivalt szerzodesek
+          Archivált szerződések
         </p>
       </div>
 
@@ -113,7 +113,7 @@ export default function ArchivePage() {
       <div className="mb-4">
         <input
           type="text"
-          placeholder="Kereses cim alapjan..."
+          placeholder="Keresés cím alapján..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full sm:w-80 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600
@@ -155,10 +155,10 @@ export default function ArchivePage() {
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
           {/* Table header */}
           <div className="hidden sm:grid sm:grid-cols-[3fr_1fr_1fr_1fr_auto] gap-4 px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-            <span>Cim</span>
-            <span>Statusz</span>
-            <span>Archivalva</span>
-            <span>Alairok</span>
+            <span>Cím</span>
+            <span>Státusz</span>
+            <span>Archiválva</span>
+            <span>Aláírók</span>
             <span className="w-28" />
           </div>
 
@@ -248,7 +248,7 @@ export default function ArchivePage() {
                         />
                       </svg>
                     )}
-                    Visszaallitas
+                    Visszaállítás
                   </button>
                 </li>
               );

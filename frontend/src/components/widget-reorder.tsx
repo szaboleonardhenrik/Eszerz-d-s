@@ -10,12 +10,12 @@ interface WidgetReorderProps {
 }
 
 const WIDGET_LABELS: Record<string, string> = {
-  expiring: "Lejaro szerzodesek",
-  awaiting: "Alairasra var",
-  completed: "Nemreg kesz",
-  activity: "Tevekenyseg",
+  expiring: "Lejáró szerződések",
+  awaiting: "Aláírásra vár",
+  completed: "Nemrég kész",
+  activity: "Tevékenység",
   chart: "Havi grafikon",
-  usage: "Hasznalat",
+  usage: "Használat",
 };
 
 export default function WidgetReorder({

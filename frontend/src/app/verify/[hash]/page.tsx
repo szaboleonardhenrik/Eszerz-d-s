@@ -164,7 +164,7 @@ export default function VerifyPage() {
             {/* Signers */}
             <div>
               <label className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-                Alairok
+                Aláírók
               </label>
               <div className="mt-2 space-y-2">
                 {data.signers.map((signer, i) => (
