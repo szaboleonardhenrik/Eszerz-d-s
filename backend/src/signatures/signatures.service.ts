@@ -116,7 +116,7 @@ export class SignaturesService {
       signatureImageUrl = imageKey;
     }
 
-    // Save/update partner as Contact
+    // Save/update partner as Contact + Company
     let contactId: string | undefined;
     try {
       const contact = await this.prisma.contact.upsert({
@@ -144,6 +144,42 @@ export class SignaturesService {
         },
       });
       contactId = contact.id;
+
+      // Auto-create Company and link to Contact
+      if (dto.companyName) {
+        const company = await this.prisma.company.upsert({
+          where: {
+            userId_name: {
+              userId: signer.contract.ownerId,
+              name: dto.companyName,
+            },
+          },
+          update: {
+            taxNumber: dto.companyTaxNumber ?? undefined,
+            address: dto.companyAddress ?? undefined,
+          },
+          create: {
+            userId: signer.contract.ownerId,
+            name: dto.companyName,
+            taxNumber: dto.companyTaxNumber,
+            address: dto.companyAddress,
+          },
+        });
+        // Link contact to company (ignore if already linked)
+        await this.prisma.contactCompany.upsert({
+          where: {
+            contactId_companyId: {
+              contactId: contact.id,
+              companyId: company.id,
+            },
+          },
+          update: {},
+          create: {
+            contactId: contact.id,
+            companyId: company.id,
+          },
+        });
+      }
     } catch {
       // Non-critical — continue signing even if contact save fails
     }

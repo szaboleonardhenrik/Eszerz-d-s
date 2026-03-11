@@ -45,6 +45,41 @@ export class ContactsController {
     return res.send(result.data);
   }
 
+  // ── Company endpoints (must be before :id routes) ──
+
+  @Get('companies/list')
+  async findAllCompanies(@Query('search') search: string, @Req() req: any) {
+    const companies = await this.contactsService.findAllCompanies(req.user.userId, search || undefined);
+    return ApiResponse.ok(companies);
+  }
+
+  @Post('companies')
+  async createCompany(
+    @Body() body: { name: string; taxNumber?: string; address?: string; phone?: string; email?: string; notes?: string },
+    @Req() req: any,
+  ) {
+    const company = await this.contactsService.createCompany(req.user.userId, body);
+    return ApiResponse.ok(company);
+  }
+
+  @Put('companies/:companyId')
+  async updateCompany(
+    @Param('companyId') companyId: string,
+    @Body() body: { name?: string; taxNumber?: string; address?: string; phone?: string; email?: string; notes?: string },
+    @Req() req: any,
+  ) {
+    const company = await this.contactsService.updateCompany(companyId, req.user.userId, body);
+    return ApiResponse.ok(company);
+  }
+
+  @Delete('companies/:companyId')
+  async deleteCompany(@Param('companyId') companyId: string, @Req() req: any) {
+    const result = await this.contactsService.deleteCompany(companyId, req.user.userId);
+    return ApiResponse.ok(result);
+  }
+
+  // ── Contact endpoints with :id ──
+
   @Get(':id')
   async findOne(@Param('id') id: string, @Query('withContracts') withContracts: string, @Req() req: any) {
     if (withContracts === 'true') {
@@ -83,6 +118,27 @@ export class ContactsController {
   @Delete(':id')
   async remove(@Param('id') id: string, @Req() req: any) {
     const result = await this.contactsService.delete(id, req.user.userId);
+    return ApiResponse.ok(result);
+  }
+
+  @Post(':id/companies/:companyId')
+  async linkToCompany(
+    @Param('id') contactId: string,
+    @Param('companyId') companyId: string,
+    @Body() body: { role?: string },
+    @Req() req: any,
+  ) {
+    const result = await this.contactsService.linkContactToCompany(contactId, companyId, req.user.userId, body.role);
+    return ApiResponse.ok(result);
+  }
+
+  @Delete(':id/companies/:companyId')
+  async unlinkFromCompany(
+    @Param('id') contactId: string,
+    @Param('companyId') companyId: string,
+    @Req() req: any,
+  ) {
+    const result = await this.contactsService.unlinkContactFromCompany(contactId, companyId, req.user.userId);
     return ApiResponse.ok(result);
   }
 }

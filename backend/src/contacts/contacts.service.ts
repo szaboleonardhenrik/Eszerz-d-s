@@ -36,6 +36,11 @@ export class ContactsService {
     return this.prisma.contact.findMany({
       where,
       orderBy: { name: 'asc' },
+      include: {
+        companies: {
+          include: { company: true },
+        },
+      },
     });
   }
 
@@ -176,6 +181,11 @@ export class ContactsService {
     const contacts = await this.prisma.contact.findMany({
       where,
       orderBy: { name: 'asc' },
+      include: {
+        companies: {
+          include: { company: true },
+        },
+      },
     });
 
     const contactsWithStats = await Promise.all(
@@ -244,5 +254,66 @@ export class ContactsService {
       distinct: ['group'],
     });
     return contacts.map((c) => c.group).filter(Boolean);
+  }
+
+  // ── Company methods ──
+
+  async findAllCompanies(userId: string, search?: string) {
+    const where: any = { userId };
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { taxNumber: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+    return this.prisma.company.findMany({
+      where,
+      orderBy: { name: 'asc' },
+      include: {
+        contacts: {
+          include: { contact: { select: { id: true, name: true, email: true } } },
+        },
+      },
+    });
+  }
+
+  async createCompany(userId: string, dto: { name: string; taxNumber?: string; address?: string; phone?: string; email?: string; notes?: string }) {
+    return this.prisma.company.create({
+      data: { userId, ...dto },
+    });
+  }
+
+  async updateCompany(companyId: string, userId: string, dto: { name?: string; taxNumber?: string; address?: string; phone?: string; email?: string; notes?: string }) {
+    const company = await this.prisma.company.findUnique({ where: { id: companyId } });
+    if (!company) throw new NotFoundException('Cég nem található');
+    if (company.userId !== userId) throw new ForbiddenException('Nincs jogosultságod');
+    return this.prisma.company.update({ where: { id: companyId }, data: dto });
+  }
+
+  async deleteCompany(companyId: string, userId: string) {
+    const company = await this.prisma.company.findUnique({ where: { id: companyId } });
+    if (!company) throw new NotFoundException('Cég nem található');
+    if (company.userId !== userId) throw new ForbiddenException('Nincs jogosultságod');
+    await this.prisma.company.delete({ where: { id: companyId } });
+    return { deleted: true };
+  }
+
+  async linkContactToCompany(contactId: string, companyId: string, userId: string, role?: string) {
+    const contact = await this.findOne(contactId, userId);
+    const company = await this.prisma.company.findUnique({ where: { id: companyId } });
+    if (!company || company.userId !== userId) throw new ForbiddenException('Nincs jogosultságod');
+    return this.prisma.contactCompany.upsert({
+      where: { contactId_companyId: { contactId, companyId } },
+      update: { role },
+      create: { contactId, companyId, role },
+    });
+  }
+
+  async unlinkContactFromCompany(contactId: string, companyId: string, userId: string) {
+    await this.findOne(contactId, userId);
+    await this.prisma.contactCompany.deleteMany({
+      where: { contactId, companyId },
+    });
+    return { deleted: true };
   }
 }

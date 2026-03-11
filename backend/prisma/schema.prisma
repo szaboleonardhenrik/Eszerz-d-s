@@ -58,6 +58,7 @@ model User {
   quotes          Quote[]
   quoteTemplates  QuoteTemplate[]
   invoices        Invoice[]
+  companies       Company[]
   googleId         String?    @unique @map("google_id")
   oauthProvider    String?    @map("oauth_provider")
   autoInvoice     Boolean    @default(false) @map("auto_invoice")
@@ -351,11 +352,45 @@ model Contact {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  signers Signer[]
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  signers   Signer[]
+  companies ContactCompany[]
 
   @@unique([userId, email])
   @@map("contacts")
+}
+
+model Company {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  name        String
+  taxNumber   String?  @map("tax_number")
+  address     String?
+  phone       String?
+  email       String?
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contacts ContactCompany[]
+
+  @@unique([userId, name])
+  @@map("companies")
+}
+
+model ContactCompany {
+  id        String   @id @default(uuid())
+  contactId String   @map("contact_id")
+  companyId String   @map("company_id")
+  role      String?  // Ügyvezető, Kapcsolattartó, Pénzügyi, stb.
+  createdAt DateTime @default(now()) @map("created_at")
+
+  contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([contactId, companyId])
+  @@map("contact_companies")
 }
 
 model PasswordReset {
