@@ -30,8 +30,13 @@ export class ContractsController {
 
   @Post()
   async create(@Body() dto: CreateContractDto, @Req() req: any) {
-    const contract = await this.contractsService.create(dto, req.user.userId);
-    return ApiResponse.ok(contract);
+    try {
+      const contract = await this.contractsService.create(dto, req.user.userId);
+      return ApiResponse.ok(contract);
+    } catch (err) {
+      console.error('Contract creation error:', err?.message, err?.stack);
+      throw err;
+    }
   }
 
   @Post('bulk-send')
