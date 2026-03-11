@@ -84,6 +84,9 @@ export class AuthService {
       throw new UnauthorizedException('Hibás email vagy jelszó');
     }
 
+    if (!user.passwordHash) {
+      throw new UnauthorizedException('Ez a fiók Google bejelentkezéssel lett létrehozva. Használd a Google gombot.');
+    }
     const valid = await bcrypt.compare(dto.password, user.passwordHash);
     if (!valid) {
       throw new UnauthorizedException('Hibás email vagy jelszó');
@@ -118,6 +121,49 @@ export class AuthService {
         consentVersion: CURRENT_CONSENT_VERSION,
       }),
     };
+  }
+
+  async validateOrCreateOAuthUser(profile: { googleId: string; email: string; name: string; avatarUrl?: string }, ip?: string, userAgent?: string) {
+    // Try to find by googleId first
+    let user = await this.prisma.user.findFirst({
+      where: { googleId: profile.googleId },
+    });
+
+    if (!user) {
+      // Try to find by email (link existing account)
+      user = await this.prisma.user.findUnique({
+        where: { email: profile.email },
+      });
+
+      if (user) {
+        // Link Google to existing account
+        user = await this.prisma.user.update({
+          where: { id: user.id },
+          data: { googleId: profile.googleId, oauthProvider: 'google' },
+        });
+      } else {
+        // Create new user
+        user = await this.prisma.user.create({
+          data: {
+            email: profile.email,
+            name: profile.name,
+            googleId: profile.googleId,
+            oauthProvider: 'google',
+            passwordHash: '',
+            emailVerified: true,
+            avatarUrl: profile.avatarUrl || null,
+            consentGivenAt: new Date(),
+            consentVersion: CURRENT_CONSENT_VERSION,
+            consentIp: ip || null,
+          },
+        });
+      }
+    }
+
+    const token = this.generateToken(user.id, user.email);
+    await this.createSession(user.id, token, ip, userAgent);
+
+    return { user, token };
   }
 
   async verifyMfaLogin(mfaToken: string, code: string, ip?: string, userAgent?: string) {
@@ -237,6 +283,9 @@ export class AuthService {
       throw new NotFoundException('Felhasználó nem található');
     }
 
+    if (!user.passwordHash) {
+      throw new BadRequestException('Ez a fiók Google bejelentkezéssel lett létrehozva. Jelszó módosítás nem lehetséges.');
+    }
     const valid = await bcrypt.compare(oldPassword, user.passwordHash);
     if (!valid) {
       throw new UnauthorizedException('A jelenlegi jelszó nem egyezik');
@@ -430,6 +479,9 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('Felhasználó nem található');
 
+    if (!user.passwordHash) {
+      throw new BadRequestException('Ez a fiók Google bejelentkezéssel lett létrehozva.');
+    }
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) throw new UnauthorizedException('Hibás jelszó');
 
@@ -446,6 +498,9 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('Felhasználó nem található');
 
+    if (!user.passwordHash) {
+      throw new BadRequestException('Ez a fiók Google bejelentkezéssel lett létrehozva.');
+    }
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) throw new UnauthorizedException('Hibás jelszó');
 

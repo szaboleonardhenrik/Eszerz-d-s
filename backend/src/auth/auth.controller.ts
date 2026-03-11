@@ -4,6 +4,7 @@ import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { AuthGuard } from '@nestjs/passport';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { ApiResponse } from '../common/api-response';
 
@@ -55,6 +56,25 @@ export class AuthController {
       this.setTokenCookie(res, result.token);
     }
     return ApiResponse.ok(result);
+  }
+
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  googleAuth() {
+    // Passport redirects to Google
+  }
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleCallback(@Req() req: any, @Res() res: Response) {
+    const result = await this.authService.validateOrCreateOAuthUser(
+      req.user,
+      req.ip,
+      req.headers['user-agent'],
+    );
+    this.setTokenCookie(res, result.token);
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    return res.redirect(`${frontendUrl}/dashboard`);
   }
 
   @Post('logout')

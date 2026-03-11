@@ -10,7 +10,7 @@ datasource db {
 model User {
   id               String     @id @default(uuid())
   email            String     @unique
-  passwordHash     String     @map("password_hash")
+  passwordHash     String?    @map("password_hash")
   name             String
   companyName      String?    @map("company_name")
   taxNumber        String?    @map("tax_number")
@@ -58,6 +58,8 @@ model User {
   quotes          Quote[]
   quoteTemplates  QuoteTemplate[]
   invoices        Invoice[]
+  googleId         String?    @unique @map("google_id")
+  oauthProvider    String?    @map("oauth_provider")
   autoInvoice     Boolean    @default(false) @map("auto_invoice")
 
   @@map("users")
