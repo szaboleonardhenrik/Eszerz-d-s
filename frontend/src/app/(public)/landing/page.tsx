@@ -45,7 +45,8 @@ function Reveal({ children, className = "", delay = 0 }: { children: React.React
 export default function LandingPage() {
   return (
     <div style={{ "--bg-page": "#F8FAFB", "--bg-card": "#fff", "--bg-alt": "#F0F5F7", "--text": "#1E2E38", "--text-mid": "#3D5260", "--text-muted": "#6B8290", "--border": "#DDE7EC" } as React.CSSProperties}>
-      <TopSection />
+      <Nav />
+      <Hero />
       <Trust />
       <Services />
       <Band />

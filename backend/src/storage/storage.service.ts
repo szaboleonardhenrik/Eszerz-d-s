@@ -18,7 +18,7 @@ export class StorageService {
   private readonly logger = new Logger(StorageService.name);
 
   constructor(private readonly config: ConfigService) {
-    this.bucket = config.get<string>('R2_BUCKET_NAME', 'szerzodes-portal');
+    this.bucket = config.get<string>('R2_BUCKET_NAME', 'legitas');
     const endpoint = config.get<string>('R2_ENDPOINT');
     this.useLocal = !endpoint;
 

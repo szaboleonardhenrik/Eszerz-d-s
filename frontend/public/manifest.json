@@ -1,6 +1,6 @@
 {
-  "name": "SzerződésPortál - Online Szerződéskezelő",
-  "short_name": "SzerződésPortál",
+  "name": "Legitas - Online Szerződéskezelő",
+  "short_name": "Legitas",
   "description": "Magyar KKV-knak szánt online szerződéskészítő és aláíró platform",
   "start_url": "/dashboard",
   "display": "standalone",

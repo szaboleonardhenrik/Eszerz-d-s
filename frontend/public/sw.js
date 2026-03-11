@@ -1,4 +1,4 @@
-const CACHE_NAME = 'szerzodes-portal-v1';
+const CACHE_NAME = 'legitas-v1';
 const STATIC_ASSETS = [
   '/manifest.json',
 ];

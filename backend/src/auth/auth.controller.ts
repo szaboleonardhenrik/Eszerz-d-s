@@ -200,7 +200,7 @@ export class AuthController {
   @Get('export-data')
   async exportData(@Req() req: any, @Res() res: Response) {
     const data = await this.authService.exportAllData(req.user.userId);
-    const filename = `szerzodes-portal-adatexport-${new Date().toISOString().slice(0, 10)}.json`;
+    const filename = `legitas-adatexport-${new Date().toISOString().slice(0, 10)}.json`;
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     return res.send(JSON.stringify(data, null, 2));

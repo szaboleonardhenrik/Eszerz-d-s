@@ -14,7 +14,7 @@ export class PdfService {
   async generatePdf(html: string, title: string, branding?: PdfBranding, verificationHash?: string): Promise<Buffer> {
     let qrBlock = '';
     if (verificationHash) {
-      const verifyUrl = `https://szerzodes.cegverzum.hu/verify/${verificationHash}`;
+      const verifyUrl = `${process.env.FRONTEND_URL || 'https://legitas.hu'}/verify/${verificationHash}`;
       try {
         const qrDataUrl = await QRCode.toDataURL(verifyUrl, {
           width: 80,

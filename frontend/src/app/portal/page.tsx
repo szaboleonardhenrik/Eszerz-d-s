@@ -81,7 +81,7 @@ export default function PortalPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <Link href="/landing" className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">SZ</span>
+              <span className="text-white font-bold text-sm">L</span>
             </div>
             <div className="flex items-baseline gap-1">
               <span className="font-bold text-gray-900 dark:text-white">

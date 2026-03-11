@@ -62,13 +62,13 @@ export default function OnboardingModal() {
           {step === 0 && (
             <div className="text-center">
               <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center mx-auto mb-6">
-                <span className="text-white font-bold text-2xl">SZ</span>
+                <span className="text-white font-bold text-2xl">L</span>
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-3">
                 {"\u00DCdv\u00f6z\u00f6lj\u00fck!"}
               </h2>
               <p className="text-gray-500 mb-2 leading-relaxed">
-                {"A Szerz\u0151d\u00e9sPort\u00e1l seg\u00edt neked szerz\u0151d\u00e9seket l\u00e9trehozni, al\u00e1\u00edratni \u00e9s kezelni \u2014 egyszer\u0171en \u00e9s gyorsan."}
+                {"A Legitas seg\u00edt neked szerz\u0151d\u00e9seket l\u00e9trehozni, al\u00e1\u00edratni \u00e9s kezelni \u2014 egyszer\u0171en \u00e9s gyorsan."}
               </p>
               <p className="text-gray-400 text-sm">
                 {"Sablonok, digit\u00e1lis al\u00e1\u00edr\u00e1s, csapatkezel\u00e9s \u00e9s API \u2014 minden egy helyen."}

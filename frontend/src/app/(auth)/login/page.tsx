@@ -42,7 +42,7 @@ export default function LoginPage() {
         </div>
         <div className="relative text-center max-w-md">
           <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mx-auto mb-8">
-            <span className="text-white font-bold text-2xl">SZ</span>
+            <span className="text-white font-bold text-2xl">L</span>
           </div>
           <h2 className="text-3xl font-extrabold text-white mb-4">
             Üdvözlünk újra!
@@ -73,10 +73,10 @@ export default function LoginPage() {
           <div className="text-center mb-8">
             <Link href="/landing" className="inline-flex items-center gap-2 mb-6">
               <div className="w-8 h-8 rounded-lg bg-brand-teal-dark flex items-center justify-center">
-                <span className="text-white font-bold text-sm">SZ</span>
+                <span className="text-white font-bold text-sm">L</span>
               </div>
               <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                <span className="text-brand-teal-dark">Szerződés</span>Portál
+                Legitas
               </span>
             </Link>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Bejelentkezés</h1>

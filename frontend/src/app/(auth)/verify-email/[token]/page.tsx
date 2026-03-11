@@ -29,10 +29,10 @@ export default function VerifyEmailPage() {
       <div className="w-full max-w-md text-center">
         <Link href="/landing" className="inline-flex items-center gap-2 mb-8">
           <div className="w-8 h-8 rounded-lg bg-brand-teal-dark flex items-center justify-center">
-            <span className="text-white font-bold text-sm">SZ</span>
+            <span className="text-white font-bold text-sm">L</span>
           </div>
           <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
-            <span className="text-brand-teal-dark">Szerződés</span>Portál
+            Legitas
           </span>
         </Link>
 

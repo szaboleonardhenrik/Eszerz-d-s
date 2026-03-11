@@ -212,7 +212,7 @@ export default function SecuritySettings() {
       const url = URL.createObjectURL(res.data);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `szerzodes-portal-adatexport-${new Date().toISOString().slice(0, 10)}.json`;
+      a.download = `legitas-adatexport-${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
       URL.revokeObjectURL(url);
       toast.success("Adatexport letöltve");
