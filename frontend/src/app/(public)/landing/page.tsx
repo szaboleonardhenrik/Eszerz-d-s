@@ -124,82 +124,70 @@ function Nav() {
 /* ── HERO ───────────────────────────────────────────────────────────── */
 function Hero() {
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-[#1E3A5F] via-[#2A5078] to-[#0F766E]">
-      {/* Decorative */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(212,160,23,.12)_1px,transparent_0)] bg-[length:28px_28px] opacity-60" />
-      <div className="absolute top-[-200px] right-[-100px] w-[600px] h-[600px] bg-[#46A0A0]/10 rounded-full blur-[120px]" />
-      <div className="absolute bottom-[-150px] left-[-80px] w-[400px] h-[400px] bg-[#D29B01]/10 rounded-full blur-[100px]" />
-
-      {/* Background photo */}
+    <section className="relative h-[580px] md:h-[640px] overflow-hidden">
+      {/* Background photo with overlay */}
       <div className="absolute inset-0">
-        <Image src="/images/hero-bg.jpg" alt="" fill className="object-cover opacity-10 mix-blend-overlay" priority onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+        <Image src="/images/hero-bg.jpg" alt="" fill className="object-cover object-[center_30%]" priority onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(30,58,95,0.15) 0%, rgba(30,58,95,0.42) 40%, rgba(30,58,95,0.88) 75%, rgba(15,29,48,0.96) 100%)" }} />
       </div>
 
-      {/* Glass panel */}
-      <div className="absolute inset-8 lg:inset-16 bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl" />
+      {/* Dot pattern overlay */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(212,160,23,.08)_1px,transparent_0)] bg-[length:28px_28px]" />
 
-      <div className="relative w-full max-w-7xl mx-auto px-5 py-32 lg:py-0">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
-          {/* Left */}
-          <div>
-            <Reveal>
-              <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 px-4 py-1.5 rounded-full mb-6">
-                <span className="w-2 h-2 rounded-full bg-[#D29B01] animate-pulse" />
-                <span className="text-white/80 text-[.82rem] font-medium">Szerződéskezelés, újragondolva</span>
-              </div>
-            </Reveal>
-            <Reveal delay={80}>
-              <h1 className="text-[clamp(2.2rem,4.5vw,3.4rem)] font-extrabold text-white leading-[1.1] mb-5">
-                Készíts szerződést <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D29B01] to-[#F0C246]">percek alatt,</span>
-                {" "}ne napok alatt.
-              </h1>
-            </Reveal>
-            <Reveal delay={160}>
-              <p className="text-white/60 text-[1.05rem] leading-relaxed mb-8 max-w-lg">
-                Válassz sablont, töltsd ki az adatokat, küldd el aláírásra — mindezt egyetlen felületen, papír és nyomtató nélkül.
-              </p>
-            </Reveal>
-            <Reveal delay={240}>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Link href="/register" className="inline-flex items-center justify-center gap-2 bg-[#D29B01] hover:bg-[#F0C246] text-white font-semibold px-7 py-3.5 rounded-xl transition-all hover:-translate-y-px shadow-lg shadow-[#D29B01]/25 text-[.95rem]">
-                  Regisztrálok ingyen
-                  <Ico d="M13 7l5 5m0 0l-5 5m5-5H6" className="w-4 h-4" />
-                </Link>
-                <a href="#folyamat" className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/15 text-white font-semibold px-7 py-3.5 rounded-xl transition-all text-[.95rem]">
-                  Hogyan működik?
-                </a>
-              </div>
-            </Reveal>
-          </div>
+      {/* Content at bottom */}
+      <div className="absolute bottom-0 left-0 right-0">
+        <div className="max-w-7xl mx-auto px-5 pb-12 md:pb-16">
+          {/* Badge */}
+          <Reveal>
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-5" style={{ background: "rgba(70,160,160,0.3)", border: "1px solid rgba(70,160,160,0.7)" }}>
+              <span className="w-2 h-2 rounded-full bg-[#46A0A0] animate-pulse" />
+              <span className="text-white/90 text-xs font-bold uppercase tracking-wider">Szerződéskezelés, újragondolva</span>
+            </div>
+          </Reveal>
 
-          {/* Right — stat cards */}
-          <Reveal delay={200} className="hidden lg:block">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="col-span-2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:-translate-y-1 transition-transform">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center">
-                    <Ico d="M13 10V3L4 14h7v7l9-11h-7z" className="text-[#D29B01]" />
-                  </div>
-                  <span className="text-[.7rem] font-semibold bg-[#D29B01]/20 text-[#D29B01] px-2.5 py-1 rounded-full">HATÉKONYSÁG</span>
+          {/* Heading */}
+          <Reveal delay={80}>
+            <h1 className="text-[clamp(2rem,5vw,3.5rem)] font-[900] text-white leading-[1.08] mb-4 max-w-2xl" style={{ fontFamily: "'Georgia','Times New Roman',serif" }}>
+              Készíts szerződést{" "}
+              <em className="text-[#46A0A0] not-italic font-[900]">percek alatt,</em>
+              <br />ne napok alatt.
+            </h1>
+          </Reveal>
+
+          {/* Subtitle */}
+          <Reveal delay={140}>
+            <p className="text-white/65 text-[1rem] md:text-[1.05rem] leading-relaxed mb-7 max-w-xl font-light">
+              Válassz sablont, töltsd ki az adatokat, küldd el aláírásra — mindezt egyetlen felületen, papír és nyomtató nélkül.
+            </p>
+          </Reveal>
+
+          {/* CTAs */}
+          <Reveal delay={200}>
+            <div className="flex flex-col sm:flex-row gap-3 mb-8">
+              <Link href="/register" className="inline-flex items-center justify-center gap-2 bg-[#D29B01] hover:bg-[#F0C246] text-white font-bold px-8 py-3.5 rounded-xl transition-all hover:-translate-y-px shadow-lg shadow-[#D29B01]/30 text-[.95rem]">
+                Regisztrálok ingyen
+                <Ico d="M13 7l5 5m0 0l-5 5m5-5H6" className="w-4 h-4" />
+              </Link>
+              <a href="#folyamat" className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/15 text-white font-semibold px-7 py-3.5 rounded-xl transition-all text-[.95rem]">
+                Hogyan működik?
+              </a>
+            </div>
+          </Reveal>
+
+          {/* Meta stats row */}
+          <Reveal delay={260}>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+              {[
+                { label: "Sablonok", value: "15+" },
+                { label: "Aláírás", value: "eIDAS" },
+                { label: "Ár", value: "Ingyenestől" },
+              ].map((s, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  {i > 0 && <span className="text-white/15 hidden sm:inline">&middot;</span>}
+                  <span className="text-white/45 text-[.82rem]">{s.label}:</span>
+                  <span className="text-white/85 text-[.82rem] font-semibold">{s.value}</span>
                 </div>
-                <p className="text-[2.8rem] font-extrabold text-white leading-none">10<span className="text-[#D29B01] text-[1.6rem] ml-1">perc</span></p>
-                <p className="text-white/40 text-[.85rem] mt-2">Átlagos szerződéskészítés a korábbi 3-5 nap helyett</p>
-              </div>
-              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-5 hover:-translate-y-1 transition-transform">
-                <div className="w-9 h-9 rounded-lg bg-[#46A0A0]/20 flex items-center justify-center mb-3">
-                  <Ico d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" className="text-[#46A0A0] w-4 h-4" />
-                </div>
-                <p className="text-2xl font-extrabold text-white">15<span className="text-[#D29B01]">+</span></p>
-                <p className="text-white/40 text-[.78rem] mt-1">Kész jogi sablon</p>
-              </div>
-              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-5 hover:-translate-y-1 transition-transform">
-                <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center mb-3">
-                  <Ico d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" className="text-white/70 w-4 h-4" />
-                </div>
-                <p className="text-2xl font-extrabold text-white">eIDAS</p>
-                <p className="text-white/40 text-[.78rem] mt-1">Kompatibilis aláírás</p>
-              </div>
+              ))}
             </div>
           </Reveal>
         </div>
