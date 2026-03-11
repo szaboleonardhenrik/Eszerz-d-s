@@ -1,8 +1,8 @@
 #!/bin/bash
-# SzerződésPortál Deploy Script
+# Legitas Deploy Script
 set -euo pipefail
 
-PROJECT_DIR="/opt/szerzodes-portal"
+PROJECT_DIR="/opt/legitas"
 cd "$PROJECT_DIR"
 
 echo "[$(date)] Starting deployment..."
@@ -19,13 +19,13 @@ npm install class-validator class-transformer 2>/dev/null || true
 npx prisma generate
 npx prisma migrate deploy 2>/dev/null || true
 npx nest build
-systemctl restart szerzodes-api
+systemctl restart legitas-api
 
 # Frontend
 echo "[$(date)] Building frontend..."
 cd "$PROJECT_DIR/frontend"
 npm install --legacy-peer-deps
 npm run build
-systemctl restart szerzodes-frontend
+systemctl restart legitas-frontend
 
 echo "[$(date)] Deployment complete!"

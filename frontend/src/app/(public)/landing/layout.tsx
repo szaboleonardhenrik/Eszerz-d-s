@@ -1,0 +1,23 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Online Szerződéskezelő Platform | Legitas",
+  description:
+    "Készíts szerződést percek alatt, ne napok alatt. Ptk.-konform sablonok, e-aláírás, AI elemzés, digitális aláírás. Magyar KKV-knak.",
+  openGraph: {
+    title: "Legitas - Online Szerződéskezelő Platform",
+    description: "Készíts szerződést percek alatt. 15+ jogász által ellenőrzött sablon, e-aláírás, AI elemzés.",
+    type: "website",
+    images: [{ url: "/images/hero-bg.jpg", width: 1200, height: 630, alt: "Legitas szerződéskezelő" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Legitas - Online Szerződéskezelő Platform",
+    description: "Készíts szerződést percek alatt. Magyar KKV-knak.",
+  },
+  alternates: { canonical: "https://legitas.hu/landing" },
+};
+
+export default function LandingLayout({ children }: { children: React.ReactNode }) {
+  return children;
+}

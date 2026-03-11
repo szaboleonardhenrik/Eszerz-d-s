@@ -1,11 +1,35 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import CookieConsent from "@/components/cookie-consent";
 import ServiceWorkerRegister from "@/components/sw-register";
 import { ThemeProvider } from "@/components/theme-provider";
 import { I18nProvider } from "@/lib/i18n";
+
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Legitas",
+  url: "https://legitas.hu",
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Web",
+  description: "Magyar KKV-knak szánt online szerződéskészítő és aláíró platform.",
+  offers: {
+    "@type": "AggregateOffer",
+    priceCurrency: "HUF",
+    lowPrice: "0",
+    highPrice: "2475",
+    offerCount: "4",
+  },
+  publisher: {
+    "@type": "Organization",
+    name: "Legitas",
+    url: "https://legitas.hu",
+    logo: { "@type": "ImageObject", url: "https://legitas.hu/icons/icon-512.png" },
+  },
+};
 
 const inter = Inter({ subsets: ["latin", "latin-ext"] });
 
@@ -50,6 +74,11 @@ export default function RootLayout({
   return (
     <html lang="hu" suppressHydrationWarning>
       <body className={`${inter.className} antialiased bg-gray-50 dark:bg-gray-900 dark:text-gray-100`}>
+        <Script
+          id="org-jsonld"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
         <ThemeProvider>
           <I18nProvider>
             <Toaster position="top-right" />

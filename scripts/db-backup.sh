@@ -1,14 +1,14 @@
 #!/bin/bash
-# SzerződésPortál - PostgreSQL Daily Backup Script
-# Deploy to server: /opt/szerzodes-portal/scripts/db-backup.sh
-# Cron: 0 2 * * * /opt/szerzodes-portal/scripts/db-backup.sh
+# Legitas - PostgreSQL Daily Backup Script
+# Deploy to server: /opt/legitas/scripts/db-backup.sh
+# Cron: 0 2 * * * /opt/legitas/scripts/db-backup.sh
 
 set -euo pipefail
 
-DB_NAME="szerzodes_portal"
-DB_USER="szerzodes"
-DB_PASS="szerzodes2026"
-BACKUP_DIR="/opt/szerzodes-portal/backups"
+DB_NAME="legitas_portal"
+DB_USER="legitas"
+DB_PASS="Leg1tas2026!Pr0d"
+BACKUP_DIR="/opt/legitas/backups"
 RETENTION_DAYS=30
 DATE=$(date +%Y-%m-%d_%H%M%S)
 BACKUP_FILE="${BACKUP_DIR}/${DB_NAME}_${DATE}.sql.gz"

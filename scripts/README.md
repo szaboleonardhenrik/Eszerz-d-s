@@ -5,19 +5,19 @@
 ### Deploy
 ```bash
 # Copy to server
-scp scripts/db-backup.sh root@cegverzum.hu:/opt/szerzodes-portal/scripts/
+scp scripts/db-backup.sh root@178.104.36.213:/opt/legitas/scripts/
 
 # Make executable
-ssh root@cegverzum.hu 'chmod +x /opt/szerzodes-portal/scripts/db-backup.sh'
+ssh root@178.104.36.213 'chmod +x /opt/legitas/scripts/db-backup.sh'
 
 # Set up daily cron (runs at 2:00 AM)
-ssh root@cegverzum.hu 'echo "0 2 * * * /opt/szerzodes-portal/scripts/db-backup.sh >> /var/log/szerzodes-backup.log 2>&1" | crontab -'
+ssh root@178.104.36.213 'echo "0 2 * * * /opt/legitas/scripts/db-backup.sh >> /var/log/legitas-backup.log 2>&1" | crontab -'
 
 # Test manually
-ssh root@cegverzum.hu '/opt/szerzodes-portal/scripts/db-backup.sh'
+ssh root@178.104.36.213 '/opt/legitas/scripts/db-backup.sh'
 ```
 
 ### Restore
 ```bash
-gunzip -c /opt/szerzodes-portal/backups/szerzodes_portal_YYYY-MM-DD_HHMMSS.sql.gz | psql -U szerzodes -d szerzodes_portal
+gunzip -c /opt/legitas/backups/legitas_portal_YYYY-MM-DD_HHMMSS.sql.gz | psql -U legitas -d legitas_portal
 ```

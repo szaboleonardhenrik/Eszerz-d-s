@@ -1,7 +1,7 @@
-# SzerzodesPortal - Kereskedelmi Indulas Jogi/Penzugyi/Kockazati Ellenorzolista
+# Legitas - Kereskedelmi Indulas Jogi/Penzugyi/Kockazati Ellenorzolista
 
 **Keszult:** 2026. marcius 7.
-**Platform:** szerzodes.cegverzum.hu - Online szerzodeskozelo SaaS platform
+**Platform:** legitas.hu - Online szerzodeskozelo SaaS platform
 **Cel:** Teljes koruen osszegyujteni a kereskedelmi indulashoz szukseges jogi, penzugyi es uzleti kovetelmenyeket
 
 ---
