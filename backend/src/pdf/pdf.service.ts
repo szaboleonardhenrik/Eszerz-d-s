@@ -75,6 +75,9 @@ export class PdfService {
       typedName?: string;
       signedAt: string;
       method: string;
+      companyName?: string;
+      companyTaxNumber?: string;
+      companyAddress?: string;
     }>,
     branding?: PdfBranding,
     verificationHash?: string,
@@ -92,6 +95,15 @@ export class PdfService {
         signatureVisual = `<p style="font-family:Georgia,'Times New Roman',serif;font-size:24px;font-style:italic;margin:8px 0;color:#1a1a1a;">${this.escapeHtml(sig.typedName)}</p>`;
       }
 
+      let companyBlock = '';
+      if (sig.companyName || sig.companyTaxNumber || sig.companyAddress) {
+        companyBlock = '<div style="margin-top:8px;padding-top:8px;border-top:1px solid #e5e7eb;font-size:11px;color:#6b7280;">';
+        if (sig.companyName) companyBlock += `<p style="margin:0 0 2px;font-weight:600;color:#374151;">${this.escapeHtml(sig.companyName)}</p>`;
+        if (sig.companyTaxNumber) companyBlock += `<p style="margin:0 0 2px;">Adószám: ${this.escapeHtml(sig.companyTaxNumber)}</p>`;
+        if (sig.companyAddress) companyBlock += `<p style="margin:0;">Székhely: ${this.escapeHtml(sig.companyAddress)}</p>`;
+        companyBlock += '</div>';
+      }
+
       signatureBlock += `
         <div style="min-width:220px;border:1px solid #e5e7eb;border-radius:8px;padding:16px;background:#fafafa;">
           <p style="margin:0;font-weight:600;font-size:13px;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;">${this.escapeHtml(sig.role || 'Aláíró')}</p>
@@ -100,6 +112,7 @@ export class PdfService {
           <p style="margin:4px 0 0 0;font-size:11px;color:#9ca3af;">
             ${sig.signedAt} &bull; ${methodLabel}
           </p>
+          ${companyBlock}
         </div>
       `;
     }

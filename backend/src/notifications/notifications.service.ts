@@ -138,17 +138,32 @@ export class NotificationsService {
       await this.resend.emails.send({
         from: this.fromEmail,
         to: params.to,
-        subject: `${params.senderName} szerződést küld aláírásra`,
+        subject: `Aláírásra vár: ${params.contractTitle}`,
         html: this.wrap(
           `${this.greeting(params.signerName)}
-           ${this.text(`<strong>${params.senderName}</strong> az alábbi szerződést küldte Önnek aláírásra:`)}
+           ${this.text(`<strong>${params.senderName}</strong> szerződést küldött Önnek elektronikus aláírásra a Legitas platformon.`)}
            ${this.card(`
-             <p style="margin:0 0 4px;font-size:16px;font-weight:700;color:#1e2e38;">${params.contractTitle}</p>
-             ${this.meta('Határidő', params.expiresAt)}
+             <p style="margin:0 0 2px;font-size:10px;font-weight:600;color:#198296;text-transform:uppercase;letter-spacing:0.8px;">Szerződés</p>
+             <p style="margin:0 0 8px;font-size:18px;font-weight:700;color:#1e2e38;">${params.contractTitle}</p>
+             <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;">
+               <tr>
+                 <td style="padding:6px 0;font-size:13px;color:#6b8290;width:80px;">Feladó</td>
+                 <td style="padding:6px 0;font-size:13px;font-weight:600;color:#1e2e38;">${params.senderName}</td>
+               </tr>
+               <tr>
+                 <td style="padding:6px 0;font-size:13px;color:#6b8290;">Határidő</td>
+                 <td style="padding:6px 0;font-size:13px;font-weight:600;color:#1e2e38;">${params.expiresAt}</td>
+               </tr>
+             </table>
            `, '#198296')}
-           ${this.btn(params.signUrl, 'Megtekintés és aláírás')}
-           ${this.hint('Ha nem Ön a címzett, kérjük hagyja figyelmen kívül ezt az emailt.')}`,
-          { preheader: `${params.senderName} szerződést küldött Önnek: ${params.contractTitle}` },
+           ${this.text('Az aláíráshoz szüksége lesz vállalkozása néhány alapadatára (cégnév, adószám, székhely).')}
+           ${this.btn(params.signUrl, 'Szerződés megtekintése és aláírása')}
+           <div style="text-align:center;">
+             <p style="margin:4px 0 0;font-size:11px;color:#9ca3af;">vagy másolja be a böngészőbe:</p>
+             <p style="margin:4px 0 0;font-size:11px;color:#198296;word-break:break-all;">${params.signUrl}</p>
+           </div>
+           ${this.hint('A szerződés aláírása biztonságos, titkosított csatornán történik. Ha nem Ön a címzett, kérjük hagyja figyelmen kívül.')}`,
+          { preheader: `${params.senderName} szerződést küldött: ${params.contractTitle} — kattintson az aláíráshoz` },
         ),
       });
       this.logger.log(`Signing invitation sent to ${params.to}`);
@@ -166,11 +181,9 @@ export class NotificationsService {
   }) {
     const subject = params.allSigned
       ? `Szerződés teljesítve – ${params.contractTitle}`
-      : `Szerződés aláírva – ${params.contractTitle}`;
+      : `Aláírás rögzítve – ${params.contractTitle}`;
 
-    const statusColor = params.allSigned ? '#22c55e' : '#198296';
-    const statusIcon = params.allSigned ? '&#10003;' : '&#9998;';
-    const statusText = params.allSigned ? 'Minden fél aláírta' : 'Aláírás rögzítve';
+    const signedDate = new Date().toLocaleDateString('hu-HU', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
     try {
       await this.resend.emails.send({
@@ -178,20 +191,33 @@ export class NotificationsService {
         to: params.to,
         subject,
         html: this.wrap(
-          `${this.greeting(params.name)}
-           <div style="text-align:center;margin:16px 0 20px;">
-             <div style="display:inline-block;width:56px;height:56px;border-radius:50%;background:${statusColor}15;text-align:center;line-height:56px;">
-               <span style="font-size:28px;color:${statusColor};">${statusIcon}</span>
-             </div>
-             <p style="margin:10px 0 0;font-size:14px;font-weight:600;color:${statusColor};text-transform:uppercase;letter-spacing:0.5px;">${statusText}</p>
-           </div>
-           ${this.card(`
-             <p style="margin:0 0 4px;font-size:16px;font-weight:700;color:#1e2e38;">${params.contractTitle}</p>
-           `, statusColor)}
-           ${params.allSigned
-             ? this.text('A végleges, aláírt szerződés letölthető a fiókjában.')
-             : this.text('A többi aláíró értesítése folyamatban van.')}`,
-          { preheader: params.allSigned ? `Minden fél aláírta: ${params.contractTitle}` : `Aláírás rögzítve: ${params.contractTitle}` },
+          params.allSigned
+            ? `${this.greeting(params.name)}
+               <div style="text-align:center;margin:16px 0 24px;">
+                 <div style="display:inline-block;width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#dcfce7,#bbf7d0);text-align:center;line-height:64px;">
+                   <span style="font-size:32px;color:#16a34a;">&#10003;</span>
+                 </div>
+                 <p style="margin:12px 0 0;font-size:15px;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:0.5px;">Szerződés teljesítve</p>
+               </div>
+               ${this.card(`
+                 <p style="margin:0 0 8px;font-size:18px;font-weight:700;color:#1e2e38;">${params.contractTitle}</p>
+                 ${this.meta('Teljesítés', signedDate)}
+               `, '#16a34a')}
+               ${this.text('A végleges, aláírt szerződés letölthető a fiókjában.')}`
+            : `${this.greeting(params.name)}
+               <div style="text-align:center;margin:16px 0 24px;">
+                 <div style="display:inline-block;width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#e0f2fe,#bae6fd);text-align:center;line-height:64px;">
+                   <span style="font-size:28px;color:#198296;">&#9998;</span>
+                 </div>
+                 <p style="margin:12px 0 0;font-size:15px;font-weight:700;color:#198296;text-transform:uppercase;letter-spacing:0.5px;">Aláírás rögzítve</p>
+                 <p style="margin:4px 0 0;font-size:12px;color:#6b8290;">Várakozás a többi aláíróra</p>
+               </div>
+               ${this.card(`
+                 <p style="margin:0 0 8px;font-size:18px;font-weight:700;color:#1e2e38;">${params.contractTitle}</p>
+                 ${this.meta('Aláírás időpontja', signedDate)}
+               `, '#198296')}
+               ${this.text('Az Ön aláírása sikeresen rögzítésre került. A többi aláíró értesítése megtörtént. Amint mindenki aláírta, a végleges dokumentumot emailben kapja meg.')}`,
+          { preheader: params.allSigned ? `Kész! Minden fél aláírta: ${params.contractTitle}` : `Aláírása rögzítve: ${params.contractTitle} — várakozás a többi félre` },
         ),
       });
     } catch (error) {
@@ -416,6 +442,61 @@ export class NotificationsService {
     } catch (error) {
       this.logger.error(`Failed to send portal access token to ${params.to}`, error);
       throw error;
+    }
+  }
+
+  async sendSignedContractPdf(params: {
+    to: string;
+    name: string;
+    contractTitle: string;
+    pdfBuffer: Buffer;
+  }) {
+    const signedDate = new Date().toLocaleDateString('hu-HU', { year: 'numeric', month: 'long', day: 'numeric' });
+    try {
+      await this.resend.emails.send({
+        from: this.fromEmail,
+        to: params.to,
+        subject: `Aláírt szerződés kész – ${params.contractTitle}`,
+        html: this.wrap(
+          `${this.greeting(params.name)}
+           <div style="text-align:center;margin:16px 0 24px;">
+             <div style="display:inline-block;width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#dcfce7,#bbf7d0);text-align:center;line-height:64px;">
+               <span style="font-size:32px;color:#16a34a;">&#10003;</span>
+             </div>
+             <p style="margin:12px 0 0;font-size:15px;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:0.5px;">Szerződés teljesítve</p>
+             <p style="margin:4px 0 0;font-size:12px;color:#6b8290;">Minden fél sikeresen aláírta</p>
+           </div>
+           ${this.card(`
+             <p style="margin:0 0 2px;font-size:10px;font-weight:600;color:#16a34a;text-transform:uppercase;letter-spacing:0.8px;">Végleges dokumentum</p>
+             <p style="margin:0 0 8px;font-size:18px;font-weight:700;color:#1e2e38;">${params.contractTitle}</p>
+             ${this.meta('Teljesítés dátuma', signedDate)}
+           `, '#16a34a')}
+           <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px 18px;margin:20px 0;">
+             <table role="presentation" cellpadding="0" cellspacing="0">
+               <tr>
+                 <td style="vertical-align:top;padding-right:12px;">
+                   <div style="width:36px;height:36px;background:#dcfce7;border-radius:8px;text-align:center;line-height:36px;font-size:16px;">&#128206;</div>
+                 </td>
+                 <td>
+                   <p style="margin:0;font-size:14px;font-weight:600;color:#1e2e38;">PDF csatolmány</p>
+                   <p style="margin:2px 0 0;font-size:12px;color:#6b8290;">A végleges, aláírt szerződés ehhez az emailhez van csatolva. Kérjük, mentse el saját nyilvántartásába.</p>
+                 </td>
+               </tr>
+             </table>
+           </div>
+           ${this.hint('Ez az email a Legitas elektronikus szerződéskezelő platformról lett küldve. A dokumentum SHA-256 hash-sel van hitelesítve.')}`,
+          { preheader: `Kész! ${params.contractTitle} — az aláírt szerződés PDF-ben csatolva` },
+        ),
+        attachments: [
+          {
+            filename: `${params.contractTitle.replace(/[^a-zA-Z0-9áéíóöőúüűÁÉÍÓÖŐÚÜŰ\s-]/g, '')}_alairva.pdf`,
+            content: params.pdfBuffer,
+          },
+        ],
+      });
+      this.logger.log(`Signed PDF sent to ${params.to}`);
+    } catch (error) {
+      this.logger.error(`Failed to send signed PDF to ${params.to}`, error);
     }
   }
 

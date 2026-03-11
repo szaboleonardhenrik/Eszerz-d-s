@@ -194,9 +194,14 @@ model Signer {
   typedName         String?   @map("typed_name")
   certificateData   String?   @map("certificate_data")
   signerNote        String?   @map("signer_note")
+  companyName       String?   @map("company_name")
+  companyTaxNumber  String?   @map("company_tax_number")
+  companyAddress    String?   @map("company_address")
+  contactId         String?   @map("contact_id")
   createdAt         DateTime  @default(now()) @map("created_at")
 
   contract  Contract   @relation(fields: [contractId], references: [id])
+  contact   Contact?   @relation(fields: [contactId], references: [id])
   auditLogs AuditLog[]
 
   @@index([signToken])
@@ -346,7 +351,8 @@ model Contact {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  signers Signer[]
 
   @@unique([userId, email])
   @@map("contacts")

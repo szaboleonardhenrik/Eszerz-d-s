@@ -114,6 +114,38 @@ export class SignaturesService {
       signatureImageUrl = imageKey;
     }
 
+    // Save/update partner as Contact
+    let contactId: string | undefined;
+    try {
+      const contact = await this.prisma.contact.upsert({
+        where: {
+          userId_email: {
+            userId: signer.contract.ownerId,
+            email: signer.email,
+          },
+        },
+        update: {
+          name: dto.signerFullName,
+          company: dto.companyName,
+          taxNumber: dto.companyTaxNumber,
+          address: dto.companyAddress,
+          group: 'Partnerek',
+        },
+        create: {
+          userId: signer.contract.ownerId,
+          name: dto.signerFullName,
+          email: signer.email,
+          company: dto.companyName,
+          taxNumber: dto.companyTaxNumber,
+          address: dto.companyAddress,
+          group: 'Partnerek',
+        },
+      });
+      contactId = contact.id;
+    } catch {
+      // Non-critical — continue signing even if contact save fails
+    }
+
     // Atomic update: only update if signer is still 'pending' (prevents race condition)
     const updateResult = await this.prisma.signer.updateMany({
       where: { id: signer.id, status: 'pending' },
@@ -126,6 +158,10 @@ export class SignaturesService {
         signatureImageUrl,
         typedName: dto.typedName,
         signerNote: dto.note ?? null,
+        companyName: dto.companyName,
+        companyTaxNumber: dto.companyTaxNumber,
+        companyAddress: dto.companyAddress,
+        ...(contactId ? { contactId } : {}),
       },
     });
 
@@ -148,16 +184,6 @@ export class SignaturesService {
       documentHash,
     });
 
-    // Auto-sync signer as partner/contact
-    try {
-      await this.contactsService.upsertFromSigner(
-        signer.contract.ownerId,
-        { name: signer.name, email: signer.email, role: signer.role ?? undefined },
-      );
-    } catch {
-      // Non-critical, don't fail the signing process
-    }
-
     // Check if all signers have signed
     const allSigners = await this.prisma.signer.findMany({
       where: { contractId: signer.contractId },
@@ -169,7 +195,7 @@ export class SignaturesService {
     if (allSigned) {
       // Generate final PDF with all signatures
       const signatures = allSigners.map((s) => ({
-        name: s.name,
+        name: s.id === signer.id ? dto.signerFullName : s.name,
         role: s.role ?? 'Aláíró',
         signatureImageUrl: s.signatureImageUrl ?? undefined,
         typedName: s.id === signer.id ? dto.typedName : s.typedName ?? undefined,
@@ -178,6 +204,9 @@ export class SignaturesService {
             'hu-HU',
           ) ?? '',
         method: s.id === signer.id ? dto.signatureMethod : s.signatureMethod ?? 'simple',
+        companyName: s.id === signer.id ? dto.companyName : s.companyName ?? undefined,
+        companyTaxNumber: s.id === signer.id ? dto.companyTaxNumber : s.companyTaxNumber ?? undefined,
+        companyAddress: s.id === signer.id ? dto.companyAddress : s.companyAddress ?? undefined,
       }));
 
       // Download signature images from R2/local and embed as base64
@@ -199,6 +228,9 @@ export class SignaturesService {
             typedName: s.typedName,
             signedAt: s.signedAt,
             method: s.method,
+            companyName: s.companyName,
+            companyTaxNumber: s.companyTaxNumber,
+            companyAddress: s.companyAddress,
           };
         }),
       );
@@ -230,20 +262,47 @@ export class SignaturesService {
       where: { id: signer.contract.ownerId },
     });
 
-    await this.notificationsService.sendSignedConfirmation({
-      to: signer.email,
-      name: signer.name,
-      contractTitle: signer.contract.title,
-      allSigned,
-    });
+    if (allSigned) {
+      // Send the signed PDF to all signers via email
+      const finalPdfBuffer = await this.storageService.downloadFile(
+        `contracts/signed/${signer.contractId}/final.pdf`,
+      );
 
-    if (owner) {
+      for (const s of allSigners) {
+        await this.notificationsService.sendSignedContractPdf({
+          to: s.email,
+          name: s.name,
+          contractTitle: signer.contract.title,
+          pdfBuffer: finalPdfBuffer,
+        });
+      }
+
+      // Also send to contract owner
+      if (owner && !allSigners.some((s) => s.email === owner.email)) {
+        await this.notificationsService.sendSignedContractPdf({
+          to: owner.email,
+          name: owner.name,
+          contractTitle: signer.contract.title,
+          pdfBuffer: finalPdfBuffer,
+        });
+      }
+    } else {
+      // Partial signing — just send confirmations
       await this.notificationsService.sendSignedConfirmation({
-        to: owner.email,
-        name: owner.name,
+        to: signer.email,
+        name: dto.signerFullName,
         contractTitle: signer.contract.title,
-        allSigned,
+        allSigned: false,
       });
+
+      if (owner) {
+        await this.notificationsService.sendSignedConfirmation({
+          to: owner.email,
+          name: owner.name,
+          contractTitle: signer.contract.title,
+          allSigned: false,
+        });
+      }
     }
 
     return {
