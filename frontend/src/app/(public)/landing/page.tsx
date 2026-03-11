@@ -143,7 +143,7 @@ function Hero() {
     <section className="relative overflow-hidden bg-white pt-24 md:pt-28 pb-16 md:pb-24">
       {/* Blue rectangle behind content — full coverage */}
       <div
-        className="absolute left-1/2 -translate-x-1/2 top-[48%] -translate-y-1/2 w-[96%] max-w-[1400px] h-[96%] rounded-[2rem] md:rounded-[2.5rem]"
+        className="absolute left-1/2 -translate-x-1/2 top-[50%] -translate-y-1/2 w-[96%] max-w-[1400px] h-[88%] rounded-[2rem] md:rounded-[2.5rem]"
         style={{
           background: "linear-gradient(135deg, #133040 0%, #184050 40%, #1B4D5C 70%, #143545 100%)",
           boxShadow: "0 20px 60px rgba(15,32,39,0.25)",
