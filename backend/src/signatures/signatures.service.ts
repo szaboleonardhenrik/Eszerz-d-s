@@ -11,6 +11,7 @@ import { AuditService } from '../audit/audit.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ContactsService } from '../contacts/contacts.service';
 import { SignContractDto } from './dto/sign.dto';
+import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 
 @Injectable()
@@ -22,6 +23,7 @@ export class SignaturesService {
     private readonly auditService: AuditService,
     private readonly notificationsService: NotificationsService,
     private readonly contactsService: ContactsService,
+    private readonly config: ConfigService,
   ) {}
 
   async getContractByToken(token: string) {
@@ -255,6 +257,44 @@ export class SignaturesService {
         where: { id: signer.contractId },
         data: { status: 'partially_signed' },
       });
+
+      // Notify next signer(s) in order if all signers at the current level are done
+      const currentOrder = signer.signingOrder;
+      const signersAtCurrentOrder = allSigners.filter((s) => s.signingOrder === currentOrder);
+      const allCurrentDone = signersAtCurrentOrder.every(
+        (s) => s.id === signer.id || s.status === 'signed',
+      );
+
+      if (allCurrentDone) {
+        // Find the next signing order level
+        const higherOrders = allSigners
+          .filter((s) => s.signingOrder > currentOrder && s.status === 'pending')
+          .map((s) => s.signingOrder);
+
+        if (higherOrders.length > 0) {
+          const nextOrder = Math.min(...higherOrders);
+          const nextSigners = allSigners.filter(
+            (s) => s.signingOrder === nextOrder && s.status === 'pending',
+          );
+
+          const frontendUrl = this.config.get<string>('FRONTEND_URL', 'http://localhost:3000');
+          const ownerForNotif = await this.prisma.user.findUnique({
+            where: { id: signer.contract.ownerId },
+          });
+
+          for (const nextSigner of nextSigners) {
+            const signUrl = `${frontendUrl}/sign/${nextSigner.signToken}`;
+            await this.notificationsService.sendSigningInvitation({
+              to: nextSigner.email,
+              signerName: nextSigner.name,
+              senderName: ownerForNotif?.name ?? 'Ismeretlen',
+              contractTitle: signer.contract.title,
+              signUrl,
+              expiresAt: nextSigner.tokenExpiresAt?.toLocaleDateString('hu-HU') ?? '',
+            });
+          }
+        }
+      }
     }
 
     // Send confirmation emails

@@ -817,6 +817,42 @@ export default function ContractDetailPage() {
               <div className="space-y-0">
                 <SigningTimeline signers={contract.signers} />
 
+                {/* Owner sign button — if they're a pending signer */}
+                {["sent", "partially_signed"].includes(contract.status) && (() => {
+                  const ownerSigner = contract.signers.find(
+                    (s) => s.email === currentUser?.email && s.status === "pending"
+                  );
+                  if (!ownerSigner) return null;
+                  // Check if it's their turn (no earlier pending signers)
+                  const earlierPending = contract.signers.some(
+                    (s) => s.signingOrder < ownerSigner.signingOrder && s.status === "pending"
+                  );
+                  if (earlierPending) return null;
+                  return (
+                    <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-700">
+                      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-blue-100 dark:bg-blue-800 rounded-lg flex items-center justify-center shrink-0">
+                            <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg>
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-blue-800 dark:text-blue-200">Az Ön aláírása szükséges</p>
+                            <p className="text-xs text-blue-600 dark:text-blue-400">Ön is aláíró ezen a szerződésen. Kattintson az aláíráshoz.</p>
+                          </div>
+                          <a
+                            href={`/sign/${(ownerSigner as any).signToken}`}
+                            className="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition shrink-0"
+                          >
+                            Aláírás most
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 {/* Signer action buttons */}
                 {["sent", "partially_signed"].includes(contract.status) && contract.signers.some((s) => s.status === "pending") && (
                   <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-700">
