@@ -6,13 +6,13 @@ export default function ThemeToggle() {
   const { resolved, setTheme } = useTheme();
 
   return (
-    <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-0.5">
+    <div className="flex items-center bg-white/10 rounded-lg p-0.5">
       <button
         onClick={() => setTheme("light")}
         className={`p-1.5 rounded-md transition ${
           resolved === "light"
-            ? "bg-white shadow-sm text-yellow-500"
-            : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            ? "bg-white/20 text-yellow-300"
+            : "text-white/50 hover:text-white/80"
         }`}
         title="Világos mód"
       >
@@ -24,8 +24,8 @@ export default function ThemeToggle() {
         onClick={() => setTheme("dark")}
         className={`p-1.5 rounded-md transition ${
           resolved === "dark"
-            ? "bg-gray-600 shadow-sm text-yellow-400"
-            : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            ? "bg-white/20 text-yellow-300"
+            : "text-white/50 hover:text-white/80"
         }`}
         title="Sötét mód"
       >

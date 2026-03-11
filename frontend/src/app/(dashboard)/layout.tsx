@@ -66,16 +66,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
+      <nav className="bg-gradient-to-r from-brand-teal-dark to-brand-teal border-b border-brand-teal-dark/30 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Top row: logo + actions */}
           <div className="flex justify-between items-center h-14">
             <Link href="/dashboard" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-brand-teal-dark flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
                 <span className="text-white font-bold text-sm">L</span>
               </div>
-              <span className="text-lg font-bold text-gray-900 dark:text-gray-100 hidden sm:inline">
-                <span className="text-brand-teal-dark">Legitas</span>
+              <span className="text-lg font-bold text-white hidden sm:inline">
+                Legitas
               </span>
             </Link>
             <div className="flex items-center gap-1.5 sm:gap-2">
@@ -85,33 +85,33 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <NotificationBell />
               <button
                 onClick={() => setMobileNav(!mobileNav)}
-                className="lg:hidden p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                className="lg:hidden p-2 rounded-lg hover:bg-white/10"
               >
-                <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5 text-white/80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={mobileNav ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
                 </svg>
               </button>
               <div className="relative">
                 <button
                   onClick={() => setMenuOpen(!menuOpen)}
-                  className="flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                  className="flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded-lg hover:bg-white/10 transition"
                 >
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-semibold">
                     {user.name.split(" ").map((n) => n[0]).join("").substring(0, 2).toUpperCase()}
                   </div>
                   <div className="hidden sm:block text-left">
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 leading-none">{user.name}</p>
+                    <p className="text-sm font-medium text-white leading-none">{user.name}</p>
                     <p className="text-xs mt-0.5">
                       <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase ${
                         user.subscriptionTier === "pro"
-                          ? "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400"
+                          ? "bg-white/20 text-white"
                           : user.subscriptionTier === "basic"
-                          ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400"
-                          : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400"
+                          ? "bg-white/20 text-white"
+                          : "bg-white/15 text-white/80"
                       }`}>{user.subscriptionTier} {t("auth.plan")}</span>
                     </p>
                   </div>
-                  <svg className="w-4 h-4 text-gray-400 hidden sm:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-4 h-4 text-white/60 hidden sm:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
@@ -177,12 +177,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   href={item.href}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition ${
                     isActive
-                      ? isAdmin
-                        ? "bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400"
-                        : "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
-                      : isAdmin
-                        ? "text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:text-violet-700 dark:hover:text-violet-300"
-                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100"
+                      ? "bg-white/20 text-white"
+                      : "text-white/70 hover:bg-white/10 hover:text-white"
                   }`}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

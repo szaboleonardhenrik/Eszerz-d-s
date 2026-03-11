@@ -89,15 +89,12 @@ export default function GlobalSearch() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-500 dark:text-gray-400 text-sm transition"
+        className="flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-lg border border-white/20 bg-white/10 hover:bg-white/20 text-white/80 text-sm transition min-w-[120px] sm:min-w-[180px]"
       >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
-        <span className="hidden sm:inline">Keres\u00e9s...</span>
-        <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono bg-gray-200 dark:bg-gray-600 rounded">
-          Ctrl+K
-        </kbd>
+        <span>Keres&#233;s</span>
       </button>
 
       {open && (
