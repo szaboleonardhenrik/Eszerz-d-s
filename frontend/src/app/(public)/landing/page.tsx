@@ -54,6 +54,7 @@ export default function LandingPage() {
       <Process />
       <Pricing />
       <Testimonials />
+      <FAQ />
       <CTA />
       <Foot />
     </div>
@@ -508,6 +509,52 @@ function Testimonials() {
   );
 }
 
+/* ── FAQ ──────────────────────────────────────────────────────────── */
+const faqs = [
+  { q: "Mennyibe kerül a Legitas?", a: "A Kezdő csomag tartósan ingyenes, havi 2 szerződéssel és AI asszisztenssel. A fizetős csomagok 975 Ft + áfa/hó-tól indulnak. Részletek az Árazás oldalon." },
+  { q: "Jogilag érvényes az elektronikus aláírás?", a: "Igen. A Legitas eIDAS-kompatibilis egyszerű elektronikus aláírást használ, amely a legtöbb üzleti szerződésnél jogilag érvényes. A Ptk. 6:63. § szerint a szerződés alaki kötöttség hiányában szóban is megköthető." },
+  { q: "Biztonságban vannak az adataim?", a: "Az adatokat titkosítva, EU-ban található Cloudflare R2 szerveren tároljuk. A platform GDPR-kompatibilis, és minden dokumentumot SHA-256 hash-sel védünk." },
+  { q: "Használhatom mobilról is?", a: "Igen, a Legitas reszponzív webalkalmazás. Az aláírók emailben kapott linkkel mobilról is aláírhatnak — alkalmazás telepítése nélkül." },
+  { q: "Kell hozzá jogi szaktudás?", a: "Nem. A sablonok jogász által ellenőrzöttek, a wizard végigvezet a kitöltésen, és az AI figyelmeztet a hiányzó elemekre. De a platform nem helyettesíti a jogi tanácsadást." },
+  { q: "Lehet-e saját sablont feltölteni?", a: "Igen, a Közepes és Prémium csomagokban saját sablonokat is létrehozhatsz és szerkeszthetsz a beépített szerkesztővel." },
+];
+
+function FAQ() {
+  const [openIdx, setOpenIdx] = useState<number | null>(null);
+  return (
+    <section className="py-20 lg:py-28 bg-[#F0F5F7] dark:bg-[#243545]">
+      <div className="max-w-3xl mx-auto px-5">
+        <Reveal>
+          <div className="text-center mb-14">
+            <div className="w-10 h-1 rounded-full bg-gradient-to-r from-[#46A0A0] to-[#D29B01] mx-auto mb-4" />
+            <h2 className="text-[clamp(1.7rem,3vw,2.3rem)] font-extrabold text-[#1E2E38] dark:text-white mb-3">Gyakran ismételt kérdések</h2>
+          </div>
+        </Reveal>
+        <div className="space-y-3">
+          {faqs.map((f, i) => (
+            <Reveal key={i} delay={i * 60}>
+              <div className="bg-white dark:bg-[#283D4E] rounded-xl border border-[#DDE7EC] dark:border-[#446070] overflow-hidden">
+                <button
+                  onClick={() => setOpenIdx(openIdx === i ? null : i)}
+                  className="w-full flex items-center justify-between px-6 py-4 text-left"
+                >
+                  <span className="font-semibold text-[#1E2E38] dark:text-white text-[.95rem] pr-4">{f.q}</span>
+                  <svg className={`w-5 h-5 shrink-0 text-[#6B8290] transition-transform duration-200 ${openIdx === i ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                <div className={`overflow-hidden transition-all duration-300 ${openIdx === i ? "max-h-40 pb-4" : "max-h-0"}`}>
+                  <p className="px-6 text-[#6B8290] dark:text-[#96B5C6] text-[.9rem] leading-relaxed">{f.a}</p>
+                </div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ── CTA ───────────────────────────────────────────────────────────── */
 function CTA() {
   return (
@@ -517,7 +564,7 @@ function CTA() {
         <Reveal>
           <div className="inline-flex items-center gap-2 bg-[#E8F5F5] dark:bg-[#46A0A0]/20 px-4 py-1.5 rounded-full mb-6">
             <Ico d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" className="w-4 h-4 text-[#46A0A0]" />
-            <span className="text-[#46A0A0] text-[.82rem] font-medium">14 napos ingyenes próba</span>
+            <span className="text-[#46A0A0] text-[.82rem] font-medium">Tartósan ingyenes Kezdő csomag</span>
           </div>
         </Reveal>
         <Reveal delay={80}>
@@ -538,7 +585,7 @@ function CTA() {
         </Reveal>
         <Reveal delay={320}>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-8 text-[#6B8290] text-sm">
-            {["Nem kell bankkártya", "14 napos próba", "Bármikor lemondható"].map(t => (
+            {["Nem kell bankkártya", "Tartósan ingyenes Kezdő csomag", "Bármikor upgrade-elhető"].map(t => (
               <span key={t} className="flex items-center gap-1.5">
                 <svg className="w-4 h-4 text-[#46A0A0]" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
                 {t}
@@ -587,6 +634,7 @@ function Foot() {
             <ul className="space-y-2 text-[.85rem]">
               <li><a href="mailto:info@legitas.hu" className="hover:text-white transition">info@legitas.hu</a></li>
               <li>Budapest, Magyarország</li>
+              <li className="pt-2"><Link href="/portal" className="text-[#46A0A0] hover:text-white transition">Aláírói portál</Link></li>
             </ul>
           </div>
         </div>
