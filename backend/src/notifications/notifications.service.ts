@@ -44,13 +44,13 @@ export class NotificationsService {
         <tr>
           <td style="padding-bottom:24px;text-align:center;">
             <a href="${this.frontendUrl}" style="text-decoration:none;">
-              <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
+              <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;background:linear-gradient(135deg,#0c4a3e 0%,#134e3a 50%,#115e45 100%);border-radius:14px;padding:12px 28px;">
                 <tr>
-                  <td style="width:40px;height:40px;background:linear-gradient(135deg,#198296,#0F766E);border-radius:12px;text-align:center;vertical-align:middle;">
+                  <td style="width:40px;height:40px;background:rgba(255,255,255,0.15);border-radius:10px;text-align:center;vertical-align:middle;">
                     <span style="color:#ffffff;font-weight:800;font-size:18px;line-height:40px;">L</span>
                   </td>
                   <td style="padding-left:12px;">
-                    <span style="color:#1A4B5F;font-weight:700;font-size:24px;letter-spacing:-0.5px;">Legit</span><span style="color:#198296;font-weight:800;font-size:24px;">as</span>
+                    <span style="color:#ffffff;font-weight:700;font-size:24px;letter-spacing:-0.5px;">Legit</span><span style="color:#6ee7b7;font-weight:800;font-size:24px;">as</span>
                   </td>
                 </tr>
               </table>
@@ -83,20 +83,26 @@ export class NotificationsService {
 
         <!-- Features Bar -->
         <tr>
-          <td style="padding:24px 40px;">
+          <td style="padding:24px 32px;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
               <tr>
-                <td align="center" style="width:33%;padding:0 8px;">
-                  <div style="font-size:20px;margin-bottom:4px;">&#128274;</div>
-                  <p style="margin:0;font-size:11px;color:#64748b;line-height:1.3;">Biztonságos<br>platform</p>
+                <td align="center" style="width:33%;padding:0 6px;">
+                  <div style="background:#f0fdf4;border:1px solid #d1fae5;border-radius:12px;padding:16px 8px;">
+                    <div style="width:40px;height:40px;background:#dcfce7;border-radius:10px;margin:0 auto 8px;text-align:center;line-height:40px;font-size:18px;">&#128274;</div>
+                    <p style="margin:0;font-size:11px;font-weight:600;color:#166534;line-height:1.3;">Biztonságos<br>platform</p>
+                  </div>
                 </td>
-                <td align="center" style="width:33%;padding:0 8px;">
-                  <div style="font-size:20px;margin-bottom:4px;">&#9889;</div>
-                  <p style="margin:0;font-size:11px;color:#64748b;line-height:1.3;">Gyors<br>aláírás</p>
+                <td align="center" style="width:33%;padding:0 6px;">
+                  <div style="background:#eff6ff;border:1px solid #dbeafe;border-radius:12px;padding:16px 8px;">
+                    <div style="width:40px;height:40px;background:#dbeafe;border-radius:10px;margin:0 auto 8px;text-align:center;line-height:40px;font-size:18px;">&#9889;</div>
+                    <p style="margin:0;font-size:11px;font-weight:600;color:#1e40af;line-height:1.3;">Gyors<br>aláírás</p>
+                  </div>
                 </td>
-                <td align="center" style="width:33%;padding:0 8px;">
-                  <div style="font-size:20px;margin-bottom:4px;">&#128196;</div>
-                  <p style="margin:0;font-size:11px;color:#64748b;line-height:1.3;">Digitális<br>archiválás</p>
+                <td align="center" style="width:33%;padding:0 6px;">
+                  <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:12px;padding:16px 8px;">
+                    <div style="width:40px;height:40px;background:#e0f2fe;border-radius:10px;margin:0 auto 8px;text-align:center;line-height:40px;font-size:18px;">&#128196;</div>
+                    <p style="margin:0;font-size:11px;font-weight:600;color:#0c4a6e;line-height:1.3;">Digitális<br>archiválás</p>
+                  </div>
                 </td>
               </tr>
             </table>
@@ -146,13 +152,56 @@ export class NotificationsService {
         </tr>
       </table>
 
-      <!-- Below-card trust badges -->
+      <!-- Trust bar -->
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin-top:20px;">
         <tr>
-          <td align="center">
-            <p style="margin:0;font-size:11px;color:#94a3b8;">
-              &#128274; SSL titkosítás &nbsp;&middot;&nbsp; &#128737;&#65039; GDPR kompatibilis &nbsp;&middot;&nbsp; &#9989; eIDAS megfelelő
-            </p>
+          <td>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#0c4a3e 0%,#134e3a 40%,#115e45 100%);border-radius:12px;overflow:hidden;">
+              <tr>
+                <td style="padding:18px 24px;">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="center" style="width:33%;padding:0 4px;">
+                        <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
+                          <tr>
+                            <td style="vertical-align:middle;padding-right:6px;">
+                              <div style="width:24px;height:24px;background:rgba(255,255,255,0.12);border-radius:6px;text-align:center;line-height:24px;font-size:12px;">&#128274;</div>
+                            </td>
+                            <td style="vertical-align:middle;">
+                              <p style="margin:0;font-size:11px;font-weight:600;color:#a7f3d0;">SSL titkosítás</p>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td align="center" style="width:33%;padding:0 4px;border-left:1px solid rgba(255,255,255,0.1);border-right:1px solid rgba(255,255,255,0.1);">
+                        <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
+                          <tr>
+                            <td style="vertical-align:middle;padding-right:6px;">
+                              <div style="width:24px;height:24px;background:rgba(255,255,255,0.12);border-radius:6px;text-align:center;line-height:24px;font-size:12px;">&#128737;</div>
+                            </td>
+                            <td style="vertical-align:middle;">
+                              <p style="margin:0;font-size:11px;font-weight:600;color:#a7f3d0;">GDPR</p>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td align="center" style="width:33%;padding:0 4px;">
+                        <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
+                          <tr>
+                            <td style="vertical-align:middle;padding-right:6px;">
+                              <div style="width:24px;height:24px;background:rgba(255,255,255,0.12);border-radius:6px;text-align:center;line-height:24px;font-size:12px;">&#9989;</div>
+                            </td>
+                            <td style="vertical-align:middle;">
+                              <p style="margin:0;font-size:11px;font-weight:600;color:#a7f3d0;">eIDAS</p>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
           </td>
         </tr>
       </table>
