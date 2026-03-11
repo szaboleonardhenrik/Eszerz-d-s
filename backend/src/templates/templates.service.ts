@@ -149,6 +149,7 @@ export class TemplatesService {
     for (const [key, value] of Object.entries(variables)) {
       const escapedValue = this.escapeHtml(value);
       html = html.replaceAll(`{{${key}}}`, escapedValue);
+      html = html.replaceAll(`!!${key}!!`, escapedValue);
     }
 
     return html;

@@ -83,7 +83,7 @@ export default function WysiwygEditor({ value, onChange, placeholder, variables 
       span.style.fontWeight = "600";
       span.style.fontSize = "0.875rem";
       span.contentEditable = "false";
-      span.textContent = `{{${varName}}}`;
+      span.textContent = `!!${varName}!!`;
       range.deleteContents();
       range.insertNode(span);
       range.setStartAfter(span);
@@ -161,7 +161,7 @@ export default function WysiwygEditor({ value, onChange, placeholder, variables 
             >
               <option value="" disabled>+ Változó beszúrása</option>
               {variables.map((v) => (
-                <option key={v} value={v}>{`{{${v}}}`}</option>
+                <option key={v} value={v}>{`!!${v}!!`}</option>
               ))}
             </select>
           </>
