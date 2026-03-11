@@ -3,6 +3,11 @@ import type { MetadataRoute } from "next";
 const BASE_URL = "https://legitas.hu";
 
 const blogSlugs = [
+  "mesterseges-intelligencia-szerzodesek-jovo",
+  "vallalkozas-inditasa-szukseges-szerzodesek",
+  "freelancer-szerzodes-szabalyok-2026",
+  "berles-szerzodes-buktatoi-amikre-figyelj",
+  "szerzodes-felmondasanak-szabalyai",
   "elektronikus-alairas-magyarorszagon-2026",
   "szerzodeskezeles-kkv-digitalizacio",
   "ptk-szerzodeskotes-alapjai",
