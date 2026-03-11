@@ -21,6 +21,7 @@ export class NotificationsService {
   // ─── BRANDED EMAIL WRAPPER ─────────────────────────────
   private wrap(body: string, options?: { preheader?: string }): string {
     const preheader = options?.preheader || '';
+    const year = new Date().getFullYear();
     return `<!DOCTYPE html>
 <html lang="hu">
 <head>
@@ -31,62 +32,130 @@ export class NotificationsService {
   <title>Legitas</title>
   <!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript><![endif]-->
 </head>
-<body style="margin:0;padding:0;background-color:#f4f6f8;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+<body style="margin:0;padding:0;background-color:#f0f4f8;font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;">
   ${preheader ? `<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">${preheader}</div>` : ''}
 
   <!-- Outer wrapper -->
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f6f8;">
-    <tr><td align="center" style="padding:32px 16px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f0f4f8;">
+    <tr><td align="center" style="padding:40px 16px 32px;">
 
-      <!-- Card -->
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-
-        <!-- Header -->
+      <!-- Top Logo Banner -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;">
         <tr>
-          <td style="background:linear-gradient(135deg,#1A4B5F 0%,#198296 50%,#0F766E 100%);padding:28px 32px;text-align:center;">
-            <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
+          <td style="padding-bottom:24px;text-align:center;">
+            <a href="${this.frontendUrl}" style="text-decoration:none;">
+              <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
+                <tr>
+                  <td style="width:40px;height:40px;background:linear-gradient(135deg,#198296,#0F766E);border-radius:12px;text-align:center;vertical-align:middle;">
+                    <span style="color:#ffffff;font-weight:800;font-size:18px;line-height:40px;">L</span>
+                  </td>
+                  <td style="padding-left:12px;">
+                    <span style="color:#1A4B5F;font-weight:700;font-size:24px;letter-spacing:-0.5px;">Legit</span><span style="color:#198296;font-weight:800;font-size:24px;">as</span>
+                  </td>
+                </tr>
+              </table>
+            </a>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Main Card -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);border:1px solid #e2e8f0;">
+
+        <!-- Gradient Top Bar -->
+        <tr>
+          <td style="height:4px;background:linear-gradient(90deg,#198296 0%,#0F766E 50%,#198296 100%);font-size:0;line-height:0;">&nbsp;</td>
+        </tr>
+
+        <!-- Body -->
+        <tr>
+          <td style="padding:40px 40px 32px;">
+            ${body}
+          </td>
+        </tr>
+
+        <!-- Separator -->
+        <tr>
+          <td style="padding:0 40px;">
+            <div style="height:1px;background:linear-gradient(90deg,transparent,#e2e8f0 20%,#e2e8f0 80%,transparent);"></div>
+          </td>
+        </tr>
+
+        <!-- Features Bar -->
+        <tr>
+          <td style="padding:24px 40px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
               <tr>
-                <td style="width:36px;height:36px;background:rgba(255,255,255,0.18);border-radius:10px;text-align:center;vertical-align:middle;">
-                  <span style="color:#ffffff;font-weight:bold;font-size:16px;line-height:36px;">L</span>
+                <td align="center" style="width:33%;padding:0 8px;">
+                  <div style="font-size:20px;margin-bottom:4px;">&#128274;</div>
+                  <p style="margin:0;font-size:11px;color:#64748b;line-height:1.3;">Biztonságos<br>platform</p>
                 </td>
-                <td style="padding-left:10px;">
-                  <span style="color:#ffffff;font-weight:600;font-size:20px;letter-spacing:-0.3px;">Legit</span><span style="color:#46A0A0;font-weight:700;font-size:20px;">as</span>
+                <td align="center" style="width:33%;padding:0 8px;">
+                  <div style="font-size:20px;margin-bottom:4px;">&#9889;</div>
+                  <p style="margin:0;font-size:11px;color:#64748b;line-height:1.3;">Gyors<br>aláírás</p>
+                </td>
+                <td align="center" style="width:33%;padding:0 8px;">
+                  <div style="font-size:20px;margin-bottom:4px;">&#128196;</div>
+                  <p style="margin:0;font-size:11px;color:#64748b;line-height:1.3;">Digitális<br>archiválás</p>
                 </td>
               </tr>
             </table>
           </td>
         </tr>
 
-        <!-- Body -->
+        <!-- Separator -->
         <tr>
-          <td style="padding:32px 32px 24px;">
-            ${body}
+          <td style="padding:0 40px;">
+            <div style="height:1px;background:linear-gradient(90deg,transparent,#e2e8f0 20%,#e2e8f0 80%,transparent);"></div>
           </td>
         </tr>
 
-        <!-- Divider -->
+        <!-- Footer Links -->
         <tr>
-          <td style="padding:0 32px;">
-            <div style="height:1px;background-color:#e8edf2;"></div>
+          <td style="padding:24px 40px 16px;text-align:center;">
+            <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
+              <tr>
+                <td style="padding:0 12px;">
+                  <a href="${this.frontendUrl}" style="color:#198296;text-decoration:none;font-size:12px;font-weight:600;">Legitas.hu</a>
+                </td>
+                <td style="color:#cbd5e1;font-size:12px;">|</td>
+                <td style="padding:0 12px;">
+                  <a href="${this.frontendUrl}/blog" style="color:#64748b;text-decoration:none;font-size:12px;">Blog</a>
+                </td>
+                <td style="color:#cbd5e1;font-size:12px;">|</td>
+                <td style="padding:0 12px;">
+                  <a href="${this.frontendUrl}/pricing" style="color:#64748b;text-decoration:none;font-size:12px;">Árak</a>
+                </td>
+                <td style="color:#cbd5e1;font-size:12px;">|</td>
+                <td style="padding:0 12px;">
+                  <a href="${this.frontendUrl}/settings/notifications" style="color:#64748b;text-decoration:none;font-size:12px;">Értesítések</a>
+                </td>
+              </tr>
+            </table>
           </td>
         </tr>
 
-        <!-- Footer -->
+        <!-- Copyright -->
         <tr>
-          <td style="padding:20px 32px 28px;text-align:center;">
-            <p style="margin:0 0 6px;font-size:12px;color:#9ca3af;">
-              <a href="${this.frontendUrl}/landing" style="color:#198296;text-decoration:none;font-weight:600;">legitas.hu</a>
-              &nbsp;&middot;&nbsp;
-              <a href="${this.frontendUrl}/settings/notifications" style="color:#9ca3af;text-decoration:underline;">Értesítések kezelése</a>
+          <td style="padding:0 40px 28px;text-align:center;">
+            <p style="margin:0;font-size:11px;color:#94a3b8;line-height:1.5;">
+              &copy; ${year} Legitas — Elektronikus szerződéskezelő platform<br>
+              Magyar KKV-k számára tervezve
             </p>
-            <p style="margin:0;font-size:11px;color:#c0c7ce;">
-              &copy; ${new Date().getFullYear()} Legitas. Minden jog fenntartva.
-            </p>
           </td>
         </tr>
-
       </table>
-      <!-- /Card -->
+
+      <!-- Below-card trust badges -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin-top:20px;">
+        <tr>
+          <td align="center">
+            <p style="margin:0;font-size:11px;color:#94a3b8;">
+              &#128274; SSL titkosítás &nbsp;&middot;&nbsp; &#128737;&#65039; GDPR kompatibilis &nbsp;&middot;&nbsp; &#9989; eIDAS megfelelő
+            </p>
+          </td>
+        </tr>
+      </table>
 
     </td></tr>
   </table>
@@ -95,33 +164,116 @@ export class NotificationsService {
   }
 
   private btn(href: string, label: string, color = '#198296'): string {
-    return `<div style="text-align:center;margin:28px 0 8px;">
-  <a href="${href}" style="display:inline-block;background:${color};color:#ffffff;padding:14px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;letter-spacing:-0.2px;box-shadow:0 2px 8px ${color}33;">
+    const hoverBg = color === '#198296' ? '#146d7d' : color;
+    return `<div style="text-align:center;margin:32px 0 12px;">
+  <a href="${href}" style="display:inline-block;background:${color};color:#ffffff;padding:16px 44px;border-radius:12px;text-decoration:none;font-weight:700;font-size:15px;letter-spacing:-0.2px;box-shadow:0 4px 14px ${color}40;transition:background 0.3s;">
+    ${label}
+  </a>
+</div>
+<div style="text-align:center;">
+  <p style="margin:0;font-size:11px;color:#94a3b8;">vagy másolja be a böngészőbe:</p>
+  <p style="margin:4px 0 0;font-size:10px;color:#198296;word-break:break-all;max-width:400px;display:inline-block;">${href}</p>
+</div>`;
+  }
+
+  private btnSimple(href: string, label: string, color = '#198296'): string {
+    return `<div style="text-align:center;margin:32px 0 12px;">
+  <a href="${href}" style="display:inline-block;background:${color};color:#ffffff;padding:16px 44px;border-radius:12px;text-decoration:none;font-weight:700;font-size:15px;letter-spacing:-0.2px;box-shadow:0 4px 14px ${color}40;">
     ${label}
   </a>
 </div>`;
   }
 
-  private card(content: string, borderColor = '#e8edf2'): string {
-    return `<div style="background:#f8fafb;padding:18px 20px;border-radius:10px;border-left:4px solid ${borderColor};margin:20px 0;">
+  private card(content: string, borderColor = '#e2e8f0'): string {
+    return `<div style="background:#f8fafc;padding:20px 24px;border-radius:12px;border-left:4px solid ${borderColor};margin:24px 0;">
   ${content}
 </div>`;
   }
 
+  private infoBox(icon: string, title: string, description: string, bgColor = '#f0f9ff', borderColor = '#bae6fd'): string {
+    return `<div style="background:${bgColor};border:1px solid ${borderColor};border-radius:12px;padding:18px 20px;margin:24px 0;">
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td style="vertical-align:top;padding-right:14px;width:42px;">
+        <div style="width:42px;height:42px;background:#ffffff;border-radius:10px;text-align:center;line-height:42px;font-size:20px;box-shadow:0 1px 3px rgba(0,0,0,0.06);">${icon}</div>
+      </td>
+      <td style="vertical-align:top;">
+        <p style="margin:0 0 2px;font-size:14px;font-weight:700;color:#1e293b;">${title}</p>
+        <p style="margin:0;font-size:13px;color:#64748b;line-height:1.5;">${description}</p>
+      </td>
+    </tr>
+  </table>
+</div>`;
+  }
+
+  private statusBadge(label: string, color: string, bgColor: string): string {
+    return `<div style="text-align:center;margin:24px 0;">
+  <div style="display:inline-block;background:${bgColor};border:1px solid ${color}30;border-radius:20px;padding:6px 20px;">
+    <span style="font-size:13px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:0.5px;">${label}</span>
+  </div>
+</div>`;
+  }
+
+  private successIcon(): string {
+    return `<div style="text-align:center;margin:20px 0 28px;">
+  <div style="display:inline-block;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#dcfce7 0%,#bbf7d0 100%);text-align:center;line-height:72px;box-shadow:0 4px 16px rgba(34,197,94,0.2);">
+    <span style="font-size:36px;color:#16a34a;">&#10003;</span>
+  </div>
+</div>`;
+  }
+
+  private warningIcon(): string {
+    return `<div style="text-align:center;margin:20px 0 28px;">
+  <div style="display:inline-block;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%);text-align:center;line-height:72px;box-shadow:0 4px 16px rgba(234,179,8,0.2);">
+    <span style="font-size:36px;color:#d97706;">&#9888;</span>
+  </div>
+</div>`;
+  }
+
+  private signingIcon(): string {
+    return `<div style="text-align:center;margin:20px 0 28px;">
+  <div style="display:inline-block;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#e0f2fe 0%,#bae6fd 100%);text-align:center;line-height:72px;box-shadow:0 4px 16px rgba(25,130,150,0.2);">
+    <span style="font-size:36px;color:#198296;">&#9998;</span>
+  </div>
+</div>`;
+  }
+
   private meta(label: string, value: string): string {
-    return `<p style="margin:0 0 4px;font-size:13px;color:#6b8290;">${label}: <strong style="color:#1e2e38;">${value}</strong></p>`;
+    return `<tr>
+  <td style="padding:6px 0;font-size:13px;color:#64748b;width:120px;vertical-align:top;">${label}</td>
+  <td style="padding:6px 0;font-size:13px;font-weight:600;color:#1e293b;">${value}</td>
+</tr>`;
+  }
+
+  private metaTable(...rows: string[]): string {
+    return `<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;">${rows.join('')}</table>`;
   }
 
   private hint(text: string): string {
-    return `<p style="margin:20px 0 0;font-size:12px;color:#9ca3af;line-height:1.5;">${text}</p>`;
+    return `<p style="margin:24px 0 0;font-size:12px;color:#94a3b8;line-height:1.6;border-top:1px solid #f1f5f9;padding-top:16px;">${text}</p>`;
   }
 
   private greeting(name: string): string {
-    return `<p style="margin:0 0 16px;font-size:16px;color:#1e2e38;font-weight:600;">Kedves ${name}!</p>`;
+    return `<p style="margin:0 0 20px;font-size:18px;color:#1e293b;font-weight:700;">Kedves ${name}!</p>`;
   }
 
   private text(content: string): string {
-    return `<p style="margin:0 0 12px;font-size:15px;color:#3d5260;line-height:1.6;">${content}</p>`;
+    return `<p style="margin:0 0 16px;font-size:15px;color:#475569;line-height:1.7;">${content}</p>`;
+  }
+
+  private stepsList(steps: { icon: string; text: string }[]): string {
+    return `<div style="margin:24px 0;">
+  ${steps.map((s, i) => `<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:${i < steps.length - 1 ? '12' : '0'}px;">
+    <tr>
+      <td style="width:36px;vertical-align:top;">
+        <div style="width:32px;height:32px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;text-align:center;line-height:32px;font-size:14px;">${s.icon}</div>
+      </td>
+      <td style="vertical-align:middle;padding-left:12px;">
+        <p style="margin:0;font-size:14px;color:#475569;line-height:1.5;">${s.text}</p>
+      </td>
+    </tr>
+  </table>`).join('')}
+</div>`;
   }
 
   // ─── CONTRACT EMAILS ───────────────────────────────────
@@ -140,30 +292,36 @@ export class NotificationsService {
         to: params.to,
         subject: `Aláírásra vár: ${params.contractTitle}`,
         html: this.wrap(
-          `${this.greeting(params.signerName)}
-           ${this.text(`<strong>${params.senderName}</strong> szerződést küldött Önnek elektronikus aláírásra a Legitas platformon.`)}
+          `${this.signingIcon()}
+           <p style="text-align:center;margin:0 0 8px;font-size:13px;font-weight:600;color:#198296;text-transform:uppercase;letter-spacing:1px;">Új szerződés érkezett</p>
+           <p style="text-align:center;margin:0 0 28px;font-size:22px;font-weight:800;color:#1e293b;">${params.contractTitle}</p>
+
+           ${this.greeting(params.signerName)}
+           ${this.text(`<strong>${params.senderName}</strong> elektronikus aláírásra küldött Önnek egy szerződést a Legitas platformon keresztül. A dokumentum biztonságos, titkosított környezetben tekinthető meg és írható alá.`)}
+
            ${this.card(`
-             <p style="margin:0 0 2px;font-size:10px;font-weight:600;color:#198296;text-transform:uppercase;letter-spacing:0.8px;">Szerződés</p>
-             <p style="margin:0 0 8px;font-size:18px;font-weight:700;color:#1e2e38;">${params.contractTitle}</p>
-             <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;">
-               <tr>
-                 <td style="padding:6px 0;font-size:13px;color:#6b8290;width:80px;">Feladó</td>
-                 <td style="padding:6px 0;font-size:13px;font-weight:600;color:#1e2e38;">${params.senderName}</td>
-               </tr>
-               <tr>
-                 <td style="padding:6px 0;font-size:13px;color:#6b8290;">Határidő</td>
-                 <td style="padding:6px 0;font-size:13px;font-weight:600;color:#1e2e38;">${params.expiresAt}</td>
-               </tr>
-             </table>
+             <p style="margin:0 0 12px;font-size:11px;font-weight:700;color:#198296;text-transform:uppercase;letter-spacing:1px;">Szerződés adatai</p>
+             ${this.metaTable(
+               this.meta('Dokumentum', `<strong>${params.contractTitle}</strong>`),
+               this.meta('Feladó', params.senderName),
+               this.meta('Határidő', params.expiresAt),
+               this.meta('Státusz', '<span style="color:#d97706;font-weight:700;">Aláírásra vár</span>'),
+             )}
            `, '#198296')}
-           ${this.text('Az aláíráshoz szüksége lesz vállalkozása néhány alapadatára (cégnév, adószám, székhely).')}
-           ${this.btn(params.signUrl, 'Szerződés megtekintése és aláírása')}
-           <div style="text-align:center;">
-             <p style="margin:4px 0 0;font-size:11px;color:#9ca3af;">vagy másolja be a böngészőbe:</p>
-             <p style="margin:4px 0 0;font-size:11px;color:#198296;word-break:break-all;">${params.signUrl}</p>
-           </div>
-           ${this.hint('A szerződés aláírása biztonságos, titkosított csatornán történik. Ha nem Ön a címzett, kérjük hagyja figyelmen kívül.')}`,
-          { preheader: `${params.senderName} szerződést küldött: ${params.contractTitle} — kattintson az aláíráshoz` },
+
+           ${this.text('Az aláírás néhány percet vesz igénybe. A folyamat során az alábbi lépések várják:')}
+           ${this.stepsList([
+             { icon: '&#128100;', text: '<strong>Adatok megadása</strong> — vállalkozása alapadatai (cégnév, adószám, székhely)' },
+             { icon: '&#128196;', text: '<strong>Szerződés áttekintése</strong> — a teljes dokumentum elolvasása' },
+             { icon: '&#9998;', text: '<strong>Elektronikus aláírás</strong> — kézírásos vagy gépelt aláírás' },
+           ])}
+
+           ${this.btn(params.signUrl, '&#9998;  Szerződés megtekintése és aláírása')}
+
+           ${this.infoBox('&#128274;', 'Biztonságos aláírás', 'Az aláírás SSL titkosított csatornán, GDPR és eIDAS szabványoknak megfelelően történik. Személyes adatait biztonságban kezeljük.')}
+
+           ${this.hint('Ha nem Ön a címzett, kérjük hagyja figyelmen kívül ezt az emailt. A link 7 napig érvényes. Amennyiben kérdése van, forduljon közvetlenül a feladóhoz.')}`,
+          { preheader: `${params.senderName} szerződést küldött Önnek: ${params.contractTitle} — kattintson az aláíráshoz` },
         ),
       });
       this.logger.log(`Signing invitation sent to ${params.to}`);
@@ -180,8 +338,8 @@ export class NotificationsService {
     allSigned: boolean;
   }) {
     const subject = params.allSigned
-      ? `Szerződés teljesítve – ${params.contractTitle}`
-      : `Aláírás rögzítve – ${params.contractTitle}`;
+      ? `Szerződés teljesítve! – ${params.contractTitle}`
+      : `Aláírás sikeresen rögzítve – ${params.contractTitle}`;
 
     const signedDate = new Date().toLocaleDateString('hu-HU', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
@@ -192,31 +350,50 @@ export class NotificationsService {
         subject,
         html: this.wrap(
           params.allSigned
-            ? `${this.greeting(params.name)}
-               <div style="text-align:center;margin:16px 0 24px;">
-                 <div style="display:inline-block;width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#dcfce7,#bbf7d0);text-align:center;line-height:64px;">
-                   <span style="font-size:32px;color:#16a34a;">&#10003;</span>
-                 </div>
-                 <p style="margin:12px 0 0;font-size:15px;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:0.5px;">Szerződés teljesítve</p>
-               </div>
+            ? `${this.successIcon()}
+               <p style="text-align:center;margin:0 0 8px;font-size:13px;font-weight:600;color:#16a34a;text-transform:uppercase;letter-spacing:1px;">Minden fél aláírta</p>
+               <p style="text-align:center;margin:0 0 28px;font-size:22px;font-weight:800;color:#1e293b;">${params.contractTitle}</p>
+
+               ${this.greeting(params.name)}
+               ${this.text('Örömmel értesítjük, hogy a fenti szerződést <strong>minden érintett fél sikeresen aláírta</strong>. A szerződés jogilag érvényes és hatályba lépett.')}
+
                ${this.card(`
-                 <p style="margin:0 0 8px;font-size:18px;font-weight:700;color:#1e2e38;">${params.contractTitle}</p>
-                 ${this.meta('Teljesítés', signedDate)}
+                 <p style="margin:0 0 12px;font-size:11px;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:1px;">Teljesített szerződés</p>
+                 ${this.metaTable(
+                   this.meta('Dokumentum', `<strong>${params.contractTitle}</strong>`),
+                   this.meta('Teljesítés', signedDate),
+                   this.meta('Státusz', '<span style="color:#16a34a;font-weight:700;">&#10003; Teljesítve</span>'),
+                 )}
                `, '#16a34a')}
-               ${this.text('A végleges, aláírt szerződés letölthető a fiókjában.')}`
-            : `${this.greeting(params.name)}
-               <div style="text-align:center;margin:16px 0 24px;">
-                 <div style="display:inline-block;width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#e0f2fe,#bae6fd);text-align:center;line-height:64px;">
-                   <span style="font-size:28px;color:#198296;">&#9998;</span>
-                 </div>
-                 <p style="margin:12px 0 0;font-size:15px;font-weight:700;color:#198296;text-transform:uppercase;letter-spacing:0.5px;">Aláírás rögzítve</p>
-                 <p style="margin:4px 0 0;font-size:12px;color:#6b8290;">Várakozás a többi aláíróra</p>
-               </div>
+
+               ${this.infoBox('&#128230;', 'Végleges dokumentum', 'Az aláírt szerződés PDF formátumban letölthető a Legitas fiókjából, illetve hamarosan külön emailben is megkapja csatolmányként.', '#f0fdf4', '#bbf7d0')}
+
+               ${this.btnSimple(`${this.frontendUrl}/dashboard`, 'Fiók megnyitása')}
+
+               ${this.hint('A dokumentum SHA-256 hash-sel van hitelesítve, így annak sértetlensége bármikor ellenőrizhető. Javasoljuk, hogy a végleges PDF-et mentse el saját nyilvántartásába is.')}`
+
+            : `${this.signingIcon()}
+               ${this.statusBadge('Aláírás rögzítve', '#198296', '#e0f2fe')}
+               <p style="text-align:center;margin:0 0 28px;font-size:22px;font-weight:800;color:#1e293b;">${params.contractTitle}</p>
+
+               ${this.greeting(params.name)}
+               ${this.text('Az Ön aláírása sikeresen rögzítésre került a fenti szerződésen. A többi aláíró fél értesítése automatikusan megtörtént.')}
+
                ${this.card(`
-                 <p style="margin:0 0 8px;font-size:18px;font-weight:700;color:#1e2e38;">${params.contractTitle}</p>
-                 ${this.meta('Aláírás időpontja', signedDate)}
+                 ${this.metaTable(
+                   this.meta('Dokumentum', `<strong>${params.contractTitle}</strong>`),
+                   this.meta('Aláírás ideje', signedDate),
+                   this.meta('Státusz', '<span style="color:#d97706;font-weight:700;">&#9202; Várakozás a többi aláíróra</span>'),
+                 )}
                `, '#198296')}
-               ${this.text('Az Ön aláírása sikeresen rögzítésre került. A többi aláíró értesítése megtörtént. Amint mindenki aláírta, a végleges dokumentumot emailben kapja meg.')}`,
+
+               ${this.text('Amint az összes fél aláírta a dokumentumot, értesítjük, és a végleges, aláírt szerződést PDF formátumban megkapja emailben.')}
+
+               ${this.infoBox('&#128276;', 'Mi történik ezután?', 'A rendszer automatikusan nyomon követi az aláírásokat, és szükség esetén emlékeztetőt küld a még nem aláírt feleknek. Önnek nincs további teendője.')}
+
+               ${this.btnSimple(`${this.frontendUrl}/dashboard`, 'Fiók megnyitása')}
+
+               ${this.hint('Ha kérdése van a szerződéssel kapcsolatban, forduljon közvetlenül a feladóhoz. A Legitas platform csak a dokumentumkezelést biztosítja.')}`,
           { preheader: params.allSigned ? `Kész! Minden fél aláírta: ${params.contractTitle}` : `Aláírása rögzítve: ${params.contractTitle} — várakozás a többi félre` },
         ),
       });
@@ -236,16 +413,29 @@ export class NotificationsService {
       await this.resend.emails.send({
         from: this.fromEmail,
         to: params.to,
-        subject: `Emlékeztető: Függőben lévő szerződés aláírása`,
+        subject: `Emlékeztető: ${params.contractTitle} aláírásra vár`,
         html: this.wrap(
-          `${this.greeting(params.signerName)}
-           ${this.text(`A(z) <strong>${params.contractTitle}</strong> szerződés még aláírásra vár.`)}
+          `${this.warningIcon()}
+           <p style="text-align:center;margin:0 0 8px;font-size:13px;font-weight:600;color:#d97706;text-transform:uppercase;letter-spacing:1px;">Emlékeztető</p>
+           <p style="text-align:center;margin:0 0 28px;font-size:22px;font-weight:800;color:#1e293b;">${params.contractTitle}</p>
+
+           ${this.greeting(params.signerName)}
+           ${this.text(`Szeretnénk emlékeztetni, hogy a fenti szerződés még <strong>aláírásra vár</strong>. A dokumentum a Legitas platformon keresztül néhány perc alatt aláírható.`)}
+
            ${this.card(`
-             <p style="margin:0 0 4px;font-size:16px;font-weight:700;color:#1e2e38;">${params.contractTitle}</p>
-             ${this.meta('Határidő', params.expiresAt)}
-           `, '#D29B01')}
-           ${this.btn(params.signUrl, 'Aláírás most', '#D29B01')}`,
-          { preheader: `Emlékeztető: ${params.contractTitle} aláírásra vár` },
+             ${this.metaTable(
+               this.meta('Dokumentum', `<strong>${params.contractTitle}</strong>`),
+               this.meta('Határidő', `<span style="color:#d97706;font-weight:700;">${params.expiresAt}</span>`),
+               this.meta('Státusz', '<span style="color:#d97706;font-weight:700;">&#9202; Aláírásra vár</span>'),
+             )}
+           `, '#d97706')}
+
+           ${this.text('Kérjük, kattintson az alábbi gombra a szerződés megtekintéséhez és aláírásához. A folyamat mindössze néhány percet vesz igénybe.')}
+
+           ${this.btn(params.signUrl, '&#9998;  Aláírás most', '#d97706')}
+
+           ${this.hint('Ha már aláírta a szerződést, kérjük hagyja figyelmen kívül ezt az emlékeztetőt. Ha technikai problémába ütközik, próbálja meg másik böngészőben.')}`,
+          { preheader: `Emlékeztető: ${params.contractTitle} még aláírásra vár — kattintson a linkre` },
         ),
       });
     } catch (error) {
@@ -283,14 +473,30 @@ export class NotificationsService {
       await this.resend.emails.send({
         from: this.fromEmail,
         to: params.to,
-        subject: 'Email cím megerősítése – Legitas',
+        subject: 'Erősítse meg email címét – Legitas',
         html: this.wrap(
-          `${this.greeting(params.name)}
-           ${this.text('Köszönjük a regisztrációt a <strong>Legitason</strong>!')}
-           ${this.text('Kérjük, erősítse meg az email címét az alábbi gombra kattintva:')}
-           ${this.btn(params.verifyUrl, 'Email megerősítése')}
-           ${this.hint('Ha nem Ön regisztrált, kérjük hagyja figyelmen kívül. A link 7 napig érvényes.')}`,
-          { preheader: 'Erősítse meg email címét a Legitas fiókjához' },
+          `<div style="text-align:center;margin:20px 0 28px;">
+             <div style="display:inline-block;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#e0f2fe 0%,#bae6fd 100%);text-align:center;line-height:72px;box-shadow:0 4px 16px rgba(25,130,150,0.2);">
+               <span style="font-size:36px;">&#128231;</span>
+             </div>
+           </div>
+           <p style="text-align:center;margin:0 0 8px;font-size:13px;font-weight:600;color:#198296;text-transform:uppercase;letter-spacing:1px;">Email megerősítés</p>
+           <p style="text-align:center;margin:0 0 28px;font-size:22px;font-weight:800;color:#1e293b;">Üdvözöljük a Legitason!</p>
+
+           ${this.greeting(params.name)}
+           ${this.text('Köszönjük, hogy regisztrált a Legitas elektronikus szerződéskezelő platformra! Az induláshoz kérjük, erősítse meg az email címét az alábbi gombra kattintva.')}
+
+           ${this.btnSimple(params.verifyUrl, '&#10003;  Email cím megerősítése')}
+
+           ${this.text('A megerősítés után azonnal használhatja a platformot:')}
+           ${this.stepsList([
+             { icon: '&#128221;', text: 'Szerződések készítése professzionális sablonokból' },
+             { icon: '&#9998;', text: 'Elektronikus aláírás küldése partnereinek' },
+             { icon: '&#128202;', text: 'Szerződések nyomon követése és archiválása' },
+           ])}
+
+           ${this.hint('A megerősítő link 7 napig érvényes. Ha nem Ön regisztrált, kérjük hagyja figyelmen kívül — fiók nem jön létre a megerősítés nélkül.')}`,
+          { preheader: 'Erősítse meg email címét és kezdjen el szerződéseket kezelni a Legitason!' },
         ),
       });
       this.logger.log(`Verification email sent to ${params.to}`);
@@ -311,12 +517,22 @@ export class NotificationsService {
         to: params.to,
         subject: 'Jelszó visszaállítás – Legitas',
         html: this.wrap(
-          `${this.greeting(params.name)}
-           ${this.text('Jelszó-visszaállítási kérelmet kaptunk a fiókjához.')}
-           ${this.text('Az alábbi gombra kattintva állíthat be új jelszót:')}
-           ${this.btn(params.resetUrl, 'Új jelszó beállítása')}
-           ${this.hint('Ha nem Ön kérte, hagyja figyelmen kívül. A link 24 óráig érvényes.')}`,
-          { preheader: 'Jelszó visszaállítás a Legitas fiókjához' },
+          `<div style="text-align:center;margin:20px 0 28px;">
+             <div style="display:inline-block;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%);text-align:center;line-height:72px;box-shadow:0 4px 16px rgba(234,179,8,0.2);">
+               <span style="font-size:36px;">&#128272;</span>
+             </div>
+           </div>
+           <p style="text-align:center;margin:0 0 28px;font-size:22px;font-weight:800;color:#1e293b;">Jelszó visszaállítás</p>
+
+           ${this.greeting(params.name)}
+           ${this.text('Jelszó-visszaállítási kérelmet kaptunk az Ön Legitas fiókjához. Ha Ön kezdeményezte, kattintson az alábbi gombra az új jelszó beállításához.')}
+
+           ${this.btnSimple(params.resetUrl, '&#128272;  Új jelszó beállítása')}
+
+           ${this.infoBox('&#128737;&#65039;', 'Biztonsági tipp', 'Válasszon legalább 8 karakteres jelszót, amely tartalmaz kis- és nagybetűket, számot és speciális karaktert.', '#fefce8', '#fde68a')}
+
+           ${this.hint('Ha nem Ön kérte a jelszó visszaállítását, kérjük hagyja figyelmen kívül ezt az emailt — jelszava változatlan marad. A link 24 óráig érvényes.')}`,
+          { preheader: 'Jelszó visszaállítás a Legitas fiókjához — kattintson a linkre' },
         ),
       });
       this.logger.log(`Password reset email sent to ${params.to}`);
@@ -344,17 +560,35 @@ export class NotificationsService {
         to: params.to,
         subject: `Árajánlat: ${params.quoteTitle} – ${params.senderName}`,
         html: this.wrap(
-          `${this.greeting(params.clientName)}
-           ${this.text(`<strong>${params.senderName}</strong> árajánlatot küldött Önnek:`)}
+          `<div style="text-align:center;margin:20px 0 28px;">
+             <div style="display:inline-block;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#e0f2fe 0%,#bae6fd 100%);text-align:center;line-height:72px;box-shadow:0 4px 16px rgba(25,130,150,0.2);">
+               <span style="font-size:36px;">&#128176;</span>
+             </div>
+           </div>
+           <p style="text-align:center;margin:0 0 8px;font-size:13px;font-weight:600;color:#198296;text-transform:uppercase;letter-spacing:1px;">Árajánlat érkezett</p>
+           <p style="text-align:center;margin:0 0 28px;font-size:22px;font-weight:800;color:#1e293b;">${params.quoteTitle}</p>
+
+           ${this.greeting(params.clientName)}
+           ${this.text(`<strong>${params.senderName}</strong> árajánlatot küldött Önnek a Legitas platformon keresztül. Az ajánlatot online megtekintheti, elfogadhatja vagy visszautasíthatja.`)}
+
            ${this.card(`
-             <p style="margin:0 0 6px;font-size:16px;font-weight:700;color:#1e2e38;">${params.quoteTitle}</p>
-             ${params.quoteNumber ? this.meta('Azonosító', params.quoteNumber) : ''}
-             <p style="margin:8px 0 0;font-size:22px;font-weight:800;color:#198296;">${params.totalAmount}</p>
-             ${params.validUntil ? this.meta('Érvényes', `${params.validUntil}-ig`) : ''}
+             <p style="margin:0 0 12px;font-size:11px;font-weight:700;color:#198296;text-transform:uppercase;letter-spacing:1px;">Ajánlat részletei</p>
+             ${this.metaTable(
+               this.meta('Ajánlat', `<strong>${params.quoteTitle}</strong>`),
+               params.quoteNumber ? this.meta('Azonosító', params.quoteNumber) : '',
+               this.meta('Feladó', params.senderName),
+               params.validUntil ? this.meta('Érvényes', `${params.validUntil}-ig`) : '',
+             )}
+             <div style="margin-top:12px;padding-top:12px;border-top:1px solid #e2e8f0;">
+               <p style="margin:0;font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Összeg</p>
+               <p style="margin:4px 0 0;font-size:28px;font-weight:800;color:#198296;">${params.totalAmount}</p>
+             </div>
            `, '#198296')}
-           ${this.btn(params.viewUrl, 'Ajánlat megtekintése')}
-           ${this.hint('Az ajánlatot online megtekintheti, elfogadhatja vagy visszautasíthatja.')}`,
-          { preheader: `Árajánlat: ${params.quoteTitle} — ${params.totalAmount}` },
+
+           ${this.btn(params.viewUrl, '&#128196;  Ajánlat megtekintése')}
+
+           ${this.hint('Az ajánlatot megtekintés után elfogadhatja vagy visszautasíthatja. Ha kérdése van, forduljon közvetlenül a feladóhoz.')}`,
+          { preheader: `Árajánlat: ${params.quoteTitle} — ${params.totalAmount} — ${params.senderName}` },
         ),
       });
       this.logger.log(`Quote email sent to ${params.to}`);
@@ -375,16 +609,33 @@ export class NotificationsService {
       await this.resend.emails.send({
         from: this.fromEmail,
         to: params.to,
-        subject: `Ajánlat elfogadva: ${params.quoteTitle}`,
+        subject: `Ajánlat elfogadva! – ${params.quoteTitle}`,
         html: this.wrap(
-          `${this.greeting(params.ownerName)}
-           ${this.text(`<strong>${params.clientName}</strong> elfogadta az Ön ajánlatát:`)}
+          `${this.successIcon()}
+           <p style="text-align:center;margin:0 0 8px;font-size:13px;font-weight:600;color:#16a34a;text-transform:uppercase;letter-spacing:1px;">Ajánlat elfogadva</p>
+           <p style="text-align:center;margin:0 0 28px;font-size:22px;font-weight:800;color:#1e293b;">${params.quoteTitle}</p>
+
+           ${this.greeting(params.ownerName)}
+           ${this.text(`Nagyszerű hír! <strong>${params.clientName}</strong> elfogadta az Ön árajánlatát. Javasoljuk, hogy a következő lépésként hozza létre a szerződést az elfogadott ajánlat alapján.`)}
+
            ${this.card(`
-             <p style="margin:0 0 4px;font-size:16px;font-weight:700;color:#166534;">${params.quoteTitle}</p>
-             ${params.quoteNumber ? this.meta('Azonosító', params.quoteNumber) : ''}
-           `, '#22c55e')}
-           ${this.text('Javasoljuk, hogy hozza létre a szerződést az elfogadott ajánlat alapján.')}`,
-          { preheader: `${params.clientName} elfogadta: ${params.quoteTitle}` },
+             ${this.metaTable(
+               this.meta('Ajánlat', `<strong>${params.quoteTitle}</strong>`),
+               params.quoteNumber ? this.meta('Azonosító', params.quoteNumber) : '',
+               this.meta('Ügyfél', params.clientName),
+               this.meta('Státusz', '<span style="color:#16a34a;font-weight:700;">&#10003; Elfogadva</span>'),
+             )}
+           `, '#16a34a')}
+
+           ${this.text('A következő lépésként hozzon létre egy szerződést az elfogadott ajánlat alapján:')}
+           ${this.stepsList([
+             { icon: '1&#65039;&#8419;', text: 'Nyissa meg az ajánlatot a fiókjában' },
+             { icon: '2&#65039;&#8419;', text: 'Kattintson a "Szerződés létrehozása" gombra' },
+             { icon: '3&#65039;&#8419;', text: 'Küldje el aláírásra az ügyfélnek' },
+           ])}
+
+           ${this.btnSimple(`${this.frontendUrl}/quotes`, '&#128196;  Ajánlatok kezelése')}`,
+          { preheader: `${params.clientName} elfogadta az ajánlatát: ${params.quoteTitle}` },
         ),
       });
     } catch (error) {
@@ -404,15 +655,35 @@ export class NotificationsService {
       await this.resend.emails.send({
         from: this.fromEmail,
         to: params.to,
-        subject: `Ajánlat visszautasítva: ${params.quoteTitle}`,
+        subject: `Ajánlat visszautasítva – ${params.quoteTitle}`,
         html: this.wrap(
-          `${this.greeting(params.ownerName)}
-           ${this.text(`<strong>${params.clientName}</strong> visszautasította az ajánlatot:`)}
+          `<div style="text-align:center;margin:20px 0 28px;">
+             <div style="display:inline-block;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#fee2e2 0%,#fecaca 100%);text-align:center;line-height:72px;box-shadow:0 4px 16px rgba(239,68,68,0.2);">
+               <span style="font-size:36px;color:#dc2626;">&#10007;</span>
+             </div>
+           </div>
+           <p style="text-align:center;margin:0 0 8px;font-size:13px;font-weight:600;color:#dc2626;text-transform:uppercase;letter-spacing:1px;">Ajánlat visszautasítva</p>
+           <p style="text-align:center;margin:0 0 28px;font-size:22px;font-weight:800;color:#1e293b;">${params.quoteTitle}</p>
+
+           ${this.greeting(params.ownerName)}
+           ${this.text(`Sajnálattal értesítjük, hogy <strong>${params.clientName}</strong> visszautasította a fenti ajánlatot.`)}
+
            ${this.card(`
-             <p style="margin:0 0 4px;font-size:16px;font-weight:700;color:#991b1b;">${params.quoteTitle}</p>
-             ${params.quoteNumber ? this.meta('Azonosító', params.quoteNumber) : ''}
-             ${params.reason ? `<p style="margin:8px 0 0;font-size:13px;color:#6b8290;"><strong>Indok:</strong> ${params.reason}</p>` : ''}
-           `, '#ef4444')}`,
+             ${this.metaTable(
+               this.meta('Ajánlat', `<strong>${params.quoteTitle}</strong>`),
+               params.quoteNumber ? this.meta('Azonosító', params.quoteNumber) : '',
+               this.meta('Ügyfél', params.clientName),
+               this.meta('Státusz', '<span style="color:#dc2626;font-weight:700;">&#10007; Visszautasítva</span>'),
+             )}
+             ${params.reason ? `<div style="margin-top:12px;padding-top:12px;border-top:1px solid #e2e8f0;">
+               <p style="margin:0 0 4px;font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Indoklás</p>
+               <p style="margin:0;font-size:14px;color:#475569;font-style:italic;">"${params.reason}"</p>
+             </div>` : ''}
+           `, '#ef4444')}
+
+           ${this.text('Lehetősége van módosított ajánlatot küldeni, vagy felvenni a kapcsolatot az ügyféllel a részletek egyeztetése érdekében.')}
+
+           ${this.btnSimple(`${this.frontendUrl}/quotes`, '&#128196;  Ajánlatok kezelése')}`,
           { preheader: `${params.clientName} visszautasította: ${params.quoteTitle}` },
         ),
       });
@@ -431,11 +702,22 @@ export class NotificationsService {
         to: params.to,
         subject: 'Portál hozzáférés – Legitas',
         html: this.wrap(
-          `<p style="margin:0 0 16px;font-size:16px;color:#1e2e38;font-weight:600;">Portál hozzáférés</p>
-           ${this.text('Az alábbi linkre kattintva megtekintheti az Önnek küldött szerződéseket:')}
-           ${this.btn(params.portalUrl, 'Portál megnyitása')}
-           ${this.hint('Ez a link 24 óráig érvényes. Ha nem Ön kérte, kérjük hagyja figyelmen kívül.')}`,
-          { preheader: 'Megtekintheti az Önnek küldött szerződéseket' },
+          `<div style="text-align:center;margin:20px 0 28px;">
+             <div style="display:inline-block;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#e0f2fe 0%,#bae6fd 100%);text-align:center;line-height:72px;box-shadow:0 4px 16px rgba(25,130,150,0.2);">
+               <span style="font-size:36px;">&#128194;</span>
+             </div>
+           </div>
+           <p style="text-align:center;margin:0 0 8px;font-size:13px;font-weight:600;color:#198296;text-transform:uppercase;letter-spacing:1px;">Partner portál</p>
+           <p style="text-align:center;margin:0 0 28px;font-size:22px;font-weight:800;color:#1e293b;">Hozzáférés a szerződéseihez</p>
+
+           ${this.text('Az alábbi gombra kattintva megtekintheti az Önnek küldött szerződéseket. A portálon egy helyen láthatja az összes dokumentumot.')}
+
+           ${this.btnSimple(params.portalUrl, '&#128194;  Portál megnyitása')}
+
+           ${this.infoBox('&#128274;', 'Biztonságos hozzáférés', 'A portál link személyre szól és 24 óráig érvényes. Minden hozzáférés naplózva van a biztonság érdekében.')}
+
+           ${this.hint('Ha nem Ön kérte a portál hozzáférést, kérjük hagyja figyelmen kívül ezt az emailt.')}`,
+          { preheader: 'Megtekintheti az Önnek küldött szerződéseket a Legitas portálon' },
         ),
       });
       this.logger.log(`Portal access token sent to ${params.to}`);
@@ -451,40 +733,37 @@ export class NotificationsService {
     contractTitle: string;
     pdfBuffer: Buffer;
   }) {
-    const signedDate = new Date().toLocaleDateString('hu-HU', { year: 'numeric', month: 'long', day: 'numeric' });
+    const signedDate = new Date().toLocaleDateString('hu-HU', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
     try {
       await this.resend.emails.send({
         from: this.fromEmail,
         to: params.to,
         subject: `Aláírt szerződés kész – ${params.contractTitle}`,
         html: this.wrap(
-          `${this.greeting(params.name)}
-           <div style="text-align:center;margin:16px 0 24px;">
-             <div style="display:inline-block;width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#dcfce7,#bbf7d0);text-align:center;line-height:64px;">
-               <span style="font-size:32px;color:#16a34a;">&#10003;</span>
-             </div>
-             <p style="margin:12px 0 0;font-size:15px;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:0.5px;">Szerződés teljesítve</p>
-             <p style="margin:4px 0 0;font-size:12px;color:#6b8290;">Minden fél sikeresen aláírta</p>
-           </div>
+          `${this.successIcon()}
+           <p style="text-align:center;margin:0 0 8px;font-size:13px;font-weight:600;color:#16a34a;text-transform:uppercase;letter-spacing:1px;">Szerződés teljesítve</p>
+           <p style="text-align:center;margin:0 0 28px;font-size:22px;font-weight:800;color:#1e293b;">${params.contractTitle}</p>
+
+           ${this.greeting(params.name)}
+           ${this.text('A fenti szerződést minden érintett fél sikeresen aláírta. A végleges, aláírt dokumentumot PDF formátumban csatoltuk ehhez az emailhez.')}
+
            ${this.card(`
-             <p style="margin:0 0 2px;font-size:10px;font-weight:600;color:#16a34a;text-transform:uppercase;letter-spacing:0.8px;">Végleges dokumentum</p>
-             <p style="margin:0 0 8px;font-size:18px;font-weight:700;color:#1e2e38;">${params.contractTitle}</p>
-             ${this.meta('Teljesítés dátuma', signedDate)}
+             <p style="margin:0 0 12px;font-size:11px;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:1px;">Végleges dokumentum</p>
+             ${this.metaTable(
+               this.meta('Dokumentum', `<strong>${params.contractTitle}</strong>`),
+               this.meta('Teljesítés', signedDate),
+               this.meta('Státusz', '<span style="color:#16a34a;font-weight:700;">&#10003; Teljesítve</span>'),
+               this.meta('Formátum', 'PDF csatolmány'),
+             )}
            `, '#16a34a')}
-           <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px 18px;margin:20px 0;">
-             <table role="presentation" cellpadding="0" cellspacing="0">
-               <tr>
-                 <td style="vertical-align:top;padding-right:12px;">
-                   <div style="width:36px;height:36px;background:#dcfce7;border-radius:8px;text-align:center;line-height:36px;font-size:16px;">&#128206;</div>
-                 </td>
-                 <td>
-                   <p style="margin:0;font-size:14px;font-weight:600;color:#1e2e38;">PDF csatolmány</p>
-                   <p style="margin:2px 0 0;font-size:12px;color:#6b8290;">A végleges, aláírt szerződés ehhez az emailhez van csatolva. Kérjük, mentse el saját nyilvántartásába.</p>
-                 </td>
-               </tr>
-             </table>
-           </div>
-           ${this.hint('Ez az email a Legitas elektronikus szerződéskezelő platformról lett küldve. A dokumentum SHA-256 hash-sel van hitelesítve.')}`,
+
+           ${this.infoBox('&#128230;', 'PDF csatolmány', 'A végleges, aláírt szerződés ehhez az emailhez van csatolva. Kérjük, töltse le és mentse el saját nyilvántartásába is.', '#f0fdf4', '#bbf7d0')}
+
+           ${this.infoBox('&#128274;', 'Dokumentum hitelesítés', 'A szerződés SHA-256 kriptográfiai hash-sel van hitelesítve. Az eredeti dokumentum sértetlensége bármikor ellenőrizhető a Legitas platformon.', '#f0f9ff', '#bae6fd')}
+
+           ${this.btnSimple(`${this.frontendUrl}/dashboard`, '&#128200;  Fiók megnyitása')}
+
+           ${this.hint('Javasoljuk, hogy a csatolt PDF-et mentse el egy biztonságos helyre. Amennyiben a dokumentumot harmadik fél számára is hozzáférhetővé kell tennie, azt bármikor megteheti a Legitas fiókjából.')}`,
           { preheader: `Kész! ${params.contractTitle} — az aláírt szerződés PDF-ben csatolva` },
         ),
         attachments: [
@@ -507,21 +786,41 @@ export class NotificationsService {
     daysLeft: number;
     contractId: string;
   }) {
-    const urgencyColor = params.daysLeft <= 7 ? '#ef4444' : params.daysLeft <= 14 ? '#D29B01' : '#198296';
+    const urgencyColor = params.daysLeft <= 7 ? '#dc2626' : params.daysLeft <= 14 ? '#d97706' : '#198296';
+    const urgencyBg = params.daysLeft <= 7 ? '#fef2f2' : params.daysLeft <= 14 ? '#fefce8' : '#f0f9ff';
+    const urgencyBorder = params.daysLeft <= 7 ? '#fecaca' : params.daysLeft <= 14 ? '#fde68a' : '#bae6fd';
+    const urgencyLabel = params.daysLeft <= 7 ? 'Sürgős' : params.daysLeft <= 14 ? 'Figyelmeztetés' : 'Értesítés';
+
     try {
       await this.resend.emails.send({
         from: this.fromEmail,
         to: params.to,
-        subject: `Figyelmeztetés: "${params.contractTitle}" ${params.daysLeft} nap múlva lejár`,
+        subject: `${urgencyLabel}: „${params.contractTitle}" ${params.daysLeft} nap múlva lejár`,
         html: this.wrap(
-          `${this.greeting(params.ownerName)}
+          `${params.daysLeft <= 7 ? `<div style="text-align:center;margin:20px 0 28px;">
+             <div style="display:inline-block;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#fee2e2 0%,#fecaca 100%);text-align:center;line-height:72px;box-shadow:0 4px 16px rgba(239,68,68,0.2);">
+               <span style="font-size:36px;">&#9200;</span>
+             </div>
+           </div>` : this.warningIcon()}
+           ${this.statusBadge(`${params.daysLeft} nap van hátra`, urgencyColor, urgencyBg)}
+           <p style="text-align:center;margin:0 0 28px;font-size:22px;font-weight:800;color:#1e293b;">${params.contractTitle}</p>
+
+           ${this.greeting(params.ownerName)}
+           ${this.text(`Szeretnénk felhívni a figyelmét, hogy a fenti szerződés <strong style="color:${urgencyColor};">${params.daysLeft} nap múlva lejár</strong>. Kérjük, ellenőrizze a szerződés státuszát, és szükség esetén intézkedjen.`)}
+
            ${this.card(`
-             <p style="margin:0 0 4px;font-size:16px;font-weight:700;color:#1e2e38;">${params.contractTitle}</p>
-             <p style="margin:4px 0 0;font-size:14px;font-weight:700;color:${urgencyColor};">&#9200; ${params.daysLeft} nap van hátra a lejáratig</p>
+             ${this.metaTable(
+               this.meta('Dokumentum', `<strong>${params.contractTitle}</strong>`),
+               this.meta('Hátralévő idő', `<span style="color:${urgencyColor};font-weight:700;">${params.daysLeft} nap</span>`),
+             )}
            `, urgencyColor)}
-           ${this.text('Kérjük, ellenőrizze a szerződés státuszát, és szükség esetén intézkedjen.')}
-           ${this.btn(`${this.frontendUrl}/contracts/${params.contractId}`, 'Szerződés megtekintése', urgencyColor)}`,
-          { preheader: `${params.contractTitle} — ${params.daysLeft} nap múlva lejár` },
+
+           ${this.infoBox('&#128161;', 'Teendők', 'Ellenőrizze, hogy minden aláíró fél aláírta-e a dokumentumot. Ha szükséges, küldjön emlékeztetőt a még nem aláírt feleknek.', urgencyBg, urgencyBorder)}
+
+           ${this.btnSimple(`${this.frontendUrl}/contracts/${params.contractId}`, '&#128196;  Szerződés megtekintése', urgencyColor)}
+
+           ${this.hint('Ez egy automatikus értesítés a Legitas rendszerből. Az értesítési beállításait a fiókjában módosíthatja.')}`,
+          { preheader: `${params.contractTitle} — ${params.daysLeft} nap múlva lejár — intézkedjen!` },
         ),
       });
     } catch (error) {
