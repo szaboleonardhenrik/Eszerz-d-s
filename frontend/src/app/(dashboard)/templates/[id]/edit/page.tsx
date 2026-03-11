@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
 import { sanitizeHtml } from "@/lib/sanitize";
+import WysiwygEditor from "@/components/wysiwyg-editor";
 
 const categoryOptions = [
   { value: "munkajogi", label: "Munkajogi" },
@@ -274,10 +275,10 @@ export default function EditTemplatePage() {
 
           <div className="bg-white dark:bg-gray-800 rounded-2xl border dark:border-gray-700 p-6">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Tartalom (HTML) *
+              Tartalom *
             </label>
-            <p className="text-xs text-gray-400 mb-2">
-              Használj {"{{valtozo_neve}}"} szintaxist a változókhoz.
+            <p className="text-xs text-gray-400 mb-3">
+              Írja vagy illessze be a szöveget. Változókhoz használja a {"{{valtozo_neve}}"} formátumot, vagy a toolbar változó gombot.
             </p>
 
             {/* HU / EN language toggle */}
@@ -309,19 +310,18 @@ export default function EditTemplatePage() {
             </div>
 
             {contentLang === "hu" ? (
-              <textarea
+              <WysiwygEditor
                 value={contentHtml}
-                onChange={(e) => setContentHtml(e.target.value)}
-                rows={16}
-                className="w-full px-4 py-3 border dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-brand-teal outline-none resize-y font-mono text-sm leading-relaxed dark:bg-gray-900 dark:text-gray-100"
+                onChange={setContentHtml}
+                placeholder="Illessze be a szerződés szövegét vagy kezdjen el írni..."
+                variables={variables.filter((v) => v.name).map((v) => v.name)}
               />
             ) : (
-              <textarea
+              <WysiwygEditor
                 value={contentHtmlEn}
-                onChange={(e) => setContentHtmlEn(e.target.value)}
-                rows={16}
-                placeholder="English version of the template content..."
-                className="w-full px-4 py-3 border dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-brand-teal outline-none resize-y font-mono text-sm leading-relaxed dark:bg-gray-900 dark:text-gray-100"
+                onChange={setContentHtmlEn}
+                placeholder="Paste or type the English version..."
+                variables={variables.filter((v) => v.name).map((v) => v.name)}
               />
             )}
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useEffect } from "react";
 import { sanitizeHtml } from "@/lib/sanitize";
 
 interface WysiwygEditorProps {
@@ -23,13 +23,41 @@ const toolbarButtons = [
   { cmd: "insertUnorderedList", icon: "\u2022", title: "Felsorolás" },
   { cmd: "insertOrderedList", icon: "1.", title: "Számozott lista" },
   { cmd: "separator" },
+  { cmd: "formatBlock_h1", icon: "H1", title: "Főcímsor" },
   { cmd: "formatBlock_h2", icon: "H2", title: "Címsor" },
   { cmd: "formatBlock_h3", icon: "H3", title: "Alcímsor" },
   { cmd: "formatBlock_p", icon: "P", title: "Bekezdés" },
+  { cmd: "separator" },
+  { cmd: "indent", icon: "\u21E5", title: "Behúzás" },
+  { cmd: "outdent", icon: "\u21E4", title: "Behúzás csökkentése" },
+  { cmd: "removeFormat", icon: "\u2718", title: "Formázás törlése" },
 ];
+
+/** Convert plain text to structured HTML paragraphs */
+function plainTextToHtml(text: string): string {
+  return text
+    .split(/\n{2,}/)
+    .map((block) => {
+      const lines = block.trim().split(/\n/);
+      return `<p>${lines.join("<br>")}</p>`;
+    })
+    .filter((p) => p !== "<p></p>")
+    .join("");
+}
 
 export default function WysiwygEditor({ value, onChange, placeholder, variables }: WysiwygEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
+  const isInternalChange = useRef(false);
+
+  // Sync value prop to editor only when it changes externally
+  useEffect(() => {
+    if (editorRef.current && !isInternalChange.current) {
+      if (editorRef.current.innerHTML !== value) {
+        editorRef.current.innerHTML = value;
+      }
+    }
+    isInternalChange.current = false;
+  }, [value]);
 
   const execCmd = useCallback((cmd: string) => {
     if (cmd.startsWith("formatBlock_")) {
@@ -39,6 +67,7 @@ export default function WysiwygEditor({ value, onChange, placeholder, variables 
       document.execCommand(cmd, false);
     }
     if (editorRef.current) {
+      isInternalChange.current = true;
       onChange(editorRef.current.innerHTML);
     }
   }, [onChange]);
@@ -63,32 +92,46 @@ export default function WysiwygEditor({ value, onChange, placeholder, variables 
       sel.addRange(range);
     }
     if (editorRef.current) {
+      isInternalChange.current = true;
       onChange(editorRef.current.innerHTML);
     }
   }, [onChange]);
 
   const handleInput = useCallback(() => {
     if (editorRef.current) {
+      isInternalChange.current = true;
       onChange(editorRef.current.innerHTML);
     }
   }, [onChange]);
 
   const handlePaste = useCallback((e: React.ClipboardEvent) => {
     e.preventDefault();
-    const text = e.clipboardData.getData("text/html") || e.clipboardData.getData("text/plain");
-    document.execCommand("insertHTML", false, sanitizeHtml(text));
+
+    const htmlData = e.clipboardData.getData("text/html");
+    const plainData = e.clipboardData.getData("text/plain");
+
+    if (htmlData) {
+      // HTML paste — sanitize and insert
+      document.execCommand("insertHTML", false, sanitizeHtml(htmlData));
+    } else if (plainData) {
+      // Plain text paste — convert to structured HTML paragraphs
+      const html = plainTextToHtml(plainData);
+      document.execCommand("insertHTML", false, html);
+    }
+
     if (editorRef.current) {
+      isInternalChange.current = true;
       onChange(editorRef.current.innerHTML);
     }
   }, [onChange]);
 
   return (
-    <div className="border rounded-xl overflow-hidden bg-white dark:bg-gray-800">
+    <div className="border border-gray-200 dark:border-gray-600 rounded-xl overflow-hidden bg-white dark:bg-gray-800 shadow-sm">
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-0.5 px-3 py-2 border-b bg-gray-50 dark:bg-gray-700">
+      <div className="flex flex-wrap items-center gap-0.5 px-3 py-2 border-b border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700">
         {toolbarButtons.map((btn, i) => {
           if (btn.cmd === "separator") {
-            return <div key={i} className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1" />;
+            return <div key={i} className="w-px h-6 bg-gray-200 dark:bg-gray-600 mx-0.5" />;
           }
           return (
             <button
@@ -96,7 +139,7 @@ export default function WysiwygEditor({ value, onChange, placeholder, variables 
               type="button"
               onClick={() => execCmd(btn.cmd)}
               title={btn.title}
-              className={`w-8 h-8 flex items-center justify-center rounded text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition ${btn.style || ""}`}
+              className={`w-8 h-8 flex items-center justify-center rounded-md text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white transition-colors ${btn.style || ""}`}
             >
               {btn.icon}
             </button>
@@ -105,7 +148,7 @@ export default function WysiwygEditor({ value, onChange, placeholder, variables 
 
         {variables && variables.length > 0 && (
           <>
-            <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1" />
+            <div className="w-px h-6 bg-gray-200 dark:bg-gray-600 mx-0.5" />
             <select
               onChange={(e) => {
                 if (e.target.value) {
@@ -113,19 +156,19 @@ export default function WysiwygEditor({ value, onChange, placeholder, variables 
                   e.target.value = "";
                 }
               }}
-              className="text-xs px-2 py-1 border rounded bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300"
+              className="text-xs px-2 py-1.5 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer hover:border-[#198296] transition-colors"
               defaultValue=""
             >
-              <option value="" disabled>+ Változó</option>
+              <option value="" disabled>+ Változó beszúrása</option>
               {variables.map((v) => (
-                <option key={v} value={v}>{v}</option>
+                <option key={v} value={v}>{`{{${v}}}`}</option>
               ))}
             </select>
           </>
         )}
       </div>
 
-      {/* Editor */}
+      {/* Editor area */}
       <div
         ref={editorRef}
         contentEditable
@@ -133,8 +176,8 @@ export default function WysiwygEditor({ value, onChange, placeholder, variables 
         onInput={handleInput}
         onPaste={handlePaste}
         dangerouslySetInnerHTML={{ __html: value }}
-        data-placeholder={placeholder || "Kezdjen el írni..."}
-        className="min-h-[300px] max-h-[600px] overflow-y-auto px-6 py-4 text-sm leading-relaxed outline-none focus:ring-2 focus:ring-[#198296] focus:ring-inset empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400 empty:before:pointer-events-none prose prose-sm max-w-none"
+        data-placeholder={placeholder || "Illessze be vagy írja a szöveget..."}
+        className="min-h-[350px] max-h-[600px] overflow-y-auto px-6 py-5 text-sm leading-relaxed text-gray-800 dark:text-gray-100 outline-none focus:ring-2 focus:ring-[#198296]/20 focus:ring-inset empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400 empty:before:pointer-events-none prose prose-sm max-w-none [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mb-3 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:mb-2 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mb-2 [&_p]:mb-2 [&_ul]:pl-5 [&_ol]:pl-5 [&_li]:mb-1"
       />
     </div>
   );
