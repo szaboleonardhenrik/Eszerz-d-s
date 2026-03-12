@@ -76,11 +76,11 @@ export class NotificationsService {
   <title>Legitas</title>
   <!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript><![endif]-->
 </head>
-<body style="margin:0;padding:0;background-color:#f0f4f8;font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;">
+<body style="margin:0;padding:0;background-color:#1e293b;font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;">
   ${preheader ? `<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">${preheader}</div>` : ''}
 
   <!-- Outer wrapper -->
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f0f4f8;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#1e293b;">
     <tr><td align="center" style="padding:40px 16px 32px;">
 
       <!-- Top Logo Banner -->
@@ -188,7 +188,7 @@ export class NotificationsService {
         <!-- Copyright -->
         <tr>
           <td style="padding:0 40px 28px;text-align:center;">
-            <p style="margin:0;font-size:11px;color:#94a3b8;line-height:1.5;">
+            <p style="margin:0;font-size:11px;color:#64748b;line-height:1.5;">
               &copy; ${year} Legitas — Elektronikus szerződéskezelő platform<br>
               Magyar KKV-k számára tervezve
             </p>
@@ -200,46 +200,31 @@ export class NotificationsService {
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin-top:20px;">
         <tr>
           <td>
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#0c4a3e 0%,#134e3a 40%,#115e45 100%);border-radius:12px;overflow:hidden;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#0f172a 0%,#1e293b 50%,#0f172a 100%);border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);">
               <tr>
-                <td style="padding:18px 24px;">
+                <td style="padding:20px 28px;">
                   <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                     <tr>
-                      <td align="center" style="width:33%;padding:0 4px;">
-                        <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
-                          <tr>
-                            <td style="vertical-align:middle;padding-right:6px;">
-                              <div style="width:24px;height:24px;background:rgba(255,255,255,0.12);border-radius:6px;text-align:center;line-height:24px;font-size:12px;">&#128274;</div>
-                            </td>
-                            <td style="vertical-align:middle;">
-                              <p style="margin:0;font-size:11px;font-weight:600;color:#a7f3d0;">SSL titkosítás</p>
-                            </td>
-                          </tr>
-                        </table>
+                      <td align="center" style="width:33%;padding:0 6px;">
+                        <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 8px;">
+                          <div style="width:28px;height:28px;background:rgba(16,185,129,0.15);border-radius:8px;margin:0 auto 6px;text-align:center;line-height:28px;font-size:14px;">&#128274;</div>
+                          <p style="margin:0;font-size:12px;font-weight:700;color:#ffffff;letter-spacing:0.3px;">SSL</p>
+                          <p style="margin:2px 0 0;font-size:10px;color:#94a3b8;">titkosítás</p>
+                        </div>
                       </td>
-                      <td align="center" style="width:33%;padding:0 4px;border-left:1px solid rgba(255,255,255,0.1);border-right:1px solid rgba(255,255,255,0.1);">
-                        <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
-                          <tr>
-                            <td style="vertical-align:middle;padding-right:6px;">
-                              <div style="width:24px;height:24px;background:rgba(255,255,255,0.12);border-radius:6px;text-align:center;line-height:24px;font-size:12px;">&#128737;</div>
-                            </td>
-                            <td style="vertical-align:middle;">
-                              <p style="margin:0;font-size:11px;font-weight:600;color:#a7f3d0;">GDPR</p>
-                            </td>
-                          </tr>
-                        </table>
+                      <td align="center" style="width:33%;padding:0 6px;">
+                        <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 8px;">
+                          <div style="width:28px;height:28px;background:rgba(59,130,246,0.15);border-radius:8px;margin:0 auto 6px;text-align:center;line-height:28px;font-size:14px;">&#128737;</div>
+                          <p style="margin:0;font-size:12px;font-weight:700;color:#ffffff;letter-spacing:0.3px;">GDPR</p>
+                          <p style="margin:2px 0 0;font-size:10px;color:#94a3b8;">megfelelő</p>
+                        </div>
                       </td>
-                      <td align="center" style="width:33%;padding:0 4px;">
-                        <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
-                          <tr>
-                            <td style="vertical-align:middle;padding-right:6px;">
-                              <div style="width:24px;height:24px;background:rgba(255,255,255,0.12);border-radius:6px;text-align:center;line-height:24px;font-size:12px;">&#9989;</div>
-                            </td>
-                            <td style="vertical-align:middle;">
-                              <p style="margin:0;font-size:11px;font-weight:600;color:#a7f3d0;">eIDAS</p>
-                            </td>
-                          </tr>
-                        </table>
+                      <td align="center" style="width:33%;padding:0 6px;">
+                        <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 8px;">
+                          <div style="width:28px;height:28px;background:rgba(168,85,247,0.15);border-radius:8px;margin:0 auto 6px;text-align:center;line-height:28px;font-size:14px;">&#9989;</div>
+                          <p style="margin:0;font-size:12px;font-weight:700;color:#ffffff;letter-spacing:0.3px;">eIDAS</p>
+                          <p style="margin:2px 0 0;font-size:10px;color:#94a3b8;">kompatibilis</p>
+                        </div>
                       </td>
                     </tr>
                   </table>
