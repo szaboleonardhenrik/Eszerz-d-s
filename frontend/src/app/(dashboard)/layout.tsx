@@ -14,6 +14,7 @@ import ChatWidget from "@/components/chat-widget";
 import ConsentUpdateModal from "@/components/consent-update-modal";
 import { useI18n } from "@/lib/i18n";
 import GlobalSearch from "@/components/global-search";
+import MaintenanceBanner from "@/components/maintenance-banner";
 
 const navItemKeys = [
   { href: "/dashboard", labelKey: "nav.home", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" },
@@ -66,6 +67,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <MaintenanceBanner />
       <nav className="bg-gradient-to-r from-brand-teal-dark to-brand-teal border-b border-brand-teal-dark/30 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Top row: logo + actions */}
