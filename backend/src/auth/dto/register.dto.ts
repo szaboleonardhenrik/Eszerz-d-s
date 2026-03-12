@@ -6,8 +6,8 @@ export class RegisterDto {
 
   @IsString()
   @MinLength(8, { message: 'A jelszó legalább 8 karakter legyen' })
-  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/, {
-    message: 'A jelszónak tartalmaznia kell kis- és nagybetűt, valamint számot',
+  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/, {
+    message: 'A jelszónak tartalmaznia kell kis- és nagybetűt, számot, valamint speciális karaktert',
   })
   password: string;
 

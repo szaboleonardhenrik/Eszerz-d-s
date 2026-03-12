@@ -75,10 +75,11 @@ export default function SecuritySettings() {
 
   const strength = useMemo(() => getPasswordStrength(newPassword), [newPassword]);
 
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
   const passwordsMatch = confirmPassword === "" || newPassword === confirmPassword;
   const isValid =
     oldPassword.length > 0 &&
-    newPassword.length >= 8 &&
+    passwordRegex.test(newPassword) &&
     newPassword === confirmPassword;
 
   useEffect(() => {
@@ -285,9 +286,9 @@ export default function SecuritySettings() {
               </p>
             </div>
           )}
-          {newPassword && newPassword.length < 8 && (
+          {newPassword && !passwordRegex.test(newPassword) && (
             <p className="text-xs text-red-500 mt-1">
-              Minimum 8 karakter szükséges
+              A jelszónak tartalmaznia kell kis- és nagybetűt, számot, valamint speciális karaktert (!@#$%... stb.), minimum 8 karakter
             </p>
           )}
         </div>

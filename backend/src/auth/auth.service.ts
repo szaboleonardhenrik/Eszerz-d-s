@@ -301,6 +301,11 @@ export class AuthService {
       throw new BadRequestException('Az új jelszónak legalább 8 karakter hosszúnak kell lennie');
     }
 
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      throw new BadRequestException('A jelszónak tartalmaznia kell kis- és nagybetűt, számot, valamint speciális karaktert');
+    }
+
     const passwordHash = await bcrypt.hash(newPassword, 12);
     await this.prisma.user.update({
       where: { id: userId },
@@ -420,6 +425,11 @@ export class AuthService {
   async resetPassword(resetToken: string, newPassword: string) {
     if (!newPassword || newPassword.length < 8) {
       throw new BadRequestException('A jelszónak legalább 8 karakter hosszúnak kell lennie');
+    }
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      throw new BadRequestException('A jelszónak tartalmaznia kell kis- és nagybetűt, számot, valamint speciális karaktert');
     }
 
     const reset = await this.prisma.passwordReset.findFirst({

@@ -13,7 +13,8 @@ export default function ResetPasswordPage() {
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const isValid = password.length >= 8 && password === confirm;
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+  const isValid = passwordRegex.test(password) && password === confirm;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,8 +57,13 @@ export default function ResetPasswordPage() {
               required
               minLength={8}
               className="w-full px-4 py-2.5 border dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-brand-teal/50 focus:border-brand-teal outline-none transition dark:bg-gray-700 dark:text-gray-100"
-              placeholder="Legalább 8 karakter"
+              placeholder="Min. 8 karakter, kis- és nagybetű, szám, speciális karakter"
             />
+            {password && !passwordRegex.test(password) && (
+              <p className="text-xs text-red-500 dark:text-red-400 mt-1">
+                A jelszónak tartalmaznia kell kis- és nagybetűt, számot, valamint speciális karaktert (!@#$%... stb.)
+              </p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Jelszó megerősítése</label>
