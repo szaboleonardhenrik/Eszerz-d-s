@@ -237,6 +237,8 @@ export class AuthService {
         notifyOnDecline: true,
         notifyOnExpire: true,
         notifyOnComment: true,
+        notifyOnComplete: true,
+        notifyMarketing: true,
         emailDigest: true,
         createdAt: true,
       },
@@ -252,6 +254,8 @@ export class AuthService {
     notifyOnDecline?: boolean;
     notifyOnExpire?: boolean;
     notifyOnComment?: boolean;
+    notifyOnComplete?: boolean;
+    notifyMarketing?: boolean;
     emailDigest?: string;
   }) {
     return this.prisma.user.update({
@@ -270,6 +274,8 @@ export class AuthService {
         notifyOnDecline: true,
         notifyOnExpire: true,
         notifyOnComment: true,
+        notifyOnComplete: true,
+        notifyMarketing: true,
         emailDigest: true,
       },
     });
@@ -548,7 +554,7 @@ export class AuthService {
         phone: true, subscriptionTier: true, role: true, createdAt: true,
         consentGivenAt: true, consentVersion: true,
         notifyOnSign: true, notifyOnDecline: true, notifyOnExpire: true,
-        notifyOnComment: true, emailDigest: true,
+        notifyOnComment: true, notifyOnComplete: true, notifyMarketing: true, emailDigest: true,
         emailVerified: true, twoFactorEnabled: true,
         brandLogoUrl: true, brandColor: true,
       },

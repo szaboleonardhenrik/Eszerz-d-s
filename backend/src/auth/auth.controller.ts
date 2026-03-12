@@ -158,6 +158,8 @@ export class AuthController {
       notifyOnDecline?: boolean;
       notifyOnExpire?: boolean;
       notifyOnComment?: boolean;
+      notifyOnComplete?: boolean;
+      notifyMarketing?: boolean;
       emailDigest?: string;
       brandLogoUrl?: string;
       brandColor?: string;

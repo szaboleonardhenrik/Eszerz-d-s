@@ -25,6 +25,8 @@ model User {
   notifyOnDecline  Boolean    @default(true) @map("notify_on_decline")
   notifyOnExpire   Boolean    @default(true) @map("notify_on_expire")
   notifyOnComment  Boolean    @default(true) @map("notify_on_comment")
+  notifyOnComplete Boolean    @default(true) @map("notify_on_complete")
+  notifyMarketing  Boolean    @default(false) @map("notify_marketing")
   emailDigest      String     @default("instant") @map("email_digest") // instant | daily | weekly | none
   brandLogoUrl     String?    @map("brand_logo_url")
   brandColor       String?    @map("brand_color") // hex color for PDF branding

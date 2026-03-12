@@ -8,6 +8,13 @@ interface User {
   companyName?: string;
   subscriptionTier: string;
   role?: string;
+  notifyOnSign?: boolean;
+  notifyOnDecline?: boolean;
+  notifyOnExpire?: boolean;
+  notifyOnComment?: boolean;
+  notifyOnComplete?: boolean;
+  notifyMarketing?: boolean;
+  emailDigest?: string;
 }
 
 interface AuthState {

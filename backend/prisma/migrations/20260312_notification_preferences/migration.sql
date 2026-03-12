@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "notify_on_complete" BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "notify_marketing" BOOLEAN NOT NULL DEFAULT false;
