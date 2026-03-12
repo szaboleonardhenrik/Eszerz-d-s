@@ -4,6 +4,7 @@ import * as crypto from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { InAppNotificationsService } from '../in-app-notifications/in-app-notifications.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { clearMaintenanceCache } from '../common/maintenance.middleware';
 
 @Injectable()
@@ -12,6 +13,7 @@ export class AdminService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly inAppNotifications: InAppNotificationsService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   // ── System Stats ──
@@ -498,6 +500,15 @@ export class AdminService {
         companyName: true,
         createdAt: true,
       },
+    });
+
+    // Send welcome email with login credentials (fire-and-forget)
+    this.notifications.sendAdminWelcomeEmail({
+      to: data.email,
+      name: data.name,
+      password: data.password,
+      role,
+      tier,
     });
 
     return user;

@@ -677,6 +677,56 @@ export class NotificationsService {
     }
   }
 
+  // ─── ADMIN WELCOME EMAIL ─────────────────────────────
+
+  async sendAdminWelcomeEmail(params: {
+    to: string;
+    name: string;
+    password: string;
+    role: string;
+    tier: string;
+  }) {
+    const roleLabel: Record<string, string> = { superadmin: 'Szuperadmin', employee: 'Munkatárs', user: 'Felhasználó' };
+    const tierLabel: Record<string, string> = { free: 'Ingyenes', starter: 'Kezdő', medium: 'Közepes', premium: 'Prémium', enterprise: 'Nagyvállalati' };
+    const loginUrl = `${this.frontendUrl}/login`;
+
+    try {
+      await this.sendAndLog({
+        from: this.fromEmail,
+        to: params.to,
+        subject: 'Fiókja létrejött – Legitas',
+        html: this.wrap(
+          `<div style="text-align:center;margin:20px 0 28px;">
+             <div style="display:inline-block;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#d1fae5 0%,#6ee7b7 100%);text-align:center;line-height:72px;box-shadow:0 4px 16px rgba(16,185,129,0.2);">
+               <span style="font-size:36px;">&#127881;</span>
+             </div>
+           </div>
+           <p style="text-align:center;margin:0 0 8px;font-size:13px;font-weight:600;color:#198296;text-transform:uppercase;letter-spacing:1px;">Üdvözöljük</p>
+           <p style="text-align:center;margin:0 0 28px;font-size:22px;font-weight:800;color:#1e293b;">Fiókja elkészült!</p>
+
+           ${this.greeting(params.name)}
+           ${this.text('Az adminisztrátor létrehozta az Ön fiókját a Legitas elektronikus szerződéskezelő platformon. Az alábbi adatokkal tud bejelentkezni:')}
+
+           ${this.infoBox('&#128273;', 'Bejelentkezési adatok', `
+             <strong>Email:</strong> ${params.to}<br>
+             <strong>Jelszó:</strong> ${params.password}<br>
+             <strong>Szerepkör:</strong> ${roleLabel[params.role] || params.role}<br>
+             <strong>Csomag:</strong> ${tierLabel[params.tier] || params.tier}
+           `, '#f0fdf4', '#86efac')}
+
+           ${this.btnSimple(loginUrl, '&#128640;  Bejelentkezés')}
+
+           ${this.hint('Kérjük, első bejelentkezés után változtassa meg jelszavát a Beállítások menüben. Ha nem Ön várta ezt az emailt, kérjük hagyja figyelmen kívül.')}`,
+          { preheader: 'Fiókja elkészült a Legitas platformon — jelentkezzen be!' },
+        ),
+      }, { type: 'admin_welcome', userId: undefined });
+      this.logger.log(`Admin welcome email sent to ${params.to}`);
+    } catch (error) {
+      this.logger.error(`Failed to send admin welcome email to ${params.to}`, error);
+      // Don't throw — user creation should succeed even if email fails
+    }
+  }
+
   // ─── QUOTE NOTIFICATIONS ─────────────────────────────
 
   async sendQuoteToClient(params: {
