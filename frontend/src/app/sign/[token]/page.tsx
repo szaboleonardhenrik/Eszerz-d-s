@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import SignaturePad from "signature_pad";
 import axios from "axios";
@@ -17,6 +17,7 @@ interface SignerInfo {
   email: string;
   role: string;
   signingOrder: number;
+  otpVerified: boolean;
 }
 
 interface ContractInfo {
@@ -27,7 +28,7 @@ interface ContractInfo {
   signers: { id: string; name: string; role: string; status: string }[];
 }
 
-type Step = "details" | "review" | "sign";
+type Step = "verify" | "details" | "review" | "sign";
 
 export default function SignPage() {
   const { token } = useParams<{ token: string }>();
@@ -52,8 +53,17 @@ export default function SignPage() {
   const [companyTaxNumber, setCompanyTaxNumber] = useState("");
   const [companyAddress, setCompanyAddress] = useState("");
 
+  // OTP state
+  const [otpCode, setOtpCode] = useState(["", "", "", "", "", ""]);
+  const [otpSending, setOtpSending] = useState(false);
+  const [otpVerifying, setOtpVerifying] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpMaskedEmail, setOtpMaskedEmail] = useState("");
+  const [otpCooldown, setOtpCooldown] = useState(0);
+  const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
   // Step navigation
-  const [currentStep, setCurrentStep] = useState<Step>("details");
+  const [currentStep, setCurrentStep] = useState<Step>("verify");
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const padRef = useRef<SignaturePad | null>(null);
@@ -87,12 +97,24 @@ export default function SignPage() {
     }
   }, [signMethod, currentStep, contract]);
 
+  // OTP cooldown timer
+  useEffect(() => {
+    if (otpCooldown <= 0) return;
+    const t = setTimeout(() => setOtpCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [otpCooldown]);
+
   const loadContract = async () => {
     try {
       const res = await publicApi.get(`/sign/${token}`);
       setContract(res.data.data.contract);
-      setSigner(res.data.data.signer);
-      setSignerFullName(res.data.data.signer.name || "");
+      const signerData = res.data.data.signer;
+      setSigner(signerData);
+      setSignerFullName(signerData.name || "");
+      // If already verified, skip OTP step
+      if (signerData.otpVerified) {
+        setCurrentStep("details");
+      }
     } catch (err: any) {
       setError(
         err.response?.data?.error?.message ??
@@ -100,6 +122,85 @@ export default function SignPage() {
       );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const requestOtp = useCallback(async () => {
+    setOtpSending(true);
+    try {
+      const res = await publicApi.post(`/sign/${token}/request-otp`);
+      const data = res.data.data;
+      if (data.verified) {
+        // Already verified
+        setSigner((s) => s ? { ...s, otpVerified: true } : s);
+        setCurrentStep("details");
+        return;
+      }
+      if (data.maskedEmail) setOtpMaskedEmail(data.maskedEmail);
+      setOtpSent(true);
+      setOtpCooldown(60);
+      setOtpCode(["", "", "", "", "", ""]);
+      toast.success("Hitelesítési kód elküldve");
+      // Focus first input
+      setTimeout(() => otpInputRefs.current[0]?.focus(), 100);
+    } catch (err: any) {
+      toast.error(err.response?.data?.error?.message ?? "Hiba a kód küldésekor");
+    } finally {
+      setOtpSending(false);
+    }
+  }, [token]);
+
+  const verifyOtp = async () => {
+    const code = otpCode.join("");
+    if (code.length !== 6) {
+      toast.error("Kérjük, írja be a teljes 6 jegyű kódot");
+      return;
+    }
+    setOtpVerifying(true);
+    try {
+      await publicApi.post(`/sign/${token}/verify-otp`, { code });
+      setSigner((s) => s ? { ...s, otpVerified: true } : s);
+      toast.success("Email cím sikeresen hitelesítve!");
+      setCurrentStep("details");
+    } catch (err: any) {
+      toast.error(err.response?.data?.error?.message ?? "Hibás kód");
+      setOtpCode(["", "", "", "", "", ""]);
+      otpInputRefs.current[0]?.focus();
+    } finally {
+      setOtpVerifying(false);
+    }
+  };
+
+  const handleOtpChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return;
+    const newCode = [...otpCode];
+    // Handle paste of full code
+    if (value.length > 1) {
+      const digits = value.replace(/\D/g, "").slice(0, 6).split("");
+      for (let i = 0; i < 6; i++) {
+        newCode[i] = digits[i] || "";
+      }
+      setOtpCode(newCode);
+      if (digits.length >= 6) {
+        otpInputRefs.current[5]?.focus();
+      } else {
+        otpInputRefs.current[Math.min(digits.length, 5)]?.focus();
+      }
+      return;
+    }
+    newCode[index] = value;
+    setOtpCode(newCode);
+    if (value && index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === "Backspace" && !otpCode[index] && index > 0) {
+      otpInputRefs.current[index - 1]?.focus();
+    }
+    if (e.key === "Enter") {
+      verifyOtp();
     }
   };
 
@@ -164,6 +265,7 @@ export default function SignPage() {
   };
 
   const steps: { key: Step; label: string }[] = [
+    { key: "verify", label: "Hitelesítés" },
     { key: "details", label: "Adatok" },
     { key: "review", label: "Szerződés" },
     { key: "sign", label: "Aláírás" },
@@ -268,22 +370,23 @@ export default function SignPage() {
       {/* Step indicator */}
       <div className="bg-white border-b shadow-sm">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3">
-          <div className="flex items-center justify-center gap-2">
+          <div className="flex items-center justify-center gap-1 sm:gap-2">
             {steps.map((step, i) => (
               <div key={step.key} className="flex items-center">
                 {i > 0 && (
-                  <div className={`w-8 sm:w-16 h-0.5 mx-1.5 sm:mx-2.5 rounded-full transition-colors ${i <= stepIndex ? "bg-[#198296]" : "bg-gray-200"}`} />
+                  <div className={`w-5 sm:w-12 h-0.5 mx-1 sm:mx-2 rounded-full transition-colors ${i <= stepIndex ? "bg-[#198296]" : "bg-gray-200"}`} />
                 )}
                 <button
                   onClick={() => {
-                    if (step.key === "details") setCurrentStep("details");
-                    else if (step.key === "review" && allFieldsFilled) setCurrentStep("review");
-                    else if (step.key === "sign" && allFieldsFilled && hasRead) setCurrentStep("sign");
+                    if (step.key === "verify") setCurrentStep("verify");
+                    else if (step.key === "details" && signer.otpVerified) setCurrentStep("details");
+                    else if (step.key === "review" && signer.otpVerified && allFieldsFilled) setCurrentStep("review");
+                    else if (step.key === "sign" && signer.otpVerified && allFieldsFilled && hasRead) setCurrentStep("sign");
                   }}
-                  className="flex items-center gap-1.5 sm:gap-2 group"
+                  className="flex items-center gap-1 sm:gap-1.5 group"
                 >
                   <div
-                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                    className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold transition-all ${
                       i < stepIndex
                         ? "bg-[#198296] text-white"
                         : i === stepIndex
@@ -292,7 +395,7 @@ export default function SignPage() {
                     }`}
                   >
                     {i < stepIndex ? (
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                       </svg>
                     ) : (
@@ -300,7 +403,7 @@ export default function SignPage() {
                     )}
                   </div>
                   <span
-                    className={`text-xs sm:text-sm font-medium transition-colors ${
+                    className={`text-[10px] sm:text-sm font-medium transition-colors ${
                       i <= stepIndex ? "text-[#198296]" : "text-gray-400"
                     }`}
                   >
@@ -314,6 +417,138 @@ export default function SignPage() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        {/* ── STEP 0: OTP Verification ── */}
+        {currentStep === "verify" && (
+          <div className="animate-in fade-in duration-300">
+            <div className="mb-6 text-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-[#198296] to-[#0F766E] flex items-center justify-center shadow-lg">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">Email hitelesítés</h2>
+              <p className="text-sm text-gray-500 mt-1.5 max-w-md mx-auto">
+                A biztonságos aláíráshoz szükséges az email címének ellenőrzése.
+                Egy 6 jegyű kódot küldünk az Ön email címére.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden max-w-md mx-auto">
+              <div className="p-6 sm:p-8">
+                {!otpSent ? (
+                  <>
+                    <div className="bg-[#198296]/5 border border-[#198296]/15 rounded-xl p-4 mb-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-[#198296]/10 flex items-center justify-center flex-shrink-0">
+                          <svg className="w-5 h-5 text-[#198296]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                          </svg>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500">Kód küldése erre a címre:</p>
+                          <p className="text-sm font-semibold text-gray-900">{signer.email}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={requestOtp}
+                      disabled={otpSending}
+                      className="w-full px-6 py-3 bg-gradient-to-r from-[#198296] to-[#0F766E] text-white rounded-xl text-sm font-bold hover:shadow-lg disabled:opacity-50 transition-all shadow-sm"
+                    >
+                      {otpSending ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Kód küldése...
+                        </span>
+                      ) : (
+                        "Hitelesítési kód kérése"
+                      )}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-center mb-6">
+                      <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-emerald-100 flex items-center justify-center">
+                        <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76" />
+                        </svg>
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        Kód elküldve: <strong>{otpMaskedEmail}</strong>
+                      </p>
+                    </div>
+
+                    {/* OTP Input */}
+                    <div className="flex justify-center gap-2 sm:gap-3 mb-6">
+                      {otpCode.map((digit, i) => (
+                        <input
+                          key={i}
+                          ref={(el) => { otpInputRefs.current[i] = el; }}
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={6}
+                          value={digit}
+                          onChange={(e) => handleOtpChange(i, e.target.value)}
+                          onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                          onPaste={(e) => {
+                            const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+                            if (pasted.length > 1) {
+                              e.preventDefault();
+                              handleOtpChange(0, pasted);
+                            }
+                          }}
+                          className="w-11 h-14 sm:w-12 sm:h-14 text-center text-xl font-bold border-2 border-gray-200 rounded-xl bg-gray-50/50 focus:border-[#198296] focus:ring-2 focus:ring-[#198296]/10 outline-none transition-all"
+                        />
+                      ))}
+                    </div>
+
+                    <button
+                      onClick={verifyOtp}
+                      disabled={otpVerifying || otpCode.join("").length !== 6}
+                      className="w-full px-6 py-3 bg-gradient-to-r from-[#198296] to-[#0F766E] text-white rounded-xl text-sm font-bold hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm mb-4"
+                    >
+                      {otpVerifying ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Ellenőrzés...
+                        </span>
+                      ) : (
+                        "Kód ellenőrzése"
+                      )}
+                    </button>
+
+                    <div className="text-center">
+                      <button
+                        onClick={requestOtp}
+                        disabled={otpCooldown > 0 || otpSending}
+                        className="text-sm text-[#198296] hover:text-[#146d7d] font-medium disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
+                      >
+                        {otpCooldown > 0
+                          ? `Új kód kérése (${otpCooldown}s)`
+                          : "Új kód kérése"}
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {/* Security note */}
+                <div className="mt-6 bg-gray-50 border border-gray-200 rounded-xl p-3.5">
+                  <div className="flex gap-2.5">
+                    <svg className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    <p className="text-xs text-gray-500 leading-relaxed">
+                      Az email hitelesítés megerősíti, hogy Ön a jogosult aláíró.
+                      Ez növeli az aláírás bizonyító erejét vitás esetben.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ── STEP 1: Partner details ── */}
         {currentStep === "details" && (
           <div className="animate-in fade-in duration-300">
@@ -422,7 +657,7 @@ export default function SignPage() {
             <div
               ref={contentRef}
               onScroll={handleScroll}
-              className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 sm:p-10 mb-5 max-h-[65vh] overflow-y-auto prose prose-sm max-w-none"
+              className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-10 mb-5 max-h-[60vh] overflow-y-auto prose prose-sm max-w-none"
               dangerouslySetInnerHTML={{
                 __html: sanitizeHtml(contract.contentHtml),
               }}
@@ -467,6 +702,16 @@ export default function SignPage() {
               </p>
             </div>
 
+            {/* Verified badge */}
+            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 mb-5 flex items-center gap-2.5">
+              <svg className="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+              <p className="text-sm text-emerald-700 font-medium">
+                Email cím hitelesítve
+              </p>
+            </div>
+
             {/* Summary of partner data */}
             <div className="bg-[#198296]/5 border border-[#198296]/15 rounded-2xl p-5 mb-5">
               <div className="flex items-start justify-between">
@@ -494,7 +739,7 @@ export default function SignPage() {
                 <div className="flex gap-1.5 p-1 bg-gray-100 rounded-xl mb-6 w-fit">
                   <button
                     onClick={() => setSignMethod("draw")}
-                    className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${
+                    className={`px-4 sm:px-5 py-2 rounded-lg text-sm font-medium transition-all ${
                       signMethod === "draw"
                         ? "bg-white text-[#198296] shadow-sm"
                         : "text-gray-500 hover:text-gray-700"
@@ -509,7 +754,7 @@ export default function SignPage() {
                   </button>
                   <button
                     onClick={() => setSignMethod("type")}
-                    className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${
+                    className={`px-4 sm:px-5 py-2 rounded-lg text-sm font-medium transition-all ${
                       signMethod === "type"
                         ? "bg-white text-[#198296] shadow-sm"
                         : "text-gray-500 hover:text-gray-700"
@@ -532,7 +777,7 @@ export default function SignPage() {
                     <div className="relative border-2 border-dashed border-gray-200 rounded-xl overflow-hidden hover:border-[#198296]/40 transition-colors">
                       <canvas
                         ref={canvasRef}
-                        className="w-full h-44 cursor-crosshair"
+                        className="w-full h-36 sm:h-44 cursor-crosshair touch-none"
                       />
                       <button
                         onClick={() => padRef.current?.clear()}
@@ -552,12 +797,12 @@ export default function SignPage() {
                       value={typedName}
                       onChange={(e) => setTypedName(e.target.value)}
                       placeholder={signerFullName}
-                      className="w-full px-5 py-4 border-2 border-dashed border-gray-200 rounded-xl text-2xl font-serif italic text-gray-900 focus:border-[#198296]/40 focus:ring-0 outline-none bg-gray-50/50 transition-colors placeholder:text-gray-300"
+                      className="w-full px-5 py-4 border-2 border-dashed border-gray-200 rounded-xl text-xl sm:text-2xl font-serif italic text-gray-900 focus:border-[#198296]/40 focus:ring-0 outline-none bg-gray-50/50 transition-colors placeholder:text-gray-300"
                     />
                     {typedName && (
                       <div className="mt-3 p-3 bg-gray-50 rounded-lg border">
                         <p className="text-xs text-gray-400 mb-1">Előnézet:</p>
-                        <p className="text-2xl font-serif italic text-gray-900">{typedName}</p>
+                        <p className="text-xl sm:text-2xl font-serif italic text-gray-900">{typedName}</p>
                       </div>
                     )}
                   </div>
@@ -651,7 +896,7 @@ export default function SignPage() {
                   <button
                     onClick={handleSign}
                     disabled={signing || !dataConsent}
-                    className="flex-1 sm:flex-none px-8 py-2.5 bg-gradient-to-r from-[#198296] to-[#0F766E] text-white rounded-xl text-sm font-bold hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
+                    className="flex-1 sm:flex-none px-6 sm:px-8 py-2.5 bg-gradient-to-r from-[#198296] to-[#0F766E] text-white rounded-xl text-sm font-bold hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
                   >
                     {signing ? (
                       <span className="flex items-center justify-center gap-2">

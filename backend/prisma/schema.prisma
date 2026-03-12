@@ -182,6 +182,10 @@ model Contract {
   documentHash     String?   @map("document_hash") // SHA-256 hash of the PDF
   variablesHash    String?   @map("variables_hash") // SHA-256 hash of variables data
   expiresAt        DateTime? @map("expires_at")
+  tsaToken         String?   @map("tsa_token") // RFC 3161 timestamp token (base64 DER)
+  tsaTimestamp     DateTime? @map("tsa_timestamp") // Verified timestamp from TSA
+  tsaAuthority     String?   @map("tsa_authority") // TSA server used
+  tsaSerialNumber  String?   @map("tsa_serial_number")
   createdAt        DateTime  @default(now()) @map("created_at")
   updatedAt        DateTime  @updatedAt @map("updated_at")
 
@@ -222,6 +226,10 @@ model Signer {
   companyTaxNumber  String?   @map("company_tax_number")
   companyAddress    String?   @map("company_address")
   contactId         String?   @map("contact_id")
+  otpCode           String?   @map("otp_code")
+  otpExpiresAt      DateTime? @map("otp_expires_at")
+  otpVerified       Boolean   @default(false) @map("otp_verified")
+  otpAttempts       Int       @default(0) @map("otp_attempts")
   createdAt         DateTime  @default(now()) @map("created_at")
 
   contract  Contract   @relation(fields: [contractId], references: [id])

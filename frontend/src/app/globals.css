@@ -198,9 +198,11 @@ html {
 
 /* ── Mobile optimizations ──────────────────────────────── */
 
-/* Minimum touch target size (44px) */
+/* Minimum touch target size for interactive elements (44px) — limited to standalone controls */
 @media (max-width: 640px) {
-  button, a, select, [role="button"] {
+  button:not(.inline-btn),
+  select,
+  [role="button"]:not(.inline-btn) {
     min-height: 44px;
   }
 
@@ -219,6 +221,11 @@ html {
     display: block;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+  }
+
+  /* Adjust prose tables back to table display inside .prose */
+  .prose table {
+    display: table;
   }
 }
 

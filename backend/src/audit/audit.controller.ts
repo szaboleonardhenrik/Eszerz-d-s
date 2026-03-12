@@ -33,6 +33,17 @@ export class AuditController {
       page ? parseInt(page) : 1,
       limit ? parseInt(limit) : 20,
     );
+
+    // Meta-audit: log that the user accessed audit logs
+    this.auditService.logMetaAudit({
+      userId: req.user.userId,
+      eventType: 'audit_accessed',
+      eventData: { filters: { contractId, eventType, dateFrom, dateTo } },
+      ipAddress: req.ip,
+      userAgent: req.headers?.['user-agent'],
+      contractId,
+    }).catch(() => {}); // fire-and-forget
+
     return ApiResponse.ok(result);
   }
 
@@ -52,6 +63,16 @@ export class AuditController {
       exportFormat,
       { contractId, eventType, dateFrom, dateTo },
     );
+
+    // Meta-audit: log that the user exported audit logs
+    this.auditService.logMetaAudit({
+      userId: req.user.userId,
+      eventType: 'audit_exported',
+      eventData: { format: exportFormat, filters: { contractId, eventType, dateFrom, dateTo } },
+      ipAddress: req.ip,
+      userAgent: req.headers?.['user-agent'],
+      contractId,
+    }).catch(() => {}); // fire-and-forget
 
     const filename = exportFormat === 'json' ? 'audit-naplo.json' : 'audit-naplo.csv';
 
@@ -73,7 +94,16 @@ export class AuditController {
       1,
     );
 
-    // If user has no logs for this contract, they don't own it
+    // Meta-audit: log contract-specific audit access
+    this.auditService.logMetaAudit({
+      userId: req.user.userId,
+      eventType: 'audit_accessed',
+      eventData: { scope: 'contract' },
+      ipAddress: req.ip,
+      userAgent: req.headers?.['user-agent'],
+      contractId,
+    }).catch(() => {}); // fire-and-forget
+
     // Still return logs via the direct method for full data
     const logs = await this.auditService.getByContract(contractId);
     return ApiResponse.ok(logs);

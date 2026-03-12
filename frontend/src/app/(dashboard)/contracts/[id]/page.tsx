@@ -266,6 +266,7 @@ export default function ContractDetailPage() {
   const [showDiff, setShowDiff] = useState(false);
   const [qrSigner, setQrSigner] = useState<{ name: string; token: string } | null>(null);
   const [archiving, setArchiving] = useState(false);
+  const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
   const [cloning, setCloning] = useState(false);
   const [showActions, setShowActions] = useState(false);
   const [addingSelf, setAddingSelf] = useState(false);
@@ -717,7 +718,7 @@ export default function ContractDetailPage() {
                     </button>
                     {!["completed", "cancelled", "archived"].includes(contract.status) && (
                       <button
-                        onClick={() => { handleArchive(); setShowActions(false); }}
+                        onClick={() => { setShowArchiveConfirm(true); setShowActions(false); }}
                         disabled={archiving}
                         className="w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 disabled:opacity-50"
                       >
@@ -1204,6 +1205,48 @@ export default function ContractDetailPage() {
           signerName={qrSigner.name}
           signToken={qrSigner.token}
         />
+      )}
+
+      {/* Archive confirmation dialog */}
+      {showArchiveConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                <svg className="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Szerződés archiválása</h3>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+              Biztosan archiválni szeretné a <strong>&quot;{contract?.title}&quot;</strong> szerződést?
+            </p>
+            <ul className="text-sm text-gray-500 dark:text-gray-400 mb-5 space-y-1 ml-4 list-disc">
+              <li>Az archivált szerződés nem lesz módosítható</li>
+              <li>A függőben lévő aláírási felkérések érvényüket vesztik</li>
+              <li>Később visszaállíthatja az archívumból</li>
+            </ul>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowArchiveConfirm(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
+              >
+                Mégsem
+              </button>
+              <button
+                onClick={() => {
+                  setShowArchiveConfirm(false);
+                  handleArchive();
+                }}
+                disabled={archiving}
+                className="px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-lg hover:bg-amber-700 disabled:opacity-50"
+              >
+                {archiving ? "Archiválás..." : "Archiválás"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

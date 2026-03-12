@@ -13,7 +13,9 @@ export type AuditEventType =
   | 'contract_duplicated'
   | 'contract_updated'
   | 'contract_archived'
-  | 'contract_unarchived';
+  | 'contract_unarchived'
+  | 'audit_accessed'
+  | 'audit_exported';
 
 @Injectable()
 export class AuditService {
@@ -39,6 +41,46 @@ export class AuditService {
         documentHash: params.documentHash,
       },
     });
+  }
+
+  /**
+   * Meta-audit: log who accessed or exported audit logs.
+   * Uses a separate "meta" contract ID convention if no specific contract.
+   */
+  async logMetaAudit(params: {
+    userId: string;
+    eventType: 'audit_accessed' | 'audit_exported';
+    eventData?: any;
+    ipAddress?: string;
+    userAgent?: string;
+    contractId?: string;
+  }) {
+    // If a specific contract is targeted, log against it
+    if (params.contractId) {
+      return this.log({
+        contractId: params.contractId,
+        eventType: params.eventType,
+        eventData: { ...params.eventData, userId: params.userId },
+        ipAddress: params.ipAddress,
+        userAgent: params.userAgent,
+      });
+    }
+    // For general audit access (listing all), we need a contractId
+    // Log against the first contract found for the user, or skip
+    const firstContract = await this.prisma.contract.findFirst({
+      where: { ownerId: params.userId },
+      select: { id: true },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (firstContract) {
+      return this.log({
+        contractId: firstContract.id,
+        eventType: params.eventType,
+        eventData: { ...params.eventData, userId: params.userId, scope: 'all' },
+        ipAddress: params.ipAddress,
+        userAgent: params.userAgent,
+      });
+    }
   }
 
   async getByContract(contractId: string) {
@@ -155,6 +197,8 @@ export class AuditService {
       contract_updated: 'Módosítva',
       contract_archived: 'Archiválva',
       contract_unarchived: 'Visszaállítva',
+      audit_accessed: 'Audit napló megtekintve',
+      audit_exported: 'Audit napló exportálva',
     };
 
     const rows = logs.map((log) => ({

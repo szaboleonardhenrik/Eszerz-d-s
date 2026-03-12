@@ -51,6 +51,23 @@ export class ContractsController {
     return ApiResponse.ok(result);
   }
 
+  @Post('bulk-export')
+  async bulkExport(
+    @Body() body: { contractIds: string[] },
+    @Req() req: any,
+    @Res() res: Response,
+  ) {
+    const zipBuffer = await this.contractsService.bulkExportZip(
+      body.contractIds,
+      req.user.userId,
+    );
+
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', 'attachment; filename="szerzodesek.zip"');
+    res.setHeader('Content-Length', zipBuffer.length);
+    return res.send(zipBuffer);
+  }
+
   @Post('upload-pdf')
   @UseInterceptors(FileInterceptor('file', {
     limits: { fileSize: 10 * 1024 * 1024 }, // 10MB

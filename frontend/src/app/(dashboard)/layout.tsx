@@ -245,40 +245,40 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </>
       )}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-6 sm:py-8 pb-24 lg:pb-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-4 sm:py-8 pb-20 lg:pb-8">
         {children}
       </main>
 
       {/* ── Mobile bottom navigation ── */}
       <div className="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 safe-area-bottom">
-        <div className="flex items-center justify-around px-1 py-1">
+        <div className="flex items-center justify-around px-1 py-1.5">
           {navItemKeys.slice(0, 5).map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center gap-0.5 px-2 py-2 rounded-lg min-w-[56px] transition ${
+                className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg min-w-[52px] transition ${
                   isActive
-                    ? "text-blue-600 dark:text-blue-400"
+                    ? "text-brand-teal-dark dark:text-brand-teal bg-brand-teal-dark/8 dark:bg-brand-teal/10"
                     : "text-gray-500 dark:text-gray-400"
                 }`}
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={isActive ? 2 : 1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
                 </svg>
-                <span className="text-[10px] font-medium leading-none">{t(item.labelKey)}</span>
+                <span className="text-[11px] font-medium leading-none">{t(item.labelKey)}</span>
               </Link>
             );
           })}
           <button
             onClick={() => setMobileNav(!mobileNav)}
-            className="flex flex-col items-center gap-0.5 px-2 py-2 rounded-lg min-w-[56px] text-gray-500 dark:text-gray-400"
+            className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg min-w-[52px] text-gray-500 dark:text-gray-400"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
             </svg>
-            <span className="text-[10px] font-medium leading-none">{t("nav.more")}</span>
+            <span className="text-[11px] font-medium leading-none">{t("nav.more")}</span>
           </button>
         </div>
       </div>

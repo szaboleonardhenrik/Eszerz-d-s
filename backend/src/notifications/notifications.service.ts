@@ -918,4 +918,47 @@ export class NotificationsService {
       this.logger.error(`Failed to send expiry warning to ${params.to}`, error);
     }
   }
+
+  // ─── SIGNER OTP VERIFICATION ────────────────────────────
+  async sendSignerOtp(params: {
+    to: string;
+    signerName: string;
+    otpCode: string;
+    contractTitle: string;
+    expiresInMinutes: number;
+  }) {
+    try {
+      await this.resend.emails.send({
+        from: this.fromEmail,
+        to: params.to,
+        subject: `${params.otpCode} — Hitelesítési kód az aláíráshoz`,
+        html: this.wrap(
+          `${this.greeting(params.signerName)}
+
+           ${this.text('Az alábbi egyszer használatos kóddal hitelesítheti személyazonosságát a szerződés aláírása előtt:')}
+
+           <div style="text-align:center;margin:28px 0;">
+             <div style="display:inline-block;background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border:2px solid #7dd3fc;border-radius:16px;padding:20px 40px;">
+               <p style="margin:0;font-size:36px;font-weight:800;letter-spacing:12px;color:#0c4a6e;font-family:'Courier New',monospace;">${params.otpCode}</p>
+             </div>
+             <p style="margin:10px 0 0;font-size:12px;color:#94a3b8;">A kód <strong>${params.expiresInMinutes} percig</strong> érvényes</p>
+           </div>
+
+           ${this.card(`
+             ${this.metaTable(
+               this.meta('Szerződés', `<strong>${params.contractTitle}</strong>`),
+               this.meta('Email cím', params.to),
+             )}
+           `)}
+
+           ${this.infoBox('&#128274;', 'Biztonsági figyelmeztetés', 'Ha nem Ön kérte ezt a kódot, kérjük hagyja figyelmen kívül ezt az emailt. Soha ne ossza meg a kódot mással.', '#fef3c7', '#fde68a')}
+
+           ${this.hint('Ez egy automatikus üzenet a Legitas e-aláírási rendszeréből. A kód csak egyszer használható.')}`,
+          { preheader: `${params.otpCode} — Hitelesítési kód a(z) ${params.contractTitle} aláírásához` },
+        ),
+      });
+    } catch (error) {
+      this.logger.error(`Failed to send signer OTP to ${params.to}`, error);
+    }
+  }
 }

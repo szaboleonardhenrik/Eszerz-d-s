@@ -16,6 +16,23 @@ export class SignaturesController {
     return ApiResponse.ok(result);
   }
 
+  @Post(':token/request-otp')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  async requestOtp(@Param('token') token: string) {
+    const result = await this.signaturesService.requestOtp(token);
+    return ApiResponse.ok(result);
+  }
+
+  @Post(':token/verify-otp')
+  @Throttle({ default: { limit: 8, ttl: 60000 } })
+  async verifyOtp(
+    @Param('token') token: string,
+    @Body('code') code: string,
+  ) {
+    const result = await this.signaturesService.verifyOtp(token, code);
+    return ApiResponse.ok(result);
+  }
+
   @Post(':token')
   async sign(
     @Param('token') token: string,

@@ -87,6 +87,9 @@ export class PdfService {
       documentHash?: string;
       variablesHash?: string;
       createdAt?: string;
+      tsaTimestamp?: string;
+      tsaAuthority?: string;
+      tsaSerialNumber?: string;
     },
   ): Promise<Buffer> {
     let signatureBlock = '<div class="signatures" style="margin-top:40px;page-break-inside:avoid;">';
@@ -141,6 +144,9 @@ export class PdfService {
       if (docHash) rows.push(`<tr><td style="font-weight:600;">Dokumentum hash</td><td style="font-family:monospace;font-size:10px;word-break:break-all;">${this.escapeHtml(docHash)}</td></tr>`);
       if (auditMeta?.variablesHash) rows.push(`<tr><td style="font-weight:600;">Változók hash</td><td style="font-family:monospace;font-size:10px;word-break:break-all;">${this.escapeHtml(auditMeta.variablesHash)}</td></tr>`);
       rows.push(`<tr><td style="font-weight:600;">Hash algoritmus</td><td>SHA-256</td></tr>`);
+      if (auditMeta?.tsaTimestamp) rows.push(`<tr><td style="font-weight:600;">Hiteles időbélyeg (TSA)</td><td>${this.escapeHtml(auditMeta.tsaTimestamp)}</td></tr>`);
+      if (auditMeta?.tsaAuthority) rows.push(`<tr><td style="font-weight:600;">Időbélyeg szolgáltató</td><td>${this.escapeHtml(auditMeta.tsaAuthority)}</td></tr>`);
+      if (auditMeta?.tsaSerialNumber) rows.push(`<tr><td style="font-weight:600;">TSA sorozatszám</td><td style="font-family:monospace;font-size:10px;">${this.escapeHtml(auditMeta.tsaSerialNumber)}</td></tr>`);
 
       auditBlock = `
         <div style="margin-top:32px;page-break-inside:avoid;border:1px solid #d1d5db;border-radius:8px;overflow:hidden;">

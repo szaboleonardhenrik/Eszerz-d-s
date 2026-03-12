@@ -146,9 +146,9 @@ export default function AdatvedelemPage() {
             <tr><th>Adattípus</th><th>Megőrzési idő</th><th>Jogalap</th></tr>
           </thead>
           <tbody>
-            <tr><td>Felhasználói fiókadatok (név, e-mail, jelszó hash)</td><td>Fiók törléséig + 30 nap</td><td>Szerződés teljesítése</td></tr>
+            <tr><td>Felhasználói fiókadatok (név, e-mail, jelszó hash)</td><td>Fiók törléséig (azonnali törlés)</td><td>Szerződés teljesítése</td></tr>
             <tr><td>Cégnév, adószám, számlázási adatok</td><td>Fiók törléséig + 8 év</td><td>Számviteli tv. (Szt. 169. §)</td></tr>
-            <tr><td>Szerződések tartalma, aláírási adatok</td><td>Fiók törléséig + 30 nap</td><td>Szerződés teljesítése</td></tr>
+            <tr><td>Szerződések tartalma, aláírási adatok</td><td>Fiók törléséig (azonnali törlés)</td><td>Szerződés teljesítése</td></tr>
             <tr><td>Audit napló (IP cím, böngésző, műveletek)</td><td>2 év (utána anonimizálva)</td><td>Jogos érdek</td></tr>
             <tr><td>Partneri adatok (kontaktok)</td><td>Fiók törléséig vagy érintett kéréséig</td><td>Jogos érdek</td></tr>
             <tr><td>AI elemzés eredménye</td><td>Nem tárolódik tartósan (kizárólag megjelenítés idejére)</td><td>Szerződés teljesítése</td></tr>
@@ -156,8 +156,8 @@ export default function AdatvedelemPage() {
           </tbody>
         </table>
         <p>
-          A fiók törlését követően az összes személyes adat <strong>30 napon belül</strong> véglegesen
-          eltávolításra kerül, kivéve azokat az adatokat, amelyek megőrzését jogszabály írja elő
+          A fiók törlését követően az összes személyes adat <strong>azonnal és véglegesen</strong> eltávolításra
+          kerül, kivéve azokat az adatokat, amelyek megőrzését jogszabály írja elő
           (pl. számviteli bizonylatok 8 évig).
         </p>
 

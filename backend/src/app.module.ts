@@ -33,6 +33,7 @@ import { PortalModule } from './portal/portal.module';
 import { AdminModule } from './admin/admin.module';
 import { HealthModule } from './health/health.module';
 import { SearchModule } from './search/search.module';
+import { TsaModule } from './tsa/tsa.module';
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { SearchModule } from './search/search.module';
     AdminModule,
     HealthModule,
     SearchModule,
+    TsaModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

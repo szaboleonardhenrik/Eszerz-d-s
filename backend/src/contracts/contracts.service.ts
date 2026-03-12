@@ -649,6 +649,51 @@ export class ContractsService {
     return { successCount, failureCount, errors };
   }
 
+  async bulkExportZip(contractIds: string[], userId: string): Promise<Buffer> {
+    const archiver = await import('archiver');
+    const { PassThrough } = await import('stream');
+
+    const contracts = await this.prisma.contract.findMany({
+      where: {
+        id: { in: contractIds },
+        ownerId: userId,
+      },
+      select: { id: true, title: true, pdfUrl: true, status: true },
+    });
+
+    if (contracts.length === 0) {
+      throw new NotFoundException('Nem található exportálható szerződés');
+    }
+
+    return new Promise((resolve, reject) => {
+      const chunks: Buffer[] = [];
+      const archive = archiver.default('zip', { zlib: { level: 6 } });
+
+      archive.on('data', (chunk: Buffer) => chunks.push(chunk));
+      archive.on('end', () => resolve(Buffer.concat(chunks)));
+      archive.on('error', (err: Error) => reject(err));
+
+      let index = 0;
+      const addFiles = async () => {
+        for (const contract of contracts) {
+          if (!contract.pdfUrl) continue;
+          try {
+            const pdfBuffer = await this.storageService.downloadFile(contract.pdfUrl);
+            const safeName = contract.title
+              .replace(/[^a-zA-Z0-9áéíóöőúüűÁÉÍÓÖŐÚÜŰ _-]/g, '')
+              .substring(0, 60);
+            archive.append(pdfBuffer, { name: `${++index}_${safeName}.pdf` });
+          } catch {
+            // Skip contracts whose PDF can't be downloaded
+          }
+        }
+        archive.finalize();
+      };
+
+      addFiles().catch(reject);
+    });
+  }
+
   async getDashboardWidgets(userId: string) {
     const now = new Date();
     const sevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -877,6 +922,9 @@ export class ContractsService {
         status: true,
         verificationHash: true,
         createdAt: true,
+        tsaTimestamp: true,
+        tsaAuthority: true,
+        tsaSerialNumber: true,
         signers: {
           select: {
             name: true,
@@ -891,7 +939,16 @@ export class ContractsService {
       throw new NotFoundException('A szerződés nem található vagy érvénytelen.');
     }
 
-    return contract;
+    return {
+      ...contract,
+      tsa: contract.tsaTimestamp
+        ? {
+            timestamp: contract.tsaTimestamp,
+            authority: contract.tsaAuthority,
+            serialNumber: contract.tsaSerialNumber,
+          }
+        : null,
+    };
   }
 
   async getDashboardStats(userId: string) {

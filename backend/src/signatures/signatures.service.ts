@@ -10,9 +10,13 @@ import { StorageService } from '../storage/storage.service';
 import { AuditService } from '../audit/audit.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ContactsService } from '../contacts/contacts.service';
+import { TsaService } from '../tsa/tsa.service';
 import { SignContractDto } from './dto/sign.dto';
 import { ConfigService } from '@nestjs/config';
-import { randomUUID } from 'crypto';
+import { randomUUID, randomInt } from 'crypto';
+
+const OTP_EXPIRY_MINUTES = 10;
+const OTP_MAX_ATTEMPTS = 5;
 
 @Injectable()
 export class SignaturesService {
@@ -23,6 +27,7 @@ export class SignaturesService {
     private readonly auditService: AuditService,
     private readonly notificationsService: NotificationsService,
     private readonly contactsService: ContactsService,
+    private readonly tsaService: TsaService,
     private readonly config: ConfigService,
   ) {}
 
@@ -73,8 +78,102 @@ export class SignaturesService {
         email: signer.email,
         role: signer.role,
         signingOrder: signer.signingOrder,
+        otpVerified: signer.otpVerified,
       },
     };
+  }
+
+  // ─── OTP VERIFICATION ──────────────────────────────────
+  async requestOtp(token: string) {
+    const signer = await this.prisma.signer.findUnique({
+      where: { signToken: token },
+      include: { contract: true },
+    });
+
+    if (!signer) throw new NotFoundException('Érvénytelen aláírási link');
+    if (signer.tokenExpiresAt && signer.tokenExpiresAt < new Date())
+      throw new ForbiddenException('Az aláírási link lejárt');
+    if (signer.status !== 'pending')
+      throw new BadRequestException('Ez az aláírás már nem módosítható');
+
+    // If already verified, no need to send again
+    if (signer.otpVerified) {
+      return { message: 'Email cím már hitelesítve', verified: true };
+    }
+
+    // Rate limit: don't send if last OTP was less than 60 seconds ago
+    if (signer.otpExpiresAt) {
+      const lastSentAt = new Date(signer.otpExpiresAt.getTime() - OTP_EXPIRY_MINUTES * 60000);
+      if (Date.now() - lastSentAt.getTime() < 60000) {
+        return { message: 'Kód elküldve, kérjük várjon', cooldown: true };
+      }
+    }
+
+    // Generate 6-digit OTP
+    const otpCode = String(randomInt(100000, 999999));
+    const otpExpiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60000);
+
+    await this.prisma.signer.update({
+      where: { id: signer.id },
+      data: { otpCode, otpExpiresAt, otpAttempts: 0 },
+    });
+
+    await this.notificationsService.sendSignerOtp({
+      to: signer.email,
+      signerName: signer.name,
+      otpCode,
+      contractTitle: signer.contract.title,
+      expiresInMinutes: OTP_EXPIRY_MINUTES,
+    });
+
+    // Mask email for frontend display
+    const [local, domain] = signer.email.split('@');
+    const maskedEmail = `${local.slice(0, 2)}${'*'.repeat(Math.max(local.length - 2, 2))}@${domain}`;
+
+    return { message: 'Hitelesítési kód elküldve', maskedEmail };
+  }
+
+  async verifyOtp(token: string, code: string) {
+    const signer = await this.prisma.signer.findUnique({
+      where: { signToken: token },
+    });
+
+    if (!signer) throw new NotFoundException('Érvénytelen aláírási link');
+    if (signer.status !== 'pending')
+      throw new BadRequestException('Ez az aláírás már nem módosítható');
+
+    if (signer.otpVerified) {
+      return { verified: true, message: 'Már hitelesítve' };
+    }
+
+    if (signer.otpAttempts >= OTP_MAX_ATTEMPTS) {
+      throw new BadRequestException(
+        'Túl sok sikertelen próbálkozás. Kérjen új kódot.',
+      );
+    }
+
+    if (!signer.otpCode || !signer.otpExpiresAt || signer.otpExpiresAt < new Date()) {
+      throw new BadRequestException('A kód lejárt. Kérjen új kódot.');
+    }
+
+    if (signer.otpCode !== code?.trim()) {
+      await this.prisma.signer.update({
+        where: { id: signer.id },
+        data: { otpAttempts: { increment: 1 } },
+      });
+      const remaining = OTP_MAX_ATTEMPTS - signer.otpAttempts - 1;
+      throw new BadRequestException(
+        `Hibás kód. ${remaining > 0 ? `Még ${remaining} próbálkozása van.` : 'Kérjen új kódot.'}`,
+      );
+    }
+
+    // OTP matches — mark as verified
+    await this.prisma.signer.update({
+      where: { id: signer.id },
+      data: { otpVerified: true, otpCode: null },
+    });
+
+    return { verified: true, message: 'Email cím sikeresen hitelesítve' };
   }
 
   async signContract(
@@ -93,6 +192,13 @@ export class SignaturesService {
       throw new ForbiddenException('Az aláírási link lejárt');
     if (signer.status !== 'pending')
       throw new BadRequestException('Ez az aláírás már nem módosítható');
+
+    // Check OTP verification
+    if (!signer.otpVerified) {
+      throw new BadRequestException(
+        'Az email cím hitelesítése szükséges az aláírás előtt',
+      );
+    }
 
     // Check signing order
     const earlierSigners = signer.contract.signers.filter(
@@ -292,9 +398,46 @@ export class SignaturesService {
       const finalPdfKey = `contracts/signed/${signer.contractId}/final.pdf`;
       await this.storageService.uploadPdf(finalPdfKey, finalPdf);
 
+      // Request TSA timestamp for the signed document
+      let tsaData: { tsaToken?: string; tsaTimestamp?: Date; tsaAuthority?: string; tsaSerialNumber?: string } = {};
+      try {
+        const pdfHash = this.pdfService.hashDocument(finalPdf);
+        const tsaResult = await this.tsaService.requestTimestamp(pdfHash);
+        tsaData = {
+          tsaToken: tsaResult.token,
+          tsaTimestamp: tsaResult.timestamp,
+          tsaAuthority: tsaResult.authority,
+          tsaSerialNumber: tsaResult.serialNumber,
+        };
+
+        // Re-generate PDF with TSA info embedded in audit block
+        const auditMetaWithTsa = {
+          registrationNumber: (signer.contract as any).registrationNumber ?? undefined,
+          documentHash: (signer.contract as any).documentHash ?? documentHash,
+          variablesHash: (signer.contract as any).variablesHash ?? undefined,
+          createdAt: signer.contract.createdAt?.toLocaleDateString('hu-HU') ?? undefined,
+          tsaTimestamp: tsaResult.timestamp.toLocaleString('hu-HU', { timeZone: 'Europe/Budapest' }),
+          tsaAuthority: tsaResult.authority,
+          tsaSerialNumber: tsaResult.serialNumber,
+        };
+
+        const finalPdfWithTsa = await this.pdfService.addSignatureToPdf(
+          signer.contract.contentHtml,
+          signer.contract.title,
+          signaturesWithImages,
+          undefined,
+          (signer.contract as any).verificationHash ?? undefined,
+          auditMetaWithTsa,
+        );
+        await this.storageService.uploadPdf(finalPdfKey, finalPdfWithTsa);
+      } catch (err) {
+        // TSA is non-critical — log but don't block the signing
+        console.error('TSA timestamp request failed:', err?.message);
+      }
+
       await this.prisma.contract.update({
         where: { id: signer.contractId },
-        data: { status: 'completed', pdfUrl: finalPdfKey },
+        data: { status: 'completed', pdfUrl: finalPdfKey, ...tsaData },
       });
     } else {
       await this.prisma.contract.update({

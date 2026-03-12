@@ -15,6 +15,11 @@ interface VerificationData {
     status: string;
     signedAt: string | null;
   }[];
+  tsa?: {
+    timestamp: string;
+    authority: string;
+    serialNumber: string;
+  } | null;
 }
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; darkBg: string; darkColor: string }> = {
@@ -204,6 +209,36 @@ export default function VerifyPage() {
                 ))}
               </div>
             </div>
+
+            {/* TSA Timestamp */}
+            {data.tsa && (
+              <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <label className="text-xs font-medium text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
+                    Hiteles idobélyeg (TSA)
+                  </label>
+                </div>
+                <div className="space-y-1.5 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Idopont:</span>
+                    <span className="font-medium text-gray-800 dark:text-gray-200">
+                      {new Date(data.tsa.timestamp).toLocaleString("hu-HU")}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Szolgaltato:</span>
+                    <span className="font-medium text-gray-800 dark:text-gray-200">{data.tsa.authority}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Sorozatszam:</span>
+                    <span className="font-mono text-xs text-gray-600 dark:text-gray-400">{data.tsa.serialNumber}</span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Verification Hash */}
             <div>

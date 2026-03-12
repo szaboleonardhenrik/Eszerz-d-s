@@ -547,10 +547,26 @@ function CreateWizardInner() {
               <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${theme.bg} flex items-center justify-center`}>
                 <Ico d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" className="text-white" />
               </div>
-              <div>
+              <div className="flex-1 min-w-0">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{selectedTemplate.name}</h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Töltsd ki a szerződés adatait</p>
               </div>
+              {/* Progress indicator */}
+              {(() => {
+                const total = selectedTemplate.variables.filter((v) => v.required).length;
+                const filled = selectedTemplate.variables.filter((v) => v.required && (variables[v.name] ?? "").trim() !== "").length;
+                const pct = total > 0 ? Math.round((filled / total) * 100) : 100;
+                return (
+                  <div className="hidden sm:flex items-center gap-2.5 shrink-0">
+                    <div className="w-20 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full transition-all duration-500 ${pct === 100 ? "bg-emerald-500" : "bg-[#198296]"}`} style={{ width: `${pct}%` }} />
+                    </div>
+                    <span className={`text-xs font-semibold tabular-nums ${pct === 100 ? "text-emerald-600 dark:text-emerald-400" : "text-gray-500 dark:text-gray-400"}`}>
+                      {filled}/{total}
+                    </span>
+                  </div>
+                );
+              })()}
             </div>
 
             {(() => {
@@ -573,30 +589,113 @@ function CreateWizardInner() {
                 />
               </div>
 
-              {selectedTemplate.variables.map((v, i) => (
-                <div key={v.name}>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                    {v.label} {v.required && <span className="text-red-400">*</span>}
-                  </label>
-                  {v.type === "textarea" ? (
-                    <textarea
-                      value={variables[v.name] ?? ""}
-                      onChange={(e) => setVariables((prev) => ({ ...prev, [v.name]: e.target.value }))}
-                      rows={3}
-                      required={v.required}
-                      className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-violet-500 outline-none resize-y shadow-sm"
-                    />
-                  ) : (
-                    <input
-                      type={v.type === "number" ? "number" : v.type === "date" ? "date" : "text"}
-                      value={variables[v.name] ?? ""}
-                      onChange={(e) => setVariables((prev) => ({ ...prev, [v.name]: e.target.value }))}
-                      required={v.required}
-                      className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-violet-500 outline-none shadow-sm"
-                    />
-                  )}
-                </div>
-              ))}
+              {/* Group variables by prefix for better UX */}
+              {(() => {
+                const groupLabels: Record<string, string> = {
+                  munkaltato: "Munkáltató adatai",
+                  munkavalallo: "Munkavállaló adatai",
+                  megbizo: "Megbízó adatai",
+                  megbizott: "Megbízott adatai",
+                  berleti: "Bérleti adatok",
+                  berlo: "Bérlő adatai",
+                  beado: "Bérbeadó adatai",
+                  elado: "Eladó adatai",
+                  vevo: "Vevő adatai",
+                  szallito: "Szállító adatai",
+                  szolgaltato: "Szolgáltató adatai",
+                  ugyfel: "Ügyfél adatai",
+                };
+                const placeholders: Record<string, string> = {
+                  adoszam: "pl. 12345678-1-42",
+                  adoszama: "pl. 12345678-1-42",
+                  taj: "pl. 123-456-789",
+                  lakcim: "pl. 1052 Budapest, Váci utca 1.",
+                  lakcime: "pl. 1052 Budapest, Váci utca 1.",
+                  cime: "pl. 1052 Budapest, Váci utca 1.",
+                  cim: "pl. 1052 Budapest, Váci utca 1.",
+                  szekhely: "pl. 1052 Budapest, Váci utca 1.",
+                  szekhelye: "pl. 1052 Budapest, Váci utca 1.",
+                  neve: "pl. Kovács János / Példa Kft.",
+                  nev: "pl. Kovács János",
+                  email: "pl. pelda@ceg.hu",
+                  telefon: "pl. +36 30 123 4567",
+                  ber: "pl. 500 000",
+                  alapber: "pl. 500 000",
+                  dij: "pl. 100 000",
+                  osszeg: "pl. 1 000 000",
+                  ar: "pl. 50 000",
+                };
+
+                const getPlaceholder = (name: string, label: string): string => {
+                  const lower = name.toLowerCase();
+                  for (const [key, val] of Object.entries(placeholders)) {
+                    if (lower.endsWith(key) || lower.includes(key)) return val;
+                  }
+                  return "";
+                };
+
+                const getGroup = (name: string): string | null => {
+                  const lower = name.toLowerCase();
+                  for (const prefix of Object.keys(groupLabels)) {
+                    if (lower.startsWith(prefix)) return prefix;
+                  }
+                  return null;
+                };
+
+                // Build ordered groups
+                const groups: { key: string | null; label: string | null; vars: TemplateVar[] }[] = [];
+                let currentGroup: string | null = null;
+
+                for (const v of selectedTemplate.variables) {
+                  const g = getGroup(v.name);
+                  if (g !== currentGroup) {
+                    currentGroup = g;
+                    groups.push({ key: g, label: g ? groupLabels[g] ?? null : null, vars: [v] });
+                  } else {
+                    groups[groups.length - 1].vars.push(v);
+                  }
+                }
+
+                return groups.map((group, gi) => (
+                  <div key={gi}>
+                    {group.label && (
+                      <div className="flex items-center gap-2 mt-4 mb-2 first:mt-0">
+                        <div className="h-px flex-1 bg-gray-100 dark:bg-gray-700" />
+                        <span className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 px-1">
+                          {group.label}
+                        </span>
+                        <div className="h-px flex-1 bg-gray-100 dark:bg-gray-700" />
+                      </div>
+                    )}
+                    {group.vars.map((v) => (
+                      <div key={v.name} className="mt-3 first:mt-0">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                          {v.label} {v.required && <span className="text-red-400">*</span>}
+                        </label>
+                        {v.type === "textarea" ? (
+                          <textarea
+                            value={variables[v.name] ?? ""}
+                            onChange={(e) => setVariables((prev) => ({ ...prev, [v.name]: e.target.value }))}
+                            rows={3}
+                            required={v.required}
+                            placeholder={getPlaceholder(v.name, v.label)}
+                            className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-violet-500 outline-none resize-y shadow-sm placeholder:text-gray-300 dark:placeholder:text-gray-600"
+                          />
+                        ) : (
+                          <input
+                            type={v.type === "number" ? "number" : v.type === "date" ? "date" : "text"}
+                            value={variables[v.name] ?? ""}
+                            onChange={(e) => setVariables((prev) => ({ ...prev, [v.name]: e.target.value }))}
+                            required={v.required}
+                            placeholder={v.type !== "date" ? getPlaceholder(v.name, v.label) : undefined}
+                            className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-violet-500 outline-none shadow-sm placeholder:text-gray-300 dark:placeholder:text-gray-600"
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ));
+              })()}
             </div>
 
             <div className="flex gap-3 mt-6">
