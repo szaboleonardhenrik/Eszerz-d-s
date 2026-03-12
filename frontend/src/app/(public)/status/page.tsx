@@ -50,7 +50,9 @@ export default function StatusPage() {
     setLoading(true);
     const start = Date.now();
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/api/health`, {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+      const url = apiBase.endsWith("/api") ? `${apiBase}/health` : `${apiBase}/api/health`;
+      const res = await fetch(url, {
         cache: "no-store",
       });
       const data = await res.json();
