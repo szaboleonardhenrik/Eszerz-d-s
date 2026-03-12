@@ -3,11 +3,13 @@ import { AiService } from './ai.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { FeatureFlagGuard, RequireFeature } from '../common/feature-flag.guard';
+import { EmailVerifiedGuard, RequireVerifiedEmail } from '../common/email-verified.guard';
 import { ApiResponse } from '../common/api-response';
 
 @Controller('ai')
-@UseGuards(JwtAuthGuard, FeatureFlagGuard)
+@UseGuards(JwtAuthGuard, FeatureFlagGuard, EmailVerifiedGuard)
 @RequireFeature('ai_analysis')
+@RequireVerifiedEmail()
 export class AiController {
   constructor(
     private readonly aiService: AiService,

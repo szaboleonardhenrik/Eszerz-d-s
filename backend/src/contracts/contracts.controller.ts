@@ -18,11 +18,12 @@ import { ContractsService } from './contracts.service';
 import { CreateContractDto } from './dto/create-contract.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { FeatureFlagGuard, RequireFeature } from '../common/feature-flag.guard';
+import { EmailVerifiedGuard, RequireVerifiedEmail } from '../common/email-verified.guard';
 import { ApiResponse } from '../common/api-response';
 import { StorageService } from '../storage/storage.service';
 
 @Controller('contracts')
-@UseGuards(JwtAuthGuard, FeatureFlagGuard)
+@UseGuards(JwtAuthGuard, FeatureFlagGuard, EmailVerifiedGuard)
 export class ContractsController {
   constructor(
     private readonly contractsService: ContractsService,
@@ -30,6 +31,7 @@ export class ContractsController {
   ) {}
 
   @Post()
+  @RequireVerifiedEmail()
   async create(@Body() dto: CreateContractDto, @Req() req: any) {
     try {
       const contract = await this.contractsService.create(dto, req.user.userId);
@@ -102,6 +104,7 @@ export class ContractsController {
   }
 
   @Post(':id/send')
+  @RequireVerifiedEmail()
   async sendForSigning(@Param('id') id: string, @Req() req: any) {
     const result = await this.contractsService.sendForSigning(
       id,

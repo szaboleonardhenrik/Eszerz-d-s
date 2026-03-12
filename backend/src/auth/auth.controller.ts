@@ -13,7 +13,7 @@ const COOKIE_OPTIONS = (isProduction: boolean) => ({
   secure: isProduction,
   sameSite: 'lax' as const,
   path: '/',
-  maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 });
 
 @Controller('auth')

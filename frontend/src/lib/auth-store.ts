@@ -70,7 +70,16 @@ export const useAuth = create<AuthState>((set) => ({
     try {
       // httpOnly cookie is sent automatically via withCredentials.
       const res = await api.get('/auth/profile');
-      set({ user: res.data.data, token: null, loading: false });
+      const profile = res.data.data;
+      // If consentVersion is missing (e.g. Google OAuth new user), prompt consent modal
+      const needsConsent = !profile.consentVersion;
+      set({
+        user: profile,
+        token: null,
+        loading: false,
+        requiresConsentUpdate: needsConsent,
+        consentVersion: profile.consentVersion || null,
+      });
     } catch {
       set({ user: null, token: null, loading: false });
     }

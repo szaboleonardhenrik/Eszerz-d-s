@@ -12,7 +12,9 @@ import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { TOTP, generateSecret, generateURI, verifySync } from 'otplib';
 import * as QRCode from 'qrcode';
+import Stripe from 'stripe';
 import { PrismaService } from '../prisma/prisma.service';
+import { encrypt, decrypt } from '../common/encryption.util';
 import { NotificationsService } from '../notifications/notifications.service';
 import { StorageService } from '../storage/storage.service';
 import { RegisterDto } from './dto/register.dto';
@@ -144,7 +146,8 @@ export class AuthService {
           data: { googleId: profile.googleId, oauthProvider: 'google' },
         });
       } else {
-        // Create new user
+        // Create new user — consent fields are NOT set here;
+        // the consent-update modal will prompt on first dashboard load.
         user = await this.prisma.user.create({
           data: {
             email: profile.email,
@@ -154,9 +157,6 @@ export class AuthService {
             passwordHash: '',
             emailVerified: true,
             avatarUrl: profile.avatarUrl || null,
-            consentGivenAt: new Date(),
-            consentVersion: CURRENT_CONSENT_VERSION,
-            consentIp: ip || null,
           },
         });
       }
@@ -181,7 +181,8 @@ export class AuthService {
     if (!user || !user.twoFactorSecret) throw new UnauthorizedException('2FA nincs beállítva');
 
     // Try TOTP code first
-    const isValid = verifySync({ token: code, secret: user.twoFactorSecret });
+    const totpSecret = this.decryptTotpSecret(user.twoFactorSecret);
+    const isValid = verifySync({ token: code, secret: totpSecret });
 
     if (!isValid) {
       // Try backup codes
@@ -242,6 +243,7 @@ export class AuthService {
         notifyOnComplete: true,
         notifyMarketing: true,
         emailDigest: true,
+        consentVersion: true,
         createdAt: true,
       },
     });
@@ -460,10 +462,11 @@ export class AuthService {
     const otpAuthUrl = generateURI({ issuer: 'Legitas', label: user.email, secret });
     const qrCodeDataUrl = await QRCode.toDataURL(otpAuthUrl);
 
-    // Store secret temporarily (not enabled yet until verify)
+    // Store secret encrypted (not enabled yet until verify)
+    const encryptedSecret = encrypt(secret);
     await this.prisma.user.update({
       where: { id: userId },
-      data: { twoFactorSecret: secret },
+      data: { twoFactorSecret: encryptedSecret },
     });
 
     return { qrCode: qrCodeDataUrl, secret, manualEntry: secret };
@@ -473,7 +476,8 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user || !user.twoFactorSecret) throw new BadRequestException('Először állítsa be a 2FA-t');
 
-    const isValid = verifySync({ token: code, secret: user.twoFactorSecret });
+    const secret = this.decryptTotpSecret(user.twoFactorSecret);
+    const isValid = verifySync({ token: code, secret });
     if (!isValid) throw new UnauthorizedException('Érvénytelen kód');
 
     // Generate backup codes
@@ -548,6 +552,16 @@ export class AuthService {
     await Promise.allSettled(
       fileKeys.map(key => this.storageService.deleteFile(key)),
     );
+
+    // Delete Stripe customer if exists (best-effort, don't block account deletion)
+    if (user.stripeCustomerId && this.config.get<string>('STRIPE_SECRET_KEY')) {
+      try {
+        const stripe = new Stripe(this.config.get<string>('STRIPE_SECRET_KEY', ''));
+        await stripe.customers.del(user.stripeCustomerId);
+      } catch (err) {
+        // Log but don't block account deletion
+      }
+    }
 
     // Delete in order respecting foreign keys
     await this.prisma.$transaction([
@@ -698,6 +712,18 @@ export class AuthService {
     });
   }
 
+  /**
+   * Decrypt a TOTP secret, with backwards compatibility for old plaintext secrets.
+   */
+  private decryptTotpSecret(storedSecret: string): string {
+    try {
+      return decrypt(storedSecret);
+    } catch {
+      // Backwards compatibility: if decryption fails, assume it's an old plaintext secret
+      return storedSecret;
+    }
+  }
+
   hashToken(token: string): string {
     return crypto.createHash('sha256').update(token).digest('hex');
   }
@@ -716,7 +742,7 @@ export class AuthService {
   private async createSession(userId: string, token: string, ip?: string, userAgent?: string) {
     const tokenHash = this.hashToken(token);
     const device = this.parseDevice(userAgent);
-    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
     await this.prisma.session.create({
       data: {

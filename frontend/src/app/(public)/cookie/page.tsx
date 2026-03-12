@@ -89,6 +89,30 @@ export default function CookiePage() {
           </tbody>
         </table>
 
+        <h3>3.1. Cloudflare cookie-k</h3>
+        <p>
+          A Cloudflare az alábbi sütiket helyezheti el:
+        </p>
+        <ul>
+          <li><strong>__cf_bm:</strong> Bot-felismerő süti (élettartam: 30 perc)</li>
+          <li><strong>cf_clearance:</strong> Biztonsági ellenőrzés eredménye (élettartam: max. 15 perc)</li>
+        </ul>
+        <p>
+          Ezek a sütik a weboldal biztonsága érdekében szükségesek és nem igényelnek hozzájárulást.
+        </p>
+
+        <h3>3.2. Stripe cookie-k</h3>
+        <p>
+          A Stripe fizetési szolgáltató az alábbi sütiket használhatja a fizetési oldalon:
+        </p>
+        <ul>
+          <li><strong>__stripe_mid:</strong> Eszközazonosító a csalásmegelőzéshez (élettartam: 1 év)</li>
+          <li><strong>__stripe_sid:</strong> Munkamenet-azonosító (élettartam: 30 perc)</li>
+        </ul>
+        <p>
+          Ezek kizárólag a fizetési tranzakció során aktívak és a PCI DSS szabvány részét képezik.
+        </p>
+
         <h2>4. Cookie-k kezelése</h2>
         <p>A cookie-k kezelésére az alábbi lehetőségeid vannak:</p>
 

@@ -187,8 +187,16 @@ export default function AszfPage() {
         </p>
         <ul>
           <li><strong>Nemzeti Fogyasztóvédelmi Hatóság</strong> (fogyasztovedelem.kormany.hu)</li>
-          <li><strong>Budapesti Békéltető Testület</strong> (1016 Budapest, Krisztina krt. 99.)</li>
-          <li><strong>Online vitarendezési platform:</strong> https://ec.europa.eu/consumers/odr</li>
+          <li>
+            <strong>Budapesti Békéltető Testület</strong><br />
+            Cím: 1016 Budapest, Krisztina krt. 99. III. em. 310.<br />
+            Telefon: +36 1 488 2131<br />
+            E-mail: bekelteto.testulet@bkik.hu<br />
+            Web: <a href="https://bekeltet.bkik.hu">https://bekeltet.bkik.hu</a>
+          </li>
+          <li><strong>Online vitarendezési (ODR) platform:</strong>{" "}
+            <a href="https://ec.europa.eu/consumers/odr">https://ec.europa.eu/consumers/odr</a>
+          </li>
         </ul>
 
         <h2>12. Felmondás és adattörlés</h2>
