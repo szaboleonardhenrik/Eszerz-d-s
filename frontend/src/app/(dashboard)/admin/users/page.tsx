@@ -73,6 +73,16 @@ export default function AdminUsersPage() {
   const [editRole, setEditRole] = useState("");
   const [editTier, setEditTier] = useState("");
   const [saving, setSaving] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "user",
+    subscriptionTier: "free",
+    companyName: "",
+  });
+  const [creating, setCreating] = useState(false);
   const limit = 20;
 
   const isSuperadmin = user?.role === "superadmin";
@@ -123,6 +133,28 @@ export default function AdminUsersPage() {
       toast.error(err.response?.data?.error?.message || "Hiba történt");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleCreate = async () => {
+    if (!createForm.name || !createForm.email || !createForm.password) {
+      toast.error("Név, email és jelszó kötelező");
+      return;
+    }
+    setCreating(true);
+    try {
+      await api.post("/admin/users", {
+        ...createForm,
+        companyName: createForm.companyName || undefined,
+      });
+      toast.success("Felhasználó létrehozva");
+      setShowCreate(false);
+      setCreateForm({ name: "", email: "", password: "", role: "user", subscriptionTier: "free", companyName: "" });
+      loadUsers();
+    } catch (err: any) {
+      toast.error(err.response?.data?.error?.message || "Hiba történt");
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -192,7 +224,18 @@ export default function AdminUsersPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 w-full sm:w-auto">
+        <div className="flex items-center gap-3 w-full sm:w-auto flex-wrap">
+          {isSuperadmin && (
+            <button
+              onClick={() => setShowCreate(true)}
+              className="px-4 py-2.5 bg-violet-600 text-white text-sm font-medium rounded-xl hover:bg-violet-700 transition flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Új felhasználó
+            </button>
+          )}
           {/* Role filter */}
           <select
             value={roleFilter}
@@ -220,6 +263,103 @@ export default function AdminUsersPage() {
           </div>
         </div>
       </div>
+
+      {/* Create User Modal */}
+      {showCreate && (
+        <>
+          <div className="fixed inset-0 bg-black/40 z-50" onClick={() => setShowCreate(false)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Új felhasználó regisztrálása</h2>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Név *</label>
+                  <input
+                    type="text"
+                    value={createForm.name}
+                    onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-violet-500 outline-none"
+                    placeholder="Teljes név"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Email *</label>
+                  <input
+                    type="email"
+                    value={createForm.email}
+                    onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-violet-500 outline-none"
+                    placeholder="email@pelda.hu"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Jelszó *</label>
+                  <input
+                    type="password"
+                    value={createForm.password}
+                    onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-violet-500 outline-none"
+                    placeholder="Min. 6 karakter"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Cégnév</label>
+                  <input
+                    type="text"
+                    value={createForm.companyName}
+                    onChange={(e) => setCreateForm({ ...createForm, companyName: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-violet-500 outline-none"
+                    placeholder="Opcionális"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Szerepkör</label>
+                    <select
+                      value={createForm.role}
+                      onChange={(e) => setCreateForm({ ...createForm, role: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-violet-500 outline-none"
+                    >
+                      <option value="user">Felhasználó</option>
+                      <option value="employee">Munkatárs</option>
+                      <option value="superadmin">Szuperadmin</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Előfizetés</label>
+                    <select
+                      value={createForm.subscriptionTier}
+                      onChange={(e) => setCreateForm({ ...createForm, subscriptionTier: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-violet-500 outline-none"
+                    >
+                      <option value="free">Ingyenes</option>
+                      <option value="starter">Kezdő</option>
+                      <option value="medium">Közepes</option>
+                      <option value="premium">Prémium</option>
+                      <option value="enterprise">Nagyvállalati</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center justify-end gap-3 mt-6">
+                <button
+                  onClick={() => setShowCreate(false)}
+                  className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"
+                >
+                  Mégse
+                </button>
+                <button
+                  onClick={handleCreate}
+                  disabled={creating}
+                  className="px-5 py-2 bg-violet-600 text-white text-sm font-medium rounded-lg hover:bg-violet-700 disabled:opacity-50 transition"
+                >
+                  {creating ? "Létrehozás..." : "Felhasználó létrehozása"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Table */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">

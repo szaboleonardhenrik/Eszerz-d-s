@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as crypto from 'crypto';
+import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { InAppNotificationsService } from '../in-app-notifications/in-app-notifications.service';
 import { clearMaintenanceCache } from '../common/maintenance.middleware';
@@ -453,6 +454,53 @@ export class AdminService {
       limit,
       totalPages: Math.ceil(total / limit),
     };
+  }
+
+  async createUser(data: {
+    name: string;
+    email: string;
+    password: string;
+    role?: string;
+    subscriptionTier?: string;
+    companyName?: string;
+  }) {
+    const existing = await this.prisma.user.findUnique({ where: { email: data.email } });
+    if (existing) throw new BadRequestException('Ez az email cím már regisztrálva van');
+
+    const role = data.role || 'user';
+    if (!['superadmin', 'employee', 'user'].includes(role)) {
+      throw new BadRequestException('Érvénytelen szerepkör');
+    }
+
+    const tier = data.subscriptionTier || 'free';
+    if (!['free', 'starter', 'medium', 'premium', 'enterprise'].includes(tier)) {
+      throw new BadRequestException('Érvénytelen előfizetési szint');
+    }
+
+    const passwordHash = await bcrypt.hash(data.password, 10);
+
+    const user = await this.prisma.user.create({
+      data: {
+        name: data.name,
+        email: data.email,
+        passwordHash,
+        role,
+        subscriptionTier: tier,
+        companyName: data.companyName || null,
+        emailVerified: true, // Admin-created users are pre-verified
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        subscriptionTier: true,
+        companyName: true,
+        createdAt: true,
+      },
+    });
+
+    return user;
   }
 
   async updateUser(

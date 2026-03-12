@@ -48,6 +48,22 @@ export class AdminController {
     return ApiResponse.ok(result);
   }
 
+  @Post('users')
+  @SuperAdminOnly()
+  async createUser(
+    @Body() body: {
+      name: string;
+      email: string;
+      password: string;
+      role?: string;
+      subscriptionTier?: string;
+      companyName?: string;
+    },
+  ) {
+    const user = await this.adminService.createUser(body);
+    return ApiResponse.ok(user);
+  }
+
   @Patch('users/:id')
   @SuperAdminOnly()
   async updateUser(

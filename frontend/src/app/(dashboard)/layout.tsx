@@ -126,6 +126,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         <p className="text-xs text-gray-400">{user.email}</p>
                         <p className="text-xs text-gray-400 mt-0.5">Szerepkör: {{ superadmin: "Szuperadmin", employee: "Munkatárs", user: "Felhasználó" }[user.role ?? "user"] ?? user.role}</p>
                       </div>
+                      {["superadmin", "employee"].includes(user.role ?? "") && (
+                        <Link
+                          href="/admin"
+                          onClick={() => setMenuOpen(false)}
+                          className="block px-4 py-2.5 text-sm text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 font-medium"
+                        >
+                          Admin panel
+                        </Link>
+                      )}
                       <Link
                         href="/settings"
                         onClick={() => setMenuOpen(false)}

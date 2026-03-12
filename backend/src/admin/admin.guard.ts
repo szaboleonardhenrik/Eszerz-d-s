@@ -37,19 +37,6 @@ export class AdminGuard implements CanActivate {
       throw new ForbiddenException('Felhasználó nem található');
     }
 
-    // Check if route requires superadmin only
-    const superAdminOnly = this.reflector.get<boolean>(
-      'superAdminOnly',
-      context.getHandler(),
-    );
-
-    if (superAdminOnly) {
-      if (user.role !== 'superadmin') {
-        throw new ForbiddenException('Szuperadmin jogosultság szükséges');
-      }
-      return true;
-    }
-
     // Default: allow superadmin and employee
     if (!ADMIN_ROLES.includes(user.role)) {
       throw new ForbiddenException('Admin jogosultság szükséges');
@@ -57,6 +44,16 @@ export class AdminGuard implements CanActivate {
 
     // Attach role to request for downstream use
     request.userRole = user.role;
+
+    // Check if route requires superadmin only
+    const superAdminOnly = this.reflector.get<boolean>(
+      'superAdminOnly',
+      context.getHandler(),
+    );
+
+    if (superAdminOnly && user.role !== 'superadmin') {
+      throw new ForbiddenException('Szuperadmin jogosultság szükséges');
+    }
 
     return true;
   }
