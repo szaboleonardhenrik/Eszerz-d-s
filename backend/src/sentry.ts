@@ -2,7 +2,7 @@
  * Sentry error tracking for NestJS backend.
  *
  * Setup:
- * 1. npm install @sentry/nestjs @sentry/profiling-node
+ * 1. npm install @sentry/node
  * 2. Set SENTRY_DSN in .env
  * 3. Import and call initSentry() at the top of main.ts (before anything else)
  */
@@ -16,7 +16,7 @@ export function initSentry() {
   }
 
   try {
-    Sentry = require('@sentry/nestjs');
+    Sentry = require('@sentry/node');
     Sentry.init({
       dsn,
       environment: process.env.NODE_ENV ?? 'development',
@@ -30,7 +30,7 @@ export function initSentry() {
     });
     console.log('Sentry: Initialized successfully');
   } catch {
-    console.log('Sentry: @sentry/nestjs not installed, skipping');
+    console.log('Sentry: @sentry/node not installed, skipping');
   }
 }
 

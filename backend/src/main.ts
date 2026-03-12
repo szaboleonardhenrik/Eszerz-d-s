@@ -1,10 +1,12 @@
 import { NestFactory } from '@nestjs/core';
+import { HttpAdapterHost } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { initSentry } from './sentry';
+import { SentryExceptionFilter } from './common/sentry-exception.filter';
 
 initSentry();
 
@@ -27,6 +29,10 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  // Sentry global exception filter (captures 500+ errors)
+  const { httpAdapter } = app.get(HttpAdapterHost);
+  app.useGlobalFilters(new SentryExceptionFilter(httpAdapter));
 
   const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
   app.enableCors({
