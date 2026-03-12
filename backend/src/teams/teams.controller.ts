@@ -1,10 +1,12 @@
 import { Controller, Get, Post, Patch, Delete, Param, Body, UseGuards, Req } from '@nestjs/common';
 import { TeamsService } from './teams.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { FeatureFlagGuard, RequireFeature } from '../common/feature-flag.guard';
 import { ApiResponse } from '../common/api-response';
 
 @Controller('teams')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, FeatureFlagGuard)
+@RequireFeature('team_management')
 export class TeamsController {
   constructor(private readonly teamsService: TeamsService) {}
 

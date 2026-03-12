@@ -18,6 +18,7 @@ import { QuotesService } from './quotes.service';
 import { CreateQuoteDto } from './dto/create-quote.dto';
 import { CreateQuoteTemplateDto } from './dto/create-quote-template.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { FeatureFlagGuard, RequireFeature } from '../common/feature-flag.guard';
 import { ApiResponse } from '../common/api-response';
 
 // ─── PUBLIC ENDPOINTS (no auth) ─────────────────────────
@@ -79,7 +80,8 @@ export class QuoteViewController {
 // ─── AUTHENTICATED ENDPOINTS ────────────────────────────
 
 @Controller('quotes')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, FeatureFlagGuard)
+@RequireFeature('quote_management')
 export class QuotesController {
   constructor(private readonly quotesService: QuotesService) {}
 

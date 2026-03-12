@@ -2,10 +2,12 @@ import { Controller, Post, Param, UseGuards, Req } from '@nestjs/common';
 import { AiService } from './ai.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { FeatureFlagGuard, RequireFeature } from '../common/feature-flag.guard';
 import { ApiResponse } from '../common/api-response';
 
 @Controller('ai')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, FeatureFlagGuard)
+@RequireFeature('ai_analysis')
 export class AiController {
   constructor(
     private readonly aiService: AiService,

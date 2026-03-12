@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
+import FeatureGate from "@/components/feature-gate";
 
 interface QuoteItem {
   description: string;
@@ -196,6 +197,7 @@ export default function QuotesPage() {
     : null;
 
   return (
+    <FeatureGate featureKey="quote_management" featureName="Árajánlat kezelés">
     <div>
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
@@ -442,5 +444,6 @@ export default function QuotesPage() {
         )}
       </div>
     </div>
+    </FeatureGate>
   );
 }

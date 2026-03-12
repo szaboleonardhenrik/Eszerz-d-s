@@ -2,10 +2,11 @@ import { Controller, Get, Post, Put, Delete, Param, Query, Body, UseGuards, Req 
 import { TemplatesService } from './templates.service';
 import { CreateTemplateDto } from './dto/create-template.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { FeatureFlagGuard, RequireFeature } from '../common/feature-flag.guard';
 import { ApiResponse } from '../common/api-response';
 
 @Controller('templates')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, FeatureFlagGuard)
 export class TemplatesController {
   constructor(private readonly templatesService: TemplatesService) {}
 
@@ -37,12 +38,14 @@ export class TemplatesController {
   }
 
   @Post()
+  @RequireFeature('document_templates')
   async create(@Body() dto: CreateTemplateDto, @Req() req: any) {
     const template = await this.templatesService.createTemplate(req.user.userId, dto);
     return ApiResponse.ok(template);
   }
 
   @Put(':id')
+  @RequireFeature('document_templates')
   async update(@Param('id') id: string, @Body() dto: Partial<CreateTemplateDto>, @Req() req: any) {
     const template = await this.templatesService.updateTemplate(id, req.user.userId, dto);
     return ApiResponse.ok(template);

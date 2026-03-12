@@ -81,7 +81,7 @@ export default function TeamSettings() {
   };
 
   return (
-    <FeatureGate requiredTier="basic" featureName="Csapatkezeles">
+    <FeatureGate featureKey="team_management" featureName="Csapatkezelés">
     <div className="max-w-3xl space-y-6">
       <div className="bg-white rounded-xl border p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-1">Csapattagok</h2>

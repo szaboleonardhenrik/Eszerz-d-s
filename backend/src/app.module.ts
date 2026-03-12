@@ -35,6 +35,7 @@ import { AdminModule } from './admin/admin.module';
 import { HealthModule } from './health/health.module';
 import { SearchModule } from './search/search.module';
 import { TsaModule } from './tsa/tsa.module';
+import { FeatureFlagsController } from './common/feature-flags.controller';
 
 @Module({
   imports: [
@@ -73,6 +74,7 @@ import { TsaModule } from './tsa/tsa.module';
     SearchModule,
     TsaModule,
   ],
+  controllers: [FeatureFlagsController],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_INTERCEPTOR, useClass: ApiUsageInterceptor },

@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
+import FeatureGate from "@/components/feature-gate";
 
 interface Template {
   id: string;
@@ -233,6 +234,7 @@ export default function BulkSendPage() {
   ).length;
 
   return (
+    <FeatureGate featureKey="bulk_operations" featureName="Tömeges műveletek">
     <div className="max-w-4xl mx-auto">
       {/* Header */}
       <div className="mb-8">
@@ -504,5 +506,6 @@ export default function BulkSendPage() {
         </div>
       )}
     </div>
+    </FeatureGate>
   );
 }

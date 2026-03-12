@@ -17,11 +17,12 @@ import type { Response } from 'express';
 import { ContractsService } from './contracts.service';
 import { CreateContractDto } from './dto/create-contract.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { FeatureFlagGuard, RequireFeature } from '../common/feature-flag.guard';
 import { ApiResponse } from '../common/api-response';
 import { StorageService } from '../storage/storage.service';
 
 @Controller('contracts')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, FeatureFlagGuard)
 export class ContractsController {
   constructor(
     private readonly contractsService: ContractsService,
@@ -40,6 +41,7 @@ export class ContractsController {
   }
 
   @Post('bulk-send')
+  @RequireFeature('bulk_operations')
   async bulkSend(
     @Body() body: { contractIds: string[] },
     @Req() req: any,
@@ -52,6 +54,7 @@ export class ContractsController {
   }
 
   @Post('bulk-export')
+  @RequireFeature('bulk_operations')
   async bulkExport(
     @Body() body: { contractIds: string[] },
     @Req() req: any,
@@ -229,6 +232,7 @@ export class ContractsController {
   }
 
   @Get('analytics')
+  @RequireFeature('advanced_analytics')
   async getAnalytics(@Req() req: any) {
     const analytics = await this.contractsService.getAnalytics(
       req.user.userId,

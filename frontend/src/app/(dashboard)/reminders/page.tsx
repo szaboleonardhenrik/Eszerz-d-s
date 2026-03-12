@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
+import FeatureGate from "@/components/feature-gate";
 
 /* ── Interfaces ──────────────────────────────────────────────────── */
 
@@ -139,6 +140,7 @@ export default function RemindersPage() {
   }
 
   return (
+    <FeatureGate featureKey="contract_reminders" featureName="Emlékeztetők">
     <div className="space-y-6">
       {/* ── Header ─────────────────────────────────────────────── */}
       <div className="flex items-center justify-between">
@@ -431,5 +433,6 @@ export default function RemindersPage() {
         </div>
       </div>
     </div>
+    </FeatureGate>
   );
 }

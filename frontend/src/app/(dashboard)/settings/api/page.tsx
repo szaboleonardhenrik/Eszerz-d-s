@@ -82,7 +82,7 @@ export default function ApiKeysSettings() {
   };
 
   return (
-    <FeatureGate requiredTier="basic" featureName="API kulcsok">
+    <FeatureGate featureKey="api_access" featureName="API kulcsok">
     <div className="max-w-3xl space-y-6">
       {/* New key alert */}
       {newKey && (

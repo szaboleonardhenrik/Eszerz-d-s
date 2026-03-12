@@ -132,7 +132,7 @@ export default function WebhooksSettings() {
   };
 
   return (
-    <FeatureGate requiredTier="pro" featureName="Webhookok">
+    <FeatureGate featureKey="webhooks" featureName="Webhookok">
     <div className="max-w-3xl space-y-6">
       {/* New secret alert */}
       {newSecret && (

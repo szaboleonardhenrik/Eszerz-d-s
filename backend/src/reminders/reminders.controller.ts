@@ -10,10 +10,12 @@ import {
 } from '@nestjs/common';
 import { RemindersService } from './reminders.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { FeatureFlagGuard, RequireFeature } from '../common/feature-flag.guard';
 import { ApiResponse } from '../common/api-response';
 
 @Controller('reminders')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, FeatureFlagGuard)
+@RequireFeature('contract_reminders')
 export class RemindersController {
   constructor(private readonly remindersService: RemindersService) {}
 
