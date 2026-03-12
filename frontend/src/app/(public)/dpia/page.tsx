@@ -107,13 +107,44 @@ export default function DpiaPage() {
           <li><strong>Intézkedések:</strong> 2 éves anonimizálás, hozzáférés-korlátozás, event data hash-elés</li>
         </ul>
 
-        <h4>E) Harmadik fél adatfeldolgozók (Stripe, Resend, Cloudflare)</h4>
+        <h4>E) Partnernyilvántartás — aláírói adatok másodlagos felhasználása</h4>
+        <ul>
+          <li><strong>Valószínűség:</strong> Alacsony</li>
+          <li><strong>Hatás:</strong> Közepes</li>
+          <li><strong>Kockázati szint:</strong> ALACSONY</li>
+          <li><strong>Intézkedések:</strong> Külön hozzájárulás kérése az aláírási oldalon, opt-in jelölőnégyzet, törlési kérelem lehetősége</li>
+        </ul>
+
+        <h4>F) Webhook adattovábbítás — személyes adatok harmadik fél URL-re küldése</h4>
+        <ul>
+          <li><strong>Valószínűség:</strong> Közepes</li>
+          <li><strong>Hatás:</strong> Magas</li>
+          <li><strong>Kockázati szint:</strong> KÖZEPES</li>
+          <li><strong>Intézkedések:</strong> Felhasználó felelőssége a webhook cél megfelelősége, csak minimális adat továbbítása (szerződés státusz, aláíró neve), HTTPS kötelező</li>
+        </ul>
+
+        <h4>G) Harmadik fél adatfeldolgozók (Stripe, Resend, Cloudflare)</h4>
         <ul>
           <li><strong>Valószínűség:</strong> Alacsony</li>
           <li><strong>Hatás:</strong> Közepes</li>
           <li><strong>Kockázati szint:</strong> ALACSONY</li>
           <li><strong>Intézkedések:</strong> DPA minden feldolgozóval, SCC az USA-ba irányuló továbbításokhoz, PCI DSS tanúsítvány (Stripe)</li>
         </ul>
+
+        <h3>4.2 Automatizált döntéshozatal és DPO értékelés</h3>
+        <p>
+          <strong>Automatizált döntéshozatal (GDPR 22. cikk):</strong> A Platform AI elemzési funkciója
+          kizárólag támogató eszközként működik — nem hoz joghatással bíró automatizált döntést.
+          Az elemzés eredménye tájékoztató jellegű javaslat, a végső döntést minden esetben a
+          Felhasználó hozza meg. Ezért a GDPR 22. cikk szerinti automatizált döntéshozatal nem valósul meg.
+        </p>
+        <p>
+          <strong>Adatvédelmi tisztviselő (DPO):</strong> A GDPR 37. cikk alapján a Szolgáltató megvizsgálta
+          a DPO kinevezésének szükségességét. Tekintettel arra, hogy az adatkezelés nem minősül az érintettek
+          nagymértékű, rendszeres és szisztematikus megfigyelésének, és a Platform nem kezel különleges
+          adatkategóriákat fő tevékenységként, a DPO kinevezése jelenleg nem kötelező. A helyzetet évente
+          felülvizsgáljuk.
+        </p>
 
         <h2>5. Kockázatcsökkentő intézkedések összefoglalása</h2>
 
@@ -162,9 +193,12 @@ export default function DpiaPage() {
 
         <h2>7. Felügyeleti hatóság konzultáció</h2>
         <p>
-          A DPIA eredménye alapján a maradék kockázatok elfogadható szintűek. Amennyiben a kockázati szint
-          emelkedne (pl. nagymértékű profilalkotás, automatizált döntéshozatal bevezetése), a NAIH-hal
-          előzetes konzultáció szükséges (GDPR 36. cikk).
+          A fennmaradó kockázatok az alkalmazott védelmi intézkedésekkel elfogadható szintre csökkenthetők.
+          A GDPR 36. cikk szerinti előzetes konzultáció a NAIH-val nem szükséges, tekintettel arra, hogy:
+          (a) a Platform nem végez nagymértékű profilalkotást; (b) az AI elemzés nem minősül automatizált
+          döntéshozatalnak; (c) különleges adatkategóriák szisztematikus kezelése nem történik;
+          (d) a nemzetközi adattovábbítások SCC/DPF védelemmel rendelkeznek. Amennyiben a jövőben ezen
+          feltételek megváltoznak, az előzetes konzultációt haladéktalanul kezdeményezzük.
         </p>
         <p><strong>Nemzeti Adatvédelmi és Információszabadság Hatóság (NAIH)</strong></p>
         <ul>

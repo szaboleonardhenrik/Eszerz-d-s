@@ -49,11 +49,14 @@ ${contractHtml.replace(/<[^>]*>/g, ' ').substring(0, 8000)}`,
     const text =
       response.content[0].type === 'text' ? response.content[0].text : '';
 
+    const dataDisclosure =
+      'Az elemzéshez a szerződés szövege az Anthropic (USA) AI szolgáltatónak került továbbításra. Az adatok nem kerülnek tartós tárolásra a szolgáltató rendszerében.';
+
     try {
       // Extract JSON from response (handle markdown code blocks)
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (!jsonMatch) throw new Error('No JSON found');
-      return JSON.parse(jsonMatch[0]);
+      return { ...JSON.parse(jsonMatch[0]), dataDisclosure };
     } catch {
       return {
         summary: text.substring(0, 500),
@@ -61,6 +64,7 @@ ${contractHtml.replace(/<[^>]*>/g, ' ').substring(0, 8000)}`,
         suggestions: [],
         missingClauses: [],
         legalCompliance: 'Nem sikerült az elemzés feldolgozása.',
+        dataDisclosure,
       };
     }
   }

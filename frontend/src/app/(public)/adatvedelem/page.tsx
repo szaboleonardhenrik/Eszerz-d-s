@@ -18,12 +18,20 @@ export default function AdatvedelemPage() {
           <li><strong>E-mail:</strong> info@legitas.hu</li>
           <li><strong>Weboldal:</strong> https://legitas.hu</li>
         </ul>
+        <p>
+          <strong>Adatvédelmi tisztviselő (DPO):</strong> A Szolgáltató a GDPR 37. cikke alapján jelenleg nem
+          köteles adatvédelmi tisztviselő kinevezésére, tekintettel arra, hogy az adatkezelés nem minősül
+          nagymértékű rendszeres megfigyelésnek és nem érint különleges adatkategóriákat szisztematikusan.
+          Az adatvédelmi kérdésekben az info@legitas.hu e-mail címen lehet felvenni a kapcsolatot.
+        </p>
 
         <h2>2. Az adatkezelés jogalapja</h2>
         <p>Az adatkezelés jogalapjai:</p>
         <ul>
           <li><strong>Szerződés teljesítése</strong> (GDPR 6. cikk (1) b) — a Szolgáltatás nyújtásához szükséges adatok</li>
-          <li><strong>Jogos érdek</strong> (GDPR 6. cikk (1) f) — biztonsági naplózás, visszaélés-megelőzés</li>
+          <li><strong>Jogos érdek</strong> (GDPR 6. cikk (1) f) — biztonsági naplózás, visszaélés-megelőzés.
+            A jogos érdeken alapuló adatkezelés esetén az Adatkezelő érdekmérlegelési tesztet (LIA) végzett,
+            amelynek eredménye kérésre elérhető az info@legitas.hu címen.</li>
           <li><strong>Hozzájárulás</strong> (GDPR 6. cikk (1) a) — marketing célú kommunikáció, cookie-k</li>
           <li><strong>Jogi kötelezettség</strong> (GDPR 6. cikk (1) c) — számviteli előírások</li>
         </ul>
@@ -89,10 +97,10 @@ export default function AdatvedelemPage() {
         <ul>
           <li><strong>Cloudflare R2</strong> (EU régió) — dokumentumtárolás</li>
           <li><strong>Hetzner GmbH</strong> (Németország) — szerver infrastruktúra</li>
-          <li><strong>Resend Inc.</strong> — email küldés (GDPR DPA aláírva)</li>
-          <li><strong>Stripe Inc.</strong> — fizetéskezelés (PCI DSS tanúsított)</li>
-          <li><strong>Anthropic</strong> — AI elemzés (a szerződés tartalmát csak az elemzés idejére továbbítjuk, nem tároljuk)</li>
-          <li><strong>Google LLC</strong> — OAuth hitelesítés (Google-fiókkal bejelentkezés; kizárólag a név és e-mail cím kerül átadásra)</li>
+          <li><strong>Resend Inc.</strong> — email küldés (GDPR DPA aláírva) — USA — EU-US Data Privacy Framework (DPF) és Standard Contractual Clauses (SCC)</li>
+          <li><strong>Stripe Inc.</strong> — fizetéskezelés (PCI DSS tanúsított) — USA — EU-US Data Privacy Framework (DPF), PCI DSS tanúsított</li>
+          <li><strong>Anthropic</strong> — AI elemzés (a szerződés tartalmát csak az elemzés idejére továbbítjuk, nem tároljuk) — USA — Standard Contractual Clauses (SCC, EU 2021/914), az adatok nem kerülnek tartós tárolásra</li>
+          <li><strong>Google LLC</strong> — OAuth hitelesítés (Google-fiókkal bejelentkezés; kizárólag a név és e-mail cím kerül átadásra) — USA — EU-US Data Privacy Framework (DPF)</li>
           <li><strong>Webhook végpontok</strong> — a felhasználó által megadott harmadik fél URL-ekre továbbíthatunk
             aláírói adatokat (név, e-mail, aláírási státusz). A felhasználó felelős a fogadó fél
             GDPR-megfelelőségéért és adatfeldolgozási megállapodás meglétéért.</li>
@@ -116,7 +124,15 @@ export default function AdatvedelemPage() {
           <li><strong>Korlátozás joga</strong> — az adatkezelés korlátozását kérheti</li>
           <li><strong>Adathordozhatóság</strong> — adatait géppel olvasható formátumban kérheti</li>
           <li><strong>Tiltakozás joga</strong> — jogos érdek alapú adatkezelés ellen tiltakozhat</li>
-          <li><strong>Hozzájárulás visszavonása</strong> — a hozzájáruláson alapuló adatkezelés bármikor visszavonható</li>
+          <li><strong>Hozzájárulás visszavonása</strong> — a hozzájáruláson alapuló adatkezelés bármikor visszavonható.
+            A hozzájárulás visszavonása ugyanolyan egyszerű, mint annak megadása: a marketing célú hozzájárulás
+            a Beállítások &gt; Értesítések menüpontban, a cookie hozzájárulás a böngésző sütibeállításaiban,
+            az AI elemzési hozzájárulás az elemzés indítása előtti megerősítő ablakban vonható vissza.</li>
+          <li><strong>Közvetlen üzletszerzési célú adatkezelés elleni tiltakozás:</strong> A Felhasználó bármikor
+            jogosult tiltakozni személyes adatainak közvetlen üzletszerzés céljából történő kezelése ellen
+            (GDPR 21. cikk (2) bekezdés). Tiltakozás esetén az adatok e célból való kezelése haladéktalanul
+            megszüntetésre kerül. A leiratkozás a Beállítások &gt; Értesítések menüpontban vagy az e-mailekben
+            található leiratkozási link útján lehetséges.</li>
         </ul>
         <p>
           A <strong>törlés jogát</strong> és az <strong>adathordozhatóságot</strong> a Beállítások &gt; Biztonság
@@ -140,15 +156,30 @@ export default function AdatvedelemPage() {
         </ul>
         <p>Jelenleg harmadik féltől származó analitikai vagy marketing cookie-kat nem használunk.</p>
 
+        <h3>6.1. Automatizált döntéshozatal és profilalkotás</h3>
+        <p>
+          A Platform AI elemzési funkciója kizárólag segédeszközként működik, és nem hoz az érintettre nézve
+          joghatással bíró vagy hasonlóan jelentős mértékben érintő automatizált döntést a GDPR 22. cikke
+          értelmében. Az AI elemzés eredménye tájékoztató jellegű, a végső döntést minden esetben az ember
+          (a Felhasználó) hozza meg.
+        </p>
+
+        <h3>6.2. Korhatár</h3>
+        <p>
+          A Platform szolgáltatásait kizárólag 16. életévüket betöltött személyek vehetik igénybe.
+          16 éven aluliak személyes adatait tudatosan nem gyűjtjük. Amennyiben tudomásunkra jut,
+          hogy 16 éven aluli személy adatait kezeljük, azokat haladéktalanul töröljük.
+        </p>
+
         <h2>7. Adatmegőrzési politika — összefoglaló</h2>
         <table>
           <thead>
             <tr><th>Adattípus</th><th>Megőrzési idő</th><th>Jogalap</th></tr>
           </thead>
           <tbody>
-            <tr><td>Felhasználói fiókadatok (név, e-mail, jelszó hash)</td><td>Fiók törléséig (azonnali törlés)</td><td>Szerződés teljesítése</td></tr>
+            <tr><td>Felhasználói fiókadatok (név, e-mail, jelszó hash)</td><td>Fiók törléséig (30 napon belüli törlés)</td><td>Szerződés teljesítése</td></tr>
             <tr><td>Cégnév, adószám, számlázási adatok</td><td>Fiók törléséig + 8 év</td><td>Számviteli tv. (Szt. 169. §)</td></tr>
-            <tr><td>Szerződések tartalma, aláírási adatok</td><td>Fiók törléséig (azonnali törlés)</td><td>Szerződés teljesítése</td></tr>
+            <tr><td>Szerződések tartalma, aláírási adatok</td><td>Fiók törléséig (30 napon belüli törlés)</td><td>Szerződés teljesítése</td></tr>
             <tr><td>Audit napló (IP cím, böngésző, műveletek)</td><td>2 év (utána anonimizálva)</td><td>Jogos érdek</td></tr>
             <tr><td>Partneri adatok (kontaktok)</td><td>Fiók törléséig vagy érintett kéréséig</td><td>Jogos érdek</td></tr>
             <tr><td>AI elemzés eredménye</td><td>Nem tárolódik tartósan (kizárólag megjelenítés idejére)</td><td>Szerződés teljesítése</td></tr>
@@ -156,7 +187,7 @@ export default function AdatvedelemPage() {
           </tbody>
         </table>
         <p>
-          A fiók törlését követően az összes személyes adat <strong>azonnal és véglegesen</strong> eltávolításra
+          A fiók törlését követően az összes személyes adat <strong>30 napon belül véglegesen</strong> eltávolításra
           kerül, kivéve azokat az adatokat, amelyek megőrzését jogszabály írja elő
           (pl. számviteli bizonylatok 8 évig).
         </p>
@@ -177,6 +208,10 @@ export default function AdatvedelemPage() {
           Adatvédelmi incidens esetén a NAIH-ot (Nemzeti Adatvédelmi és Információszabadság Hatóság)
           72 órán belül értesítjük. Ha az incidens magas kockázattal jár, az érintetteket is
           haladéktalanul tájékoztatjuk.
+        </p>
+        <p>
+          Magas kockázatú adatvédelmi incidens esetén az érintetteket e-mailben és az alkalmazáson
+          belüli értesítéssel tájékoztatjuk haladéktalanul, de legkésőbb 72 órán belül.
         </p>
 
         <h2>10. Jogorvoslat</h2>

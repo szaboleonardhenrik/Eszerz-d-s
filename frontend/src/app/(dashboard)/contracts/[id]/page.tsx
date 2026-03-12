@@ -404,6 +404,10 @@ export default function ContractDetailPage() {
   };
 
   const handleAiAnalysis = async () => {
+    const consent = window.confirm(
+      "Az elemzéshez a szerződés szövege az Anthropic (USA) AI szolgáltatónak kerül továbbításra feldolgozásra. Az adatok nem kerülnek tartós tárolásra. Folytatja?"
+    );
+    if (!consent) return;
     setAiLoading(true);
     setAiAnalysis(null);
     try {

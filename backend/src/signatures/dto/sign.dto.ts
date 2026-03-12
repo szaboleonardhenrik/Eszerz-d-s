@@ -35,4 +35,7 @@ export class SignContractDto {
   @IsOptional()
   @IsBoolean()
   partnerConsent?: boolean;
+
+  @IsBoolean({ message: 'Az adatkezelési hozzájárulás elfogadása kötelező' })
+  dataConsent: boolean;
 }

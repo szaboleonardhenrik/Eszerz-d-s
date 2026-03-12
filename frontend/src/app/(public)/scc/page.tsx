@@ -71,13 +71,48 @@ export default function SccPage() {
           <li>TLS titkosítás az email továbbításkor</li>
         </ul>
 
+        <h3>2.4 Google LLC (Google OAuth)</h3>
+        <ul>
+          <li><strong>Szolgáltató:</strong> Google LLC (Mountain View, CA, USA)</li>
+          <li><strong>Továbbított adatok:</strong> Név, e-mail cím (bejelentkezéskor)</li>
+          <li><strong>Továbbítás célja:</strong> OAuth hitelesítés (Google-fiókkal bejelentkezés)</li>
+          <li><strong>Továbbítás jogalapja:</strong> EU-US Data Privacy Framework (DPF) — a Google LLC DPF-tanúsított (certification ID ellenőrizhető: dataprivacyframework.gov)</li>
+          <li><strong>Védelem:</strong> DPF tanúsítás, Google saját GDPR compliance program</li>
+        </ul>
+        <p>Kiegészítő intézkedések:</p>
+        <ul>
+          <li>Minimális adatátvitel (csak név és e-mail)</li>
+          <li>A bejelentkezés a felhasználó aktív cselekménye</li>
+          <li>Google saját GDPR compliance programja</li>
+        </ul>
+
         <h2>3. Az USA jogrendszer értékelése (Schrems II)</h2>
+
+        <h3>3.0 EU-US Data Privacy Framework és EO 14086</h3>
+        <p>
+          A 2023. július 10-i EU megfelelőségi határozat (C(2023) 4745) alapján az USA-ba irányuló
+          adattovábbítás a DPF-tanúsított szervezetek részére megfelelő védelmet biztosít. Az EO 14086
+          végrehajtási rendelet új garanciákat vezet be: (a) a hírszerzési adatgyűjtés szükségességi és
+          arányossági tesztje; (b) független jogorvoslati mechanizmus (Data Protection Review Court).
+          A Stripe Inc. és a Google LLC DPF-tanúsítottak. Az Anthropic és a Resend esetében Standard
+          Contractual Clauses (EU 2021/914) alkalmazandók kiegészítő védelmi intézkedésekkel.
+        </p>
 
         <h3>3.1 Azonosított kockázatok</h3>
         <ul>
           <li><strong>FISA 702:</strong> A szolgáltatókra vonatkozhat kormányzati adathozzáférési kérelem</li>
           <li><strong>EO 12333:</strong> Tömeges adatgyűjtési lehetőség a tranzit adatokra</li>
         </ul>
+        <p>
+          <strong>FISA 702 kockázatelemzés:</strong> A FISA 702 hatálya az &quot;electronic communication
+          service provider&quot;-ekre terjed ki. Az Anthropic (AI API szolgáltató) és a Resend (e-mail
+          szolgáltató) potenciálisan e kategóriába tartozhatnak. Kockázatcsökkentő tényezők:
+          (a) az Anthropic esetében az adatok tranziens jellegűek — az API hívás során feldolgozásra
+          kerülnek, de nem kerülnek tartós tárolásra; (b) a Resend esetében az e-mail tartalom
+          minimalizált és tranzakciós jellegű; (c) mindkét szolgáltató SCC-vel rendelkezik, amely
+          szerződéses védelmet biztosít; (d) a Platformon kezelt adatok túlnyomó többsége az EU-ban
+          (Hetzner, Cloudflare R2 EU régió) marad.
+        </p>
 
         <h3>3.2 Kockázatcsökkentés</h3>
         <ul>

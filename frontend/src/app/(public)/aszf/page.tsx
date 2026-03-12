@@ -24,7 +24,12 @@ export default function AszfPage() {
           <li><strong>Weboldal:</strong> https://legitas.hu</li>
         </ul>
 
-        <h2>2. A szolgáltatás leírása</h2>
+        <h2>2. A szolgáltatás jellege – B2B/B2C</h2>
+        <p>
+          A Platform elsősorban vállalkozások (B2B) számára készült. Amennyiben a Felhasználó a Ptk. 8:1. § (1) bekezdés 3. pontja szerinti fogyasztónak minősül, a jelen ÁSZF rendelkezéseit a fogyasztóvédelemre vonatkozó jogszabályokkal összhangban kell értelmezni, és a fogyasztót megillető jogok nem korlátozhatók.
+        </p>
+
+        <h2>3. A szolgáltatás leírása</h2>
         <p>
           A Legitas (továbbiakban: Szolgáltatás) egy webalapú (SaaS) szerződéskezelő platform,
           amely lehetővé teszi a felhasználók számára, hogy online szerződéseket hozzanak létre előre
@@ -44,7 +49,7 @@ export default function AszfPage() {
           <strong>Megjegyzés:</strong> A platform kizárólag egyszerű elektronikus aláírást (SES) támogat az eIDAS rendelet értelmében. Fokozott (AES) vagy minősített (QES) aláíráshoz tanúsítványkiadó szolgáltató szükséges.
         </p>
 
-        <h2>3. Regisztráció és felhasználói fiók</h2>
+        <h2>4. Regisztráció és felhasználói fiók</h2>
         <p>
           A Szolgáltatás használatához regisztráció szükséges. A Felhasználó köteles valós adatokat megadni
           a regisztráció során. A felhasználói fiók személyre szól, annak hozzáférési adatait harmadik
@@ -55,20 +60,20 @@ export default function AszfPage() {
           értesítés nélkül megszüntesse.
         </p>
 
-        <h2>4. Előfizetési csomagok és díjak</h2>
+        <h2>5. Előfizetési csomagok és díjak</h2>
         <p>A Szolgáltatás az alábbi csomagokban érhető el:</p>
         <ul>
-          <li><strong>Kezdő (975 Ft + áfa/hó):</strong> 2 szerződés/hó, 0 társfiók, 2 fő/szerződés, 24 időbélyeg/év, AI asszisztens, kézi e-aláírás</li>
-          <li><strong>Közepes (14 950 Ft + áfa/hó):</strong> 12 szerződés/hó, 2 társfiók, 10 fő/szerződés, 144 időbélyeg/év, sablontár, CRM, email követés</li>
-          <li><strong>Prémium (26 000 Ft + áfa/hó):</strong> 35 szerződés/hó, 5 társfiók, 10 fő/szerződés, 420 időbélyeg/év, API, branding, automatizáció</li>
-          <li><strong>Nagyvállalati (149 500 Ft + áfa/hó):</strong> 500 szerződés/hó, 20 társfiók, 10 fő/szerződés, 6 000 időbélyeg/év, VIP support, onboarding</li>
+          <li><strong>Kezdő (975 Ft + áfa/hó, bruttó 1 238 Ft):</strong> 2 szerződés/hó, 0 társfiók, 2 fő/szerződés, 24 időbélyeg/év, AI asszisztens, kézi e-aláírás</li>
+          <li><strong>Közepes (14 950 Ft + áfa/hó, bruttó 18 987 Ft):</strong> 12 szerződés/hó, 2 társfiók, 10 fő/szerződés, 144 időbélyeg/év, sablontár, CRM, email követés</li>
+          <li><strong>Prémium (26 000 Ft + áfa/hó, bruttó 33 020 Ft):</strong> 35 szerződés/hó, 5 társfiók, 10 fő/szerződés, 420 időbélyeg/év, API, branding, automatizáció</li>
+          <li><strong>Nagyvállalati (149 500 Ft + áfa/hó, bruttó 189 865 Ft):</strong> 500 szerződés/hó, 20 társfiók, 10 fő/szerződés, 6 000 időbélyeg/év, VIP support, onboarding</li>
         </ul>
         <p>
           Az árak nettó árak, nem tartalmazzák a 27% ÁFÁ-t. Az éves előfizetés esetén ~23% kedvezményt biztosítunk.
           A díjfizetés bankkártyával (Stripe) vagy éves fizetés esetén banki átutalással történik.
         </p>
 
-        <h2>5. Az elektronikus aláírás érvényessége</h2>
+        <h2>6. Az elektronikus aláírás érvényessége</h2>
         <p>
           A Legitason létrehozott egyszerű elektronikus aláírás az eIDAS rendelet (EU 910/2014)
           és a Polgári Törvénykönyv (2013. évi V. törvény) alapján jogilag érvényes a legtöbb
@@ -80,7 +85,7 @@ export default function AszfPage() {
           jogi helyzetben való alkalmazhatóságáért.
         </p>
 
-        <h2>6. Adatkezelés és biztonság</h2>
+        <h2>7. Adatkezelés és biztonság</h2>
         <p>
           A Szolgáltató a felhasználók személyes adatait a GDPR (EU 2016/679) és az Info tv.
           (2011. évi CXII. törvény) rendelkezéseinek megfelelően kezeli. Részletes tájékoztatás
@@ -91,16 +96,19 @@ export default function AszfPage() {
           kapcsolaton keresztül történik. Minden művelet audit naplóban rögzítésre kerül.
         </p>
 
-        <h2>7. Szellemi tulajdon</h2>
+        <h2>8. Szellemi tulajdon</h2>
         <p>
           A Szolgáltatás, annak forráskódja, design-ja és tartalma a Szolgáltató szellemi
           tulajdonát képezi. A Felhasználó által létrehozott szerződések tartalma a Felhasználó
           tulajdonában marad.
         </p>
 
-        <h2>8. Felelősségkorlátozás</h2>
+        <h2>9. Felelősségkorlátozás</h2>
         <p>
-          A Szolgáltató a Szolgáltatást „ahogy van" (as is) alapon nyújtja. Nem vállal felelősséget:
+          A Szolgáltató felelőssége nem haladhatja meg a Felhasználó által az előző 12 hónapban ténylegesen megfizetett szolgáltatási díjak összegét. A felelősségkorlátozás nem vonatkozik a szándékosan vagy súlyos gondatlansággal okozott károkra (Ptk. 6:152. §).
+        </p>
+        <p>
+          A Szolgáltató nem vállal felelősséget:
         </p>
         <ul>
           <li>A sablonok konkrét jogi helyzetben való alkalmazhatóságáért</li>
@@ -110,7 +118,7 @@ export default function AszfPage() {
           <li>Az AI-alapú szerződéselemzés pontosságáért vagy teljességéért</li>
         </ul>
 
-        <h3>8.1. Elektronikus aláírás korlátozásai</h3>
+        <h3>9.1. Elektronikus aláírás korlátozásai</h3>
         <p>
           A Legitas platformon elérhető elektronikus aláírás <strong>egyszerű elektronikus aláírásnak (SES)</strong> minősül
           az eIDAS rendelet (EU 910/2014) és a 2015. évi CCXXII. törvény értelmében. Ez <strong>nem azonos</strong> a
@@ -133,7 +141,7 @@ export default function AszfPage() {
           milyen aláírási forma szükséges.
         </p>
 
-        <h3>8.2. Sablonok és AI elemzés</h3>
+        <h3>9.2. Sablonok és AI elemzés</h3>
         <p>
           A platformon elérhető szerződéssablonok <strong>általános tájékoztató jellegűek</strong>, és
           nem helyettesítik az egyedi ügyvédi tanácsadást. A Szolgáltató nem vállal felelősséget a sablonok
@@ -146,11 +154,12 @@ export default function AszfPage() {
           vagy hiányzó záradék-jelzésekért. Bonyolultabb ügyleteknél javasoljuk ügyvéd bevonását.
         </p>
 
-        <h2>9. Rendelkezésre állás és karbantartás</h2>
+        <h2>10. Rendelkezésre állás és karbantartás</h2>
         <p>
           A Szolgáltató a Szolgáltatást az év minden napján, 24 órában elérhetővé kívánja tenni,
           de nem garantálja a 100%-os rendelkezésre állást. A tervezett éves rendelkezésre állási
           cél <strong>99,5%</strong> (karbantartási időszakokat és vis major eseményeket nem számítva).
+          Vis major alatt értendő különösen: természeti katasztrófák, háború, sztrájk, járvány, kibertámadás, közüzemi szolgáltatás kiesése, hatósági intézkedés, az internet működésének zavara.
         </p>
         <ul>
           <li><strong>Tervezett karbantartás:</strong> Előzetes értesítéssel (legalább 24 órával korábban, e-mailben),
@@ -163,7 +172,7 @@ export default function AszfPage() {
           következményi károkért.
         </p>
 
-        <h2>10. Panaszkezelés</h2>
+        <h2>11. Panaszkezelés</h2>
         <p>
           A Felhasználó a Szolgáltatással kapcsolatos panaszait az alábbi módon nyújthatja be:
         </p>
@@ -182,21 +191,21 @@ export default function AszfPage() {
           <li><strong>Online vitarendezési platform:</strong> https://ec.europa.eu/consumers/odr</li>
         </ul>
 
-        <h2>11. Felmondás és adattörlés</h2>
+        <h2>12. Felmondás és adattörlés</h2>
         <p>
-          A Felhasználó fiókját bármikor törölheti a Beállítások menüben. A törlés esetén
+          A Felhasználó fiókját bármikor törölheti a Beállítások menüben. A Felhasználó a fiókja törlése előtt jogosult adatainak exportálására a Beállítások &gt; Biztonság menüpontban elérhető adatexport funkcióval. A törlés esetén
           az adatok 30 napon belül véglegesen eltávolításra kerülnek. Az aktív előfizetés
           felmondása a futamidő végén lép hatályba.
         </p>
 
-        <h2>12. Módosítások</h2>
+        <h2>13. Módosítások</h2>
         <p>
           A Szolgáltató fenntartja az ÁSZF módosításának jogát. A módosításról a Felhasználókat
           emailben értesítjük legalább 15 nappal a hatálybalépés előtt. A Szolgáltatás további
           használata a módosított feltételek elfogadásának minősül.
         </p>
 
-        <h2>13. Elállási jog</h2>
+        <h2>14. Elállási jog</h2>
         <p>
           A fogyasztót a 45/2014. (II. 26.) Korm. rendelet 20. §-a alapján 14 napos elállási jog illeti meg
           az előfizetés megkezdésétől számítva, indokolás nélkül.
@@ -207,18 +216,28 @@ export default function AszfPage() {
           hogy a teljesítés megkezdését követően az elállási jogát elveszíti (45/2014. Korm. rendelet 29. § (1) m)).
         </p>
         <p>
-          <strong>Minta elállási nyilatkozat:</strong><br />
-          &ldquo;Alulírott [név] kijelentem, hogy elállási jogomat gyakorlom a Legitas [csomag neve]
-          előfizetésére vonatkozó szerződés tekintetében. Kelt: [dátum]. Aláírás: [aláírás (csak papíron
-          benyújtott nyilatkozat esetén)].&rdquo;<br />
-          Az elállási nyilatkozatot a info@legitas.hu email-címre kell megküldeni.
+          A Szolgáltató az elállásról való tudomásszerzéstől számított 14 napon belül visszatéríti a Felhasználó által teljesített valamennyi ellenszolgáltatást, beleértve a szolgáltatás nyújtásával összefüggésben felmerült költségeket is.
+        </p>
+        <p>
+          Az elállási nyilatkozatot az info@legitas.hu email-címre kell megküldeni.
         </p>
 
-        <h2>14. Irányadó jog és jogviták</h2>
+        <h3>14.1. Elállási/Felmondási nyilatkozatminta</h3>
+        <p className="text-sm bg-gray-50 border border-gray-200 rounded-lg p-4">
+          <em>(A 45/2014. (II. 26.) Korm. rendelet 3. melléklete alapján. Csak a szerződéstől való elállási/felmondási szándék esetén töltse ki és juttassa vissza.)</em><br /><br />
+          <strong>Címzett:</strong> T-DIGITAL Solutions Kft., 1117 Budapest, Nándorfejérvári út 32. 1. em. 4. ajtó, info@legitas.hu<br /><br />
+          Alulírott/ak kijelenti/k, hogy gyakorlom/gyakoroljuk elállási/felmondási jogomat/jogunkat az alábbi szolgáltatás nyújtására irányuló szerződés tekintetében:<br />
+          Szolgáltatás megnevezése: _______________<br />
+          A szerződés megkötésének dátuma: _______________<br />
+          A fogyasztó(k) neve: _______________<br />
+          A fogyasztó(k) címe: _______________<br />
+          A fogyasztó(k) aláírása (kizárólag papíron tett nyilatkozat esetén): _______________<br />
+          Kelt: _______________
+        </p>
+
+        <h2>15. Irányadó jog és jogviták</h2>
         <p>
-          Jelen ÁSZF-re a magyar jog az irányadó. A felek vitáikat elsősorban békés úton
-          rendezik. Ennek sikertelensége esetén a Budapesti II. és III. Kerületi Bíróság,
-          illetve a Fővárosi Törvényszék kizárólagos illetékességét kötik ki.
+          Jelen ÁSZF-re a magyar jog az irányadó. Felek a jogvitáikat elsődlegesen egyeztetés útján rendezik. Fogyasztói jogviták esetén a fogyasztó lakóhelye vagy tartózkodási helye szerinti bíróság is illetékes. Vállalkozások közötti jogviták esetén a Budapesti II. és III. Kerületi Bíróság kizárólagos illetékességét kötik ki.
         </p>
 
         <hr />

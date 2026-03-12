@@ -14,6 +14,7 @@ import { TOTP, generateSecret, generateURI, verifySync } from 'otplib';
 import * as QRCode from 'qrcode';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { StorageService } from '../storage/storage.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 
@@ -28,6 +29,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
     private readonly notificationsService: NotificationsService,
+    private readonly storageService: StorageService,
   ) {
     this.frontendUrl = config.get<string>('FRONTEND_URL', 'http://localhost:3000');
   }
@@ -524,8 +526,34 @@ export class AuthService {
       if (!valid) throw new UnauthorizedException('Hibás jelszó');
     }
 
+    // Collect R2 file keys for cleanup before deleting DB records
+    const userContracts = await this.prisma.contract.findMany({
+      where: { ownerId: userId },
+      select: { pdfUrl: true },
+    });
+    const signers = await this.prisma.signer.findMany({
+      where: { contract: { ownerId: userId } },
+      select: { signatureImageUrl: true },
+    });
+
+    const fileKeys: string[] = [];
+    for (const c of userContracts) {
+      if (c.pdfUrl) fileKeys.push(c.pdfUrl);
+    }
+    for (const s of signers) {
+      if (s.signatureImageUrl) fileKeys.push(s.signatureImageUrl);
+    }
+
+    // Delete files from R2/local storage (best-effort, don't block on failures)
+    await Promise.allSettled(
+      fileKeys.map(key => this.storageService.deleteFile(key)),
+    );
+
     // Delete in order respecting foreign keys
     await this.prisma.$transaction([
+      this.prisma.emailLog.deleteMany({ where: { userId } }),
+      this.prisma.creditTransaction.deleteMany({ where: { userId } }),
+      this.prisma.passwordReset.deleteMany({ where: { userId } }),
       this.prisma.notification.deleteMany({ where: { userId } }),
       this.prisma.session.deleteMany({ where: { userId } }),
       this.prisma.contact.deleteMany({ where: { userId } }),
@@ -579,7 +607,7 @@ export class AuthService {
     const contracts = await this.prisma.contract.findMany({
       where: { ownerId: userId },
       select: {
-        id: true, title: true, status: true, createdAt: true, expiresAt: true,
+        id: true, title: true, status: true, contentHtml: true, createdAt: true, expiresAt: true,
         signers: { select: { name: true, email: true, role: true, status: true, signedAt: true, signatureMethod: true } },
       },
     });
@@ -588,7 +616,6 @@ export class AuthService {
       where: { contract: { ownerId: userId } },
       select: { eventType: true, ipAddress: true, createdAt: true, contract: { select: { title: true } } },
       orderBy: { createdAt: 'desc' },
-      take: 1000,
     });
 
     const sessions = await this.prisma.session.findMany({
@@ -601,6 +628,46 @@ export class AuthService {
       select: { role: true, joinedAt: true, team: { select: { name: true } } },
     });
 
+    const templates = await this.prisma.template.findMany({
+      where: { ownerId: userId },
+      select: { name: true, category: true, description: true, contentHtml: true, variables: true, isPublic: true, createdAt: true },
+    });
+
+    const apiKeys = await this.prisma.apiKey.findMany({
+      where: { userId },
+      select: { name: true, prefix: true, scopes: true, createdAt: true },
+    });
+
+    const webhooks = await this.prisma.webhook.findMany({
+      where: { userId },
+      select: { url: true, events: true, active: true, createdAt: true },
+    });
+
+    const creditTransactions = await this.prisma.creditTransaction.findMany({
+      where: { userId },
+      select: { type: true, amount: true, description: true, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const quotes = await this.prisma.quote.findMany({
+      where: { ownerId: userId },
+      select: {
+        id: true, title: true, clientName: true, clientEmail: true, status: true,
+        currency: true, validUntil: true, createdAt: true,
+        items: { select: { description: true, quantity: true, unitPrice: true, unit: true, taxRate: true } },
+      },
+    });
+
+    const tags = await this.prisma.tag.findMany({
+      where: { userId },
+      select: { name: true, color: true, createdAt: true },
+    });
+
+    const folders = await this.prisma.folder.findMany({
+      where: { userId },
+      select: { name: true, color: true, createdAt: true },
+    });
+
     return {
       exportDate: new Date().toISOString(),
       gdprNote: 'GDPR 20. cikk szerinti adathordozhatóság — géppel olvasható formátum',
@@ -610,6 +677,13 @@ export class AuthService {
       auditLogs: auditLogs.map(l => ({ ...l, contractTitle: l.contract?.title })),
       sessions,
       teamMembers: teamMembers.map(tm => ({ role: tm.role, teamName: tm.team?.name, joinedAt: tm.joinedAt })),
+      templates,
+      apiKeys,
+      webhooks,
+      creditTransactions,
+      quotes,
+      tags,
+      folders,
     };
   }
 

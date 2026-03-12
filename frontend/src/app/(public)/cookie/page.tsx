@@ -19,6 +19,14 @@ export default function CookiePage() {
           megjegyezze a beállításaikat, és javítsa a felhasználói élményt.
         </p>
 
+        <h3>1.1. Cookie hozzájárulás kezelése</h3>
+        <p>
+          A Platform első látogatásakor egy cookie banner jelenik meg, amely két lehetőséget kínál:
+          „Elfogadom" (minden cookie engedélyezése) és „Csak szükségesek" (csak a szükséges cookie-k).
+          A nem szükséges cookie-k (funkcionális) kizárólag az „Elfogadom" gombra kattintás után kerülnek
+          elhelyezésre.
+        </p>
+
         <h2>2. Milyen cookie-kat használunk?</h2>
 
         <h3>2.1. Feltétlenül szükséges cookie-k</h3>
@@ -102,6 +110,11 @@ export default function CookiePage() {
           A funkcionális cookie-kra adott hozzájárulásodat bármikor visszavonhatod a böngésző
           cookie-beállításaiban, vagy töröld a böngésző cookie-jait.
         </p>
+        <p>
+          Hozzájárulás visszavonása: A cookie-beállítások bármikor módosíthatók a böngésző beállításaiban
+          a fent leírt módon, illetve a sütik törölhetők. A „cookie_consent" elem a böngésző
+          localStorage-ából való törlésével a cookie banner újra megjelenik a következő látogatáskor.
+        </p>
 
         <h2>5. Jogalap</h2>
         <p>A cookie-k használatának jogalapja:</p>
@@ -115,6 +128,14 @@ export default function CookiePage() {
             a felhasználó által az első látogatáskor megadott hozzájárulás alapján
           </li>
         </ul>
+
+        <h3>5.1. Helyi tárolás (localStorage)</h3>
+        <p>
+          A Platform a cookie-k mellett a böngésző helyi tárhelyét (localStorage) is használja a következő
+          adatok tárolására: cookie_consent (hozzájárulási állapot), theme (témabeállítás), sidebar_state
+          (oldalsáv állapota). Ezek az adatok kizárólag a böngészőben tárolódnak és nem kerülnek továbbításra
+          a szerverre.
+        </p>
 
         <h2>6. Adatmegőrzés</h2>
         <p>

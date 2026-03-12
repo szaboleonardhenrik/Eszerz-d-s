@@ -193,6 +193,13 @@ export class SignaturesService {
     if (signer.status !== 'pending')
       throw new BadRequestException('Ez az aláírás már nem módosítható');
 
+    // Check data consent
+    if (!dto.dataConsent) {
+      throw new BadRequestException(
+        'Az adatkezelési hozzájárulás elfogadása kötelező az aláíráshoz.',
+      );
+    }
+
     // Check OTP verification
     if (!signer.otpVerified) {
       throw new BadRequestException(

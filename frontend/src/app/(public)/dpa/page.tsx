@@ -29,6 +29,9 @@ export default function DpaPage() {
           </li>
           <li>
             <strong>Adatfeldolgozó:</strong> T-DIGITAL Solutions Kft. (Legitas),
+            Székhely: 1117 Budapest, Nándorfejérvári út 32. 1. em. 4. ajtó,
+            Cégjegyzékszám: 01-09-428831, Adószám: 32526620-2-43,
+            Képviselő: Yilmaz Attila Zoltán ügyvezető,
             e-mail: info@legitas.hu (a továbbiakban: &quot;Adatfeldolgozó&quot;).
           </li>
         </ul>
@@ -70,6 +73,7 @@ export default function DpaPage() {
           </li>
           <li>Csak a GDPR-nak megfelelő további adatfeldolgozókat vesz igénybe (lásd 6. pont).</li>
           <li>Segíti az Adatkezelőt az érintetti jogok (hozzáférés, törlés, adathordozhatóság) teljesítésében.</li>
+          <li>Az Adatfeldolgozó segítséget nyújt az Adatkezelőnek az adatvédelmi hatásvizsgálat (DPIA) elkészítésében és az előzetes konzultáció (GDPR 35-36. cikk) lefolytatásában, amennyiben az adatkezelési tevékenység ilyen vizsgálatot tesz szükségessé.</li>
           <li>Az Adatkezelő fiókjának törlésekor 30 napon belül törli az összes kezelt személyes adatot,
             kivéve a jogszabály által előírt megőrzési kötelezettségeket.</li>
           <li>Az Adatkezelő rendelkezésére bocsátja a megfelelőség igazolásához szükséges információkat.</li>
@@ -77,9 +81,10 @@ export default function DpaPage() {
 
         <h2>5. Adatvédelmi incidens kezelése</h2>
         <p>
-          Az Adatfeldolgozó az adatvédelmi incidensről való tudomásszerzést követően indokolatlan
-          késedelem nélkül, de legkésőbb <strong>48 órán belül</strong> értesíti az Adatkezelőt.
-          Az értesítés tartalmazza:
+          Az Adatfeldolgozó az adatvédelmi incidensről való tudomásszerzést követő <strong>48 órán
+          belül</strong> értesíti az Adatkezelőt. Az Adatkezelő ezt követően — a GDPR 33. cikke
+          alapján — 72 órán belül értesíti a NAIH-ot, amennyiben az incidens valószínűsíthetően
+          kockázattal jár az érintettek jogaira. Az értesítés tartalmazza:
         </p>
         <ul>
           <li>Az incidens jellegét és az érintett adatok körét</li>
@@ -96,11 +101,11 @@ export default function DpaPage() {
           </thead>
           <tbody>
             <tr><td>Hetzner GmbH</td><td>Németország (EU)</td><td>Szerver infrastruktúra</td></tr>
-            <tr><td>Cloudflare R2</td><td>EU régió</td><td>Dokumentumtárolás</td></tr>
+            <tr><td>Cloudflare Inc. (USA), adattárolás: EU régió (Frankfurt)</td><td>EU régió</td><td>Dokumentumtárolás</td></tr>
             <tr><td>Resend Inc.</td><td>USA (SCC alapján)</td><td>E-mail küldés</td></tr>
             <tr><td>Stripe Inc.</td><td>USA (SCC alapján)</td><td>Fizetéskezelés</td></tr>
             <tr><td>Anthropic</td><td>USA (SCC alapján)</td><td>AI szerződéselemzés (ideiglenes)</td></tr>
-            <tr><td>Google LLC</td><td>USA (EU megfelelőségi határozat)</td><td>OAuth hitelesítés (Google-fiókkal bejelentkezés)</td></tr>
+            <tr><td>Google LLC</td><td>USA (EU-US Data Privacy Framework (DPF) tanúsított)</td><td>OAuth hitelesítés (Google-fiókkal bejelentkezés)</td></tr>
           </tbody>
         </table>
         <p>
@@ -118,9 +123,11 @@ export default function DpaPage() {
 
         <h2>8. Audit jog</h2>
         <p>
-          Az Adatkezelő jogosult — indokolt esetben, előzetes egyeztetés alapján — ellenőrizni,
-          hogy az Adatfeldolgozó betartja-e jelen megállapodás rendelkezéseit. Az Adatfeldolgozó
-          biztosítja az ellenőrzéshez szükséges hozzáférést.
+          Az Adatkezelő jogosult az Adatfeldolgozó megfelelőségét ellenőrizni. Az Adatfeldolgozó
+          az Adatkezelő rendelkezésére bocsát minden szükséges információt a GDPR 28. cikk szerinti
+          kötelezettségek teljesítésének igazolásához, továbbá lehetővé teszi és elősegíti az
+          Adatkezelő vagy az általa megbízott auditor által végzett auditokat és ellenőrzéseket.
+          Az audit ésszerű előzetes egyeztetés után, az Adatfeldolgozó munkaidejében történik.
         </p>
 
         <h2>9. Időtartam és megszüntetés</h2>
@@ -128,7 +135,8 @@ export default function DpaPage() {
           Jelen megállapodás a Szolgáltatás igénybevételével lép hatályba és a fiók törléséig
           (vagy a Szolgáltatás megszűnéséig) érvényes. A feldolgozás megszűnése után az
           Adatfeldolgozó — az Adatkezelő választása szerint — törli vagy visszajuttatja
-          az összes személyes adatot.
+          az összes személyes adatot. Az Adatfeldolgozó gondoskodik arról, hogy az al-adatfeldolgozók
+          is véglegesen töröljék a személyes adatokat a jogviszony megszűnését követő 30 napon belül.
         </p>
 
         <h2>10. Alkalmazandó jog</h2>

@@ -58,6 +58,10 @@ export default function RiskAnalysis({ contractId }: { contractId: string }) {
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
 
   const analyze = async () => {
+    const consent = window.confirm(
+      "Az elemzéshez a szerződés szövege az Anthropic (USA) AI szolgáltatónak kerül továbbításra feldolgozásra. Az adatok nem kerülnek tartós tárolásra. Folytatja?"
+    );
+    if (!consent) return;
     setLoading(true);
     try {
       const res = await api.post(`/ai/risk-analysis/${contractId}`);

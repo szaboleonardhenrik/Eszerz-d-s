@@ -26,6 +26,11 @@ export default function DataProcessingRegisterPage() {
           <li><strong>E-mail:</strong> info@legitas.hu</li>
         </ul>
 
+        <p>
+          <strong>Adatvédelmi tisztviselő (DPO):</strong> Kinevezés jelenleg nem kötelező
+          (GDPR 37. cikk — lásd DPIA). Adatvédelmi kapcsolattartó: info@legitas.hu
+        </p>
+
         <h2>2. Adatkezelési tevékenységek</h2>
 
         <h3>2.1. Felhasználói regisztráció és fiókkezelés</h3>
@@ -98,7 +103,7 @@ export default function DataProcessingRegisterPage() {
             <tr><td>Adatkategóriák</td><td>Név, e-mail cím, e-mail tartalom</td></tr>
             <tr><td>Jogalap</td><td>Szerződés teljesítése (GDPR 6(1)(b))</td></tr>
             <tr><td>Cél</td><td>Aláírási meghívók, emlékeztetők, visszaigazolások</td></tr>
-            <tr><td>Megőrzési idő</td><td>Resend szolgáltató megőrzési politikája szerint</td></tr>
+            <tr><td>Megőrzési idő</td><td>E-mail kézbesítési log: 1 év, ezt követően automatikus törlés. A Resend szolgáltató saját megőrzési politikája alapján max. 30 nap.</td></tr>
             <tr><td>Adatfeldolgozók</td><td>Resend Inc. (USA — SCC alapján)</td></tr>
           </tbody>
         </table>
@@ -126,10 +131,40 @@ export default function DataProcessingRegisterPage() {
           <tbody>
             <tr><td>Érintettek köre</td><td>Az aláírók / üzleti partnerek</td></tr>
             <tr><td>Adatkategóriák</td><td>Név, e-mail, cégnév, adószám, cím, telefonszám</td></tr>
-            <tr><td>Jogalap</td><td>Hozzájárulás (GDPR 6(1)(a)) — aláíró hozzájárulása az aláírási oldalon</td></tr>
+            <tr><td>Jogalap</td><td>Hozzájárulás (GDPR 6(1)(a)) — az aláíró kifejezett hozzájárulása az aláírási oldalon található jelölőnégyzet útján</td></tr>
             <tr><td>Cél</td><td>Üzleti kapcsolattartás, jövőbeli szerződéskötés megkönnyítése</td></tr>
             <tr><td>Megőrzési idő</td><td>Fiók törléséig vagy érintett törlési kéréséig</td></tr>
             <tr><td>Adatfeldolgozók</td><td>Hetzner (szerver)</td></tr>
+          </tbody>
+        </table>
+
+        <h3>2.8. Sütikezelés</h3>
+        <table>
+          <thead>
+            <tr><th>Szempont</th><th>Leírás</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Érintettek köre</td><td>Felhasználók (látogatók)</td></tr>
+            <tr><td>Adatkategóriák</td><td>cookie_consent, session_id, jwt_token, csrf_token, theme, sidebar_state</td></tr>
+            <tr><td>Jogalap</td><td>Szükséges sütik — jogos érdek (GDPR 6(1)(f)); Funkcionális sütik — hozzájárulás (GDPR 6(1)(a))</td></tr>
+            <tr><td>Cél</td><td>Munkamenet-kezelés, hitelesítés, felhasználói preferenciák</td></tr>
+            <tr><td>Megőrzési idő</td><td>session_id — munkamenet végéig, jwt_token — 30 nap, egyéb — böngésző törléséig</td></tr>
+            <tr><td>Adatfeldolgozók</td><td>Hetzner (szerver)</td></tr>
+          </tbody>
+        </table>
+
+        <h3>2.9. Webhook adattovábbítás</h3>
+        <table>
+          <thead>
+            <tr><th>Szempont</th><th>Leírás</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Érintettek köre</td><td>Felhasználók és aláírók</td></tr>
+            <tr><td>Adatkategóriák</td><td>Szerződés azonosító, státusz, aláíró neve, e-mail címe</td></tr>
+            <tr><td>Jogalap</td><td>Szerződés teljesítése (GDPR 6(1)(b)) — a Felhasználó által konfigurált automatikus értesítés</td></tr>
+            <tr><td>Cél</td><td>Automatikus értesítés harmadik fél rendszerekbe</td></tr>
+            <tr><td>Megőrzési idő</td><td>Webhook kézbesítési log 90 napig</td></tr>
+            <tr><td>Adatfeldolgozók</td><td>A Felhasználó által megadott harmadik fél URL (a Felhasználó felelőssége)</td></tr>
           </tbody>
         </table>
 
@@ -144,7 +179,7 @@ export default function DataProcessingRegisterPage() {
             <tr><td>Resend Inc.</td><td>USA</td><td>E-mail küldés</td><td>SCC (EU 2021/914)</td></tr>
             <tr><td>Stripe Inc.</td><td>USA</td><td>Fizetéskezelés</td><td>SCC, PCI DSS Level 1</td></tr>
             <tr><td>Anthropic PBC</td><td>USA</td><td>AI szerződéselemzés</td><td>SCC, adatot nem tárol</td></tr>
-            <tr><td>Google LLC</td><td>USA</td><td>OAuth hitelesítés</td><td>EU megfelelőségi határozat</td></tr>
+            <tr><td>Google LLC</td><td>USA</td><td>OAuth hitelesítés</td><td>EU-US Data Privacy Framework (DPF)</td></tr>
           </tbody>
         </table>
 

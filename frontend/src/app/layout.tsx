@@ -4,6 +4,7 @@ import Script from "next/script";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import CookieConsent from "@/components/cookie-consent";
+import Analytics from "@/components/analytics";
 import ServiceWorkerRegister from "@/components/sw-register";
 import { ThemeProvider } from "@/components/theme-provider";
 import { I18nProvider } from "@/lib/i18n";
@@ -88,14 +89,7 @@ export default function RootLayout({
   return (
     <html lang="hu" suppressHydrationWarning>
       <body className={`${inter.className} antialiased bg-gray-50 dark:bg-gray-900 dark:text-gray-100`}>
-        {gaId && (
-          <>
-            <Script src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} strategy="afterInteractive" />
-            <Script id="ga4-init" strategy="afterInteractive">
-              {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${gaId}',{page_path:window.location.pathname});`}
-            </Script>
-          </>
-        )}
+        {gaId && <Analytics gaId={gaId} />}
         <Script
           id="org-jsonld"
           type="application/ld+json"

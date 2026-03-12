@@ -6,6 +6,7 @@ import {
   S3Client,
   PutObjectCommand,
   GetObjectCommand,
+  DeleteObjectCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
@@ -120,6 +121,27 @@ export class StorageService {
       }),
     );
     return key;
+  }
+
+  async deleteFile(key: string): Promise<void> {
+    if (!key) return;
+    if (this.useLocal) {
+      const filePath = this.resolveLocalPath(key);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+      return;
+    }
+    try {
+      await this.s3!.send(
+        new DeleteObjectCommand({
+          Bucket: this.bucket,
+          Key: key,
+        }),
+      );
+    } catch (err) {
+      this.logger.warn(`Failed to delete file from R2: ${key}`, err);
+    }
   }
 
   getLocalFilePath(key: string): string | null {
