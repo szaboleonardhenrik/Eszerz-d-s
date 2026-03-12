@@ -16,6 +16,7 @@ interface Contract {
   title: string;
   status: string;
   updatedAt: string;
+  pdfUrl: string | null;
   signers: Signer[];
 }
 
@@ -61,6 +62,8 @@ export default function ArchivePage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [restoringIds, setRestoringIds] = useState<Set<string>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     api
@@ -80,11 +83,69 @@ export default function ArchivePage() {
     return contracts.filter((c) => c.title.toLowerCase().includes(q));
   }, [contracts, search]);
 
+  const allSelected = filtered.length > 0 && filtered.every((c) => selectedIds.has(c.id));
+
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleAll() {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filtered.map((c) => c.id)));
+    }
+  }
+
+  async function handleBulkExport() {
+    const ids = Array.from(selectedIds).filter((id) =>
+      contracts.find((c) => c.id === id && c.pdfUrl)
+    );
+
+    if (ids.length === 0) {
+      toast.error("Nincs letölthető PDF a kiválasztott szerződésekhez.");
+      return;
+    }
+
+    setExporting(true);
+    try {
+      const res = await api.post("/contracts/bulk-export", { contractIds: ids }, {
+        responseType: "blob",
+      });
+
+      const blob = new Blob([res.data], { type: "application/zip" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `szerzodesek-archiv-${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast.success(`${ids.length} szerződés letöltve ZIP-ben.`);
+    } catch {
+      toast.error("Hiba a ZIP exportálás során.");
+    } finally {
+      setExporting(false);
+    }
+  }
+
   async function handleRestore(id: string) {
     setRestoringIds((prev) => new Set(prev).add(id));
     try {
       await api.post(`/contracts/${id}/unarchive`);
       setContracts((prev) => prev.filter((c) => c.id !== id));
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
       toast.success("Szerződés visszaállítva.");
     } catch {
       toast.error("Nem sikerült visszaállítani a szerződést.");
@@ -109,19 +170,51 @@ export default function ArchivePage() {
         </p>
       </div>
 
-      {/* Search */}
-      <div className="mb-4">
+      {/* Search + Bulk Actions */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-4">
         <input
           type="text"
           placeholder="Keresés cím alapján..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full sm:w-80 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600
+          className="flex-1 sm:max-w-xs px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600
             bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
             placeholder-gray-400 dark:placeholder-gray-500
             focus:outline-none focus:ring-2 focus:ring-[#198296] focus:border-transparent
             text-sm"
         />
+
+        {selectedIds.size > 0 && (
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              {selectedIds.size} kiválasztva
+            </span>
+            <button
+              onClick={handleBulkExport}
+              disabled={exporting}
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white
+                bg-[#198296] hover:bg-[#146b7c] rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {exporting ? (
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+              )}
+              {exporting ? "Exportálás..." : "ZIP letöltés"}
+            </button>
+            <button
+              onClick={() => setSelectedIds(new Set())}
+              className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"
+            >
+              Mégsem
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Content */}
@@ -154,7 +247,15 @@ export default function ArchivePage() {
       ) : (
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
           {/* Table header */}
-          <div className="hidden sm:grid sm:grid-cols-[3fr_1fr_1fr_1fr_auto] gap-4 px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+          <div className="hidden sm:grid sm:grid-cols-[40px_3fr_1fr_1fr_1fr_auto] gap-4 px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            <span className="flex items-center">
+              <input
+                type="checkbox"
+                checked={allSelected}
+                onChange={toggleAll}
+                className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-[#198296] focus:ring-[#198296] cursor-pointer"
+              />
+            </span>
             <span>Cím</span>
             <span>Státusz</span>
             <span>Archiválva</span>
@@ -166,6 +267,7 @@ export default function ArchivePage() {
           <ul className="divide-y divide-gray-100 dark:divide-gray-800">
             {filtered.map((contract) => {
               const isRestoring = restoringIds.has(contract.id);
+              const isSelected = selectedIds.has(contract.id);
               const signerNames = contract.signers
                 ?.map((s) => s.name)
                 .filter(Boolean)
@@ -176,15 +278,41 @@ export default function ArchivePage() {
               return (
                 <li
                   key={contract.id}
-                  className="grid grid-cols-1 sm:grid-cols-[3fr_1fr_1fr_1fr_auto] gap-2 sm:gap-4 items-center px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                  className={`grid grid-cols-1 sm:grid-cols-[40px_3fr_1fr_1fr_1fr_auto] gap-2 sm:gap-4 items-center px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors ${
+                    isSelected ? "bg-[#198296]/5 dark:bg-[#198296]/10" : ""
+                  }`}
                 >
+                  {/* Checkbox */}
+                  <span className="hidden sm:flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => toggleSelect(contract.id)}
+                      className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-[#198296] focus:ring-[#198296] cursor-pointer"
+                    />
+                  </span>
+
                   {/* Title */}
-                  <Link
-                    href={`/contracts/${contract.id}`}
-                    className="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-[#198296] dark:hover:text-[#198296] truncate transition-colors"
-                  >
-                    {contract.title}
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    {/* Mobile checkbox */}
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => toggleSelect(contract.id)}
+                      className="sm:hidden w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-[#198296] focus:ring-[#198296] cursor-pointer shrink-0"
+                    />
+                    <Link
+                      href={`/contracts/${contract.id}`}
+                      className="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-[#198296] dark:hover:text-[#198296] truncate transition-colors"
+                    >
+                      {contract.title}
+                    </Link>
+                    {contract.pdfUrl && (
+                      <svg className="w-3.5 h-3.5 text-gray-300 dark:text-gray-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                      </svg>
+                    )}
+                  </div>
 
                   {/* Status */}
                   <span className="text-xs text-gray-500 dark:text-gray-400">
