@@ -146,21 +146,57 @@ export default function AszfPage() {
           vagy hiányzó záradék-jelzésekért. Bonyolultabb ügyleteknél javasoljuk ügyvéd bevonását.
         </p>
 
-        <h2>9. Felmondás és adattörlés</h2>
+        <h2>9. Rendelkezésre állás és karbantartás</h2>
+        <p>
+          A Szolgáltató a Szolgáltatást az év minden napján, 24 órában elérhetővé kívánja tenni,
+          de nem garantálja a 100%-os rendelkezésre állást. A tervezett éves rendelkezésre állási
+          cél <strong>99,5%</strong> (karbantartási időszakokat és vis major eseményeket nem számítva).
+        </p>
+        <ul>
+          <li><strong>Tervezett karbantartás:</strong> Előzetes értesítéssel (legalább 24 órával korábban, e-mailben),
+            lehetőleg munkaidőn kívül (CET 22:00–06:00 között).</li>
+          <li><strong>Nem tervezett karbantartás:</strong> Sürgős biztonsági javítás esetén, utólagos értesítéssel.</li>
+          <li><strong>Adatvesztés elleni védelem:</strong> Napi automatikus mentés, EU-n belüli szerveren.</li>
+        </ul>
+        <p>
+          A Szolgáltató nem vállal felelősséget a Szolgáltatás kiesésből eredő közvetett vagy
+          következményi károkért.
+        </p>
+
+        <h2>10. Panaszkezelés</h2>
+        <p>
+          A Felhasználó a Szolgáltatással kapcsolatos panaszait az alábbi módon nyújthatja be:
+        </p>
+        <ul>
+          <li><strong>E-mail:</strong> info@legitas.hu</li>
+          <li><strong>Postai úton:</strong> T-DIGITAL Solutions Kft., 1117 Budapest, Nándorfejérvári út 32. 1. em. 4.</li>
+        </ul>
+        <p>
+          A Szolgáltató a panaszt a beérkezéstől számított <strong>30 napon belül</strong> érdemben megvizsgálja
+          és írásban (e-mailben) válaszol. Ha a panaszt a Szolgáltató elutasítja, a Felhasználó az alábbi
+          szervekhez fordulhat:
+        </p>
+        <ul>
+          <li><strong>Nemzeti Fogyasztóvédelmi Hatóság</strong> (fogyasztovedelem.kormany.hu)</li>
+          <li><strong>Budapesti Békéltető Testület</strong> (1016 Budapest, Krisztina krt. 99.)</li>
+          <li><strong>Online vitarendezési platform:</strong> https://ec.europa.eu/consumers/odr</li>
+        </ul>
+
+        <h2>11. Felmondás és adattörlés</h2>
         <p>
           A Felhasználó fiókját bármikor törölheti a Beállítások menüben. A törlés esetén
           az adatok 30 napon belül véglegesen eltávolításra kerülnek. Az aktív előfizetés
           felmondása a futamidő végén lép hatályba.
         </p>
 
-        <h2>10. Módosítások</h2>
+        <h2>12. Módosítások</h2>
         <p>
           A Szolgáltató fenntartja az ÁSZF módosításának jogát. A módosításról a Felhasználókat
           emailben értesítjük legalább 15 nappal a hatálybalépés előtt. A Szolgáltatás további
           használata a módosított feltételek elfogadásának minősül.
         </p>
 
-        <h2>11. Elállási jog</h2>
+        <h2>13. Elállási jog</h2>
         <p>
           A fogyasztót a 45/2014. (II. 26.) Korm. rendelet 20. §-a alapján 14 napos elállási jog illeti meg
           az előfizetés megkezdésétől számítva, indokolás nélkül.
@@ -178,7 +214,7 @@ export default function AszfPage() {
           Az elállási nyilatkozatot a info@legitas.hu email-címre kell megküldeni.
         </p>
 
-        <h2>12. Irányadó jog és jogviták</h2>
+        <h2>14. Irányadó jog és jogviták</h2>
         <p>
           Jelen ÁSZF-re a magyar jog az irányadó. A felek vitáikat elsősorban békés úton
           rendezik. Ennek sikertelensége esetén a Budapesti II. és III. Kerületi Bíróság,

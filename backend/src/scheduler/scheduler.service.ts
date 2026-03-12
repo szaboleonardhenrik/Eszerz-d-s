@@ -111,6 +111,45 @@ export class SchedulerService {
     this.logger.log(`Expired ${expiredSigners.length} signer tokens`);
   }
 
+  /** Daily at 8:30 AM - send 24-hour token expiry warning to pending signers */
+  @Cron('30 8 * * *')
+  async sendTokenExpiryWarnings() {
+    this.logger.log('Running 24h expiry warning job...');
+
+    const now = new Date();
+    const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const in48h = new Date(now.getTime() + 48 * 60 * 60 * 1000);
+
+    // Find signers whose token expires in 24-48 hours (to avoid sending twice)
+    const expiringSoon = await this.prisma.signer.findMany({
+      where: {
+        status: 'pending',
+        tokenExpiresAt: { gt: in24h, lt: in48h },
+      },
+      include: { contract: true },
+    });
+
+    const frontendUrl = this.config.get<string>('FRONTEND_URL', 'http://localhost:3000');
+
+    for (const s of expiringSoon) {
+      try {
+        const signUrl = `${frontendUrl}/sign/${s.signToken}`;
+        await this.notificationsService.sendReminder({
+          to: s.email,
+          signerName: s.name,
+          contractTitle: s.contract.title,
+          signUrl,
+          expiresAt: s.tokenExpiresAt?.toLocaleDateString('hu-HU') ?? '',
+        });
+        this.logger.log(`Expiry warning sent to ${s.email} for contract ${s.contractId}`);
+      } catch (err) {
+        this.logger.error(`Failed to send expiry warning to ${s.email}`, err);
+      }
+    }
+
+    this.logger.log(`Sent ${expiringSoon.length} expiry warnings`);
+  }
+
   /** Daily at 11:00 AM - send auto-reminders for signers pending > 3 days */
   @Cron('0 11 * * *')
   async sendAutoReminders() {

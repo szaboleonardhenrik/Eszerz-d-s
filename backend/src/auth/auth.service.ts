@@ -494,15 +494,19 @@ export class AuthService {
 
   // ─── ACCOUNT MANAGEMENT ──────────────────────────
 
-  async deleteAccount(userId: string, password: string) {
+  async deleteAccount(userId: string, password: string, confirmEmail?: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('Felhasználó nem található');
 
     if (!user.passwordHash) {
-      throw new BadRequestException('Ez a fiók Google bejelentkezéssel lett létrehozva.');
+      // Google OAuth users: confirm by email match
+      if (!confirmEmail || confirmEmail.toLowerCase() !== user.email.toLowerCase()) {
+        throw new BadRequestException('A fiók törléséhez add meg az e-mail címedet megerősítésként.');
+      }
+    } else {
+      const valid = await bcrypt.compare(password, user.passwordHash);
+      if (!valid) throw new UnauthorizedException('Hibás jelszó');
     }
-    const valid = await bcrypt.compare(password, user.passwordHash);
-    if (!valid) throw new UnauthorizedException('Hibás jelszó');
 
     // Delete in order respecting foreign keys
     await this.prisma.$transaction([

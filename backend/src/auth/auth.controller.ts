@@ -210,8 +210,8 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Post('delete-account')
-  async deleteAccount(@Req() req: any, @Body() body: { password: string }, @Res({ passthrough: true }) res: Response) {
-    const result = await this.authService.deleteAccount(req.user.userId, body.password);
+  async deleteAccount(@Req() req: any, @Body() body: { password?: string; confirmEmail?: string }, @Res({ passthrough: true }) res: Response) {
+    const result = await this.authService.deleteAccount(req.user.userId, body.password ?? '', body.confirmEmail);
     res.clearCookie('token', COOKIE_OPTIONS(process.env.NODE_ENV === 'production'));
     return ApiResponse.ok(result);
   }

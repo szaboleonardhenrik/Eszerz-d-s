@@ -171,6 +171,16 @@ export default function WebhooksSettings() {
             <p className="text-sm text-gray-500 mt-1">
               Kapj valós idejű értesítéseket a szerződéseid eseményeiről HTTP callback-eken keresztül.
             </p>
+            <div className="mt-2 flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 max-w-xl">
+              <svg className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <p className="text-xs text-amber-800 leading-relaxed">
+                <strong>GDPR figyelmeztetés:</strong> A webhook-ok aláírói adatokat (név, e-mail, státusz) továbbítanak
+                harmadik félnek. Ön mint adatkezelő felelős azért, hogy a fogadó fél GDPR-kompatibilis legyen és
+                rendelkezzen adatfeldolgozási megállapodással (DPA).
+              </p>
+            </div>
           </div>
           <button
             onClick={() => setShowCreate(!showCreate)}

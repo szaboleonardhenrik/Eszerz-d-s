@@ -116,9 +116,9 @@ export class SignaturesService {
       signatureImageUrl = imageKey;
     }
 
-    // Save/update partner as Contact + Company
+    // Save/update partner as Contact + Company (only if signer consented)
     let contactId: string | undefined;
-    try {
+    if (dto.partnerConsent) try {
       const contact = await this.prisma.contact.upsert({
         where: {
           userId_email: {
@@ -245,6 +245,7 @@ export class SignaturesService {
         companyName: s.id === signer.id ? dto.companyName : s.companyName ?? undefined,
         companyTaxNumber: s.id === signer.id ? dto.companyTaxNumber : s.companyTaxNumber ?? undefined,
         companyAddress: s.id === signer.id ? dto.companyAddress : s.companyAddress ?? undefined,
+        ipAddress: s.id === signer.id ? ipAddress : s.ipAddress ?? undefined,
       }));
 
       // Download signature images from R2/local and embed as base64
@@ -269,6 +270,7 @@ export class SignaturesService {
             companyName: s.companyName,
             companyTaxNumber: s.companyTaxNumber,
             companyAddress: s.companyAddress,
+            ipAddress: s.ipAddress,
           };
         }),
       );
@@ -279,6 +281,12 @@ export class SignaturesService {
         signaturesWithImages,
         undefined,
         (signer.contract as any).verificationHash ?? undefined,
+        {
+          registrationNumber: (signer.contract as any).registrationNumber ?? undefined,
+          documentHash: (signer.contract as any).documentHash ?? documentHash,
+          variablesHash: (signer.contract as any).variablesHash ?? undefined,
+          createdAt: signer.contract.createdAt?.toLocaleDateString('hu-HU') ?? undefined,
+        },
       );
 
       const finalPdfKey = `contracts/signed/${signer.contractId}/final.pdf`;

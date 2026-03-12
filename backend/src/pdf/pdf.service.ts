@@ -11,7 +11,7 @@ export interface PdfBranding {
 
 @Injectable()
 export class PdfService {
-  async generatePdf(html: string, title: string, branding?: PdfBranding, verificationHash?: string): Promise<Buffer> {
+  async generatePdf(html: string, title: string, branding?: PdfBranding, verificationHash?: string, documentHash?: string): Promise<Buffer> {
     let qrBlock = '';
     if (verificationHash) {
       const verifyUrl = `${process.env.FRONTEND_URL || 'https://legitas.hu'}/verify/${verificationHash}`;
@@ -53,7 +53,7 @@ export class PdfService {
         displayHeaderFooter: true,
         footerTemplate: `
           <div style="font-size:8px;width:100%;text-align:center;color:#999;padding:0 20mm;">
-            ${footerName} &mdash; Elektronikusan generált dokumentum &mdash;
+            ${footerName} &mdash; Elektronikusan generált dokumentum${documentHash ? ` &mdash; SHA-256: ${documentHash.slice(0, 16)}...` : ''} &mdash;
             <span class="pageNumber"></span>/<span class="totalPages"></span>. oldal
           </div>
         `,
@@ -78,9 +78,16 @@ export class PdfService {
       companyName?: string;
       companyTaxNumber?: string;
       companyAddress?: string;
+      ipAddress?: string;
     }>,
     branding?: PdfBranding,
     verificationHash?: string,
+    auditMeta?: {
+      registrationNumber?: string;
+      documentHash?: string;
+      variablesHash?: string;
+      createdAt?: string;
+    },
   ): Promise<Buffer> {
     let signatureBlock = '<div class="signatures" style="margin-top:40px;page-break-inside:avoid;">';
     signatureBlock += '<h3 style="border-bottom:2px solid #2563eb;padding-bottom:8px;color:#1a1a1a;font-size:16px;">Aláírások</h3>';
@@ -118,8 +125,40 @@ export class PdfService {
     }
 
     signatureBlock += '</div></div>';
-    const fullHtml = html + signatureBlock;
-    return this.generatePdf(fullHtml, title, branding, verificationHash);
+
+    // ── Audit & integrity block in PDF ──
+    let auditBlock = '';
+    const docHash = auditMeta?.documentHash;
+    if (docHash || auditMeta?.registrationNumber) {
+      const rows: string[] = [];
+      if (auditMeta?.registrationNumber) rows.push(`<tr><td style="font-weight:600;width:160px;">Iktatószám</td><td style="font-family:monospace;font-size:11px;">${this.escapeHtml(auditMeta.registrationNumber)}</td></tr>`);
+      if (auditMeta?.createdAt) rows.push(`<tr><td style="font-weight:600;">Létrehozva</td><td>${this.escapeHtml(auditMeta.createdAt)}</td></tr>`);
+      rows.push(`<tr><td style="font-weight:600;">Aláírók száma</td><td>${signatures.length} fő</td></tr>`);
+      for (const sig of signatures) {
+        const ip = sig.ipAddress ? ` (IP: ${this.escapeHtml(sig.ipAddress)})` : '';
+        rows.push(`<tr><td style="font-weight:600;">${this.escapeHtml(sig.name)}</td><td>${sig.signedAt} &bull; ${sig.method === 'simple' ? 'SES' : sig.method === 'dap' ? 'AES/DÁP' : 'QES'}${ip}</td></tr>`);
+      }
+      if (docHash) rows.push(`<tr><td style="font-weight:600;">Dokumentum hash</td><td style="font-family:monospace;font-size:10px;word-break:break-all;">${this.escapeHtml(docHash)}</td></tr>`);
+      if (auditMeta?.variablesHash) rows.push(`<tr><td style="font-weight:600;">Változók hash</td><td style="font-family:monospace;font-size:10px;word-break:break-all;">${this.escapeHtml(auditMeta.variablesHash)}</td></tr>`);
+      rows.push(`<tr><td style="font-weight:600;">Hash algoritmus</td><td>SHA-256</td></tr>`);
+
+      auditBlock = `
+        <div style="margin-top:32px;page-break-inside:avoid;border:1px solid #d1d5db;border-radius:8px;overflow:hidden;">
+          <div style="background:#f3f4f6;padding:10px 16px;border-bottom:1px solid #d1d5db;">
+            <strong style="font-size:12px;color:#374151;text-transform:uppercase;letter-spacing:0.5px;">Hitelesítési adatok &mdash; Audit összefoglaló</strong>
+          </div>
+          <table style="width:100%;border-collapse:collapse;font-size:11px;color:#374151;">
+            ${rows.map(r => r).join('')}
+          </table>
+          <div style="padding:8px 16px;background:#fefce8;border-top:1px solid #d1d5db;font-size:9px;color:#92400e;">
+            Ez a dokumentum a Legitas platformon (legitas.hu) lett létrehozva és elektronikusan aláírva.
+            Az egyszerű elektronikus aláírás (SES) az eIDAS rendelet (EU 910/2014) értelmében joghatással bír.
+          </div>
+        </div>`;
+    }
+
+    const fullHtml = html + signatureBlock + auditBlock;
+    return this.generatePdf(fullHtml, title, branding, verificationHash, auditMeta?.documentHash);
   }
 
   hashDocument(buffer: Buffer): string {

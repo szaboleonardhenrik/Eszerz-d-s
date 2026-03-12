@@ -44,6 +44,7 @@ export default function SignPage() {
   const [declineReason, setDeclineReason] = useState("");
   const [signerNote, setSignerNote] = useState("");
   const [dataConsent, setDataConsent] = useState(false);
+  const [partnerConsent, setPartnerConsent] = useState(false);
 
   // Partner data
   const [signerFullName, setSignerFullName] = useState("");
@@ -137,6 +138,7 @@ export default function SignPage() {
         companyName,
         companyTaxNumber,
         companyAddress,
+        partnerConsent,
       });
       setSigned(true);
     } catch (err: any) {
@@ -613,6 +615,20 @@ export default function SignPage() {
                     >
                       Adatvédelmi tájékoztató
                     </a>
+                  </span>
+                </label>
+
+                {/* Partner registry consent */}
+                <label className="flex items-start gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={partnerConsent}
+                    onChange={(e) => setPartnerConsent(e.target.checked)}
+                    className="w-4.5 h-4.5 mt-0.5 rounded border-gray-300 text-[#198296] focus:ring-[#198296]/30 cursor-pointer"
+                  />
+                  <span className="text-xs text-gray-500 leading-relaxed group-hover:text-gray-700 transition-colors">
+                    Hozzájárulok, hogy a megadott adataimat (név, e-mail, cégnév) a kibocsátó a partneri
+                    nyilvántartásában tárolja a jövőbeli kapcsolattartás céljából. (Opcionális)
                   </span>
                 </label>
               </div>

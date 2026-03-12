@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsIn, IsNotEmpty } from 'class-validator';
+import { IsString, IsOptional, IsIn, IsNotEmpty, IsBoolean } from 'class-validator';
 
 export class SignContractDto {
   @IsIn(['simple', 'dap', 'microsec'])
@@ -31,4 +31,8 @@ export class SignContractDto {
   @IsString()
   @IsNotEmpty({ message: 'A vállalkozás székhelye kötelező' })
   companyAddress: string;
+
+  @IsOptional()
+  @IsBoolean()
+  partnerConsent?: boolean;
 }

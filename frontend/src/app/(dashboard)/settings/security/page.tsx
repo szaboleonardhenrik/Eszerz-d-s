@@ -62,6 +62,8 @@ export default function SecuritySettings() {
   const [sessionsLoading, setSessionsLoading] = useState(true);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
+  const [deleteEmail, setDeleteEmail] = useState("");
+  const [isGoogleUser, setIsGoogleUser] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [twoFaSetup, setTwoFaSetup] = useState<{ qrCode: string; secret: string } | null>(null);
@@ -88,6 +90,7 @@ export default function SecuritySettings() {
     try {
       const res = await api.get("/auth/profile");
       setTwoFaEnabled(res.data.data.twoFactorEnabled ?? false);
+      setIsGoogleUser(res.data.data.googleId && !res.data.data.passwordHash);
     } catch {}
   };
 
@@ -187,13 +190,17 @@ export default function SecuritySettings() {
   };
 
   const handleDeleteAccount = async () => {
-    if (!deletePassword) {
+    if (!isGoogleUser && !deletePassword) {
       toast.error("Add meg a jelszavadat a törléshez");
+      return;
+    }
+    if (isGoogleUser && !deleteEmail) {
+      toast.error("Add meg az e-mail címedet a megerősítéshez");
       return;
     }
     setDeleting(true);
     try {
-      await api.post("/auth/delete-account", { password: deletePassword });
+      await api.post("/auth/delete-account", isGoogleUser ? { confirmEmail: deleteEmail } : { password: deletePassword });
       toast.success("Fiók sikeresen törölve");
       localStorage.clear();
       window.location.href = "/login";
@@ -559,20 +566,30 @@ export default function SecuritySettings() {
             </p>
             <div>
               <label className="block text-sm font-medium text-red-800 mb-1">
-                Add meg a jelszavadat a megerősítéshez
+                {isGoogleUser ? "Add meg az e-mail címedet a megerősítéshez" : "Add meg a jelszavadat a megerősítéshez"}
               </label>
-              <input
-                type="password"
-                value={deletePassword}
-                onChange={(e) => setDeletePassword(e.target.value)}
-                placeholder="Jelszó"
-                className="w-full px-4 py-2.5 border border-red-300 rounded-lg outline-none focus:ring-2 focus:ring-red-500 bg-white"
-              />
+              {isGoogleUser ? (
+                <input
+                  type="email"
+                  value={deleteEmail}
+                  onChange={(e) => setDeleteEmail(e.target.value)}
+                  placeholder="E-mail cím"
+                  className="w-full px-4 py-2.5 border border-red-300 rounded-lg outline-none focus:ring-2 focus:ring-red-500 bg-white"
+                />
+              ) : (
+                <input
+                  type="password"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  placeholder="Jelszó"
+                  className="w-full px-4 py-2.5 border border-red-300 rounded-lg outline-none focus:ring-2 focus:ring-red-500 bg-white"
+                />
+              )}
             </div>
             <div className="flex gap-3">
               <button
                 onClick={handleDeleteAccount}
-                disabled={deleting || !deletePassword}
+                disabled={deleting || (isGoogleUser ? !deleteEmail : !deletePassword)}
                 className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50 transition"
               >
                 {deleting ? "Törlés..." : "Véglegesen törlöm a fiókomat"}
