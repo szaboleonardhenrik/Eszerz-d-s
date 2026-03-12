@@ -50,12 +50,12 @@ function Ico({ d, className = "" }: { d: string; className?: string }) {
   );
 }
 
-/* ── Step colors ── */
+/* ── Step colors – visszafogott, brand-közeli tónusok ── */
 const stepThemes = [
-  { bg: "from-blue-500 to-indigo-600", light: "bg-blue-50 dark:bg-blue-900/20", text: "text-blue-600 dark:text-blue-400", border: "border-blue-200 dark:border-blue-700", ring: "ring-blue-100 dark:ring-blue-900/30", btn: "bg-blue-600 hover:bg-blue-700", accent: "#3B82F6" },
-  { bg: "from-violet-500 to-purple-600", light: "bg-violet-50 dark:bg-violet-900/20", text: "text-violet-600 dark:text-violet-400", border: "border-violet-200 dark:border-violet-700", ring: "ring-violet-100 dark:ring-violet-900/30", btn: "bg-violet-600 hover:bg-violet-700", accent: "#8B5CF6" },
-  { bg: "from-teal-500 to-emerald-600", light: "bg-teal-50 dark:bg-teal-900/20", text: "text-teal-600 dark:text-teal-400", border: "border-teal-200 dark:border-teal-700", ring: "ring-teal-100 dark:ring-teal-900/30", btn: "bg-teal-600 hover:bg-teal-700", accent: "#14B8A6" },
-  { bg: "from-amber-500 to-orange-600", light: "bg-amber-50 dark:bg-amber-900/20", text: "text-amber-600 dark:text-amber-400", border: "border-amber-200 dark:border-amber-700", ring: "ring-amber-100 dark:ring-amber-900/30", btn: "bg-amber-600 hover:bg-amber-700", accent: "#F59E0B" },
+  { bg: "from-[#2F6482] to-[#3A7CA5]", light: "bg-slate-50 dark:bg-slate-900/20", text: "text-[#2F6482] dark:text-sky-400", border: "border-slate-200 dark:border-slate-700", ring: "ring-slate-100 dark:ring-slate-900/30", btn: "bg-[#2F6482] hover:bg-[#265570]", accent: "#2F6482" },
+  { bg: "from-[#2F8A8A] to-[#3AA0A0]", light: "bg-teal-50 dark:bg-teal-900/20", text: "text-[#2F8A8A] dark:text-teal-400", border: "border-teal-200 dark:border-teal-700", ring: "ring-teal-100 dark:ring-teal-900/30", btn: "bg-[#2F8A8A] hover:bg-[#267070]", accent: "#2F8A8A" },
+  { bg: "from-[#3D5260] to-[#4A6575]", light: "bg-gray-50 dark:bg-gray-900/20", text: "text-[#3D5260] dark:text-gray-400", border: "border-gray-200 dark:border-gray-700", ring: "ring-gray-100 dark:ring-gray-900/30", btn: "bg-[#3D5260] hover:bg-[#2E3E4A]", accent: "#3D5260" },
+  { bg: "from-[#4A8B6F] to-[#5A9E80]", light: "bg-emerald-50 dark:bg-emerald-900/20", text: "text-[#4A8B6F] dark:text-emerald-400", border: "border-emerald-200 dark:border-emerald-700", ring: "ring-emerald-100 dark:ring-emerald-900/30", btn: "bg-[#4A8B6F] hover:bg-[#3D7A60]", accent: "#4A8B6F" },
 ];
 
 function CreateWizardInner() {

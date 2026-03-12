@@ -136,19 +136,19 @@ export default function TemplatesPage() {
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Sablonkonyvtar</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Sablonkönyvtár</h1>
         <div className="flex gap-2">
           <Link
             href="/templates/marketplace"
             className="border border-gray-200 dark:border-gray-600 px-4 py-2 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
           >
-            Piac ter
+            Piactér
           </Link>
           <Link
             href="/templates/new"
             className="bg-brand-gold text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-brand-gold-dark transition shadow-sm"
           >
-            + Uj sablon
+            + Új sablon
           </Link>
         </div>
       </div>
