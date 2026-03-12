@@ -166,19 +166,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
             </div>
           </div>
-          {/* Bottom row: navigation links */}
-          <div className="hidden lg:flex gap-1 pb-2 -mb-px">
+        </div>
+      </nav>
+      {/* Secondary navigation row — separate from the blue header */}
+      <div className="hidden lg:block border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1.5">
+          <div className={`inline-flex gap-1 rounded-xl px-2 py-1 transition-colors ${
+            pathname === "/dashboard" ? "bg-brand-teal-dark/8 dark:bg-brand-teal/10" : ""
+          }`}>
             {[...navItemKeys, ...(user.role === "admin" ? [adminNavItem] : [])].map((item) => {
               const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
-              const isAdmin = item.href === "/admin";
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition ${
                     isActive
-                      ? "bg-white/20 text-white"
-                      : "text-white/70 hover:bg-white/10 hover:text-white"
+                      ? "bg-brand-teal-dark text-white shadow-sm"
+                      : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
                   }`}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -190,7 +195,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             })}
           </div>
         </div>
-      </nav>
+      </div>
       {mobileNav && (
         <>
           <div className="fixed inset-0 bg-black/20 z-40 lg:hidden" onClick={() => setMobileNav(false)} />

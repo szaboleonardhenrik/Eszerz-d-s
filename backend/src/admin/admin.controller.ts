@@ -1,10 +1,13 @@
 import {
   Controller,
   Get,
+  Post,
   Patch,
+  Delete,
   Param,
   Body,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
@@ -55,5 +58,35 @@ export class AdminController {
   async getSubscriptionBreakdown() {
     const breakdown = await this.adminService.getSubscriptionBreakdown();
     return ApiResponse.ok(breakdown);
+  }
+
+  // ── Authorized Signers ──
+
+  @Get('authorized-signers')
+  async listAuthorizedSigners(@Req() req: any) {
+    const signers = await this.adminService.listAuthorizedSigners(req.user.id);
+    return ApiResponse.ok(signers);
+  }
+
+  @Post('authorized-signers')
+  async createAuthorizedSigner(@Req() req: any, @Body() body: any) {
+    const signer = await this.adminService.createAuthorizedSigner(req.user.id, body);
+    return ApiResponse.ok(signer);
+  }
+
+  @Patch('authorized-signers/:id')
+  async updateAuthorizedSigner(
+    @Req() req: any,
+    @Param('id') id: string,
+    @Body() body: any,
+  ) {
+    const signer = await this.adminService.updateAuthorizedSigner(id, req.user.id, body);
+    return ApiResponse.ok(signer);
+  }
+
+  @Delete('authorized-signers/:id')
+  async deleteAuthorizedSigner(@Req() req: any, @Param('id') id: string) {
+    await this.adminService.deleteAuthorizedSigner(id, req.user.id);
+    return ApiResponse.ok({ deleted: true });
   }
 }

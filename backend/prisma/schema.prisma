@@ -62,8 +62,28 @@ model User {
   googleId         String?    @unique @map("google_id")
   oauthProvider    String?    @map("oauth_provider")
   autoInvoice     Boolean    @default(false) @map("auto_invoice")
+  authorizedSigners AuthorizedSigner[]
 
   @@map("users")
+}
+
+model AuthorizedSigner {
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  name           String
+  email          String
+  title          String?  // e.g. "Ügyvezető", "Cégvezető", "HR vezető"
+  companyName    String?  @map("company_name")
+  companyTaxNumber String? @map("company_tax_number")
+  companyAddress String?  @map("company_address")
+  isDefault      Boolean  @default(false) @map("is_default")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("authorized_signers")
 }
 
 model Team {

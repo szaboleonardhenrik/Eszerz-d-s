@@ -201,6 +201,79 @@ export class AdminService {
     }));
   }
 
+  // ── Authorized Signers CRUD ──
+
+  async listAuthorizedSigners(userId: string) {
+    return this.prisma.authorizedSigner.findMany({
+      where: { userId },
+      orderBy: [{ isDefault: 'desc' }, { name: 'asc' }],
+    });
+  }
+
+  async createAuthorizedSigner(
+    userId: string,
+    data: {
+      name: string;
+      email: string;
+      title?: string;
+      companyName?: string;
+      companyTaxNumber?: string;
+      companyAddress?: string;
+      isDefault?: boolean;
+    },
+  ) {
+    // If setting as default, unset others first
+    if (data.isDefault) {
+      await this.prisma.authorizedSigner.updateMany({
+        where: { userId, isDefault: true },
+        data: { isDefault: false },
+      });
+    }
+    return this.prisma.authorizedSigner.create({
+      data: { userId, ...data },
+    });
+  }
+
+  async updateAuthorizedSigner(
+    id: string,
+    userId: string,
+    data: {
+      name?: string;
+      email?: string;
+      title?: string;
+      companyName?: string;
+      companyTaxNumber?: string;
+      companyAddress?: string;
+      isDefault?: boolean;
+    },
+  ) {
+    const signer = await this.prisma.authorizedSigner.findFirst({
+      where: { id, userId },
+    });
+    if (!signer) throw new NotFoundException('Aláíró nem található');
+
+    if (data.isDefault) {
+      await this.prisma.authorizedSigner.updateMany({
+        where: { userId, isDefault: true, id: { not: id } },
+        data: { isDefault: false },
+      });
+    }
+
+    return this.prisma.authorizedSigner.update({
+      where: { id },
+      data,
+    });
+  }
+
+  async deleteAuthorizedSigner(id: string, userId: string) {
+    const signer = await this.prisma.authorizedSigner.findFirst({
+      where: { id, userId },
+    });
+    if (!signer) throw new NotFoundException('Aláíró nem található');
+
+    return this.prisma.authorizedSigner.delete({ where: { id } });
+  }
+
   async getSubscriptionBreakdown() {
     const breakdown = await this.prisma.user.groupBy({
       by: ['subscriptionTier'],
