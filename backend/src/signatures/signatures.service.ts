@@ -381,11 +381,28 @@ export class SignaturesService {
         }),
       );
 
+      // Get owner branding for the final signed PDF
+      const owner = await this.prisma.user.findUnique({
+        where: { id: signer.contract.ownerId },
+        select: { brandLogoUrl: true, brandColor: true, companyName: true, subscriptionTier: true },
+      });
+      let branding: any = undefined;
+      if (owner && (owner.brandLogoUrl || owner.brandColor || owner.companyName)) {
+        const flag = await this.prisma.featureFlag.findUnique({ where: { key: 'custom_branding' } });
+        const tierOrder = ['free', 'starter', 'medium', 'premium', 'enterprise'];
+        const hasTier = !flag?.minTier || tierOrder.indexOf(owner.subscriptionTier) >= tierOrder.indexOf(flag.minTier);
+        if (!flag || !flag.enabled || hasTier) {
+          branding = { logoUrl: owner.brandLogoUrl, companyName: owner.companyName, brandColor: owner.brandColor };
+        } else {
+          branding = owner.companyName ? { companyName: owner.companyName } : undefined;
+        }
+      }
+
       const finalPdf = await this.pdfService.addSignatureToPdf(
         signer.contract.contentHtml,
         signer.contract.title,
         signaturesWithImages,
-        undefined,
+        branding,
         (signer.contract as any).verificationHash ?? undefined,
         {
           registrationNumber: (signer.contract as any).registrationNumber ?? undefined,
@@ -425,7 +442,7 @@ export class SignaturesService {
           signer.contract.contentHtml,
           signer.contract.title,
           signaturesWithImages,
-          undefined,
+          branding,
           (signer.contract as any).verificationHash ?? undefined,
           auditMetaWithTsa,
         );

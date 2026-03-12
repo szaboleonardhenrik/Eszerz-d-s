@@ -470,6 +470,9 @@ export default function BillingSettings() {
         </div>
       </div>
 
+      {/* Promo Code */}
+      <PromoCodeSection />
+
       {/* Usage */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
@@ -502,6 +505,95 @@ export default function BillingSettings() {
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function PromoCodeSection() {
+  const [code, setCode] = useState("");
+  const [applying, setApplying] = useState(false);
+  const [validating, setValidating] = useState(false);
+  const [info, setInfo] = useState<{ valid: boolean; description?: string; discountType?: string; discountValue?: number; message?: string } | null>(null);
+
+  const typeLabels: Record<string, string> = {
+    percent: "százalékos kedvezmény",
+    fixed: "fix összegű kedvezmény",
+    tier_upgrade: "csomag frissítés",
+    trial_days: "próba napok",
+  };
+
+  const validate = async () => {
+    if (!code.trim()) return;
+    setValidating(true);
+    setInfo(null);
+    try {
+      const res = await api.post("/admin/promo-codes/validate", { code: code.trim() });
+      setInfo(res.data.data);
+    } catch {
+      setInfo({ valid: false, message: "Hiba a kód ellenőrzésekor" });
+    } finally {
+      setValidating(false);
+    }
+  };
+
+  const apply = async () => {
+    if (!code.trim()) return;
+    setApplying(true);
+    try {
+      await api.post("/admin/promo-codes/apply", { code: code.trim() });
+      toast.success("Promó kód sikeresen beváltva!");
+      setCode("");
+      setInfo(null);
+      window.location.reload();
+    } catch (err: any) {
+      toast.error(err.response?.data?.error?.message ?? "Hiba a kód beváltásakor");
+    } finally {
+      setApplying(false);
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <h2 className="text-lg font-semibold text-gray-900 mb-1">Promó kód beváltása</h2>
+      <p className="text-sm text-gray-500 mb-4">Ha rendelkezel promóciós kóddal, itt válthatod be.</p>
+      <div className="flex gap-3">
+        <input
+          type="text"
+          value={code}
+          onChange={(e) => { setCode(e.target.value.toUpperCase()); setInfo(null); }}
+          placeholder="Pl. WELCOME50"
+          className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-white text-gray-900 uppercase tracking-wider font-mono outline-none focus:ring-2 focus:ring-brand-teal focus:border-transparent"
+        />
+        <button
+          onClick={validate}
+          disabled={!code.trim() || validating}
+          className="px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
+        >
+          {validating ? "..." : "Ellenőrzés"}
+        </button>
+        <button
+          onClick={apply}
+          disabled={!code.trim() || applying || (info !== null && !info.valid)}
+          className="px-5 py-2.5 bg-brand-teal-dark text-white rounded-lg text-sm font-medium hover:bg-brand-teal-darker transition disabled:opacity-50"
+        >
+          {applying ? "Beváltás..." : "Beváltás"}
+        </button>
+      </div>
+      {info && (
+        <div className={`mt-3 px-4 py-3 rounded-lg text-sm ${info.valid ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
+          {info.valid ? (
+            <>
+              <span className="font-semibold">Érvényes kód!</span>{" "}
+              {info.description && <span>{info.description} — </span>}
+              {info.discountType && (
+                <span>{info.discountValue} {info.discountType === "percent" ? "%" : info.discountType === "fixed" ? "Ft" : ""} {typeLabels[info.discountType] || info.discountType}</span>
+              )}
+            </>
+          ) : (
+            <span>{info.message || "Érvénytelen kód"}</span>
+          )}
+        </div>
+      )}
     </div>
   );
 }

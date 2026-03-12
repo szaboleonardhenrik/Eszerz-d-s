@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
@@ -36,6 +36,7 @@ import { HealthModule } from './health/health.module';
 import { SearchModule } from './search/search.module';
 import { TsaModule } from './tsa/tsa.module';
 import { FeatureFlagsController } from './common/feature-flags.controller';
+import { MaintenanceMiddleware } from './common/maintenance.middleware';
 
 @Module({
   imports: [
@@ -80,4 +81,8 @@ import { FeatureFlagsController } from './common/feature-flags.controller';
     { provide: APP_INTERCEPTOR, useClass: ApiUsageInterceptor },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(MaintenanceMiddleware).forRoutes('*');
+  }
+}

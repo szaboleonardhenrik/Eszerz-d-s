@@ -837,11 +837,32 @@ ${quote.outroText ? `<h2>4. Egyéb feltételek</h2><p>${esc(quote.outroText)}</p
 
   async generateQuotePdf(quote: any): Promise<Buffer> {
     const html = this.generateQuoteHtml(quote);
-    return this.pdfService.generatePdf(html, quote.title, {
-      logoUrl: quote.owner?.brandLogoUrl,
-      companyName: quote.owner?.companyName || quote.owner?.name,
-      brandColor: quote.owner?.brandColor,
-    });
+    const branding = await this.getOwnerBranding(quote.owner);
+    return this.pdfService.generatePdf(html, quote.title, branding);
+  }
+
+  private async getOwnerBranding(owner: any): Promise<{ logoUrl?: string; companyName?: string; brandColor?: string } | undefined> {
+    if (!owner?.brandLogoUrl && !owner?.brandColor && !owner?.companyName) {
+      return owner?.name ? { companyName: owner.name } : undefined;
+    }
+
+    const flag = await this.prisma.featureFlag.findUnique({ where: { key: 'custom_branding' } });
+    if (flag && flag.enabled && flag.minTier) {
+      const tierOrder = ['free', 'starter', 'medium', 'premium', 'enterprise'];
+      // We don't have subscriptionTier on the included owner select — fetch it
+      const user = await this.prisma.user.findUnique({ where: { id: owner.id }, select: { subscriptionTier: true } });
+      const userTierIdx = tierOrder.indexOf(user?.subscriptionTier ?? 'free');
+      const requiredIdx = tierOrder.indexOf(flag.minTier);
+      if (userTierIdx < requiredIdx) {
+        return { companyName: owner.companyName || owner.name };
+      }
+    }
+
+    return {
+      logoUrl: owner.brandLogoUrl,
+      companyName: owner.companyName || owner.name,
+      brandColor: owner.brandColor,
+    };
   }
 
   generateQuoteHtml(quote: any): string {

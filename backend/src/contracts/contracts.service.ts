@@ -55,8 +55,21 @@ export class ContractsService {
     return createHash('sha256').update(JSON.stringify(variables)).digest('hex');
   }
 
-  private getUserBranding(user: any): PdfBranding | undefined {
+  private async getUserBranding(user: any): Promise<PdfBranding | undefined> {
     if (!user?.brandLogoUrl && !user?.brandColor && !user?.companyName) return undefined;
+
+    // Check if custom_branding feature flag allows this user's tier
+    const flag = await this.prisma.featureFlag.findUnique({ where: { key: 'custom_branding' } });
+    if (flag && flag.enabled && flag.minTier) {
+      const tierOrder = ['free', 'starter', 'medium', 'premium', 'enterprise'];
+      const userTierIdx = tierOrder.indexOf(user.subscriptionTier ?? 'free');
+      const requiredIdx = tierOrder.indexOf(flag.minTier);
+      if (userTierIdx < requiredIdx) {
+        // Tier too low — only companyName (basic info), no custom logo/color
+        return user.companyName ? { companyName: user.companyName } : undefined;
+      }
+    }
+
     return {
       logoUrl: user.brandLogoUrl ?? undefined,
       companyName: user.companyName ?? undefined,
@@ -128,7 +141,7 @@ export class ContractsService {
       );
     }
 
-    const branding = this.getUserBranding(user);
+    const branding = await this.getUserBranding(user);
     const verificationHash = this.generateVerificationHash();
     const registrationNumber = this.generateRegistrationNumber();
     const pdfBuffer = await this.pdfService.generatePdf(contentHtml, dto.title, branding, verificationHash);
@@ -196,7 +209,7 @@ export class ContractsService {
     contentHtml = this.sanitizeHtml(contentHtml);
 
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    const branding = this.getUserBranding(user);
+    const branding = await this.getUserBranding(user);
     const pdfBuffer = await this.pdfService.generatePdf(contentHtml, contract.title, branding, contract.verificationHash ?? undefined);
     const pdfKey = `contracts/${userId}/${randomBytes(16).toString('hex')}.pdf`;
     await this.storageService.uploadPdf(pdfKey, pdfBuffer);

@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as crypto from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { InAppNotificationsService } from '../in-app-notifications/in-app-notifications.service';
+import { clearMaintenanceCache } from '../common/maintenance.middleware';
 
 @Injectable()
 export class AdminService {
@@ -831,6 +832,9 @@ export class AdminService {
         create: { key: 'maintenance_message', value: message },
       });
     }
+
+    // Clear cache so the middleware picks up the change immediately
+    clearMaintenanceCache();
 
     // If enabling, broadcast to all users
     if (enabled) {
