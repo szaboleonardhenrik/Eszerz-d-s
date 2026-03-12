@@ -92,6 +92,7 @@ export default function AdatvedelemPage() {
           <li><strong>Resend Inc.</strong> — email küldés (GDPR DPA aláírva)</li>
           <li><strong>Stripe Inc.</strong> — fizetéskezelés (PCI DSS tanúsított)</li>
           <li><strong>Anthropic</strong> — AI elemzés (a szerződés tartalmát csak az elemzés idejére továbbítjuk, nem tároljuk)</li>
+          <li><strong>Google LLC</strong> — OAuth hitelesítés (Google-fiókkal bejelentkezés; kizárólag a név és e-mail cím kerül átadásra)</li>
           <li><strong>Webhook végpontok</strong> — a felhasználó által megadott harmadik fél URL-ekre továbbíthatunk
             aláírói adatokat (név, e-mail, aláírási státusz). A felhasználó felelős a fogadó fél
             GDPR-megfelelőségéért és adatfeldolgozási megállapodás meglétéért.</li>
@@ -139,7 +140,28 @@ export default function AdatvedelemPage() {
         </ul>
         <p>Jelenleg harmadik féltől származó analitikai vagy marketing cookie-kat nem használunk.</p>
 
-        <h2>7. Adatbiztonság</h2>
+        <h2>7. Adatmegőrzési politika — összefoglaló</h2>
+        <table>
+          <thead>
+            <tr><th>Adattípus</th><th>Megőrzési idő</th><th>Jogalap</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Felhasználói fiókadatok (név, e-mail, jelszó hash)</td><td>Fiók törléséig + 30 nap</td><td>Szerződés teljesítése</td></tr>
+            <tr><td>Cégnév, adószám, számlázási adatok</td><td>Fiók törléséig + 8 év</td><td>Számviteli tv. (Szt. 169. §)</td></tr>
+            <tr><td>Szerződések tartalma, aláírási adatok</td><td>Fiók törléséig + 30 nap</td><td>Szerződés teljesítése</td></tr>
+            <tr><td>Audit napló (IP cím, böngésző, műveletek)</td><td>2 év (utána anonimizálva)</td><td>Jogos érdek</td></tr>
+            <tr><td>Partneri adatok (kontaktok)</td><td>Fiók törléséig vagy érintett kéréséig</td><td>Jogos érdek</td></tr>
+            <tr><td>AI elemzés eredménye</td><td>Nem tárolódik tartósan (kizárólag megjelenítés idejére)</td><td>Szerződés teljesítése</td></tr>
+            <tr><td>Cookie-k (munkamenet)</td><td>Böngésző bezárásáig / 30 nap</td><td>Szükséges az üzemeltetéshez</td></tr>
+          </tbody>
+        </table>
+        <p>
+          A fiók törlését követően az összes személyes adat <strong>30 napon belül</strong> véglegesen
+          eltávolításra kerül, kivéve azokat az adatokat, amelyek megőrzését jogszabály írja elő
+          (pl. számviteli bizonylatok 8 évig).
+        </p>
+
+        <h2>8. Adatbiztonság</h2>
         <p>Az adatok védelme érdekében az alábbi intézkedéseket alkalmazzuk:</p>
         <ul>
           <li>HTTPS (TLS 1.3) titkosított adatátvitel</li>
@@ -150,14 +172,14 @@ export default function AdatvedelemPage() {
           <li>Rendszeres biztonsági felülvizsgálat</li>
         </ul>
 
-        <h2>8. Adatvédelmi incidens</h2>
+        <h2>9. Adatvédelmi incidens</h2>
         <p>
           Adatvédelmi incidens esetén a NAIH-ot (Nemzeti Adatvédelmi és Információszabadság Hatóság)
           72 órán belül értesítjük. Ha az incidens magas kockázattal jár, az érintetteket is
           haladéktalanul tájékoztatjuk.
         </p>
 
-        <h2>9. Jogorvoslat</h2>
+        <h2>10. Jogorvoslat</h2>
         <p>Ha úgy érzi, hogy adatkezelésünk jogellenes, panaszt tehet:</p>
         <ul>
           <li>
@@ -168,7 +190,7 @@ export default function AdatvedelemPage() {
           <li>Bírósághoz fordulhat a lakóhelye vagy tartózkodási helye szerinti törvényszéknél</li>
         </ul>
 
-        <h2>10. Módosítások</h2>
+        <h2>11. Módosítások</h2>
         <p>
           Jelen tájékoztatót szükség esetén módosítjuk. A módosításokról a weboldalon és
           emailben értesítjük felhasználóinkat.

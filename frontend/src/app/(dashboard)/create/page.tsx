@@ -496,6 +496,21 @@ function CreateWizardInner() {
             ))}
           </div>
           )}
+
+          {/* Sablon disclaimer */}
+          {!uploadMode && templates.length > 0 && (
+            <div className="mt-6 flex items-start gap-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3">
+              <svg className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                A sablonok általános tájékoztató jellegűek, és nem helyettesítik az egyedi jogi tanácsadást.
+                A Legitas egyszerű elektronikus aláírást (SES) biztosít, amely nem azonos a minősített e-aláírással (QES).
+                Bonyolultabb ügyleteknél javasoljuk ügyvéd bevonását.
+              </p>
+            </div>
+          )}
+
           {/* Preview Modal */}
           {(previewHtml || previewLoading) && (
             <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">

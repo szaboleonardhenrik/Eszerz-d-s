@@ -107,7 +107,44 @@ export default function AszfPage() {
           <li>Az aláírás jogi érvényességének megítéléséért adott jogviszonyban</li>
           <li>Szolgáltatáskiesésből eredő károkért (vis major, karbantartás)</li>
           <li>A Felhasználó által megadott adatok helyességéért</li>
+          <li>Az AI-alapú szerződéselemzés pontosságáért vagy teljességéért</li>
         </ul>
+
+        <h3>8.1. Elektronikus aláírás korlátozásai</h3>
+        <p>
+          A Legitas platformon elérhető elektronikus aláírás <strong>egyszerű elektronikus aláírásnak (SES)</strong> minősül
+          az eIDAS rendelet (EU 910/2014) és a 2015. évi CCXXII. törvény értelmében. Ez <strong>nem azonos</strong> a
+          minősített elektronikus aláírással (QES), amelyet tanúsított bizalmi szolgáltató (pl. Microsec, DÁP) bocsát ki.
+        </p>
+        <p>
+          Az egyszerű elektronikus aláírás a Polgári Törvénykönyv (2013. évi V. törvény) 6:7. § (2) alapján a legtöbb
+          szerződéstípusnál joghatás kiváltására alkalmas, azonban bizonyos jogügyleteknél jogszabály írhat elő
+          <strong> írásbeli formát vagy minősített aláírást</strong>. Ilyenek különösen:
+        </p>
+        <ul>
+          <li>Ingatlan adásvételi szerződések</li>
+          <li>Hitel- és kölcsönszerződések</li>
+          <li>Közjegyzői okiratot igénylő ügyletek</li>
+          <li>Munkajogi dokumentumok egy része (pl. felmondás)</li>
+        </ul>
+        <p>
+          A Szolgáltató <strong>nem garantálja</strong> az egyszerű elektronikus aláírás elfogadását bíróság
+          vagy hatóság előtt. A Felhasználó felelőssége annak megítélése, hogy az adott jogügylethez
+          milyen aláírási forma szükséges.
+        </p>
+
+        <h3>8.2. Sablonok és AI elemzés</h3>
+        <p>
+          A platformon elérhető szerződéssablonok <strong>általános tájékoztató jellegűek</strong>, és
+          nem helyettesítik az egyedi ügyvédi tanácsadást. A Szolgáltató nem vállal felelősséget a sablonok
+          jogi megfelelőségéért az adott felhasználási kontextusban.
+        </p>
+        <p>
+          Az AI-alapú szerződéselemzés (Claude AI) <strong>kizárólag tájékoztató jellegű</strong>, és
+          nem minősül jogi véleménynek, szaktanácsadásnak vagy ügyvédi állásfoglalásnak. A Szolgáltató
+          nem vállal felelősséget az AI elemzés által adott javaslatokért, kockázatértékelésekért
+          vagy hiányzó záradék-jelzésekért. Bonyolultabb ügyleteknél javasoljuk ügyvéd bevonását.
+        </p>
 
         <h2>9. Felmondás és adattörlés</h2>
         <p>

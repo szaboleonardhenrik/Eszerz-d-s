@@ -100,6 +100,7 @@ export default function DpaPage() {
             <tr><td>Resend Inc.</td><td>USA (SCC alapján)</td><td>E-mail küldés</td></tr>
             <tr><td>Stripe Inc.</td><td>USA (SCC alapján)</td><td>Fizetéskezelés</td></tr>
             <tr><td>Anthropic</td><td>USA (SCC alapján)</td><td>AI szerződéselemzés (ideiglenes)</td></tr>
+            <tr><td>Google LLC</td><td>USA (EU megfelelőségi határozat)</td><td>OAuth hitelesítés (Google-fiókkal bejelentkezés)</td></tr>
           </tbody>
         </table>
         <p>
