@@ -107,14 +107,14 @@ function Nav() {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
-            <LanguageSwitcher />
-            <ThemeToggle />
+            <LanguageSwitcher variant="light" />
+            <ThemeToggle variant="light" />
             <Link href="/login" className="text-[.84rem] font-medium px-4 py-2 rounded-lg transition-all text-[#4A6575] hover:text-[#1E2E38] hover:bg-[#F0F5F7]">Bejelentkezés</Link>
             <Link href="/register" className="text-[.84rem] font-semibold px-5 py-2 rounded-lg bg-[#2F8A8A] hover:bg-[#267070] text-white transition-all shadow-sm shadow-[#2F8A8A]/20">Kezdés ingyen</Link>
           </div>
 
           <div className="md:hidden flex items-center gap-1">
-            <ThemeToggle />
+            <ThemeToggle variant="light" />
             <button onClick={() => setOpen(!open)} className="p-2 rounded-lg transition-colors text-[#3D5260] hover:bg-[#F0F5F7]" aria-label="Menü">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={open ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
@@ -127,7 +127,7 @@ function Nav() {
           <div className="md:hidden px-5 pb-5 pt-1 flex flex-col gap-0.5 border-t border-[#DDE7EC]/60">
             {links.map(l => <a key={l.h} href={l.h} onClick={() => setOpen(false)} className="text-sm font-medium px-4 py-3 rounded-lg text-[#3D5260] hover:bg-[#F0F5F7] transition-colors">{l.l}</a>)}
             <hr className="my-2 border-0 h-px bg-[#DDE7EC]/60" />
-            <div className="flex items-center gap-2 px-4 mb-1"><LanguageSwitcher /></div>
+            <div className="flex items-center gap-2 px-4 mb-1"><LanguageSwitcher variant="light" /></div>
             <Link href="/login" className="text-sm font-medium px-4 py-3 rounded-lg text-[#3D5260] hover:bg-[#F0F5F7]">Bejelentkezés</Link>
             <Link href="/register" className="text-center text-sm font-semibold px-4 py-3 rounded-lg bg-[#2F8A8A] text-white mt-1">Kezdés ingyen</Link>
           </div>
