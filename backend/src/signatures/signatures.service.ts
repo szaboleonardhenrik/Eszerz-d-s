@@ -85,7 +85,7 @@ export class SignaturesService {
   ) {
     const signer = await this.prisma.signer.findUnique({
       where: { signToken: token },
-      include: { contract: { include: { signers: true } } },
+      include: { contract: { include: { signers: true, template: true } } },
     });
 
     if (!signer) throw new NotFoundException('Érvénytelen aláírási link');
@@ -324,9 +324,16 @@ export class SignaturesService {
               to: nextSigner.email,
               signerName: nextSigner.name,
               senderName: ownerForNotif?.name ?? 'Ismeretlen',
+              senderEmail: ownerForNotif?.email ?? '',
+              senderPhone: (ownerForNotif as any)?.phone ?? undefined,
               contractTitle: signer.contract.title,
               signUrl,
               expiresAt: nextSigner.tokenExpiresAt?.toLocaleDateString('hu-HU') ?? '',
+              registrationNumber: (signer.contract as any).registrationNumber ?? undefined,
+              documentType: (signer.contract as any).template?.name ?? undefined,
+              documentHash: (signer.contract as any).documentHash ?? undefined,
+              variablesHash: (signer.contract as any).variablesHash ?? undefined,
+              totalSigners: allSigners.length,
             });
           }
         }

@@ -170,6 +170,7 @@ model TemplateVersion {
 model Contract {
   id               String    @id @default(uuid())
   title            String
+  registrationNumber String? @unique @map("registration_number") // Iktatószám: 20260311-1643-V912-4020708-1164582
   templateId       String?   @map("template_id")
   ownerId          String    @map("owner_id")
   contentHtml      String    @map("content_html")
@@ -178,6 +179,8 @@ model Contract {
   variablesData    String?   @map("variables_data")
   folderId         String?   @map("folder_id")
   verificationHash String?   @unique @map("verification_hash")
+  documentHash     String?   @map("document_hash") // SHA-256 hash of the PDF
+  variablesHash    String?   @map("variables_hash") // SHA-256 hash of variables data
   expiresAt        DateTime? @map("expires_at")
   createdAt        DateTime  @default(now()) @map("created_at")
   updatedAt        DateTime  @updatedAt @map("updated_at")

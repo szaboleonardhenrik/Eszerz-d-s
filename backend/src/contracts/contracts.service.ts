@@ -34,6 +34,27 @@ export class ContractsService {
       .substring(0, 16);
   }
 
+  /**
+   * Generate a unique registration number (iktatószám).
+   * Format: YYYYMMDD-HHMM-XXXX-YYYYYYY-ZZZZZZZ
+   * where X = random alphanum, Y/Z = random digits
+   */
+  private generateRegistrationNumber(): string {
+    const now = new Date();
+    const date = now.toISOString().slice(0, 10).replace(/-/g, ''); // 20260312
+    const time = now.toTimeString().slice(0, 5).replace(':', ''); // 1643
+    const alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const rand4 = Array.from({ length: 4 }, () => alpha[Math.floor(Math.random() * alpha.length)]).join('');
+    const rand7a = Math.floor(1000000 + Math.random() * 9000000).toString();
+    const rand7b = Math.floor(1000000 + Math.random() * 9000000).toString();
+    return `${date}-${time}-${rand4}-${rand7a}-${rand7b}`;
+  }
+
+  private hashVariables(variables: Record<string, string> | undefined): string | undefined {
+    if (!variables || Object.keys(variables).length === 0) return undefined;
+    return createHash('sha256').update(JSON.stringify(variables)).digest('hex');
+  }
+
   private getUserBranding(user: any): PdfBranding | undefined {
     if (!user?.brandLogoUrl && !user?.brandColor && !user?.companyName) return undefined;
     return {
@@ -109,19 +130,24 @@ export class ContractsService {
 
     const branding = this.getUserBranding(user);
     const verificationHash = this.generateVerificationHash();
+    const registrationNumber = this.generateRegistrationNumber();
     const pdfBuffer = await this.pdfService.generatePdf(contentHtml, dto.title, branding, verificationHash);
     const pdfKey = `contracts/${userId}/${randomBytes(16).toString('hex')}.pdf`;
     await this.storageService.uploadPdf(pdfKey, pdfBuffer);
     const documentHash = this.pdfService.hashDocument(pdfBuffer);
+    const variablesHash = this.hashVariables(dto.variables);
 
     const contract = await this.prisma.contract.create({
       data: {
         title: dto.title,
+        registrationNumber,
         templateId: dto.templateId,
         ownerId: userId,
         contentHtml,
         pdfUrl: pdfKey,
         verificationHash,
+        documentHash,
+        variablesHash,
         variablesData: dto.variables ? JSON.stringify(dto.variables) : undefined,
         expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : undefined,
         signers: {
@@ -247,7 +273,13 @@ export class ContractsService {
   }
 
   async sendForSigning(contractId: string, userId: string) {
-    const contract = await this.findOneOwned(contractId, userId);
+    const contract = await this.prisma.contract.findUnique({
+      where: { id: contractId },
+      include: { signers: true, template: { select: { name: true } } },
+    });
+
+    if (!contract) throw new NotFoundException('A szerződés nem található');
+    if (contract.ownerId !== userId) throw new ForbiddenException('Nincs jogosultságod');
 
     if (contract.status !== 'draft') {
       throw new BadRequestException('Csak piszkozat státuszú szerződés küldhető el');
@@ -263,7 +295,6 @@ export class ContractsService {
     );
 
     // Only send email to signers with the lowest signing order (first in line).
-    // Subsequent signers get notified when previous ones sign.
     const minOrder = Math.min(...contract.signers.map((s) => s.signingOrder));
     const firstSigners = contract.signers.filter((s) => s.signingOrder === minOrder);
 
@@ -273,9 +304,16 @@ export class ContractsService {
         to: signer.email,
         signerName: signer.name,
         senderName: owner?.name ?? 'Ismeretlen',
+        senderEmail: owner?.email ?? '',
+        senderPhone: owner?.phone ?? undefined,
         contractTitle: contract.title,
         signUrl,
         expiresAt: signer.tokenExpiresAt?.toLocaleDateString('hu-HU') ?? '',
+        registrationNumber: contract.registrationNumber ?? undefined,
+        documentType: contract.template?.name ?? contract.title,
+        documentHash: contract.documentHash ?? undefined,
+        variablesHash: contract.variablesHash ?? undefined,
+        totalSigners: contract.signers.length,
       });
 
       await this.auditService.log({

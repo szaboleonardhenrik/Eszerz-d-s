@@ -331,10 +331,37 @@ export class NotificationsService {
     to: string;
     signerName: string;
     senderName: string;
+    senderEmail: string;
+    senderPhone?: string;
     contractTitle: string;
     signUrl: string;
     expiresAt: string;
+    registrationNumber?: string;
+    documentType?: string;
+    documentHash?: string;
+    variablesHash?: string;
+    totalSigners?: number;
   }) {
+    const signerCount = params.totalSigners ?? 1;
+
+    // Build sender contact section
+    const senderContactRows = [
+      this.meta('Küldő neve', `<strong>${params.senderName}</strong>`),
+      this.meta('Küldő email', `<a href="mailto:${params.senderEmail}" style="color:#198296;text-decoration:none;">${params.senderEmail}</a>`),
+    ];
+    if (params.senderPhone) {
+      senderContactRows.push(this.meta('Küldő telefon', params.senderPhone));
+    }
+
+    // Build document info section
+    const docInfoRows = [
+      ...(params.registrationNumber ? [this.meta('Iktatószám', `<code style="background:#f1f5f9;padding:2px 8px;border-radius:4px;font-size:12px;color:#1e293b;font-weight:700;">${params.registrationNumber}</code>`)] : []),
+      this.meta('Dokumentum típusa', params.documentType ?? params.contractTitle),
+      ...(params.variablesHash ? [this.meta('Változó adatok lenyomata', `<code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:10px;color:#64748b;word-break:break-all;">${params.variablesHash}</code>`)] : []),
+      ...(params.documentHash ? [this.meta('Dokumentum lenyomata', `<code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:10px;color:#64748b;word-break:break-all;">${params.documentHash}</code>`)] : []),
+      ...(params.documentHash ? [this.meta('Hash-algoritmus', 'SHA-256')] : []),
+    ];
+
     try {
       await this.resend.emails.send({
         from: this.fromEmail,
@@ -348,12 +375,15 @@ export class NotificationsService {
            ${this.greeting(params.signerName)}
            ${this.text(`<strong>${params.senderName}</strong> elektronikus aláírásra küldött Önnek egy szerződést a Legitas platformon keresztül. A dokumentum biztonságos, titkosított környezetben tekinthető meg és írható alá.`)}
 
+           ${this.infoBox('&#9888;', 'Fontos tudnivalók', `Ahhoz, hogy érvénybe lépjen a szerződés, minden fél (${signerCount} aláíró) aláírására szükség van.<br><br>Abban az esetben, ha módosulna a szerződés, a rendszer automatikusan törli az összes aláírást — újra alá kell írnia minden félnek.`, '#fffbeb', '#fde68a')}
+
            ${this.card(`
              <p style="margin:0 0 12px;font-size:11px;font-weight:700;color:#198296;text-transform:uppercase;letter-spacing:1px;">Szerződés adatai</p>
              ${this.metaTable(
                this.meta('Dokumentum', `<strong>${params.contractTitle}</strong>`),
                this.meta('Feladó', params.senderName),
                this.meta('Határidő', params.expiresAt),
+               this.meta('Aláírók száma', `${signerCount} fél`),
                this.meta('Státusz', '<span style="color:#d97706;font-weight:700;">Aláírásra vár</span>'),
              )}
            `, '#198296')}
@@ -368,6 +398,18 @@ export class NotificationsService {
            ${this.btn(params.signUrl, '&#9998;  Szerződés megtekintése és aláírása')}
 
            ${this.infoBox('&#128274;', 'Biztonságos aláírás', 'Az aláírás SSL titkosított csatornán, GDPR és eIDAS szabványoknak megfelelően történik. Személyes adatait biztonságban kezeljük.')}
+
+           <!-- Sender contact info -->
+           <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px 24px;margin:24px 0;">
+             <p style="margin:0 0 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:1px;">Küldő elérhetőségei</p>
+             ${this.metaTable(...senderContactRows)}
+           </div>
+
+           <!-- Document metadata -->
+           <div style="background:#f0f4f8;border:1px solid #cbd5e1;border-radius:12px;padding:20px 24px;margin:24px 0;">
+             <p style="margin:0 0 12px;font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:1px;">Dokumentum adatok</p>
+             ${this.metaTable(...docInfoRows)}
+           </div>
 
            ${this.hint('Ha nem Ön a címzett, kérjük hagyja figyelmen kívül ezt az emailt. A link 7 napig érvényes. Amennyiben kérdése van, forduljon közvetlenül a feladóhoz.')}`,
           { preheader: `${params.senderName} szerződést küldött Önnek: ${params.contractTitle} — kattintson az aláíráshoz` },

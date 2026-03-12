@@ -58,9 +58,12 @@ interface ContractVersion {
 interface Contract {
   id: string;
   title: string;
+  registrationNumber: string | null;
   status: string;
   contentHtml: string;
   pdfUrl: string | null;
+  documentHash: string | null;
+  variablesHash: string | null;
   createdAt: string;
   updatedAt: string;
   expiresAt: string | null;
@@ -501,6 +504,16 @@ export default function ContractDetailPage() {
                 {statusLabels[contract.status]}
               </span>
             </div>
+
+            {/* Registration number */}
+            {contract.registrationNumber && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">Iktatószám:</span>
+                <code className="px-2.5 py-1 bg-gray-100 dark:bg-gray-700 rounded-lg text-xs font-bold text-gray-700 dark:text-gray-200 tracking-wide">
+                  {contract.registrationNumber}
+                </code>
+              </div>
+            )}
 
             {/* Meta row */}
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-gray-500 dark:text-gray-400">
