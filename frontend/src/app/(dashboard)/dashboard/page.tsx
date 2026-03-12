@@ -128,7 +128,7 @@ function ProgressBar({ used, limit, label, sublabel }: { used: number; limit: nu
 
 /* ── Stat Card Component ─────────────────────────────────────────── */
 
-function StatCard({ label, value, accent }: { label: string; value: string | number; accent?: string }) {
+function StatCard({ label, value, accent, href }: { label: string; value: string | number; accent?: string; href?: string }) {
   const borderClass = accent === "yellow"
     ? "border-l-yellow-400"
     : accent === "green"
@@ -137,12 +137,18 @@ function StatCard({ label, value, accent }: { label: string; value: string | num
     ? "border-l-blue-500"
     : "border-l-gray-300 dark:border-l-gray-600";
 
-  return (
-    <div className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 border-l-4 ${borderClass} p-5`}>
+  const card = (
+    <div className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 border-l-4 ${borderClass} p-5 ${href ? "hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer" : ""}`}>
       <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{label}</p>
       <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">{value}</p>
     </div>
   );
+
+  if (href) {
+    return <Link href={href}>{card}</Link>;
+  }
+
+  return card;
 }
 
 /* ══════════════════════════════════════════════════════════════════ */
@@ -327,30 +333,38 @@ export default function DashboardPage() {
 
       {/* ── 2. Usage & Limits Row ──────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <ProgressBar
-          used={contractsUsed}
-          limit={limits.contracts}
-          label="Szerződések"
-          sublabel="Aktív szerződések száma"
-        />
-        <ProgressBar
-          used={teamUsed}
-          limit={limits.team}
-          label="Csapattagok"
-          sublabel="Meghívott felhasználók"
-        />
-        <ProgressBar
-          used={apiUsed}
-          limit={limits.api}
-          label="API hívások"
-          sublabel="Mai napi hívások"
-        />
-        <ProgressBar
-          used={storageUsed}
-          limit={limits.storage}
-          label="Tárolás"
-          sublabel={`${storageUsed} MB használva`}
-        />
+        <Link href="/contracts" className="hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer rounded-xl">
+          <ProgressBar
+            used={contractsUsed}
+            limit={limits.contracts}
+            label="Szerződések"
+            sublabel="Aktív szerződések száma"
+          />
+        </Link>
+        <Link href="/settings/team" className="hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer rounded-xl">
+          <ProgressBar
+            used={teamUsed}
+            limit={limits.team}
+            label="Csapattagok"
+            sublabel="Meghívott felhasználók"
+          />
+        </Link>
+        <Link href="/settings/api" className="hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer rounded-xl">
+          <ProgressBar
+            used={apiUsed}
+            limit={limits.api}
+            label="API hívások"
+            sublabel="Mai napi hívások"
+          />
+        </Link>
+        <Link href="/settings" className="hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer rounded-xl">
+          <ProgressBar
+            used={storageUsed}
+            limit={limits.storage}
+            label="Tárolás"
+            sublabel={`${storageUsed} MB használva`}
+          />
+        </Link>
       </div>
 
       {/* ── 3. Stats Overview Row ──────────────────────────────── */}
@@ -358,21 +372,25 @@ export default function DashboardPage() {
         <StatCard
           label="Összes szerződés"
           value={stats?.total ?? 0}
+          href="/contracts"
         />
         <StatCard
           label="Aláírásra vár"
           value={stats?.awaitingSignature ?? 0}
           accent="yellow"
+          href="/contracts?status=sent"
         />
         <StatCard
           label="Elfogadott ajánlatok"
           value={quoteStats?.accepted ?? 0}
           accent="green"
+          href="/quotes?status=accepted"
         />
         <StatCard
           label="Havi bevétel"
           value={quoteStats?.totalRevenue ? formatHuf(quoteStats.totalRevenue) : "0 Ft"}
           accent="blue"
+          href="/analytics"
         />
       </div>
 
