@@ -3,13 +3,13 @@ ALTER TABLE users ADD COLUMN send_credits INT NOT NULL DEFAULT 0;
 
 -- Credit transaction log
 CREATE TABLE credit_transactions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   amount INT NOT NULL,
   balance INT NOT NULL,
   type VARCHAR(50) NOT NULL,
   description TEXT,
-  contract_id UUID REFERENCES contracts(id) ON DELETE SET NULL,
+  contract_id TEXT REFERENCES contracts(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
