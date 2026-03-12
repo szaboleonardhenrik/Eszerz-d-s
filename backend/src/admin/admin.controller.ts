@@ -158,6 +158,118 @@ export class AdminController {
     return ApiResponse.ok(result);
   }
 
+  // ── Promo Codes ──
+
+  @Get('promo-codes')
+  async listPromoCodes() {
+    const codes = await this.adminService.listPromoCodes();
+    return ApiResponse.ok(codes);
+  }
+
+  @Post('promo-codes')
+  @SuperAdminOnly()
+  async createPromoCode(@Body() body: any, @Req() req: any) {
+    const code = await this.adminService.createPromoCode(body, req.user.userId);
+    return ApiResponse.ok(code);
+  }
+
+  @Patch('promo-codes/:id')
+  @SuperAdminOnly()
+  async updatePromoCode(@Param('id') id: string, @Body() body: any) {
+    const code = await this.adminService.updatePromoCode(id, body);
+    return ApiResponse.ok(code);
+  }
+
+  @Delete('promo-codes/:id')
+  @SuperAdminOnly()
+  async deletePromoCode(@Param('id') id: string) {
+    const result = await this.adminService.deletePromoCode(id);
+    return ApiResponse.ok(result);
+  }
+
+  @Post('promo-codes/validate')
+  async validatePromoCode(@Body() body: { code: string }) {
+    const result = await this.adminService.validatePromoCode(body.code);
+    return ApiResponse.ok(result);
+  }
+
+  @Post('promo-codes/apply')
+  async applyPromoCode(@Body() body: { code: string }, @Req() req: any) {
+    const result = await this.adminService.applyPromoCode(body.code, req.user.userId);
+    return ApiResponse.ok(result);
+  }
+
+  // ── Feature Flags ──
+
+  @Get('feature-flags')
+  async listFeatureFlags() {
+    const flags = await this.adminService.listFeatureFlags();
+    return ApiResponse.ok(flags);
+  }
+
+  @Post('feature-flags')
+  @SuperAdminOnly()
+  async createFeatureFlag(@Body() body: { key: string; name: string; description?: string; minTier?: string }) {
+    const flag = await this.adminService.createFeatureFlag(body);
+    return ApiResponse.ok(flag);
+  }
+
+  @Patch('feature-flags/:id')
+  @SuperAdminOnly()
+  async updateFeatureFlag(@Param('id') id: string, @Body() body: { enabled?: boolean; minTier?: string | null }) {
+    const flag = await this.adminService.updateFeatureFlag(id, body);
+    return ApiResponse.ok(flag);
+  }
+
+  // ── Webhook Delivery Logs ──
+
+  @Get('webhook-logs')
+  async getWebhookLogs(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('webhookId') webhookId?: string,
+  ) {
+    const p = Math.max(1, parseInt(page || '1', 10) || 1);
+    const l = Math.min(100, Math.max(1, parseInt(limit || '20', 10) || 20));
+    const logs = await this.adminService.getWebhookDeliveryLogs(p, l, webhookId || undefined);
+    return ApiResponse.ok(logs);
+  }
+
+  @Get('webhook-logs/stats')
+  async getWebhookStats() {
+    const stats = await this.adminService.getWebhookDeliveryStats();
+    return ApiResponse.ok(stats);
+  }
+
+  // ── Maintenance Mode ──
+
+  @Get('maintenance')
+  async getMaintenanceStatus() {
+    const status = await this.adminService.getMaintenanceStatus();
+    return ApiResponse.ok(status);
+  }
+
+  @Post('maintenance')
+  @SuperAdminOnly()
+  async setMaintenanceMode(@Body() body: { enabled: boolean; message?: string }) {
+    const result = await this.adminService.setMaintenanceMode(body.enabled, body.message);
+    return ApiResponse.ok(result);
+  }
+
+  // ── Invoice Admin ──
+
+  @Get('invoices')
+  async listInvoices(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('status') status?: string,
+  ) {
+    const p = Math.max(1, parseInt(page || '1', 10) || 1);
+    const l = Math.min(100, Math.max(1, parseInt(limit || '20', 10) || 20));
+    const invoices = await this.adminService.listAllInvoices(p, l, status || undefined);
+    return ApiResponse.ok(invoices);
+  }
+
   // ── Authorized Signers ──
 
   @Get('authorized-signers')

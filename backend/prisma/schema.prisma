@@ -65,6 +65,7 @@ model User {
   authorizedSigners AuthorizedSigner[]
   emailLogs       EmailLog[]
   apiUsageLogs    ApiUsageLog[]
+  promoCodeUsages PromoCodeUsage[]
 
   @@map("users")
 }
@@ -469,6 +470,7 @@ model Webhook {
   createdAt       DateTime  @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deliveryLogs WebhookDeliveryLog[]
 
   @@map("webhooks")
 }
@@ -663,4 +665,78 @@ model SystemBroadcast {
 
   @@index([active])
   @@map("system_broadcasts")
+}
+
+model PromoCode {
+  id            String    @id @default(uuid())
+  code          String    @unique
+  description   String?
+  discountType  String    @map("discount_type") // percent | fixed | tier_upgrade | trial_days
+  discountValue Float     @map("discount_value") // percentage, HUF amount, or days
+  targetTier    String?   @map("target_tier") // for tier_upgrade: which tier to grant
+  maxUses       Int?      @map("max_uses")
+  usedCount     Int       @default(0) @map("used_count")
+  validFrom     DateTime? @map("valid_from")
+  validUntil    DateTime? @map("valid_until")
+  active        Boolean   @default(true)
+  createdBy     String    @map("created_by")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  usages PromoCodeUsage[]
+
+  @@map("promo_codes")
+}
+
+model PromoCodeUsage {
+  id          String   @id @default(uuid())
+  promoCodeId String   @map("promo_code_id")
+  userId      String   @map("user_id")
+  appliedAt   DateTime @default(now()) @map("applied_at")
+
+  promoCode PromoCode @relation(fields: [promoCodeId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([promoCodeId, userId])
+  @@map("promo_code_usages")
+}
+
+model FeatureFlag {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  name        String
+  description String?
+  enabled     Boolean  @default(true)
+  minTier     String?  @map("min_tier") // null = all tiers, otherwise: free | starter | medium | premium | enterprise
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("feature_flags")
+}
+
+model WebhookDeliveryLog {
+  id           String   @id @default(uuid())
+  webhookId    String   @map("webhook_id")
+  event        String
+  url          String
+  statusCode   Int?     @map("status_code")
+  responseBody String?  @map("response_body")
+  error        String?
+  attempt      Int      @default(1)
+  success      Boolean  @default(false)
+  durationMs   Int?     @map("duration_ms")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  webhook Webhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  @@index([webhookId])
+  @@index([createdAt])
+  @@map("webhook_delivery_logs")
+}
+
+model SystemSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("system_settings")
 }

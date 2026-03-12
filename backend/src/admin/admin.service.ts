@@ -628,4 +628,254 @@ export class AdminService {
 
     return { breakdown: tiers, roles, total };
   }
+
+  // ── Promo Codes ──
+
+  async listPromoCodes() {
+    return this.prisma.promoCode.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: { _count: { select: { usages: true } } },
+    });
+  }
+
+  async createPromoCode(data: {
+    code: string;
+    description?: string;
+    discountType: string;
+    discountValue: number;
+    targetTier?: string;
+    maxUses?: number;
+    validFrom?: string;
+    validUntil?: string;
+  }, adminUserId: string) {
+    const existing = await this.prisma.promoCode.findUnique({ where: { code: data.code.toUpperCase() } });
+    if (existing) throw new BadRequestException('Ez a kód már létezik');
+
+    return this.prisma.promoCode.create({
+      data: {
+        code: data.code.toUpperCase(),
+        description: data.description || null,
+        discountType: data.discountType,
+        discountValue: data.discountValue,
+        targetTier: data.targetTier || null,
+        maxUses: data.maxUses || null,
+        validFrom: data.validFrom ? new Date(data.validFrom) : null,
+        validUntil: data.validUntil ? new Date(data.validUntil) : null,
+        createdBy: adminUserId,
+      },
+    });
+  }
+
+  async updatePromoCode(id: string, data: { active?: boolean; maxUses?: number; validUntil?: string }) {
+    const code = await this.prisma.promoCode.findUnique({ where: { id } });
+    if (!code) throw new NotFoundException('Promóciós kód nem található');
+    return this.prisma.promoCode.update({
+      where: { id },
+      data: {
+        ...(data.active !== undefined ? { active: data.active } : {}),
+        ...(data.maxUses !== undefined ? { maxUses: data.maxUses } : {}),
+        ...(data.validUntil ? { validUntil: new Date(data.validUntil) } : {}),
+      },
+    });
+  }
+
+  async deletePromoCode(id: string) {
+    const code = await this.prisma.promoCode.findUnique({ where: { id } });
+    if (!code) throw new NotFoundException('Promóciós kód nem található');
+    await this.prisma.promoCode.delete({ where: { id } });
+    return { deleted: true };
+  }
+
+  async validatePromoCode(code: string) {
+    const promo = await this.prisma.promoCode.findUnique({ where: { code: code.toUpperCase() } });
+    if (!promo || !promo.active) return { valid: false, message: 'Érvénytelen kód' };
+    if (promo.maxUses && promo.usedCount >= promo.maxUses) return { valid: false, message: 'A kód elérte a maximális felhasználási számot' };
+    if (promo.validFrom && new Date() < promo.validFrom) return { valid: false, message: 'A kód még nem érvényes' };
+    if (promo.validUntil && new Date() > promo.validUntil) return { valid: false, message: 'A kód lejárt' };
+    return {
+      valid: true,
+      discountType: promo.discountType,
+      discountValue: promo.discountValue,
+      targetTier: promo.targetTier,
+      description: promo.description,
+    };
+  }
+
+  async applyPromoCode(code: string, userId: string) {
+    const promo = await this.prisma.promoCode.findUnique({ where: { code: code.toUpperCase() } });
+    if (!promo || !promo.active) throw new BadRequestException('Érvénytelen promóciós kód');
+    if (promo.maxUses && promo.usedCount >= promo.maxUses) throw new BadRequestException('A kód elérte a maximális felhasználási számot');
+    if (promo.validUntil && new Date() > promo.validUntil) throw new BadRequestException('A kód lejárt');
+
+    // Check if already used by this user
+    const existing = await this.prisma.promoCodeUsage.findUnique({
+      where: { promoCodeId_userId: { promoCodeId: promo.id, userId } },
+    });
+    if (existing) throw new BadRequestException('Ezt a kódot már felhasználtad');
+
+    // Apply the promo code
+    if (promo.discountType === 'tier_upgrade' && promo.targetTier) {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { subscriptionTier: promo.targetTier },
+      });
+    }
+
+    // Record usage
+    await this.prisma.promoCodeUsage.create({
+      data: { promoCodeId: promo.id, userId },
+    });
+    await this.prisma.promoCode.update({
+      where: { id: promo.id },
+      data: { usedCount: { increment: 1 } },
+    });
+
+    return { applied: true, discountType: promo.discountType, discountValue: promo.discountValue, targetTier: promo.targetTier };
+  }
+
+  // ── Feature Flags ──
+
+  async listFeatureFlags() {
+    return this.prisma.featureFlag.findMany({ orderBy: { key: 'asc' } });
+  }
+
+  async updateFeatureFlag(id: string, data: { enabled?: boolean; minTier?: string | null }) {
+    const flag = await this.prisma.featureFlag.findUnique({ where: { id } });
+    if (!flag) throw new NotFoundException('Feature flag nem található');
+    return this.prisma.featureFlag.update({
+      where: { id },
+      data: {
+        ...(data.enabled !== undefined ? { enabled: data.enabled } : {}),
+        ...(data.minTier !== undefined ? { minTier: data.minTier } : {}),
+      },
+    });
+  }
+
+  async createFeatureFlag(data: { key: string; name: string; description?: string; minTier?: string }) {
+    const existing = await this.prisma.featureFlag.findUnique({ where: { key: data.key } });
+    if (existing) throw new BadRequestException('Ez a kulcs már létezik');
+    return this.prisma.featureFlag.create({ data });
+  }
+
+  async getActiveFeatureFlags(userTier: string) {
+    const allFlags = await this.prisma.featureFlag.findMany();
+    const tierOrder = ['free', 'starter', 'medium', 'premium', 'enterprise'];
+    const userTierIdx = tierOrder.indexOf(userTier);
+
+    return allFlags.map((f) => ({
+      key: f.key,
+      name: f.name,
+      enabled: f.enabled && (f.minTier === null || tierOrder.indexOf(f.minTier) <= userTierIdx),
+      minTier: f.minTier,
+    }));
+  }
+
+  // ── Webhook Delivery Logs ──
+
+  async getWebhookDeliveryLogs(page: number, limit: number, webhookId?: string) {
+    const where: any = {};
+    if (webhookId) where.webhookId = webhookId;
+
+    const [logs, total] = await Promise.all([
+      this.prisma.webhookDeliveryLog.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+        include: {
+          webhook: { select: { url: true, userId: true } },
+        },
+      }),
+      this.prisma.webhookDeliveryLog.count({ where }),
+    ]);
+
+    return { logs, total, page, limit, totalPages: Math.ceil(total / limit) };
+  }
+
+  async getWebhookDeliveryStats() {
+    const since = new Date();
+    since.setDate(since.getDate() - 30);
+
+    const [total, successful, failed] = await Promise.all([
+      this.prisma.webhookDeliveryLog.count({ where: { createdAt: { gte: since } } }),
+      this.prisma.webhookDeliveryLog.count({ where: { createdAt: { gte: since }, success: true } }),
+      this.prisma.webhookDeliveryLog.count({ where: { createdAt: { gte: since }, success: false } }),
+    ]);
+
+    return { total, successful, failed, successRate: total > 0 ? Math.round((successful / total) * 1000) / 10 : 100 };
+  }
+
+  // ── Maintenance Mode ──
+
+  async getMaintenanceStatus() {
+    const [modeSetting, messageSetting] = await Promise.all([
+      this.prisma.systemSetting.findUnique({ where: { key: 'maintenance_mode' } }),
+      this.prisma.systemSetting.findUnique({ where: { key: 'maintenance_message' } }),
+    ]);
+    return {
+      enabled: modeSetting?.value === 'true',
+      message: messageSetting?.value || 'A rendszer karbantartás alatt áll.',
+    };
+  }
+
+  async setMaintenanceMode(enabled: boolean, message?: string) {
+    await this.prisma.systemSetting.upsert({
+      where: { key: 'maintenance_mode' },
+      update: { value: enabled ? 'true' : 'false' },
+      create: { key: 'maintenance_mode', value: enabled ? 'true' : 'false' },
+    });
+    if (message) {
+      await this.prisma.systemSetting.upsert({
+        where: { key: 'maintenance_message' },
+        update: { value: message },
+        create: { key: 'maintenance_message', value: message },
+      });
+    }
+
+    // If enabling, broadcast to all users
+    if (enabled) {
+      const allUsers = await this.prisma.user.findMany({ select: { id: true } });
+      await Promise.all(
+        allUsers.map((u) =>
+          this.inAppNotifications.create(u.id, {
+            type: 'system',
+            title: 'Karbantartás',
+            message: message || 'A rendszer karbantartás alatt áll. Kérjük, próbálja újra később.',
+          }),
+        ),
+      );
+    }
+
+    return { enabled, message };
+  }
+
+  // ── Invoice Admin ──
+
+  async listAllInvoices(page: number, limit: number, status?: string) {
+    const where: any = {};
+    if (status) where.status = status;
+
+    const [invoices, total, statusBreakdown] = await Promise.all([
+      this.prisma.invoice.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+        include: { user: { select: { name: true, email: true, companyName: true } } },
+      }),
+      this.prisma.invoice.count({ where }),
+      this.prisma.invoice.groupBy({
+        by: ['status'],
+        _count: { id: true },
+        _sum: { amount: true },
+      }),
+    ]);
+
+    const stats: Record<string, { count: number; total: number }> = {};
+    for (const item of statusBreakdown) {
+      stats[item.status] = { count: item._count.id, total: item._sum.amount || 0 };
+    }
+
+    return { invoices, total, page, limit, totalPages: Math.ceil(total / limit), stats };
+  }
 }

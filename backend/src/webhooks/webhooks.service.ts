@@ -145,6 +145,7 @@ export class WebhooksService {
         await this.sleep(delay);
       }
 
+      const startMs = Date.now();
       try {
         const res = await fetch(webhook.url, {
           method: 'POST',
@@ -152,6 +153,23 @@ export class WebhooksService {
           body,
           signal: AbortSignal.timeout(10000),
         });
+
+        const durationMs = Date.now() - startMs;
+        const resBody = await res.text().catch(() => '');
+
+        // Log delivery attempt
+        this.prisma.webhookDeliveryLog.create({
+          data: {
+            webhookId: webhook.id,
+            event,
+            url: webhook.url,
+            statusCode: res.status,
+            responseBody: resBody.substring(0, 500),
+            attempt: attempt + 1,
+            success: res.ok,
+            durationMs,
+          },
+        }).catch(() => {});
 
         if (res.ok) {
           await this.prisma.webhook.update({
@@ -170,7 +188,21 @@ export class WebhooksService {
 
         lastError = `HTTP ${res.status}: ${res.statusText}`;
       } catch (err: any) {
+        const durationMs = Date.now() - startMs;
         lastError = err.message || 'Kapcsolódási hiba';
+
+        // Log failed attempt
+        this.prisma.webhookDeliveryLog.create({
+          data: {
+            webhookId: webhook.id,
+            event,
+            url: webhook.url,
+            error: lastError,
+            attempt: attempt + 1,
+            success: false,
+            durationMs,
+          },
+        }).catch(() => {});
       }
 
       this.logger.warn(
