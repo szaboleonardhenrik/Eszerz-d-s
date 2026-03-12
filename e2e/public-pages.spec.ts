@@ -42,6 +42,11 @@ test.describe('Public Pages', () => {
     await expect(page.locator('body')).toContainText(/Legitas|kapcsolat/i);
   });
 
+  test('status page loads', async ({ page }) => {
+    await page.goto('/status');
+    await expect(page.locator('body')).toContainText(/Rendszer állapot|Minden rendszer|szolgáltatás/i);
+  });
+
   test('health endpoint returns ok', async ({ request }) => {
     const response = await request.get('/api/health');
     expect(response.ok()).toBeTruthy();

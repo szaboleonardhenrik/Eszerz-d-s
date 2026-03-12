@@ -686,6 +686,7 @@ function Foot() {
               <li><a href="mailto:info@legitas.hu" className="hover:text-white transition">info@legitas.hu</a></li>
               <li>Budapest, Magyarország</li>
               <li className="pt-2"><Link href="/portal" className="text-[#46A0A0] hover:text-white transition">Aláírói portál</Link></li>
+              <li><Link href="/status" className="hover:text-white transition">Rendszer állapot</Link></li>
             </ul>
           </div>
         </div>

@@ -30,6 +30,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/scc`, lastModified: new Date("2026-03-07"), changeFrequency: "yearly" as const, priority: 0.3 },
     { url: `${BASE_URL}/login`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.4 },
     { url: `${BASE_URL}/register`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.6 },
+    { url: `${BASE_URL}/status`, lastModified: new Date(), changeFrequency: "daily" as const, priority: 0.3 },
   ];
 
   const blogPages = blogSlugs.map((slug) => ({
