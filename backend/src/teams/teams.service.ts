@@ -55,6 +55,25 @@ export class TeamsService {
     });
     if (existing) throw new ConflictException('Ez a felhasználó már tag');
 
+    // Check team member limit based on owner's tier
+    const owner = await this.prisma.user.findUnique({
+      where: { id: team.ownerId },
+      select: { subscriptionTier: true, role: true },
+    });
+    const isAdmin = ['superadmin', 'employee'].includes(owner?.role ?? '');
+    if (!isAdmin) {
+      const teamMemberLimits: Record<string, number> = { free: 0, starter: 0, medium: 2, premium: 5, enterprise: 20 };
+      const maxMembers = teamMemberLimits[owner?.subscriptionTier ?? 'free'] ?? 0;
+      const currentCount = await this.prisma.teamMember.count({ where: { teamId } });
+      if (currentCount >= maxMembers) {
+        throw new ForbiddenException(
+          maxMembers === 0
+            ? 'A jelenlegi csomagodban nem érhető el a csapatkezelés. Válts Közepes vagy magasabb csomagra!'
+            : `Elérted a csapattagok limitjét (${maxMembers}). Válts magasabb csomagra!`,
+        );
+      }
+    }
+
     return this.prisma.teamMember.create({
       data: { teamId, userId: user.id, role },
       include: { user: { select: { id: true, name: true, email: true } } },

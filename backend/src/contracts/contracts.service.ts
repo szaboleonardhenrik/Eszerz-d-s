@@ -110,20 +110,37 @@ export class ContractsService {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     const tier = user?.subscriptionTier ?? 'free';
 
-    const tierLimits: Record<string, number> = { free: 2, starter: 2, medium: 12, premium: 35, enterprise: 500, basic: 12, pro: 35 };
-    const maxContracts = tierLimits[tier] ?? 2;
-    if (maxContracts > 0) {
-      const firstOfMonth = new Date();
-      firstOfMonth.setDate(1);
-      firstOfMonth.setHours(0, 0, 0, 0);
+    // ── Tier limits ──
+    const contractLimits: Record<string, number> = { free: 2, starter: 2, medium: 12, premium: 35, enterprise: 500 };
+    const signerLimits: Record<string, number> = { free: 2, starter: 2, medium: 10, premium: 10, enterprise: 10 };
 
-      const monthlyCount = await this.prisma.contract.count({
-        where: { ownerId: userId, createdAt: { gte: firstOfMonth } },
-      });
+    // Admins bypass limits
+    const isAdmin = ['superadmin', 'employee'].includes(user?.role ?? '');
 
-      if (monthlyCount >= maxContracts) {
+    if (!isAdmin) {
+      // Contract per month limit
+      const maxContracts = contractLimits[tier] ?? 2;
+      if (maxContracts > 0) {
+        const firstOfMonth = new Date();
+        firstOfMonth.setDate(1);
+        firstOfMonth.setHours(0, 0, 0, 0);
+
+        const monthlyCount = await this.prisma.contract.count({
+          where: { ownerId: userId, createdAt: { gte: firstOfMonth } },
+        });
+
+        if (monthlyCount >= maxContracts) {
+          throw new ForbiddenException(
+            'Elérted a havi szerződés limitedet. Válts magasabb csomagra!',
+          );
+        }
+      }
+
+      // Signer per contract limit
+      const maxSigners = signerLimits[tier] ?? 2;
+      if (dto.signers && dto.signers.length > maxSigners) {
         throw new ForbiddenException(
-          'Elérted a havi szerződés limitedet. Válts magasabb csomagra!',
+          `A(z) ${tier} csomagban legfeljebb ${maxSigners} aláíró adható meg szerződésenként. Válts magasabb csomagra!`,
         );
       }
     }

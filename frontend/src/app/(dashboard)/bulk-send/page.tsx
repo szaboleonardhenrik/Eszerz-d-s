@@ -234,7 +234,7 @@ export default function BulkSendPage() {
   ).length;
 
   return (
-    <FeatureGate featureKey="bulk_operations" featureName="Tömeges műveletek">
+    <FeatureGate featureKey="bulk_operations" requiredTier="premium" featureName="Tömeges műveletek">
     <div className="max-w-4xl mx-auto">
       {/* Header */}
       <div className="mb-8">

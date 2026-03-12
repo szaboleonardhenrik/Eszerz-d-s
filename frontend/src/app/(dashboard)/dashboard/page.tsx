@@ -10,21 +10,27 @@ import ActivityFeed from "@/components/activity-feed";
 /* ── Tier Limits ─────────────────────────────────────────────────── */
 
 const tierLimits: Record<string, { contracts: number; team: number; api: number; storage: number }> = {
-  free: { contracts: 5, team: 1, api: 0, storage: 100 },
-  basic: { contracts: 30, team: 3, api: 100, storage: 1000 },
-  pro: { contracts: -1, team: 10, api: -1, storage: 5000 },
+  free: { contracts: 2, team: 1, api: 0, storage: 100 },
+  starter: { contracts: 2, team: 1, api: 0, storage: 500 },
+  medium: { contracts: 12, team: 3, api: 0, storage: 1000 },
+  premium: { contracts: 35, team: 6, api: 1000, storage: 5000 },
+  enterprise: { contracts: 500, team: 21, api: -1, storage: -1 },
 };
 
 const tierBadgeColors: Record<string, string> = {
   free: "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300",
-  basic: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
-  pro: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
+  starter: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+  medium: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300",
+  premium: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
+  enterprise: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
 };
 
 const tierLabels: Record<string, string> = {
   free: "Ingyenes",
-  basic: "Közepes",
-  pro: "Prémium",
+  starter: "Kezdő",
+  medium: "Közepes",
+  premium: "Prémium",
+  enterprise: "Nagyvállalati",
 };
 
 const statusLabels: Record<string, string> = {
@@ -263,7 +269,7 @@ export default function DashboardPage() {
               </svg>
               Új ajánlat
             </Link>
-            {tier !== "pro" && (
+            {tier !== "enterprise" && (
               <Link
                 href="/settings/billing"
                 className="inline-flex items-center gap-1.5 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 text-sm font-medium transition ml-1"

@@ -3,6 +3,7 @@ import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ConfigService } from '@nestjs/config';
+import { TIER_MONTHLY_CREDITS } from '../credits/credits.service';
 
 @Injectable()
 export class SchedulerService {
@@ -471,5 +472,49 @@ export class SchedulerService {
         }
       }
     }
+  }
+
+  /** 1st of every month at 2:00 AM - grant monthly credits based on subscription tier */
+  @Cron('0 2 1 * *')
+  async grantMonthlyCredits() {
+    this.logger.log('Running monthly credit grant job...');
+
+    let totalGranted = 0;
+
+    for (const [tier, amount] of Object.entries(TIER_MONTHLY_CREDITS)) {
+      if (amount <= 0) continue;
+
+      const users = await this.prisma.user.findMany({
+        where: { subscriptionTier: tier, role: 'user' },
+        select: { id: true, sendCredits: true },
+      });
+
+      for (const user of users) {
+        try {
+          const newBalance = user.sendCredits + amount;
+
+          await this.prisma.user.update({
+            where: { id: user.id },
+            data: { sendCredits: newBalance },
+          });
+
+          await this.prisma.creditTransaction.create({
+            data: {
+              userId: user.id,
+              amount,
+              balance: newBalance,
+              type: 'monthly_grant',
+              description: `Havi kredit jóváírás (${tier} csomag)`,
+            },
+          });
+
+          totalGranted++;
+        } catch (error) {
+          this.logger.error(`Failed to grant monthly credits for user ${user.id}`, error);
+        }
+      }
+    }
+
+    this.logger.log(`Monthly credit grant complete: ${totalGranted} users received credits`);
   }
 }

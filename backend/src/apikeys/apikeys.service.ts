@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { randomBytes, createHash } from 'crypto';
 
@@ -7,6 +7,17 @@ export class ApiKeysService {
   constructor(private readonly prisma: PrismaService) {}
 
   async createKey(userId: string, name: string, scopes: string) {
+    // Check tier — API access requires premium or higher
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { subscriptionTier: true, role: true },
+    });
+    const isAdmin = ['superadmin', 'employee'].includes(user?.role ?? '');
+    const apiTiers = ['premium', 'enterprise'];
+    if (!isAdmin && !apiTiers.includes(user?.subscriptionTier ?? 'free')) {
+      throw new ForbiddenException('API hozzáférés a Prémium és Nagyvállalati csomagokban érhető el.');
+    }
+
     const rawKey = `szp_${randomBytes(32).toString('hex')}`;
     const keyHash = createHash('sha256').update(rawKey).digest('hex');
     const prefix = rawKey.substring(0, 12);

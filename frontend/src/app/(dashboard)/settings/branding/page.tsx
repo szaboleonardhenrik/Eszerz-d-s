@@ -41,7 +41,7 @@ export default function BrandingSettings() {
   };
 
   return (
-    <FeatureGate featureKey="custom_branding" featureName="Márkaarculat">
+    <FeatureGate featureKey="custom_branding" requiredTier="premium" featureName="Branding">
     <div className="max-w-2xl">
       <div className="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 p-6 space-y-6">
         <div>
