@@ -35,6 +35,7 @@ import { AdminModule } from './admin/admin.module';
 import { HealthModule } from './health/health.module';
 import { SearchModule } from './search/search.module';
 import { TsaModule } from './tsa/tsa.module';
+import { CreditsModule } from './credits/credits.module';
 import { FeatureFlagsController } from './common/feature-flags.controller';
 import { MaintenanceMiddleware } from './common/maintenance.middleware';
 
@@ -74,6 +75,7 @@ import { MaintenanceMiddleware } from './common/maintenance.middleware';
     HealthModule,
     SearchModule,
     TsaModule,
+    CreditsModule,
   ],
   controllers: [FeatureFlagsController],
   providers: [

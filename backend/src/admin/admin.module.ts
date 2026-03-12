@@ -5,10 +5,12 @@ import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 import { ResendWebhookController } from './resend-webhook.controller';
 import { InAppNotificationsModule } from '../in-app-notifications/in-app-notifications.module';
+import { CreditsModule } from '../credits/credits.module';
 
 @Module({
   imports: [
     InAppNotificationsModule,
+    CreditsModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

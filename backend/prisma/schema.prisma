@@ -66,8 +66,28 @@ model User {
   emailLogs       EmailLog[]
   apiUsageLogs    ApiUsageLog[]
   promoCodeUsages PromoCodeUsage[]
+  sendCredits     Int        @default(0) @map("send_credits")
+  creditTransactions CreditTransaction[]
 
   @@map("users")
+}
+
+model CreditTransaction {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  amount      Int      // positive = purchase, negative = usage
+  balance     Int      // balance after transaction
+  type        String   // purchase | usage | admin_grant | refund
+  description String?
+  contractId  String?  @map("contract_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contract Contract? @relation(fields: [contractId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("credit_transactions")
 }
 
 model AuthorizedSigner {
@@ -201,6 +221,7 @@ model Contract {
   tags      ContractTag[]
   versions  ContractVersion[]
   reminders ContractReminder[]
+  creditTransactions CreditTransaction[]
 
   @@index([ownerId])
   @@index([status])

@@ -470,6 +470,9 @@ export default function BillingSettings() {
         </div>
       </div>
 
+      {/* Credits */}
+      <CreditSection />
+
       {/* Promo Code */}
       <PromoCodeSection />
 
@@ -504,6 +507,149 @@ export default function BillingSettings() {
             Váltás éves fizetésre
           </button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+interface CreditPack {
+  id: string;
+  amount: number;
+  price: number;
+  label: string;
+}
+
+interface CreditTransaction {
+  id: string;
+  amount: number;
+  balance: number;
+  type: string;
+  description: string;
+  createdAt: string;
+  contract?: { title: string } | null;
+}
+
+function CreditSection() {
+  const [balance, setBalance] = useState<number | null>(null);
+  const [packs, setPacks] = useState<CreditPack[]>([]);
+  const [history, setHistory] = useState<CreditTransaction[]>([]);
+  const [purchasing, setPurchasing] = useState<string | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
+
+  useEffect(() => {
+    api.get("/credits/balance").then((res) => setBalance(res.data.data.balance ?? 0)).catch(() => {});
+    api.get("/credits/packs").then((res) => setPacks(res.data.data.packs ?? [])).catch(() => {});
+  }, []);
+
+  const loadHistory = async () => {
+    try {
+      const res = await api.get("/credits/history?limit=20");
+      setHistory(res.data.data.transactions ?? []);
+      setShowHistory(true);
+    } catch {
+      toast.error("Nem sikerült betölteni az előzményeket");
+    }
+  };
+
+  const handlePurchase = async (packId: string) => {
+    setPurchasing(packId);
+    try {
+      const res = await api.post("/credits/purchase", { packId });
+      const { balance: newBalance, added } = res.data.data;
+      setBalance(newBalance);
+      toast.success(`${added} kredit jóváírva! Új egyenleg: ${newBalance}`);
+    } catch (err: any) {
+      toast.error(err.response?.data?.error?.message ?? "Hiba a vásárlás során");
+    } finally {
+      setPurchasing(null);
+    }
+  };
+
+  const typeLabelsCredit: Record<string, string> = {
+    purchase: "Vásárlás",
+    usage: "Felhasználás",
+    admin_grant: "Admin jóváírás",
+    refund: "Visszatérítés",
+  };
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">Kreditek</h2>
+          <p className="text-sm text-gray-500 mt-1">
+            Szerződés kiküldésekor 1 kredit kerül levonásra. Vásárolj kredit csomagot, ha elfogy.
+          </p>
+        </div>
+        <div className="text-right">
+          <p className="text-3xl font-bold text-gray-900">{balance ?? "..."}</p>
+          <p className="text-xs text-gray-500">kredit egyenleg</p>
+        </div>
+      </div>
+
+      {/* Credit Packs */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        {packs.map((pack) => (
+          <div
+            key={pack.id}
+            className="border border-gray-200 rounded-xl p-4 text-center hover:border-brand-teal hover:shadow-md transition"
+          >
+            <p className="text-2xl font-bold text-gray-900">{pack.amount}</p>
+            <p className="text-xs text-gray-500 mb-2">kredit</p>
+            <p className="text-sm font-semibold text-gray-700 mb-3">
+              {pack.price.toLocaleString("hu-HU")} Ft
+            </p>
+            <p className="text-[10px] text-gray-400 mb-2">
+              {Math.round(pack.price / pack.amount)} Ft / kredit
+            </p>
+            <button
+              onClick={() => handlePurchase(pack.id)}
+              disabled={purchasing === pack.id}
+              className="w-full py-2 rounded-lg text-sm font-medium bg-brand-teal-dark text-white hover:bg-brand-teal-darker transition disabled:opacity-50"
+            >
+              {purchasing === pack.id ? "Feldolgozás..." : "Vásárlás"}
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* History Toggle */}
+      <div className="border-t border-gray-100 pt-4">
+        <button
+          onClick={showHistory ? () => setShowHistory(false) : loadHistory}
+          className="text-sm text-brand-teal-dark hover:underline font-medium"
+        >
+          {showHistory ? "Előzmények elrejtése" : "Kredit előzmények"}
+        </button>
+
+        {showHistory && history.length > 0 && (
+          <div className="mt-3 space-y-2">
+            {history.map((tx) => (
+              <div
+                key={tx.id}
+                className="flex items-center justify-between py-2 px-3 rounded-lg bg-gray-50 text-sm"
+              >
+                <div>
+                  <span className={`font-medium ${tx.amount > 0 ? "text-green-600" : "text-red-600"}`}>
+                    {tx.amount > 0 ? "+" : ""}{tx.amount}
+                  </span>
+                  <span className="text-gray-500 ml-2">
+                    {tx.description || typeLabelsCredit[tx.type] || tx.type}
+                  </span>
+                  {tx.contract && (
+                    <span className="text-gray-400 ml-1">({tx.contract.title})</span>
+                  )}
+                </div>
+                <div className="text-xs text-gray-400">
+                  {new Date(tx.createdAt).toLocaleDateString("hu-HU")}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {showHistory && history.length === 0 && (
+          <p className="mt-3 text-sm text-gray-400">Nincs kredit tranzakció.</p>
+        )}
       </div>
     </div>
   );

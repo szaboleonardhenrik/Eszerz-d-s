@@ -14,6 +14,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { TemplatesService } from '../templates/templates.service';
 import { CreateContractDto } from './dto/create-contract.dto';
 import { ConfigService } from '@nestjs/config';
+import { CreditsService } from '../credits/credits.service';
 
 @Injectable()
 export class ContractsService {
@@ -25,6 +26,7 @@ export class ContractsService {
     private readonly notificationsService: NotificationsService,
     private readonly templatesService: TemplatesService,
     private readonly config: ConfigService,
+    private readonly creditsService: CreditsService,
   ) {}
 
   private generateVerificationHash(): string {
@@ -297,6 +299,9 @@ export class ContractsService {
     if (contract.status !== 'draft') {
       throw new BadRequestException('Csak piszkozat státuszú szerződés küldhető el');
     }
+
+    // Deduct 1 credit for sending (admins bypass)
+    await this.creditsService.deductForSend(userId, contractId);
 
     const owner = await this.prisma.user.findUnique({
       where: { id: userId },

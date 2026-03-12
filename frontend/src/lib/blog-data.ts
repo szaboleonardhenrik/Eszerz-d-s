@@ -20,6 +20,56 @@ export interface BlogArticle {
 
 export const posts: BlogPost[] = [
   {
+    slug: "szellemi-tulajdon-vedelem-szerzodesek",
+    title: "Szellemi tulajdon védelme szerződésekkel: amit minden vállalkozónak tudnia kell",
+    excerpt: "Szoftver, dizájn, márka, know-how — hogyan védd a szellemi tulajdonod szerződésekkel? IP záradékok és licencia alapok.",
+    category: "Jogi útmutató",
+    date: "2026. március 12.",
+    readTime: "9 perc",
+    image: "/images/blog/szellemi-tulajdon-vedelem-szerzodesek.jpg",
+    color: "bg-pink-100 text-pink-700",
+  },
+  {
+    slug: "szerzodes-archivalas-digitalis-megoldas",
+    title: "Szerződések archiválása: miért és hogyan válts digitális megoldásra?",
+    excerpt: "A papíralapú archívum lassú, kockázatos és drága. Mutatjuk, hogyan digitalizáld a szerződéseid biztonságosan.",
+    category: "Digitalizáció",
+    date: "2026. március 12.",
+    readTime: "6 perc",
+    image: "/images/blog/szerzodes-archivalas-digitalis-megoldas.jpg",
+    color: "bg-teal-100 text-teal-700",
+  },
+  {
+    slug: "vallalkozasi-szerzodes-minta-utmutato",
+    title: "Vállalkozási szerződés 2026: minta, kötelező elemek és buktatók",
+    excerpt: "A vállalkozási szerződés a leggyakoribb B2B megállapodás. Bemutatjuk a kötelező elemeket, a hibákat és egy használható mintát.",
+    category: "Sablonok",
+    date: "2026. március 12.",
+    readTime: "8 perc",
+    image: "/images/blog/vallalkozasi-szerzodes-minta-utmutato.jpg",
+    color: "bg-orange-100 text-orange-700",
+  },
+  {
+    slug: "online-szerzodes-alairas-lepsrol-lepsre",
+    title: "Szerződés online aláírása: lépésről lépésre útmutató",
+    excerpt: "Hogyan írj alá szerződést online, távolról, papír nélkül? Részletes útmutató a digitális aláírás folyamatáról.",
+    category: "Útmutató",
+    date: "2026. március 12.",
+    readTime: "6 perc",
+    image: "/images/blog/online-szerzodes-alairas-lepsrol-lepsre.jpg",
+    color: "bg-cyan-100 text-cyan-700",
+  },
+  {
+    slug: "egyuttmukodesi-megallapodas-keszitese",
+    title: "Együttműködési megállapodás: mikor kell és hogyan készítsd el?",
+    excerpt: "Két cég közös projektje, startup partnerség vagy konzorcium — az együttműködési megállapodás védi mindkét felet.",
+    category: "Útmutató",
+    date: "2026. március 12.",
+    readTime: "7 perc",
+    image: "/images/blog/egyuttmukodesi-megallapodas-keszitese.jpg",
+    color: "bg-violet-100 text-violet-700",
+  },
+  {
     slug: "mesterseges-intelligencia-szerzodesek-jovo",
     title: "Mesterséges intelligencia a szerződéskezelésben: így alakítja át az AI a jogi munkát",
     excerpt: "Automatizált elemzés, kockázatfelismerés, záradékjavaslatok — az AI forradalmasítja a szerződések kezelését. Mutatjuk, hogyan.",
@@ -140,6 +190,221 @@ export function getAllSlugs(): string[] {
 }
 
 const articles: Record<string, BlogArticle> = {
+  "szellemi-tulajdon-vedelem-szerzodesek": {
+    title: "Szellemi tulajdon védelme szerződésekkel: amit minden vállalkozónak tudnia kell",
+    category: "Jogi útmutató",
+    date: "2026. március 12.",
+    readTime: "9 perc",
+    image: "/images/blog/szellemi-tulajdon-vedelem-szerzodesek.jpg",
+    content: `<h2>Miért kulcsfontosságú a szellemi tulajdon védelme?</h2>
+<p>A modern vállalkozások értékének jelentős része nem gépekben vagy irodákban, hanem <strong>szellemi alkotásokban</strong> rejlik: szoftverekben, márkákban, dizájnban, know-how-ban és üzleti titkokban. Mégis, a magyar KKV-k többsége nem fordít kellő figyelmet a <strong>szellemi tulajdon szerződéses védelmére</strong>, ami később komoly jogi és üzleti problémákhoz vezethet.</p>
+<p>Ebben az útmutatóban bemutatjuk az IP (intellectual property) védelem alapjait, a szerződéses eszközöket és a leggyakoribb hibákat, amelyeket mindenképp érdemes elkerülni.</p>
+
+<h2>A szellemi tulajdon típusai</h2>
+<p>A szellemi tulajdonjogok több kategóriába sorolhatók, és mindegyikhez más-más védelmi eszköz tartozik:</p>
+
+<h3>Szerzői jog</h3>
+<p>A szerzői jog automatikusan keletkezik a mű létrehozásával — nem kell regisztrálni. Ide tartoznak a szoftverek, irodalmi művek, zenék, fotók, grafikai munkák, weboldalak designja és a prezentációk is. A szerzői jog a szerző életében és halálát követően 70 évig áll fenn.</p>
+
+<h3>Védjegy</h3>
+<p>A védjegy a márka védelmét szolgálja: logók, szlogenek, cégnevek, akár hangok vagy színek is lehetnek védjegyek. A védjegyet a Szellemi Tulajdon Nemzeti Hivatalánál (SZTNH) kell bejegyeztetni, és 10 évente megújítható. Az EU-s védjegy (EUIPO) az egész Európai Unióban védelmet nyújt.</p>
+
+<h3>Szabadalom</h3>
+<p>A szabadalom a <strong>műszaki megoldások</strong> — találmányok, eljárások, eszközök — védelmét biztosítja. A szabadalmi oltalom 20 évig tart, de fenntartási díj fizetése szükséges. A szabadalmaztatás összetett és költséges folyamat, de bizonyos iparágakban (gyártás, biotech, hardver) elengedhetetlen.</p>
+
+<h3>Üzleti titok és know-how</h3>
+<p>Az üzleti titok olyan információ, amelynek titokban tartása gazdasági előnyt biztosít: receptúrák, ügyféladatbázisok, árazási stratégiák, belső folyamatok. A know-how a gyakorlati szaktudást jelenti — például egy gyártási eljárás részleteit vagy egy szoftver architektúráját. Ezeket nem lehet regisztrálni, de <strong>szerződéses eszközökkel</strong> védheted őket.</p>
+
+<h2>IP záradékok munkaszerződésben és megbízási szerződésben</h2>
+<p>Az egyik legkritikusabb terület a <strong>munkaviszonyban vagy megbízási jogviszonyban</strong> létrejövő szellemi alkotások tulajdonjogi kérdése. Ha ezt nem rendezed szerződésben, meglepő jogi helyzetek alakulhatnak ki.</p>
+
+<h3>Munkaviszony: a „work-for-hire" elv</h3>
+<p>A magyar szerzői jogi törvény (1999. évi LXXVI. törvény) szerint a <strong>munkaviszonyban alkotott művek</strong> felhasználási joga — a munkaköri kötelezettség keretében készült alkotásoknál — a munkáltatót illeti meg. Ez az úgynevezett „work-for-hire" elv. Fontos azonban, hogy:</p>
+<ul>
+<li>A szerzői jog formálisan továbbra is a munkavállalóé marad — a munkáltató felhasználási jogot kap.</li>
+<li>Ha az alkotás <strong>nem tartozik a munkaköri kötelezettségek közé</strong>, a munkáltató nem szerez automatikusan jogot rá.</li>
+<li>A munkaszerződésben érdemes pontosan meghatározni, milyen típusú alkotásokra terjed ki a felhasználási jog.</li>
+<li>Szoftver esetén a Szjt. külön rendelkezése alapján a munkáltató <strong>kizárólagos és korlátlan</strong> felhasználási jogot kap.</li>
+</ul>
+
+<h3>Megbízási jogviszony: alapértelmezetten a megbízotté marad!</h3>
+<p>Ez az a pont, ahol a legtöbb vállalkozás hibázik. Megbízási jogviszonyban (pl. freelancer grafikus, külsős fejlesztő, marketinges) a szellemi tulajdon <strong>alapértelmezetten a megbízotté</strong> marad, hacsak a szerződés másképp nem rendelkezik. Ha nincs IP-záradék a szerződésben:</p>
+<ul>
+<li>A grafikus által készített logó a grafikusé marad.</li>
+<li>A fejlesztő által írt kód a fejlesztőé marad.</li>
+<li>A szövegíró által készített tartalom a szövegíróé marad.</li>
+</ul>
+<p>A megoldás: minden megbízási szerződésbe <strong>felhasználási jog átruházási záradékot</strong> kell beépíteni, amely pontosan meghatározza a felhasználási módokat, a területi és időbeli hatályt, valamint az esetleges ellenértéket.</p>
+
+<h2>Licencia szerződések típusai</h2>
+<p>Ha nem teljes tulajdonjog-átruházásra, hanem felhasználási jog engedélyezésére van szükség, licencia szerződést kell kötni. A legfontosabb típusok:</p>
+
+<h3>Kizárólagos licencia</h3>
+<p>A licenciavevő egyedül jogosult a szellemi alkotás felhasználására a meghatározott területen és időszakban. A licenciaadó sem használhatja a saját alkotását a licencia hatálya alatt (hacsak a szerződés másképp nem rendelkezik). Ez drágább, de teljes piaci előnyt biztosít.</p>
+
+<h3>Nem kizárólagos licencia</h3>
+<p>A licenciaadó több félnek is adhat felhasználási jogot párhuzamosan. Ez a szoftver- és technológiai iparban a legelterjedtebb modell (pl. SaaS licencek, nyílt forráskódú licencek).</p>
+
+<h3>Területi és időbeli korlátozás</h3>
+<p>A licencia korlátozható földrajzi területre (pl. csak Magyarország), időtartamra (pl. 3 év) és felhasználási módra (pl. csak online megjelenítésre). Minél pontosabban definiálod ezeket, annál kevesebb a vita lehetősége.</p>
+
+<h2>Szoftverfejlesztési szerződés IP kérdései</h2>
+<p>Az IT szektorban a szellemi tulajdon kérdése különösen összetett. Egy <strong>szoftverfejlesztési szerződésben</strong> az alábbi IP-vonatkozásokat kell rendezni:</p>
+<ul>
+<li><strong>A fejlesztett szoftver tulajdonjoga:</strong> ki lesz a forráskód tulajdonosa? A megrendelő vagy a fejlesztő?</li>
+<li><strong>Korábbi munkák (pre-existing IP):</strong> a fejlesztő által a projektbe bevitt korábbi kódok, könyvtárak, keretrendszerek jogállása.</li>
+<li><strong>Nyílt forráskódú komponensek:</strong> milyen open source licencek vonatkoznak a használt elemekre, és ezek kompatibilisek-e a megrendelő üzleti modelljével?</li>
+<li><strong>Forráskód átadása:</strong> a fejlesztés végén a megrendelő megkapja-e a teljes forráskódot, a dokumentációt és a build környezetet?</li>
+<li><strong>Továbbfejlesztési jogok:</strong> a megrendelő jogosult-e más fejlesztővel továbbfejleszttetni a szoftvert?</li>
+</ul>
+<p>A Legitas platformon elérhető szoftverfejlesztési szerződéssablon tartalmazza ezeket a záradékokat, így nem kell nulláról megírnod ezeket a klauzulákat.</p>
+
+<h2>Az NDA szerepe az IP védelemben</h2>
+<p>A <strong>titoktartási megállapodás (NDA)</strong> az üzleti titkok és a know-how első számú védelmi eszköze. Minden olyan helyzetben kötni kell, ahol bizalmas információ cserél gazdát:</p>
+<ul>
+<li>Tárgyalások potenciális üzleti partnerekkel vagy befektetőkkel</li>
+<li>Új munkavállaló vagy megbízott bevonása a projektbe</li>
+<li>Szoftver forráskódjának vagy üzleti modell részleteinek megosztása</li>
+<li>Beszállítói és alvállalkozói kapcsolatok</li>
+</ul>
+<p>Az NDA-nak pontosan meg kell határoznia, mit tekintünk bizalmas információnak, meddig tart a titoktartási kötelezettség, és milyen szankcióval jár a megszegése (kötbér, kártérítés).</p>
+
+<h2>Gyakori hibák — és hogyan kerüld el őket</h2>
+<p>A szellemi tulajdon védelmében a leggyakoribb hibák:</p>
+<ul>
+<li><strong>Nincs IP záradék a megbízási szerződésben:</strong> a fejlesztőé, grafikusé, szövegíróé marad az alkotás. Utólag az IP megszerzése drága és bonyolult.</li>
+<li><strong>Túl általános megfogalmazás:</strong> „minden jog átszáll" típusú záradék vita esetén értelmezhetetlen. Pontosan meg kell határozni a felhasználási módokat.</li>
+<li><strong>Elfeledett pre-existing IP:</strong> a fejlesztő korábbi kódját nem rendezik a szerződésben, és később licence-vitába keverednek.</li>
+<li><strong>NDA hiánya:</strong> az üzleti titkot a kiszivárogtató fél ellen NDA nélkül sokkal nehezebb érvényesíteni.</li>
+<li><strong>Védjegyoltalom elmulasztása:</strong> a márkaépítésbe fektetett idő és pénz elvész, ha más bejegyezteti a nevet.</li>
+<li><strong>Alkalmazotti IP nem szabályozott:</strong> a munkavállaló kilép, és magával viszi az általa fejlesztett megoldásokat.</li>
+</ul>
+
+<h2>Összefoglalás: IP védelem lépésről lépésre</h2>
+<p>A <strong>szellemi tulajdon védelme</strong> nem luxus, hanem alapvető üzleti szükséglet. Az IP védelem vállalkozásban a következő lépésekből áll:</p>
+<ul>
+<li>Azonosítsd, milyen szellemi alkotásaid vannak (szoftver, márka, dizájn, know-how).</li>
+<li>Minden munka- és megbízási szerződésbe építs be IP záradékot.</li>
+<li>Köss NDA-t minden olyan félkkel, akivel bizalmas információt osztasz meg.</li>
+<li>Fontold meg a védjegyregisztrációt a márkád számára.</li>
+<li>Licencia szerződésben pontosan határozd meg a felhasználási jogokat.</li>
+<li>Rendszeresen vizsgáld felül a meglévő szerződéseidet IP szempontból.</li>
+</ul>
+<p>A Legitas rendszerében az IP záradékokat és NDA sablonokat néhány kattintással hozzáadhatod a szerződéseidhez — így biztosíthatod, hogy a vállalkozásod szellemi értékei mindig védettek maradjanak.</p>`,
+  },
+  "szerzodes-archivalas-digitalis-megoldas": {
+    title: "Szerződések archiválása: miért és hogyan válts digitális megoldásra?",
+    category: "Digitalizáció",
+    date: "2026. március 12.",
+    readTime: "6 perc",
+    image: "/images/blog/szerzodes-archivalas-digitalis-megoldas.jpg",
+    content: `<h2>A papíralapú szerződéstárolás kockázatai</h2>
+<p>Magyarországon a vállalkozások jelentős része még mindig papíralapon tárolja a szerződéseit: mappákban, irattárakban, néha fiókokban vagy polcokon. Ez a módszer évtizedeken át működött — de a modern üzleti környezetben egyre komolyabb kockázatokat rejt.</p>
+
+<h3>Fizikai kockázatok</h3>
+<p>A papír sebezhető. Tűz, vízkár, beázás, penész, rágcsálók — egyetlen baleset elegendő ahhoz, hogy évek dokumentációja megsemmisüljön. A biztosítás ugyan fedezi az anyagi kárt, de az <strong>elveszett szerződések tartalmát</strong> nem lehet pótolni.</p>
+
+<h3>Kereshetőség és hozzáférés</h3>
+<p>Egy papíralapú archívumban egy konkrét szerződés megtalálása akár órákba is telhet. Ha több telephelyed van, a helyzet még bonyolultabb: ki kell utazni az irattárba, vagy meg kell várni, amíg valaki beszkenneli a keresett dokumentumot. Ráadásul egyszerre csak egy személy férhet hozzá az eredetihez.</p>
+
+<h3>Költségek</h3>
+<p>Az irattárolás nem ingyenes: helyiség bérleti díja, rendezési munka, irattári bútorok, és az adminisztráció ideje mind költségként jelentkezik. Egy közepes méretű vállalkozás évi több százezer forintot költhet pusztán a papíralapú <strong>szerződés archiválásra</strong>.</p>
+
+<h3>Jogi kockázatok</h3>
+<p>Ha egy jogvita esetén nem találod a releváns szerződést, vagy az megsérült és olvashatatlan, a bizonyítási teher neked áll hátrányodra. A bíróság előtt az eredeti, ép példány felmutatása kulcsfontosságú lehet.</p>
+
+<h2>Jogi megőrzési kötelezettségek Magyarországon</h2>
+<p>A <strong>digitális dokumentumkezelésre</strong> való átállás előtt fontos megérteni, milyen jogszabályi kötelezettségek vonatkoznak a szerződések megőrzésére:</p>
+
+<h3>Polgári Törvénykönyv (Ptk.)</h3>
+<p>Az általános elévülési idő <strong>5 év</strong> — ennyi ideig érvényesíthetők követelések a szerződésből. A szerződést legalább eddig meg kell őrizni. Egyes speciális jogviszonyokban (pl. ingatlan) az elévülési idő hosszabb.</p>
+
+<h3>Számviteli törvény</h3>
+<p>A 2000. évi C. törvény előírja, hogy a számviteli bizonylatokat — beleértve a szerződéseket, amelyekhez számlák kapcsolódnak — <strong>legalább 8 évig</strong> meg kell őrizni. Ez vonatkozik a papíralapú és az elektronikus dokumentumokra egyaránt.</p>
+
+<h3>Adóügyi megőrzés</h3>
+<p>Az adóigazgatási eljárásban az adómegállapítási jog <strong>5 évig</strong> áll fenn (az adóbevallás benyújtásának határidejétől számítva). Ezen időszak alatt az adóhatóság bármikor kérheti a szerződések bemutatását.</p>
+
+<h3>Munkajogi dokumentumok</h3>
+<p>A munkaszerződéseket és a munkaviszonnyal kapcsolatos dokumentumokat a munkaviszony megszűnésétől számított <strong>3 évig</strong> kötelező megőrizni (egyes igények 5 éves elévülési ideje miatt érdemes legalább 5 évig).</p>
+
+<p>A digitális archiválás ezeket a kötelezettségeket is teljesítheti, amennyiben az elektronikus dokumentumok hitelességét és sértetlenségét biztosítod.</p>
+
+<h2>A digitális archiválás előnyei</h2>
+<p>A <strong>digitális dokumentumkezelés</strong> nem csupán a papír kiváltását jelenti — egy egészen más minőségű munkavégzést tesz lehetővé:</p>
+
+<h3>Azonnali kereshetőség</h3>
+<p>Digitális rendszerben bármely szerződést másodpercek alatt megtalálod: kereshetsz partnernév, dátum, szerződéstípus, összeg vagy akár a szövegben előforduló bármely kifejezés alapján. Többé nem kell mappákat lapozni.</p>
+
+<h3>Bárhonnan elérhető</h3>
+<p>Felhőalapú rendszer esetén a szerződéseid bárhonnan elérhetők — irodából, otthonról, üzleti útról. Nincs szükség fizikai jelenlétre az irattárnál, és egyszerre többen is hozzáférhetnek ugyanahhoz a dokumentumhoz.</p>
+
+<h3>Biztonság és mentés</h3>
+<p>A professzionális <strong>szerződésnyilvántartó</strong> rendszerek automatikus biztonsági mentést készítenek, titkosított tárhelyen tárolják az adatokat, és hozzáférés-kezeléssel védik a bizalmas dokumentumokat. Ez összehasonlíthatatlanul biztonságosabb, mint egy irodai szekrény.</p>
+
+<h3>Automatikus emlékeztetők</h3>
+<p>A digitális rendszer figyelmeztet a lejáró szerződésekre, a megújítási határidőkre és a fontos dátumokra. Nem kell fejben tartani vagy naptárba írni — a rendszer automatikusan értesít.</p>
+
+<h3>Audit trail</h3>
+<p>Minden művelet naplózva van: ki nyitotta meg, módosította vagy töltötte le a szerződést, és mikor. Ez jogvita esetén értékes bizonyíték, és a belső kontroll szempontjából is fontos.</p>
+
+<h2>Mit kell tartalmaznia egy jó szerződés-archiváló rendszernek?</h2>
+<p>Ha a <strong>digitális szerződésnyilvántartás</strong> mellett döntesz, az alábbi funkciókat keresd:</p>
+
+<h3>Metaadatok</h3>
+<ul>
+<li>Szerződő felek neve és elérhetősége</li>
+<li>Szerződés típusa (bérleti, megbízási, munkaszerződés stb.)</li>
+<li>Aláírás dátuma és a hatálybalépés időpontja</li>
+<li>Lejárati dátum és megújítási feltételek</li>
+<li>Szerződés értéke és fizetési ütemezés</li>
+<li>Felelős személy a szervezeten belül</li>
+</ul>
+
+<h3>Verziókezelés</h3>
+<p>A szerződésmódosítások követhetősége alapvető: az eredeti és minden módosítás megőrzése, a változások vizuális összehasonlítása, és a verziók közötti különbségek megjelenítése.</p>
+
+<h3>Audit trail (tevékenységnapló)</h3>
+<p>Részletes naplózás arról, hogy ki, mikor, milyen műveletet végzett az adott szerződéssel. Ez nemcsak belső kontrollra, hanem jogi bizonyításra is alkalmas.</p>
+
+<h3>Lejárati figyelmeztetések</h3>
+<p>Automatikus értesítések email-ben vagy a rendszeren belül, ha egy szerződés lejárata közeledik. Beállítható, hogy 30, 60 vagy 90 nappal a lejárat előtt szóljon a rendszer.</p>
+
+<h2>GDPR és a digitális archiválás</h2>
+<p>A személyes adatokat tartalmazó szerződések (pl. munkaszerződések, megbízási szerződések természetes személyekkel) kezelésénél a GDPR szabályait is be kell tartani:</p>
+<ul>
+<li><strong>Adatminimalizálás:</strong> csak a szükséges adatokat tárold, és csak addig, amíg jogos célod van rá.</li>
+<li><strong>Megőrzési idő:</strong> határozd meg előre, meddig őrzöd az egyes szerződéstípusokat, és a határidő lejártakor töröld őket.</li>
+<li><strong>Törlési jog:</strong> a GDPR alapján az érintett kérheti a személyes adatai törlését — de a jogi kötelezettségen alapuló megőrzés felülírja ezt.</li>
+<li><strong>Megsemmisítési protokoll:</strong> a digitális törlés legyen visszaállíthatatlan, a papír megsemmisítés pedig iratmegsemmisítővel történjen.</li>
+<li><strong>Hozzáférés-kezelés:</strong> csak az arra jogosult munkatársak férhessenek hozzá a személyes adatokat tartalmazó szerződésekhez.</li>
+</ul>
+
+<h2>Gyakorlati átállási lépések</h2>
+<p>A papírról digitálisra való átállás nem kell, hogy egyetlen nap alatt megtörténjen. Íme egy bevált, lépésről lépésre megvalósítható terv:</p>
+
+<h3>1. Felmérés és kategorizálás</h3>
+<p>Gyűjtsd össze a meglévő szerződéseidet, és csoportosítsd típus szerint: munkaszerződések, bérleti szerződések, beszállítói megállapodások, ügyfélszerződések stb. Határozd meg, melyek aktívak és melyek már lejártak.</p>
+
+<h3>2. Digitalizálási sorrend meghatározása</h3>
+<p>Kezdd az aktív és a legfontosabb szerződésekkel. A lejárt, de megőrzési kötelezettség alatt álló dokumentumok jöhetnek másodikként. Az elévült szerződéseket selejtezd ki.</p>
+
+<h3>3. Szkennelés és feltöltés</h3>
+<p>A papíralapú szerződéseket szkenneld be legalább 300 DPI felbontással, PDF formátumban. Ha lehetséges, használj OCR (optikai karakterfelismerő) technológiát, hogy a szöveg kereshető legyen.</p>
+
+<h3>4. Metaadatok kitöltése</h3>
+<p>Minden feltöltött szerződéshez add meg a legfontosabb metaadatokat: felek, típus, dátumok, érték. Ez a legunalmasabb, de a legértékesebb lépés — a kereshetőség múlik rajta.</p>
+
+<h3>5. Hozzáférési jogosultságok beállítása</h3>
+<p>Határozd meg, ki mihez férhet hozzá: az ügyvezetés mindent lát, a HR csak a munkaszerződéseket, a pénzügy csak a beszállítói szerződéseket stb.</p>
+
+<h3>6. Folyamatos használat</h3>
+<p>Ettől kezdve minden új szerződést digitálisan hozz létre és tárold. A Legitas rendszerben például a szerződések a létrehozás pillanatától digitálisan archiválódnak, metaadatokkal, verziókövetéssel és audit trail-lel együtt — így nem kell külön archiválási lépést beiktatni.</p>
+
+<h2>Összefoglalás</h2>
+<p>A <strong>szerződések digitális archiválása</strong> nem technológiai divat, hanem üzleti szükséglet. A papíralapú rendszerek lassúak, kockázatosak és drágák — a digitális megoldások biztonságosabbak, kereshetőbbek és hatékonyabbak. A jogszabályi megőrzési kötelezettségeknek mindkét formában meg kell felelni, de a digitális archiválás ezt jelentősen megkönnyíti.</p>
+<p>Az átállás fokozatosan is megvalósítható: kezdd az aktív szerződésekkel, és fokozatosan digitalizáld a régiebbeket. A lényeg, hogy <strong>még ma tedd meg az első lépést</strong> — mert minden nap, amikor egy fontos szerződés csak papíralapon létezik, kockázatot jelent a vállalkozásod számára.</p>`,
+  },
   "mesterseges-intelligencia-szerzodesek-jovo": {
     title: "Mesterséges intelligencia a szerződéskezelésben: így alakítja át az AI a jogi munkát",
     category: "Technológia",
@@ -1138,5 +1403,226 @@ const articles: Record<string, BlogArticle> = {
 
 <h2>Összefoglalás</h2>
 <p>A munkaszerződés 2026-ban sem csupán formalitás — a jogszabályi változások nyomon követése és a szerződés pontos, az Mt. előírásainak megfelelő elkészítése kulcsfontosságú a jogviták megelőzéséhez. Akár munkáltató vagy, akár munkavállaló, érdemes rendszeresen felülvizsgálni a meglévő munkaszerződéseket és szükség esetén módosítani azokat az aktuális szabályoknak megfelelően.</p>`,
+  },
+  "vallalkozasi-szerzodes-minta-utmutato": {
+    title: "Vállalkozási szerződés 2026: minta, kötelező elemek és buktatók",
+    category: "Sablonok",
+    date: "2026. március 12.",
+    readTime: "8 perc",
+    image: "/images/blog/vallalkozasi-szerzodes-minta-utmutato.jpg",
+    content: `<h2>Mi az a vállalkozási szerződés?</h2>
+<p>A <strong>vállalkozási szerződés</strong> a magyar üzleti élet egyik leggyakoribb szerződéstípusa. Lényege egyszerű: az egyik fél (a <strong>vállalkozó</strong>) valamely munka elvégzésére, a másik fél (a <strong>megrendelő</strong>) pedig annak átvételére és a <strong>vállalkozási díj</strong> megfizetésére vállal kötelezettséget. A Polgári Törvénykönyv (Ptk.) 6:238–6:250. §§ szabályozzák részletesen.</p>
+<p>Legyen szó weboldal fejlesztésről, épület felújításról, szoftverkészítésről vagy bármilyen más <strong>B2B megbízásról</strong>, a vállalkozási szerződés az az eszköz, amely mindkét felet védi. Ebben a cikkben bemutatjuk a <strong>vállalkozási szerződés kötelező elemeit</strong>, a leggyakoribb hibákat és egy gyakorlati mintát.</p>
+
+<h2>A vállalkozási szerződés kötelező elemei</h2>
+<p>A Ptk. nem ír elő kötelező írásbeli formát a vállalkozási szerződésre, de a gyakorlatban mindig érdemes írásban rögzíteni. Az alábbi elemeket feltétlenül tartalmazza:</p>
+
+<h3>1. A felek adatai</h3>
+<p>A megrendelő és a vállalkozó pontos azonosítása: cégnév, székhely, cégjegyzékszám, adószám, képviselő neve és titulusa. Egyéni vállalkozó esetén a nyilvántartási szám is szükséges.</p>
+
+<h3>2. A vállalt munka pontos meghatározása</h3>
+<p>Ez a szerződés legkritikusabb pontja. A <strong>vállalkozási szerződés minta</strong> használatakor különösen figyelj arra, hogy a munka leírása ne legyen általános. Részletezd a konkrét feladatokat, az elvárt eredményt, a műszaki paramétereket és az esetleges minőségi követelményeket.</p>
+<ul>
+<li><strong>Rossz példa:</strong> „A vállalkozó weboldalt készít a megrendelőnek."</li>
+<li><strong>Jó példa:</strong> „A vállalkozó egy 8 aloldalas, reszponzív WordPress alapú weboldalt készít, amely tartalmaz kapcsolati űrlapot, blog modult és Google Analytics integrációt, a mellékletben részletezett wireframe alapján."</li>
+</ul>
+
+<h3>3. Vállalkozási díj (vállalási ár)</h3>
+<p>A díjazás meghatározása történhet <strong>átalánydíjként</strong> (fix ár az egész munkára), <strong>tételes elszámolásként</strong> (egységárak alapján) vagy <strong>időalapú díjazásként</strong> (óradíj/napdíj). A Ptk. 6:245. § szerint, ha a felek átalánydíjban állapodtak meg, a vállalkozó az átalánydíjon felül többletmunkáért nem igényelhet díjat, pótmunkáért viszont igen.</p>
+<p>Rögzítsd egyértelműen: az ár nettó vagy bruttó, milyen fizetési ütemezés érvényes (előleg, részszámla, végszámla), és mi a fizetési határidő.</p>
+
+<h3>4. Teljesítési határidő</h3>
+<p>A <strong>teljesítési határidő</strong> a vállalkozási szerződés egyik sarokköve. Meghatározhatod konkrét dátummal vagy időtartammal (pl. „a szerződéskötéstől számított 60 napon belül"). Ha a projekt összetett, érdemes <strong>mérföldköveket</strong> (milestone-okat) is rögzíteni, amelyekhez részszállítások és részteljesítések köthetők.</p>
+
+<h3>5. Átadás-átvétel rendje</h3>
+<p>A Ptk. 6:247. § alapján a megrendelő köteles az elkészült művet megvizsgálni és az esetleges hibákat a vállalkozóval haladéktalanul közölni. Érdemes rögzíteni az átvételi eljárás menetét: ki végzi az ellenőrzést, mennyi időn belül kell jelezni a hibákat, és milyen dokumentáció szükséges az átadáshoz.</p>
+
+<h2>Szavatosság és hibás teljesítés</h2>
+<p>A <strong>szavatossági szabályok</strong> a megrendelő legfontosabb védelmét jelentik. A Ptk. 6:248. § szerint, ha a vállalkozó hibásan teljesít, a megrendelő szavatossági igényt érvényesíthet:</p>
+<ul>
+<li><strong>Kijavítás:</strong> a vállalkozó köteles a hibát saját költségén orvosolni</li>
+<li><strong>Árleszállítás:</strong> ha a kijavítás nem lehetséges vagy aránytalan</li>
+<li><strong>Elállás:</strong> ha a hiba olyan súlyos, hogy a teljesítés a megrendelő számára értéktelen</li>
+<li><strong>Kártérítés:</strong> a hibás teljesítésből eredő további károkért</li>
+</ul>
+<p>A szavatossági igény érvényesítésének határideje főszabály szerint <strong>1 év</strong>, építési szerződés esetén <strong>5 év</strong>. A felek ettől a megrendelő hátrányára nem térhetnek el.</p>
+
+<h2>Kötbér: a teljesítés biztosítéka</h2>
+<p>A <strong>kötbér</strong> nem kötelező, de erősen ajánlott elem a vállalkozási szerződésben. A Ptk. 6:186. § szerint a kötbér olyan, a szerződésben előre meghatározott összeg, amelyet a kötelezett a szerződésszegés esetére ígér. A gyakorlatban leggyakrabban <strong>késedelmi kötbért</strong> alkalmaznak — például a vállalkozási díj 0,5%-a naponta, de legfeljebb 10-15%.</p>
+<p>A kötbér mellett <strong>meghiúsulási kötbér</strong> is kiköthető, amely a teljes teljesítés elmaradása esetén érvényesíthető.</p>
+
+<h2>Alvállalkozó igénybevétele</h2>
+<p>A Ptk. 6:240. § lehetővé teszi, hogy a vállalkozó <strong>alvállalkozót</strong> vegyen igénybe, hacsak a szerződés ezt kifejezetten nem tiltja. Fontos szabály: a vállalkozó az alvállalkozó munkájáért úgy felel, mintha azt maga végezte volna. Ha a megrendelőnek fontos, hogy személyesen az általa kiválasztott vállalkozó végezze a munkát, ezt a szerződésben kifejezetten rögzíteni kell.</p>
+
+<h2>Elállás és felmondás</h2>
+<p>A megrendelő sajátos jogosultsága, hogy a <strong>szerződéstől a munka megkezdése előtt bármikor elállhat</strong>, a munka megkezdése után pedig bármikor felmondhatja azt (Ptk. 6:249. §). Ebben az esetben azonban köteles a vállalkozónak az elvégzett munka ellenértékét megfizetni és a kárát megtéríteni.</p>
+<p>A vállalkozó ezzel szemben csak a Ptk. általános szabályai szerint mondhatja fel a szerződést — például ha a megrendelő súlyos szerződésszegést követ el.</p>
+
+<h2>Gyakorlati tippek a vállalkozási szerződés elkészítéséhez</h2>
+<ul>
+<li><strong>Részletes műszaki leírás:</strong> Minél pontosabb a feladatleírás, annál kevesebb vita lesz később. Használj mellékleteket, specifikációkat, tervrajzokat.</li>
+<li><strong>Változáskezelés (change request):</strong> Rögzítsd, hogyan kezelitek a munka közben felmerülő módosítási igényeket és azok díjhatását.</li>
+<li><strong>Kommunikáció:</strong> Jelöld ki mindkét oldalon a kapcsolattartókat, a kommunikációs csatornákat és a válaszidőket.</li>
+<li><strong>Szellemi alkotás:</strong> Szoftverfejlesztés, dizájn és egyéb szellemi munka esetén feltétlenül rögzítsd, hogy a szerzői jogok kire szállnak át az átadással.</li>
+<li><strong>Digitalizálj:</strong> A Legitas platformon percek alatt elkészítheted a vállalkozási szerződést sablonból, elektronikusan aláírhatod, és egy helyen kezelheted az összes szerződésedet.</li>
+</ul>
+
+<h2>Összefoglalás</h2>
+<p>A <strong>vállalkozási szerződés</strong> a B2B kapcsolatok alapdokumentuma. A Ptk. 6:238–6:250. §§ keretszabályokat adnak, de a valódi védelmet a <strong>részletes, egyedi kikötések</strong> biztosítják: pontos feladatleírás, egyértelmű díjazás, reális határidők, kötbér és szavatossági szabályok. Akár megrendelő vagy, akár vállalkozó, fektess időt a szerződés gondos elkészítésébe — ez mindig olcsóbb, mint egy utólagos jogvita.</p>`,
+  },
+  "online-szerzodes-alairas-lepsrol-lepsre": {
+    title: "Szerződés online aláírása: lépésről lépésre útmutató",
+    category: "Útmutató",
+    date: "2026. március 12.",
+    readTime: "6 perc",
+    image: "/images/blog/online-szerzodes-alairas-lepsrol-lepsre.jpg",
+    content: `<h2>Miért érdemes online aláírni a szerződéseket?</h2>
+<p>A papíralapú szerződéskötés lassú, körülményes és költséges. Nyomtatás, postázás, szkennelés, iktatás — egy egyszerű megállapodás aláírása is napokat vehet igénybe, ha a felek különböző városokban vagy országokban tartózkodnak. Az <strong>online szerződés aláírás</strong> mindezt percekre csökkenti.</p>
+<p>A <strong>digitális aláírás</strong> nem csupán kényelmi kérdés: a modern üzleti világban elvárás. A COVID óta a távolról történő szerződéskötés általánossá vált, és a jogszabályi háttér is egyértelműen támogatja.</p>
+
+<h2>Jogilag érvényes az online aláírás?</h2>
+<p>Igen. A Ptk. 6:7. § (2) bekezdése kimondja, hogy <strong>írásbeli alakban tett nyilatkozatnak kell tekinteni a jognyilatkozatot akkor is, ha azt a nyilatkozó fél elektronikus dokumentumba foglalta és elektronikus aláírással látta el</strong>. Ez azt jelenti, hogy az elektronikusan aláírt szerződés ugyanolyan joghatállyal bír, mint a papíron, kézzel aláírt változat.</p>
+<p>Az eIDAS rendelet (910/2014/EU) európai szinten is szabályozza az elektronikus aláírásokat, és három szintet különböztet meg:</p>
+<ul>
+<li><strong>Egyszerű elektronikus aláírás:</strong> bármilyen elektronikus formában tett aláírás (pl. kézírásos aláírás érintőképernyőn, begépelt név)</li>
+<li><strong>Fokozott biztonságú elektronikus aláírás:</strong> az aláíróhoz egyértelműen köthető, az aláíró kizárólagos kontrollja alatt áll</li>
+<li><strong>Minősített elektronikus aláírás:</strong> minősített tanúsítványon alapul, minősített aláírás-létrehozó eszközzel készül — ez egyenértékű a saját kezű aláírással</li>
+</ul>
+<p>A legtöbb üzleti szerződéshez az <strong>egyszerű vagy fokozott biztonságú elektronikus aláírás</strong> tökéletesen elegendő.</p>
+
+<h2>Szerződés online aláírása lépésről lépésre</h2>
+
+<h3>1. lépés: A szerződés elkészítése vagy feltöltése</h3>
+<p>Az első lépés a szerződés digitális formában való előkészítése. Ezt megteheted úgy, hogy feltöltöd a meglévő dokumentumodat (PDF, DOCX), vagy közvetlenül az online platformon készíted el sablonból. A Legitas rendszerében például több mint 15 szerződéssablon áll rendelkezésre, amelyeket néhány perc alatt kitölthetsz az adataiddal.</p>
+
+<h3>2. lépés: Az aláírók megadása</h3>
+<p>Add meg az összes fél nevét és e-mail címét, akiknek alá kell írniuk a dokumentumot. A rendszer automatikusan kijelöli az aláírási mezőket. Meghatározhatod az aláírás sorrendjét is, ha fontos, hogy először az egyik fél írja alá.</p>
+
+<h3>3. lépés: Meghívó kiküldése</h3>
+<p>Az aláírók e-mailben kapnak egy egyedi, biztonságos linket. Ezen a linken keresztül — bejelentkezés és szoftvertelepítés nélkül — hozzáférnek a dokumentumhoz, elolvashatják és aláírhatják.</p>
+
+<h3>4. lépés: Az aláírás</h3>
+<p>Az aláíró a linken keresztül megnyitja a dokumentumot, áttekinti a tartalmat, majd aláírja. Az aláírás történhet:</p>
+<ul>
+<li><strong>Kézírásos aláírás:</strong> érintőképernyőn vagy egérrel rajzolva</li>
+<li><strong>Gépelt aláírás:</strong> a név begépelése választott betűtípussal</li>
+<li><strong>Feltöltött aláírás:</strong> korábban készített aláíráskép használata</li>
+</ul>
+
+<h3>5. lépés: PDF archiválás és letöltés</h3>
+<p>Miután minden fél aláírta a dokumentumot, a rendszer automatikusan generál egy végleges, zárt PDF-et. Ez tartalmazza az aláírásokat, az időbélyegeket és a hitelesítési adatokat. A felek e-mailben is megkapják a kész dokumentumot, és bármikor letölthetik a platformról.</p>
+
+<h2>Biztonság és hitelesség</h2>
+<p>Az online aláírás biztonságát több technológiai elem garantálja:</p>
+<ul>
+<li><strong>SHA-256 hash:</strong> a dokumentum tartalmából generált egyedi ujjlenyomat, amely bármilyen utólagos módosítás esetén megváltozik — így bizonyítható, hogy a dokumentum az aláírás óta változatlan</li>
+<li><strong>Audit trail (naplózás):</strong> a rendszer rögzíti az összes eseményt — ki, mikor, milyen IP-címről nyitotta meg és írta alá a dokumentumot</li>
+<li><strong>Titkosított tárolás:</strong> a dokumentumok titkosítva, biztonságos felhőtárhelyen kerülnek tárolásra</li>
+<li><strong>E-mail hitelesítés:</strong> az aláíró csak az egyedi linken keresztül, az adott e-mail cím birtokosaként férhet hozzá a dokumentumhoz</li>
+</ul>
+<p>A Legitas platformon mindezek a biztonsági funkciók alapértelmezetten működnek, külön beállítás nélkül.</p>
+
+<h2>Mikor NEM elegendő az egyszerű online aláírás?</h2>
+<p>Vannak jogügyletek, amelyekhez a magyar jog <strong>minősített elektronikus aláírást</strong> vagy <strong>közokiratba foglalást</strong> ír elő. Ilyenkor az egyszerű online aláírás nem elegendő:</p>
+<ul>
+<li><strong>Ingatlan adásvétel:</strong> ügyvéd által ellenjegyzett okirat vagy közjegyzői okirat szükséges</li>
+<li><strong>Végrendelet:</strong> szigorú alaki követelmények (holográf, allográf vagy közjegyzői formában)</li>
+<li><strong>Házassági vagyonjogi szerződés:</strong> közjegyzői okiratba foglalás kötelező</li>
+<li><strong>Cégbírósági beadványok:</strong> minősített elektronikus aláírás szükséges</li>
+</ul>
+<p>Az üzleti életben használt szerződések túlnyomó többsége — megbízási, vállalkozási, bérleti, NDA, együttműködési megállapodások — azonban <strong>gond nélkül aláírható online</strong>.</p>
+
+<h2>Összefoglalás</h2>
+<p>A <strong>szerződés online aláírása</strong> 2026-ban már nem luxus, hanem alapvető üzleti eszköz. Gyorsabb, olcsóbb és biztonságosabb, mint a papíralapú folyamat. A magyar jog egyértelműen elismeri az elektronikus aláírást, és a legtöbb üzleti szerződéshez tökéletesen alkalmazható. Az öt lépés — elkészítés, aláírók megadása, kiküldés, aláírás, archiválás — percek alatt elvégezhető, és mindkét fél azonnal hozzáfér a kész dokumentumhoz.</p>`,
+  },
+  "egyuttmukodesi-megallapodas-keszitese": {
+    title: "Együttműködési megállapodás: mikor kell és hogyan készítsd el?",
+    category: "Útmutató",
+    date: "2026. március 12.",
+    readTime: "7 perc",
+    image: "/images/blog/egyuttmukodesi-megallapodas-keszitese.jpg",
+    content: `<h2>Mi az együttműködési megállapodás?</h2>
+<p>Az <strong>együttműködési megállapodás</strong> (kooperációs szerződés) olyan szerződés, amelyben két vagy több fél megállapodik abban, hogy közös cél érdekében együttműködnek — anélkül, hogy közös gazdasági társaságot hoznának létre. Ez a Ptk. szerződési szabadság elvén alapuló, <strong>atipikus szerződés</strong>, amelyet a felek szabadon alakíthatnak ki igényeik szerint.</p>
+<p>Az együttműködési megállapodás rugalmas keretét adja a közös munkának: rögzíti a feladatokat, a felelősségeket és a bevételmegosztást, miközben mindkét fél megőrzi önállóságát.</p>
+
+<h2>Mikor van szükség együttműködési megállapodásra?</h2>
+<p>Az <strong>együttműködési megállapodás minta</strong> keresése általában az alábbi helyzetekben merül fel:</p>
+
+<h3>Közös projekt</h3>
+<p>Két vállalkozás közösen valósít meg egy projektet — például egy marketingügynökség és egy webfejlesztő cég együtt pályázik egy ügyfél komplex projektjére. A megállapodás rögzíti, ki mit csinál, hogyan osztják el a bevételt, és ki felel az ügyfél felé.</p>
+
+<h3>Konzorcium</h3>
+<p>Közbeszerzési vagy EU-s pályázatoknál gyakori, hogy több cég konzorciumban indul. A <strong>konzorciumi megállapodás</strong> az együttműködési megállapodás speciális formája, amely a pályázati kiírás követelményeihez igazodik.</p>
+
+<h3>Referral (ajánlási) partnerség</h3>
+<p>Két cég kölcsönösen ajánlja egymás szolgáltatásait a saját ügyfeleinek, és a sikeres ajánlások után jutalékot fizet. Egy egyszerű referral megállapodás rendezi a jutalék mértékét, az elszámolás módját és az ügyfélkezelés szabályait.</p>
+
+<h3>Joint Venture (közös vállalkozás)</h3>
+<p>A joint venture az együttműködés intenzívebb formája, amikor a felek közös befektetéssel, közös kockázattal valósítanak meg egy üzleti célt. Ha nem akarnak külön céget alapítani, az együttműködési megállapodás a megfelelő jogi keret.</p>
+
+<h3>Startup partnerség</h3>
+<p>Két alapító vagy egy startup és egy mentor/befektető közötti együttműködésnél az együttműködési megállapodás rögzíti a szerepeket, a szellemi tulajdon kérdéseit és a kilépés feltételeit — még mielőtt céget alapítanának.</p>
+
+<h2>Az együttműködési megállapodás kötelező elemei</h2>
+<p>Bár a törvény nem ír elő kötelező tartalmi elemeket, az alábbiak nélkül az együttműködési megállapodás nem tölti be a funkcióját:</p>
+
+<h3>1. A felek azonosítása</h3>
+<p>Cégnév, székhely, cégjegyzékszám, adószám, képviselő neve. Ha a képviselő nem a cégkivonat szerinti vezető tisztségviselő, meghatalmazás is szükséges.</p>
+
+<h3>2. Az együttműködés célja és tárgya</h3>
+<p>Pontosan rögzítsd, <strong>mi a közös cél</strong>: melyik projektet, pályázatot vagy üzleti tevékenységet valósítjátok meg együtt. Minél konkrétabb a célmeghatározás, annál kevesebb félreértés adódik később.</p>
+
+<h3>3. Feladatmegosztás</h3>
+<p>Ki mit csinál? Részletezd az egyes felek <strong>konkrét feladatait, felelősségeit és határidejeit</strong>. Ha a feladatok nem egyformán oszlanak meg, az eltérés okát és kompenzációját is érdemes rögzíteni.</p>
+
+<h3>4. Bevételmegosztás és költségviselés</h3>
+<p>Az egyik legkritikusabb pont: hogyan oszlik meg a <strong>bevétel és a költség</strong>. Rögzítsd az arányokat (pl. 50-50%, 60-40%), az elszámolás módját (havonta, projektszinten), a számlázás rendjét és a fizetési határidőket.</p>
+
+<h3>5. Szellemi tulajdon (IP)</h3>
+<p>Ha a közös munka során szellemi alkotás jön létre (szoftver, dizájn, kutatási eredmény, üzleti modell), feltétlenül rögzítsd, hogy a <strong>szellemi tulajdonjogok</strong> kit illetnek meg: a létrehozó felet, mindkét felet közösen, vagy a projektet irányító felet. Ez a pont utólag a legnehezebben rendezhető.</p>
+
+<h3>6. Titoktartás</h3>
+<p>Az együttműködés során a felek szükségszerűen megismerik egymás üzleti titkait, ügyféladatait, árazási stratégiáit. A <strong>titoktartási kikötés</strong> (NDA-záradék) védi mindkét felet. Rögzítsd, mi minősül bizalmas információnak, meddig tart a titoktartási kötelezettség (az együttműködés után is!), és mi a szankció a megszegésért.</p>
+
+<h3>7. Időtartam és megszüntetés</h3>
+<p>Az együttműködés lehet <strong>határozott</strong> (konkrét projekt befejezéséig) vagy <strong>határozatlan</strong> időtartamú. Mindkét esetben rögzítsd a felmondás módját, a felmondási időt és a folyamatban lévő projektek sorsát a megszűnés esetén.</p>
+
+<h3>8. Vitarendezés</h3>
+<p>Vita esetén milyen utat követtek? Tárgyalás, mediáció, választottbíróság vagy rendes bíróság? A <strong>mediáció</strong> egyre népszerűbb a B2B vitáknál, mert gyorsabb és olcsóbb a peres eljárásnál.</p>
+
+<h2>Együttműködési megállapodás vs. társasági szerződés</h2>
+<p>Fontos megérteni a különbséget a két jogintézmény között:</p>
+<ul>
+<li><strong>Együttműködési megállapodás:</strong> a felek önálló jogalanyok maradnak, nincs közös cég, rugalmasan alakítható, egyszerűen megszüntethető</li>
+<li><strong>Társasági szerződés:</strong> közös gazdasági társaság jön létre (pl. Kft., Bt.), cégbírósági bejegyzés szükséges, a Ptk. társasági jogi szabályai vonatkoznak rá, a kilépés bonyolultabb</li>
+</ul>
+<p>Ha a felek <strong>nem akarnak közös céget alapítani</strong>, csak egy projekt vagy időszak erejéig működnek együtt, az együttműködési megállapodás a megfelelő forma. Ha viszont a közös tevékenység tartós, jelentős tőkebefektetéssel jár és a felek közös felelősséget vállalnak, a társaságalapítás lehet az indokolt.</p>
+
+<h2>Gyakori hibák</h2>
+<ul>
+<li><strong>Szóbeli megállapodás:</strong> „Majd megoldjuk" alapon indulni közös projektbe a legnagyobb kockázat. Bármilyen rövid a projekt, rögzítsd írásban.</li>
+<li><strong>IP-kérdések elkenése:</strong> „Majd eldöntjük, ha kész" — nem működik. A szellemi tulajdon kérdését az elején kell rendezni.</li>
+<li><strong>Bevételmegosztás hiánya:</strong> ha nincs egyértelmű megállapodás a pénzekről, a partnerségből ellenségeskedés lesz.</li>
+<li><strong>Kilépési stratégia nélkül:</strong> mi történik, ha az egyik fél ki akar szállni? Ha ezt nem rögzíted, a kiszállás jogi káosszal járhat.</li>
+<li><strong>Túl általános megfogalmazás:</strong> „A felek együttműködnek" típusú fordulatok semmitmondóak. Konkrét feladatokat, határidőket, mértékeket rögzíts.</li>
+</ul>
+
+<h2>Checklist: együttműködési megállapodás elkészítése</h2>
+<p>Használd ezt a listát, mielőtt aláírod a megállapodást:</p>
+<ul>
+<li>Mindkét fél adatai pontosak és teljesek</li>
+<li>Az együttműködés célja konkrétan meghatározott</li>
+<li>A feladatmegosztás részletezett és egyértelmű</li>
+<li>A bevételmegosztás és költségviselés rögzített</li>
+<li>A szellemi tulajdon kérdése rendezett</li>
+<li>Titoktartási kikötés szerepel</li>
+<li>Az időtartam és megszüntetés módja rögzített</li>
+<li>Vitarendezési mechanizmus meghatározott</li>
+<li>A szerződés dátumozott és mindkét fél aláírta</li>
+</ul>
+<p>A Legitas platformon az együttműködési megállapodást is elkészítheted sablonból, és az összes fél online, távolról is aláírhatja — így a papírmunka nem hátráltatja a közös projekt indulását.</p>
+
+<h2>Összefoglalás</h2>
+<p>Az <strong>együttműködési megállapodás</strong> nélkülözhetetlen eszköz, amikor két vagy több fél közösen valósít meg egy projektet, pályázatot vagy üzleti célt. A társasági szerződéssel szemben rugalmasabb és egyszerűbb, de ugyanolyan gondosan kell elkészíteni. A legfontosabb: <strong>konkrét célok, világos feladatmegosztás, egyértelmű pénzügyi feltételek és rendezett IP-kérdések</strong>. Ha ezeket rögzíted, a partnerség stabil alapokon indulhat.</p>`,
   },
 };

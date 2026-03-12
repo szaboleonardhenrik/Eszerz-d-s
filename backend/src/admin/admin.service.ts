@@ -411,6 +411,7 @@ export class AdminService {
           subscriptionTier: true,
           createdAt: true,
           phone: true,
+          sendCredits: true,
           _count: {
             select: {
               contracts: true,
@@ -446,6 +447,7 @@ export class AdminService {
       phone: u.phone,
       contractCount: u._count.contracts,
       quoteCount: u._count.quotes,
+      sendCredits: u.sendCredits,
       lastLogin: lastLoginMap[u.id] || null,
     }));
 

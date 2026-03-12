@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-store";
+import api from "@/lib/api";
 import OnboardingModal from "@/components/onboarding-modal";
 import OnboardingTour from "@/components/onboarding-tour";
 import NotificationBell from "@/components/notification-bell";
@@ -40,6 +41,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileNav, setMobileNav] = useState(false);
+  const [creditBalance, setCreditBalance] = useState<number | null>(null);
   const { showHelp, setShowHelp } = useKeyboardShortcuts();
 
   useEffect(() => {
@@ -51,6 +53,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       router.replace("/login");
     }
   }, [loading, user, router]);
+
+  useEffect(() => {
+    if (user) {
+      api.get("/credits/balance").then((res) => {
+        setCreditBalance(res.data.data.balance ?? 0);
+      }).catch(() => {});
+    }
+  }, [user]);
 
   if (loading) {
     return (
@@ -85,6 +95,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <LanguageSwitcher />
               <ThemeToggle />
               <NotificationBell />
+              {creditBalance !== null && (
+                <Link
+                  href="/settings/billing"
+                  className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition text-white text-xs font-medium"
+                  title="Kredit egyenleg"
+                >
+                  <svg className="w-4 h-4 text-brand-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {creditBalance} kredit
+                </Link>
+              )}
               <button
                 onClick={() => setMobileNav(!mobileNav)}
                 className="lg:hidden p-2 rounded-lg hover:bg-white/10"

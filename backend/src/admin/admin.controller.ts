@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { AdminService } from './admin.service';
+import { CreditsService } from '../credits/credits.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from './admin.guard';
 import { SuperAdminOnly } from './superadmin.decorator';
@@ -21,7 +22,10 @@ import { ApiResponse } from '../common/api-response';
 @Controller('admin')
 @UseGuards(JwtAuthGuard, AdminGuard)
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(
+    private readonly adminService: AdminService,
+    private readonly creditsService: CreditsService,
+  ) {}
 
   @Get('stats')
   async getStats() {
@@ -314,5 +318,24 @@ export class AdminController {
   async deleteAuthorizedSigner(@Req() req: any, @Param('id') id: string) {
     await this.adminService.deleteAuthorizedSigner(id, req.user.userId);
     return ApiResponse.ok({ deleted: true });
+  }
+
+  // ── Credit Management ──
+
+  @Post('users/:id/credits')
+  @SuperAdminOnly()
+  async grantCredits(
+    @Param('id') id: string,
+    @Body() body: { amount: number; description?: string },
+  ) {
+    const newBalance = await this.creditsService.adminGrant(id, body.amount, body.description);
+    return ApiResponse.ok({ balance: newBalance, granted: body.amount });
+  }
+
+  @Get('users/:id/credits')
+  async getUserCredits(@Param('id') id: string) {
+    const balance = await this.creditsService.getBalance(id);
+    const history = await this.creditsService.getHistory(id, 1, 10);
+    return ApiResponse.ok({ balance, ...history });
   }
 }
