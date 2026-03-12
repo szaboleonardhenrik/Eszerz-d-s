@@ -122,7 +122,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       <div className="px-4 py-2 border-b dark:border-gray-700">
                         <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.name}</p>
                         <p className="text-xs text-gray-400">{user.email}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">Szerepkör: {user.role ?? "owner"}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">Szerepkör: {{ superadmin: "Szuperadmin", employee: "Munkatárs", user: "Felhasználó" }[user.role ?? "user"] ?? user.role}</p>
                       </div>
                       <Link
                         href="/settings"
@@ -174,7 +174,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className={`inline-flex gap-1 rounded-xl px-2 py-1 transition-colors ${
             pathname === "/dashboard" ? "bg-brand-teal-dark/8 dark:bg-brand-teal/10" : ""
           }`}>
-            {[...navItemKeys, ...(user.role === "admin" ? [adminNavItem] : [])].map((item) => {
+            {[...navItemKeys, ...(["superadmin", "employee"].includes(user.role ?? "") ? [adminNavItem] : [])].map((item) => {
               const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
               return (
                 <Link
@@ -216,7 +216,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </button>
             </div>
             <div className="px-3 py-4 space-y-1">
-              {[...navItemKeys, ...(user.role === "admin" ? [adminNavItem] : [])].map((item) => {
+              {[...navItemKeys, ...(["superadmin", "employee"].includes(user.role ?? "") ? [adminNavItem] : [])].map((item) => {
                 const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
                 const isAdmin = item.href === "/admin";
                 return (

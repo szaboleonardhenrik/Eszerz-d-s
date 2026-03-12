@@ -31,6 +31,7 @@ interface SystemStats {
 
 interface SubscriptionData {
   breakdown: Record<string, number>;
+  roles: Record<string, number>;
   total: number;
 }
 
@@ -90,9 +91,37 @@ const statusColors: Record<string, string> = {
 
 const tierColors: Record<string, string> = {
   free: "#9CA3AF",
+  starter: "#38BDF8",
   basic: "#3B82F6",
+  medium: "#3B82F6",
   pro: "#8B5CF6",
+  premium: "#8B5CF6",
+  enterprise: "#F59E0B",
 };
+
+const tierLabel: Record<string, string> = {
+  free: "Ingyenes",
+  starter: "Kezdő",
+  basic: "Közepes",
+  medium: "Közepes",
+  pro: "Prémium",
+  premium: "Prémium",
+  enterprise: "Nagyvállalati",
+};
+
+const roleColors: Record<string, string> = {
+  superadmin: "#EF4444",
+  employee: "#8B5CF6",
+  user: "#9CA3AF",
+};
+
+const roleLabel: Record<string, string> = {
+  superadmin: "Szuperadmin",
+  employee: "Munkatárs",
+  user: "Felhasználó",
+};
+
+const ADMIN_ROLES = ["superadmin", "employee"];
 
 function timeAgo(dateStr: string) {
   const d = new Date(dateStr);
@@ -123,7 +152,7 @@ export default function AdminDashboard() {
   const [signerFormOpen, setSignerFormOpen] = useState(false);
 
   useEffect(() => {
-    if (user?.role !== "admin") return;
+    if (!ADMIN_ROLES.includes(user?.role ?? "")) return;
     loadData();
     loadAuthSigners();
   }, [user]);
@@ -195,7 +224,7 @@ export default function AdminDashboard() {
     }
   };
 
-  if (user?.role !== "admin") {
+  if (!ADMIN_ROLES.includes(user?.role ?? "")) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center">
@@ -310,8 +339,7 @@ export default function AdminDashboard() {
           <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Előfizetési szintek</h3>
             <div className="space-y-4">
-              {["free", "basic", "pro"].map((tier) => {
-                const count = subs.breakdown[tier] || 0;
+              {Object.entries(subs.breakdown).map(([tier, count]) => {
                 const pct = totalSubs > 0 ? (count / totalSubs) * 100 : 0;
                 return (
                   <div key={tier}>
@@ -319,22 +347,41 @@ export default function AdminDashboard() {
                       <div className="flex items-center gap-2">
                         <span
                           className="inline-block w-3 h-3 rounded-full"
-                          style={{ backgroundColor: tierColors[tier] }}
+                          style={{ backgroundColor: tierColors[tier] || "#6B7280" }}
                         />
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 uppercase">{tier}</span>
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{tierLabel[tier] || tier}</span>
                       </div>
                       <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{count} felhasználó</span>
                     </div>
                     <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2.5">
                       <div
                         className="h-2.5 rounded-full transition-all"
-                        style={{ width: `${pct}%`, backgroundColor: tierColors[tier] }}
+                        style={{ width: `${pct}%`, backgroundColor: tierColors[tier] || "#6B7280" }}
                       />
                     </div>
                   </div>
                 );
               })}
             </div>
+            {/* Role Breakdown */}
+            {subs.roles && (
+              <>
+                <div className="mt-5 pt-4 border-t dark:border-gray-700">
+                  <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-3 uppercase">Szerepkörök</h4>
+                  <div className="space-y-2">
+                    {Object.entries(subs.roles).map(([role, count]) => (
+                      <div key={role} className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ backgroundColor: roleColors[role] || "#6B7280" }} />
+                          <span className="text-sm text-gray-700 dark:text-gray-300">{roleLabel[role] || role}</span>
+                        </div>
+                        <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
             <div className="mt-4 pt-4 border-t dark:border-gray-700">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500 dark:text-gray-400">Összes felhasználó</span>

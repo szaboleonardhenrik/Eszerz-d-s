@@ -28,23 +28,38 @@ interface UsersResponse {
   totalPages: number;
 }
 
+const ADMIN_ROLES = ["superadmin", "employee"];
+
 const tierLabel: Record<string, string> = {
   free: "Ingyenes",
+  starter: "Kezdő",
   basic: "Közepes",
+  medium: "Közepes",
   pro: "Prémium",
+  premium: "Prémium",
+  enterprise: "Nagyvállalati",
 };
 
 const tierBadge: Record<string, string> = {
   free: "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400",
+  starter: "bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-400",
   basic: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400",
+  medium: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400",
   pro: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400",
+  premium: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400",
+  enterprise: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400",
+};
+
+const roleLabel: Record<string, string> = {
+  superadmin: "Szuperadmin",
+  employee: "Munkatárs",
+  user: "Felhasználó",
 };
 
 const roleBadge: Record<string, string> = {
-  owner: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400",
-  admin: "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-400",
-  member: "bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-400",
-  viewer: "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400",
+  superadmin: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400",
+  employee: "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-400",
+  user: "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400",
 };
 
 export default function AdminUsersPage() {
@@ -52,6 +67,7 @@ export default function AdminUsersPage() {
   const [data, setData] = useState<UsersResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
   const [page, setPage] = useState(1);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editRole, setEditRole] = useState("");
@@ -59,26 +75,30 @@ export default function AdminUsersPage() {
   const [saving, setSaving] = useState(false);
   const limit = 20;
 
+  const isSuperadmin = user?.role === "superadmin";
+
   const loadUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get(`/admin/users?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`);
+      let url = `/admin/users?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`;
+      if (roleFilter) url += `&role=${roleFilter}`;
+      const res = await api.get(url);
       setData(res.data.data);
     } catch (err) {
       console.error("Failed to load users", err);
     } finally {
       setLoading(false);
     }
-  }, [page, search]);
+  }, [page, search, roleFilter]);
 
   useEffect(() => {
-    if (user?.role !== "admin") return;
+    if (!ADMIN_ROLES.includes(user?.role ?? "")) return;
     loadUsers();
   }, [user, loadUsers]);
 
   useEffect(() => {
     setPage(1);
-  }, [search]);
+  }, [search, roleFilter]);
 
   const startEdit = (u: AdminUser) => {
     setEditingId(u.id);
@@ -93,10 +113,9 @@ export default function AdminUsersPage() {
   const saveEdit = async (userId: string) => {
     setSaving(true);
     try {
-      await api.patch(`/admin/users/${userId}`, {
-        role: editRole,
-        subscriptionTier: editTier,
-      });
+      const payload: any = { subscriptionTier: editTier };
+      if (isSuperadmin) payload.role = editRole;
+      await api.patch(`/admin/users/${userId}`, payload);
       toast.success("Felhasználó frissítve");
       setEditingId(null);
       loadUsers();
@@ -124,7 +143,7 @@ export default function AdminUsersPage() {
     });
   };
 
-  if (user?.role !== "admin") {
+  if (!ADMIN_ROLES.includes(user?.role ?? "")) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center">
@@ -161,18 +180,32 @@ export default function AdminUsersPage() {
           </p>
         </div>
 
-        {/* Search */}
-        <div className="relative w-full sm:w-72">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            type="text"
-            placeholder="Kereses nev, email vagy ceg szerint..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
-          />
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          {/* Role filter */}
+          <select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+            className="px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
+          >
+            <option value="">Minden szerepkör</option>
+            <option value="superadmin">Szuperadmin</option>
+            <option value="employee">Munkatárs</option>
+            <option value="user">Felhasználó</option>
+          </select>
+
+          {/* Search */}
+          <div className="relative flex-1 sm:w-72">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Keresés név, email vagy cég szerint..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
+            />
+          </div>
         </div>
       </div>
 
@@ -181,10 +214,10 @@ export default function AdminUsersPage() {
         {loading ? (
           <div className="p-12 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600 mx-auto" />
-            <p className="mt-3 text-sm text-gray-400">Betoltes...</p>
+            <p className="mt-3 text-sm text-gray-400">Betöltés...</p>
           </div>
         ) : !data || data.users.length === 0 ? (
-          <div className="p-12 text-center text-sm text-gray-400">Nincs talalat</div>
+          <div className="p-12 text-center text-sm text-gray-400">Nincs találat</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -192,11 +225,11 @@ export default function AdminUsersPage() {
                 <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
                   <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Felhasználó</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Szint</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Szerepkor</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Szerzodesek</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400 hidden lg:table-cell">Regisztracio</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400 hidden xl:table-cell">Utolso belepes</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Muveletek</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Szerepkör</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Szerződések</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400 hidden lg:table-cell">Regisztráció</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400 hidden xl:table-cell">Utolsó belépés</th>
+                  <th className="text-right px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Műveletek</th>
                 </tr>
               </thead>
               <tbody>
@@ -224,8 +257,10 @@ export default function AdminUsersPage() {
                             className="text-xs px-2 py-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-violet-500 outline-none"
                           >
                             <option value="free">Ingyenes</option>
-                            <option value="basic">Közepes</option>
-                            <option value="pro">Prémium</option>
+                            <option value="starter">Kezdő</option>
+                            <option value="medium">Közepes</option>
+                            <option value="premium">Prémium</option>
+                            <option value="enterprise">Nagyvállalati</option>
                           </select>
                         ) : (
                           <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold uppercase ${tierBadge[u.subscriptionTier] || tierBadge.free}`}>
@@ -234,20 +269,19 @@ export default function AdminUsersPage() {
                         )}
                       </td>
                       <td className="px-4 py-3">
-                        {isEditing ? (
+                        {isEditing && isSuperadmin ? (
                           <select
                             value={editRole}
                             onChange={(e) => setEditRole(e.target.value)}
                             className="text-xs px-2 py-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-violet-500 outline-none"
                           >
-                            <option value="owner">Owner</option>
-                            <option value="admin">Admin</option>
-                            <option value="member">Member</option>
-                            <option value="viewer">Viewer</option>
+                            <option value="superadmin">Szuperadmin</option>
+                            <option value="employee">Munkatárs</option>
+                            <option value="user">Felhasználó</option>
                           </select>
                         ) : (
-                          <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold uppercase ${roleBadge[u.role] || roleBadge.viewer}`}>
-                            {u.role}
+                          <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold uppercase ${roleBadge[u.role] || roleBadge.user}`}>
+                            {roleLabel[u.role] || u.role}
                           </span>
                         )}
                       </td>
@@ -269,13 +303,13 @@ export default function AdminUsersPage() {
                               disabled={saving}
                               className="px-3 py-1.5 bg-violet-600 text-white text-xs rounded-lg hover:bg-violet-700 disabled:opacity-50 transition"
                             >
-                              {saving ? "..." : "Mentes"}
+                              {saving ? "..." : "Mentés"}
                             </button>
                             <button
                               onClick={cancelEdit}
                               className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition"
                             >
-                              Megse
+                              Mégse
                             </button>
                           </div>
                         ) : (
@@ -283,7 +317,7 @@ export default function AdminUsersPage() {
                             onClick={() => startEdit(u)}
                             className="px-3 py-1.5 text-xs text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 rounded-lg transition"
                           >
-                            Szerkesztes
+                            Szerkesztés
                           </button>
                         )}
                       </td>
@@ -299,7 +333,7 @@ export default function AdminUsersPage() {
         {data && data.totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700">
             <p className="text-xs text-gray-400">
-              {((data.page - 1) * data.limit) + 1} - {Math.min(data.page * data.limit, data.total)} / {data.total} felhasznalo
+              {((data.page - 1) * data.limit) + 1} - {Math.min(data.page * data.limit, data.total)} / {data.total} felhasználó
             </p>
             <div className="flex items-center gap-1">
               <button
@@ -307,7 +341,7 @@ export default function AdminUsersPage() {
                 disabled={page <= 1}
                 className="px-3 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 transition"
               >
-                Elozo
+                Előző
               </button>
               <span className="px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400">
                 {data.page} / {data.totalPages}
@@ -317,7 +351,7 @@ export default function AdminUsersPage() {
                 disabled={page >= data.totalPages}
                 className="px-3 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 transition"
               >
-                Kovetkezo
+                Következő
               </button>
             </div>
           </div>

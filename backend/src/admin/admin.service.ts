@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -59,7 +59,7 @@ export class AdminService {
     };
   }
 
-  async listUsers(page: number, limit: number, search?: string) {
+  async listUsers(page: number, limit: number, search?: string, role?: string) {
     const skip = (page - 1) * limit;
 
     const where: any = {};
@@ -69,6 +69,9 @@ export class AdminService {
         { email: { contains: search, mode: 'insensitive' } },
         { companyName: { contains: search, mode: 'insensitive' } },
       ];
+    }
+    if (role && ['superadmin', 'employee', 'user'].includes(role)) {
+      where.role = role;
     }
 
     const [users, total] = await Promise.all([
@@ -136,22 +139,33 @@ export class AdminService {
 
   async updateUser(
     id: string,
-    data: { role?: string; subscriptionTier?: string; disabled?: boolean },
+    data: { role?: string; subscriptionTier?: string },
+    requestingUserRole: string,
   ) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) {
-      throw new NotFoundException('Felhasznalo nem talalhato');
+      throw new NotFoundException('Felhasználó nem található');
     }
 
-    if (data.role && !['owner', 'admin', 'member', 'viewer'].includes(data.role)) {
-      throw new BadRequestException('Ervenytelen szerepkor');
+    // Only superadmin can change roles
+    if (data.role !== undefined) {
+      if (requestingUserRole !== 'superadmin') {
+        throw new ForbiddenException('Csak szuperadmin módosíthat szerepkört');
+      }
+      if (!['superadmin', 'employee', 'user'].includes(data.role)) {
+        throw new BadRequestException('Érvénytelen szerepkör');
+      }
+      // Cannot demote a superadmin (protect yourself)
+      if (user.role === 'superadmin' && data.role !== 'superadmin') {
+        throw new BadRequestException('Szuperadmin nem fokozható le');
+      }
     }
 
     if (
       data.subscriptionTier &&
-      !['free', 'basic', 'pro'].includes(data.subscriptionTier)
+      !['free', 'starter', 'medium', 'premium', 'enterprise'].includes(data.subscriptionTier)
     ) {
-      throw new BadRequestException('Ervenytelen elofizetesi szint');
+      throw new BadRequestException('Érvénytelen előfizetési szint');
     }
 
     const updateData: any = {};
@@ -275,18 +289,29 @@ export class AdminService {
   }
 
   async getSubscriptionBreakdown() {
-    const breakdown = await this.prisma.user.groupBy({
-      by: ['subscriptionTier'],
-      _count: { id: true },
-    });
+    const [tierBreakdown, roleBreakdown] = await Promise.all([
+      this.prisma.user.groupBy({
+        by: ['subscriptionTier'],
+        _count: { id: true },
+      }),
+      this.prisma.user.groupBy({
+        by: ['role'],
+        _count: { id: true },
+      }),
+    ]);
 
-    const result: Record<string, number> = { free: 0, basic: 0, pro: 0 };
-    for (const item of breakdown) {
-      result[item.subscriptionTier] = item._count.id;
+    const tiers: Record<string, number> = { free: 0, basic: 0, pro: 0 };
+    for (const item of tierBreakdown) {
+      tiers[item.subscriptionTier] = item._count.id;
     }
 
-    const total = Object.values(result).reduce((a, b) => a + b, 0);
+    const roles: Record<string, number> = { superadmin: 0, employee: 0, user: 0 };
+    for (const item of roleBreakdown) {
+      roles[item.role] = item._count.id;
+    }
 
-    return { breakdown: result, total };
+    const total = Object.values(tiers).reduce((a, b) => a + b, 0);
+
+    return { breakdown: tiers, roles, total };
   }
 }

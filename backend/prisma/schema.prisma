@@ -20,7 +20,7 @@ model User {
   stripeCustomerId String?    @map("stripe_customer_id")
   microsecToken    String?    @map("microsec_token")
   dapLinked        Boolean    @default(false) @map("dap_linked")
-  role             String     @default("owner") // owner | admin | member | viewer
+  role             String     @default("user") // superadmin | employee | user
   notifyOnSign     Boolean    @default(true) @map("notify_on_sign")
   notifyOnDecline  Boolean    @default(true) @map("notify_on_decline")
   notifyOnExpire   Boolean    @default(true) @map("notify_on_expire")
