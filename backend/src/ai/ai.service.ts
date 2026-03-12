@@ -19,6 +19,7 @@ export class AiService {
     suggestions: string[];
     missingClauses: string[];
     legalCompliance: string;
+    dataDisclosure?: string;
   }> {
     if (!this.client) {
       throw new Error('AI szolgáltatás nincs konfigurálva');
