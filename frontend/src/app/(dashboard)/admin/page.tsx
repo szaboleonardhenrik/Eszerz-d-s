@@ -275,6 +275,16 @@ export default function AdminDashboard() {
         </Link>
       </div>
 
+      {/* Quick Links */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <QuickLink href="/admin/users" label="Felhasználók" icon="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" color="violet" />
+        <QuickLink href="/admin/revenue" label="Bevételek" icon="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" color="emerald" />
+        <QuickLink href="/admin/api-usage" label="API használat" icon="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" color="blue" />
+        <QuickLink href="/admin/email-logs" label="Email napló" icon="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" color="indigo" />
+        <QuickLink href="/admin/broadcasts" label="Közlemények" icon="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" color="amber" />
+        <QuickLink href="/admin/audit" label="Audit napló" icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" color="gray" />
+      </div>
+
       {/* Stats Grid */}
       {stats && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -664,5 +674,27 @@ function HealthItem({
       </div>
       <span className="text-xs text-gray-400">{detail}</span>
     </div>
+  );
+}
+
+function QuickLink({ href, label, icon, color }: { href: string; label: string; icon: string; color: string }) {
+  const bg: Record<string, string> = {
+    violet: "hover:bg-violet-50 dark:hover:bg-violet-900/20 text-violet-600 dark:text-violet-400",
+    emerald: "hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400",
+    blue: "hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400",
+    indigo: "hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400",
+    amber: "hover:bg-amber-50 dark:hover:bg-amber-900/20 text-amber-600 dark:text-amber-400",
+    gray: "hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400",
+  };
+  return (
+    <Link
+      href={href}
+      className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 flex flex-col items-center gap-2 transition ${bg[color] || bg.gray}`}
+    >
+      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={icon} />
+      </svg>
+      <span className="text-xs font-medium">{label}</span>
+    </Link>
   );
 }

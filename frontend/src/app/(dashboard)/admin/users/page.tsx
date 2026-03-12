@@ -126,6 +126,18 @@ export default function AdminUsersPage() {
     }
   };
 
+  const handleImpersonate = async (userId: string) => {
+    if (!confirm("Biztosan be szeretnél lépni ennek a felhasználónak a fiókjába? (1 órás munkamenet)")) return;
+    try {
+      const res = await api.post(`/admin/users/${userId}/impersonate`);
+      toast.success(res.data.data.message);
+      // Reload the page to pick up the new session cookie
+      window.location.href = "/dashboard";
+    } catch (err: any) {
+      toast.error(err.response?.data?.error?.message || "Hiba az imperszonálásnál");
+    }
+  };
+
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr);
     return d.toLocaleDateString("hu-HU", { year: "numeric", month: "2-digit", day: "2-digit" });
@@ -313,12 +325,23 @@ export default function AdminUsersPage() {
                             </button>
                           </div>
                         ) : (
-                          <button
-                            onClick={() => startEdit(u)}
-                            className="px-3 py-1.5 text-xs text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 rounded-lg transition"
-                          >
-                            Szerkesztés
-                          </button>
+                          <div className="flex items-center justify-end gap-1">
+                            {isSuperadmin && u.role !== "superadmin" && (
+                              <button
+                                onClick={() => handleImpersonate(u.id)}
+                                className="px-2 py-1.5 text-xs text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition"
+                                title="Belépés felhasználóként"
+                              >
+                                Belépés
+                              </button>
+                            )}
+                            <button
+                              onClick={() => startEdit(u)}
+                              className="px-2 py-1.5 text-xs text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 rounded-lg transition"
+                            >
+                              Szerkesztés
+                            </button>
+                          </div>
                         )}
                       </td>
                     </tr>

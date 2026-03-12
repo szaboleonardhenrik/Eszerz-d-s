@@ -63,6 +63,8 @@ model User {
   oauthProvider    String?    @map("oauth_provider")
   autoInvoice     Boolean    @default(false) @map("auto_invoice")
   authorizedSigners AuthorizedSigner[]
+  emailLogs       EmailLog[]
+  apiUsageLogs    ApiUsageLog[]
 
   @@map("users")
 }
@@ -602,4 +604,63 @@ model Invoice {
   @@index([userId])
   @@index([quoteId])
   @@map("invoices")
+}
+
+model EmailLog {
+  id         String   @id @default(uuid())
+  to         String
+  subject    String
+  type       String   // signing_invitation | signed_confirmation | reminder | verification | password_reset | quote
+  status     String   @default("sent") // sent | delivered | bounced | complained | failed
+  resendId   String?  @map("resend_id")
+  userId     String?  @map("user_id")
+  contractId String?  @map("contract_id")
+  error      String?
+  metadata   String?  // JSON
+  openedAt   DateTime? @map("opened_at")
+  clickedAt  DateTime? @map("clicked_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
+  @@map("email_logs")
+}
+
+model ApiUsageLog {
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  apiKeyId       String?  @map("api_key_id")
+  method         String   // GET | POST | PATCH | DELETE
+  path           String
+  statusCode     Int      @map("status_code")
+  responseTimeMs Int      @map("response_time_ms")
+  ip             String?
+  userAgent      String?  @map("user_agent")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([apiKeyId])
+  @@index([createdAt])
+  @@map("api_usage_logs")
+}
+
+model SystemBroadcast {
+  id        String   @id @default(uuid())
+  title     String
+  message   String
+  type      String   @default("info") // info | warning | success | maintenance
+  active    Boolean  @default(true)
+  createdBy String   @map("created_by")
+  expiresAt DateTime? @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([active])
+  @@map("system_broadcasts")
 }

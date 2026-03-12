@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class NotificationsService {
@@ -9,13 +10,56 @@ export class NotificationsService {
   private fromEmail: string;
   private readonly frontendUrl: string;
 
-  constructor(private readonly config: ConfigService) {
+  constructor(
+    private readonly config: ConfigService,
+    private readonly prisma: PrismaService,
+  ) {
     this.resend = new Resend(config.get<string>('RESEND_API_KEY'));
     this.fromEmail = config.get<string>(
       'FROM_EMAIL',
       'Legitas <noreply@legitas.hu>',
     );
     this.frontendUrl = config.get<string>('FRONTEND_URL', 'http://localhost:3000');
+  }
+
+  /**
+   * Send email via Resend and log to database.
+   * Wraps this.resend.emails.send with automatic logging.
+   */
+  private async sendAndLog(
+    emailParams: { from: string; to: string; subject: string; html: string; attachments?: any[] },
+    logMeta: { type: string; userId?: string; contractId?: string },
+  ) {
+    try {
+      const result = await this.resend.emails.send(emailParams);
+      // Log successful send (fire-and-forget)
+      this.prisma.emailLog.create({
+        data: {
+          to: emailParams.to,
+          subject: emailParams.subject,
+          type: logMeta.type,
+          resendId: (result as any)?.id || null,
+          userId: logMeta.userId || null,
+          contractId: logMeta.contractId || null,
+          status: 'sent',
+        },
+      }).catch(() => {});
+      return result;
+    } catch (error: any) {
+      // Log failed send (fire-and-forget)
+      this.prisma.emailLog.create({
+        data: {
+          to: emailParams.to,
+          subject: emailParams.subject,
+          type: logMeta.type,
+          userId: logMeta.userId || null,
+          contractId: logMeta.contractId || null,
+          status: 'failed',
+          error: error.message || 'Unknown error',
+        },
+      }).catch(() => {});
+      throw error;
+    }
   }
 
   // ─── BRANDED EMAIL WRAPPER ─────────────────────────────
@@ -363,7 +407,7 @@ export class NotificationsService {
     ];
 
     try {
-      await this.resend.emails.send({
+      await this.sendAndLog({
         from: this.fromEmail,
         to: params.to,
         subject: `Aláírásra vár: ${params.contractTitle}`,
@@ -414,7 +458,7 @@ export class NotificationsService {
            ${this.hint('Ha nem Ön a címzett, kérjük hagyja figyelmen kívül ezt az emailt. A link 7 napig érvényes. Amennyiben kérdése van, forduljon közvetlenül a feladóhoz.')}`,
           { preheader: `${params.senderName} szerződést küldött Önnek: ${params.contractTitle} — kattintson az aláíráshoz` },
         ),
-      });
+      }, { type: 'signing_invitation' });
       this.logger.log(`Signing invitation sent to ${params.to}`);
     } catch (error) {
       this.logger.error(`Failed to send signing invitation to ${params.to}`, error);
@@ -435,7 +479,7 @@ export class NotificationsService {
     const signedDate = new Date().toLocaleDateString('hu-HU', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
     try {
-      await this.resend.emails.send({
+      await this.sendAndLog({
         from: this.fromEmail,
         to: params.to,
         subject,
@@ -487,7 +531,7 @@ export class NotificationsService {
                ${this.hint('Ha kérdése van a szerződéssel kapcsolatban, forduljon közvetlenül a feladóhoz. A Legitas platform csak a dokumentumkezelést biztosítja.')}`,
           { preheader: params.allSigned ? `Kész! Minden fél aláírta: ${params.contractTitle}` : `Aláírása rögzítve: ${params.contractTitle} — várakozás a többi félre` },
         ),
-      });
+      }, { type: 'signed_confirmation' });
     } catch (error) {
       this.logger.error(`Failed to send confirmation to ${params.to}`, error);
     }
@@ -501,7 +545,7 @@ export class NotificationsService {
     expiresAt: string;
   }) {
     try {
-      await this.resend.emails.send({
+      await this.sendAndLog({
         from: this.fromEmail,
         to: params.to,
         subject: `Emlékeztető: ${params.contractTitle} aláírásra vár`,
@@ -528,7 +572,7 @@ export class NotificationsService {
            ${this.hint('Ha már aláírta a szerződést, kérjük hagyja figyelmen kívül ezt az emlékeztetőt. Ha technikai problémába ütközik, próbálja meg másik böngészőben.')}`,
           { preheader: `Emlékeztető: ${params.contractTitle} még aláírásra vár — kattintson a linkre` },
         ),
-      });
+      }, { type: 'reminder' });
     } catch (error) {
       this.logger.error(`Failed to send reminder to ${params.to}`, error);
     }
@@ -541,12 +585,12 @@ export class NotificationsService {
     html: string;
   }) {
     try {
-      await this.resend.emails.send({
+      await this.sendAndLog({
         from: this.fromEmail,
         to: params.to,
         subject: params.subject,
         html: this.wrap(params.html),
-      });
+      }, { type: 'custom' });
       this.logger.log(`Onboarding email sent to ${params.to}: "${params.subject}"`);
     } catch (error) {
       this.logger.error(`Failed to send onboarding email to ${params.to}`, error);
@@ -561,7 +605,7 @@ export class NotificationsService {
     verifyUrl: string;
   }) {
     try {
-      await this.resend.emails.send({
+      await this.sendAndLog({
         from: this.fromEmail,
         to: params.to,
         subject: 'Erősítse meg email címét – Legitas',
@@ -589,7 +633,7 @@ export class NotificationsService {
            ${this.hint('A megerősítő link 7 napig érvényes. Ha nem Ön regisztrált, kérjük hagyja figyelmen kívül — fiók nem jön létre a megerősítés nélkül.')}`,
           { preheader: 'Erősítse meg email címét és kezdjen el szerződéseket kezelni a Legitason!' },
         ),
-      });
+      }, { type: 'verification' });
       this.logger.log(`Verification email sent to ${params.to}`);
     } catch (error) {
       this.logger.error(`Failed to send verification email to ${params.to}`, error);
@@ -603,7 +647,7 @@ export class NotificationsService {
     resetUrl: string;
   }) {
     try {
-      await this.resend.emails.send({
+      await this.sendAndLog({
         from: this.fromEmail,
         to: params.to,
         subject: 'Jelszó visszaállítás – Legitas',
@@ -625,7 +669,7 @@ export class NotificationsService {
            ${this.hint('Ha nem Ön kérte a jelszó visszaállítását, kérjük hagyja figyelmen kívül ezt az emailt — jelszava változatlan marad. A link 24 óráig érvényes.')}`,
           { preheader: 'Jelszó visszaállítás a Legitas fiókjához — kattintson a linkre' },
         ),
-      });
+      }, { type: 'password_reset' });
       this.logger.log(`Password reset email sent to ${params.to}`);
     } catch (error) {
       this.logger.error(`Failed to send password reset email to ${params.to}`, error);
@@ -646,7 +690,7 @@ export class NotificationsService {
     validUntil: string | null;
   }) {
     try {
-      await this.resend.emails.send({
+      await this.sendAndLog({
         from: this.fromEmail,
         to: params.to,
         subject: `Árajánlat: ${params.quoteTitle} – ${params.senderName}`,
@@ -681,7 +725,7 @@ export class NotificationsService {
            ${this.hint('Az ajánlatot megtekintés után elfogadhatja vagy visszautasíthatja. Ha kérdése van, forduljon közvetlenül a feladóhoz.')}`,
           { preheader: `Árajánlat: ${params.quoteTitle} — ${params.totalAmount} — ${params.senderName}` },
         ),
-      });
+      }, { type: 'quote_sent' });
       this.logger.log(`Quote email sent to ${params.to}`);
     } catch (error) {
       this.logger.error(`Failed to send quote email to ${params.to}`, error);
@@ -697,7 +741,7 @@ export class NotificationsService {
     quoteNumber: string;
   }) {
     try {
-      await this.resend.emails.send({
+      await this.sendAndLog({
         from: this.fromEmail,
         to: params.to,
         subject: `Ajánlat elfogadva! – ${params.quoteTitle}`,
@@ -728,7 +772,7 @@ export class NotificationsService {
            ${this.btnSimple(`${this.frontendUrl}/quotes`, '&#128196;  Ajánlatok kezelése')}`,
           { preheader: `${params.clientName} elfogadta az ajánlatát: ${params.quoteTitle}` },
         ),
-      });
+      }, { type: 'quote_accepted' });
     } catch (error) {
       this.logger.error(`Failed to send quote accepted notification to ${params.to}`, error);
     }
@@ -743,7 +787,7 @@ export class NotificationsService {
     reason: string;
   }) {
     try {
-      await this.resend.emails.send({
+      await this.sendAndLog({
         from: this.fromEmail,
         to: params.to,
         subject: `Ajánlat visszautasítva – ${params.quoteTitle}`,
@@ -777,7 +821,7 @@ export class NotificationsService {
            ${this.btnSimple(`${this.frontendUrl}/quotes`, '&#128196;  Ajánlatok kezelése')}`,
           { preheader: `${params.clientName} visszautasította: ${params.quoteTitle}` },
         ),
-      });
+      }, { type: 'quote_declined' });
     } catch (error) {
       this.logger.error(`Failed to send quote declined notification to ${params.to}`, error);
     }
@@ -788,7 +832,7 @@ export class NotificationsService {
     portalUrl: string;
   }) {
     try {
-      await this.resend.emails.send({
+      await this.sendAndLog({
         from: this.fromEmail,
         to: params.to,
         subject: 'Portál hozzáférés – Legitas',
@@ -810,7 +854,7 @@ export class NotificationsService {
            ${this.hint('Ha nem Ön kérte a portál hozzáférést, kérjük hagyja figyelmen kívül ezt az emailt.')}`,
           { preheader: 'Megtekintheti az Önnek küldött szerződéseket a Legitas portálon' },
         ),
-      });
+      }, { type: 'portal_invitation' });
       this.logger.log(`Portal access token sent to ${params.to}`);
     } catch (error) {
       this.logger.error(`Failed to send portal access token to ${params.to}`, error);
@@ -826,7 +870,7 @@ export class NotificationsService {
   }) {
     const signedDate = new Date().toLocaleDateString('hu-HU', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
     try {
-      await this.resend.emails.send({
+      await this.sendAndLog({
         from: this.fromEmail,
         to: params.to,
         subject: `Aláírt szerződés kész – ${params.contractTitle}`,
@@ -863,7 +907,7 @@ export class NotificationsService {
             content: params.pdfBuffer,
           },
         ],
-      });
+      }, { type: 'signed_contract_owner' });
       this.logger.log(`Signed PDF sent to ${params.to}`);
     } catch (error) {
       this.logger.error(`Failed to send signed PDF to ${params.to}`, error);
@@ -883,7 +927,7 @@ export class NotificationsService {
     const urgencyLabel = params.daysLeft <= 7 ? 'Sürgős' : params.daysLeft <= 14 ? 'Figyelmeztetés' : 'Értesítés';
 
     try {
-      await this.resend.emails.send({
+      await this.sendAndLog({
         from: this.fromEmail,
         to: params.to,
         subject: `${urgencyLabel}: „${params.contractTitle}" ${params.daysLeft} nap múlva lejár`,
@@ -913,7 +957,7 @@ export class NotificationsService {
            ${this.hint('Ez egy automatikus értesítés a Legitas rendszerből. Az értesítési beállításait a fiókjában módosíthatja.')}`,
           { preheader: `${params.contractTitle} — ${params.daysLeft} nap múlva lejár — intézkedjen!` },
         ),
-      });
+      }, { type: 'contract_expiry_warning' });
     } catch (error) {
       this.logger.error(`Failed to send expiry warning to ${params.to}`, error);
     }
@@ -928,7 +972,7 @@ export class NotificationsService {
     expiresInMinutes: number;
   }) {
     try {
-      await this.resend.emails.send({
+      await this.sendAndLog({
         from: this.fromEmail,
         to: params.to,
         subject: `${params.otpCode} — Hitelesítési kód az aláíráshoz`,
@@ -956,7 +1000,7 @@ export class NotificationsService {
            ${this.hint('Ez egy automatikus üzenet a Legitas e-aláírási rendszeréből. A kód csak egyszer használható.')}`,
           { preheader: `${params.otpCode} — Hitelesítési kód a(z) ${params.contractTitle} aláírásához` },
         ),
-      });
+      }, { type: 'otp' });
     } catch (error) {
       this.logger.error(`Failed to send signer OTP to ${params.to}`, error);
     }
