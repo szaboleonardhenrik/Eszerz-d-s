@@ -459,7 +459,7 @@ export default function BillingSettings() {
                       {loading === priceId
                         ? "Betöltés..."
                         : planIdx < currentIdx
-                        ? "Downgrade"
+                        ? "Visszalépés"
                         : "Előfizetés"}
                     </button>
                   )}

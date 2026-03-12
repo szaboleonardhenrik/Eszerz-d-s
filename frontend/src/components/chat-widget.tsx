@@ -165,7 +165,7 @@ export default function ChatWidget() {
                   AI Asszisztens
                 </h4>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                  Frissits Basic vagy Pro csomagra az AI asszisztens hasznalathoz.
+                  Frissíts Közepes vagy Prémium csomagra az AI asszisztens használatához.
                 </p>
                 <Link
                   href="/settings/billing"

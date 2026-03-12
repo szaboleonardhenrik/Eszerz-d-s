@@ -21,6 +21,12 @@ const tierBadgeColors: Record<string, string> = {
   pro: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
 };
 
+const tierLabels: Record<string, string> = {
+  free: "Ingyenes",
+  basic: "Közepes",
+  pro: "Prémium",
+};
+
 const statusLabels: Record<string, string> = {
   draft: "Piszkozat",
   sent: "Elküldve",
@@ -224,7 +230,7 @@ export default function DashboardPage() {
                   Üdvözöllek, {user?.name ?? "Felhasználó"}
                 </h1>
                 <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wide ${tierBadgeColors[tier] ?? tierBadgeColors.free}`}>
-                  {tier}
+                  {tierLabels[tier] ?? tier}
                 </span>
               </div>
               {user?.companyName && (
@@ -259,7 +265,7 @@ export default function DashboardPage() {
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>
-                Upgrade
+                Csomag váltás
               </Link>
             )}
           </div>

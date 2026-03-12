@@ -15,7 +15,7 @@ export default function LanguageSwitcher({ variant = "dark" }: { variant?: "dark
           ? "hover:bg-white/10 text-white/80"
           : "hover:bg-[#F0F5F7] text-[#4A6575]"
       }`}
-      title={locale === "hu" ? "Switch to English" : "Magyarra váltás"}
+      title={locale === "hu" ? "Váltás angolra" : "Magyarra váltás"}
     >
       <span className="uppercase">{locale === "hu" ? "EN" : "HU"}</span>
     </button>

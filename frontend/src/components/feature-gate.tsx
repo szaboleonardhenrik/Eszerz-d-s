@@ -20,9 +20,9 @@ export default function FeatureGate({ requiredTier, children, featureName }: Fea
   }
 
   const tierLabels: Record<string, string> = {
-    basic: "Basic",
-    pro: "Pro",
-    enterprise: "Enterprise",
+    basic: "Közepes",
+    pro: "Prémium",
+    enterprise: "Nagyvállalati",
   };
 
   return (

@@ -28,6 +28,12 @@ interface UsersResponse {
   totalPages: number;
 }
 
+const tierLabel: Record<string, string> = {
+  free: "Ingyenes",
+  basic: "Közepes",
+  pro: "Prémium",
+};
+
 const tierBadge: Record<string, string> = {
   free: "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400",
   basic: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400",
@@ -217,13 +223,13 @@ export default function AdminUsersPage() {
                             onChange={(e) => setEditTier(e.target.value)}
                             className="text-xs px-2 py-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-violet-500 outline-none"
                           >
-                            <option value="free">Free</option>
-                            <option value="basic">Basic</option>
-                            <option value="pro">Pro</option>
+                            <option value="free">Ingyenes</option>
+                            <option value="basic">Közepes</option>
+                            <option value="pro">Prémium</option>
                           </select>
                         ) : (
                           <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold uppercase ${tierBadge[u.subscriptionTier] || tierBadge.free}`}>
-                            {u.subscriptionTier}
+                            {tierLabel[u.subscriptionTier] || u.subscriptionTier}
                           </span>
                         )}
                       </td>

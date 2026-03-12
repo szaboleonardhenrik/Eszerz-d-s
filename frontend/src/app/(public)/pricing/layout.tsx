@@ -8,7 +8,7 @@ const faqItems = [
   { q: "Van-e szerződéses kötöttség?", a: "Nincs. Havi fizetésnél bármikor lemondható, éves fizetésnél az időszak végéig érvényes." },
   { q: "Milyen fizetési módokat fogadtok el?", a: "Bankkártyás fizetés (Visa, Mastercard) Stripe-on keresztül." },
   { q: "Kapok-e számlát?", a: "Igen, minden fizetésről automatikus számlát küldünk e-mailben." },
-  { q: "Mi történik, ha elfogynak a havi szerződéseim?", a: "A limit felett nem hozhatsz létre újat, de a meglévőket kezelheted. Upgrade-elj vagy várj a következő hónapra." },
+  { q: "Mi történik, ha elfogynak a havi szerződéseim?", a: "A limit felett nem hozhatsz létre újat, de a meglévőket kezelheted. Válts magasabb csomagra, vagy várj a következő hónapra." },
   { q: "Van-e visszatérítési garancia?", a: "Az éves csomagoknál 14 napos pénzvisszafizetési garanciát adunk." },
 ];
 
