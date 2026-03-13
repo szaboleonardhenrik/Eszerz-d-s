@@ -89,7 +89,7 @@ export default function DataProcessingRegisterPage() {
             <tr><td>Jogalap</td><td>Jogos érdek (GDPR 6(1)(f)) — biztonság, visszaélés-megelőzés</td></tr>
             <tr><td>Cél</td><td>Biztonsági naplózás, aláírás-hitelesítés, vitarendezés</td></tr>
             <tr><td>Megőrzési idő</td><td>2 év (utána anonimizálva)</td></tr>
-            <tr><td>Adatfeldolgozók</td><td>Hetzner (szerver)</td></tr>
+            <tr><td>Adatfeldolgozók</td><td>Hetzner (szerver), Sentry (hibamonitorozás)</td></tr>
           </tbody>
         </table>
 
@@ -180,6 +180,7 @@ export default function DataProcessingRegisterPage() {
             <tr><td>Stripe Inc.</td><td>USA</td><td>Fizetéskezelés</td><td>SCC, PCI DSS Level 1</td></tr>
             <tr><td>Anthropic PBC</td><td>USA</td><td>AI szerződéselemzés</td><td>SCC, adatot nem tárol</td></tr>
             <tr><td>Google LLC</td><td>USA</td><td>OAuth hitelesítés</td><td>EU-US Data Privacy Framework (DPF)</td></tr>
+            <tr><td>Sentry (Functional Software Inc.)</td><td>USA</td><td>Hibamonitorozás, teljesítményfigyelés</td><td>EU-US DPF + SCC (EU 2021/914)</td></tr>
           </tbody>
         </table>
 

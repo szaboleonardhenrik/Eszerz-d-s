@@ -15,6 +15,8 @@ interface User {
   notifyOnComplete?: boolean;
   notifyMarketing?: boolean;
   emailDigest?: string;
+  trialEndsAt?: string;
+  onboardingCompleted?: boolean;
 }
 
 interface AuthState {

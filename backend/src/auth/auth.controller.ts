@@ -176,6 +176,16 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Patch('onboarding')
+  async completeOnboarding(
+    @Req() req: any,
+    @Body() body: { companyName?: string; taxNumber?: string; address?: string },
+  ) {
+    await this.authService.completeOnboarding(req.user.userId, body);
+    return ApiResponse.ok({ message: 'Onboarding befejezve' });
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Post('change-password')
   async changePassword(
     @Req() req: any,

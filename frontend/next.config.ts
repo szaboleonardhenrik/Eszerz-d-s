@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const securityHeaders = [
   { key: "X-DNS-Prefetch-Control", value: "on" },
@@ -14,7 +15,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: blob: https:",
-      "connect-src 'self' https://legitas.hu https://accounts.google.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com wss:",
+      "connect-src 'self' https://legitas.hu https://accounts.google.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://*.sentry.io wss:",
       "frame-src https://accounts.google.com",
     ].join("; "),
   },
@@ -49,4 +50,18 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Only wrap with Sentry if DSN is configured (keeps build working without Sentry)
+const finalConfig = process.env.NEXT_PUBLIC_SENTRY_DSN
+  ? withSentryConfig(nextConfig, {
+      // Suppress source map upload warnings when no auth token is set
+      silent: !process.env.SENTRY_AUTH_TOKEN,
+      // Disable source map upload unless auth token is provided
+      sourcemaps: {
+        disable: !process.env.SENTRY_AUTH_TOKEN,
+      },
+      // Disable telemetry
+      telemetry: false,
+    })
+  : nextConfig;
+
+export default finalConfig;

@@ -22,6 +22,7 @@ export default function AszfPage() {
           <li><strong>E-mail:</strong> info@legitas.hu</li>
           <li><strong>Telefon:</strong> +36 70 560 0637</li>
           <li><strong>Weboldal:</strong> https://legitas.hu</li>
+          <li><strong>Tárhelyszolgáltató:</strong> Hetzner Online GmbH, Industriestr. 25, 91710 Gunzenhausen, Németország, www.hetzner.com</li>
         </ul>
 
         <h2>2. A szolgáltatás jellege – B2B/B2C</h2>
@@ -58,6 +59,22 @@ export default function AszfPage() {
         <p>
           A Szolgáltató fenntartja a jogot, hogy a hamis adatokkal létrehozott fiókokat előzetes
           értesítés nélkül megszüntesse.
+        </p>
+
+        <h2>4/A. Elektronikus szerződéskötés lépései</h2>
+        <p>
+          Az elektronikus kereskedelmi szolgáltatások, valamint az információs társadalommal összefüggő szolgáltatások egyes kérdéseiről szóló 2001. évi CVIII. törvény (Ekrtv.) 5–6. §-ai alapján az elektronikus szerződéskötés lépései a következők:
+        </p>
+        <ol>
+          <li>A Felhasználó kiválasztja a kívánt előfizetési csomagot az Árazás (/pricing) oldalon.</li>
+          <li>Megadja a regisztrációhoz és számlázáshoz szükséges adatait.</li>
+          <li>Elfogadja az ÁSZF-et és az Adatvédelmi Tájékoztatót (jelölőnégyzet bejelölésével).</li>
+          <li>A fizetés a Stripe fizetési rendszeren keresztül történik.</li>
+          <li>A szerződés a sikeres fizetéssel jön létre.</li>
+          <li>A sikeres fizetésről és a szerződés létrejöttéről a Felhasználó visszaigazoló e-mailt kap.</li>
+        </ol>
+        <p>
+          Az adatbeviteli hibák a fizetés véglegesítése előtt bármikor javíthatók a regisztrációs és számlázási űrlapon. A szerződés nyelve magyar. A szerződést a Szolgáltató nem iktatja, de az a Felhasználó fiókjában (Beállítások &gt; Előfizetés) bármikor megtekinthető.
         </p>
 
         <h2>5. Előfizetési csomagok és díjak</h2>
@@ -159,7 +176,7 @@ export default function AszfPage() {
           A Szolgáltató a Szolgáltatást az év minden napján, 24 órában elérhetővé kívánja tenni,
           de nem garantálja a 100%-os rendelkezésre állást. A tervezett éves rendelkezésre állási
           cél <strong>99,5%</strong> (karbantartási időszakokat és vis major eseményeket nem számítva).
-          Vis major alatt értendő különösen: természeti katasztrófák, háború, sztrájk, járvány, kibertámadás, közüzemi szolgáltatás kiesése, hatósági intézkedés, az internet működésének zavara.
+          Vis major alatt értendő különösen: természeti katasztrófák, háború, sztrájk, járvány, kibertámadás, közüzemi szolgáltatás kiesése, hatósági intézkedés, az internet működésének zavara. A vis major mentesítő hatása mindkét félre (Szolgáltatóra és Felhasználóra egyaránt) vonatkozik: egyik fél sem felel a vis major esemény miatt bekövetkezett szerződésszegésért, amennyiben az érintett fél bizonyítja, hogy a teljesítés az ellenőrzési körén kívül eső, elháríthatatlan ok miatt vált lehetetlenné.
         </p>
         <ul>
           <li><strong>Tervezett karbantartás:</strong> Előzetes értesítéssel (legalább 24 órával korábban, e-mailben),
@@ -179,9 +196,13 @@ export default function AszfPage() {
         <ul>
           <li><strong>E-mail:</strong> info@legitas.hu</li>
           <li><strong>Postai úton:</strong> T-DIGITAL Solutions Kft., 1117 Budapest, Nándorfejérvári út 32. 1. em. 4.</li>
+          <li><strong>Telefonon:</strong> +36 70 560 0637</li>
         </ul>
         <p>
-          A Szolgáltató a panaszt a beérkezéstől számított <strong>30 napon belül</strong> érdemben megvizsgálja
+          Szóbeli (telefonos) panasz esetén a Szolgáltató a panaszt azonnal megvizsgálja, és lehetőség szerint orvosolja. Ha a Felhasználó a panasz kezelésével nem ért egyet, vagy a panasz azonnali kivizsgálása nem lehetséges, a Szolgáltató a panaszról jegyzőkönyvet vesz fel, és annak másolati példányát a Felhasználónak megküldi (a fogyasztóvédelemről szóló 1997. évi CLV. törvény 17/A. § alapján).
+        </p>
+        <p>
+          Az írásbeli panaszt a Szolgáltató a beérkezéstől számított <strong>30 napon belül</strong> érdemben megvizsgálja
           és írásban (e-mailben) válaszol. Ha a panaszt a Szolgáltató elutasítja, a Felhasználó az alábbi
           szervekhez fordulhat:
         </p>
@@ -201,7 +222,7 @@ export default function AszfPage() {
 
         <h2>12. Felmondás és adattörlés</h2>
         <p>
-          A Felhasználó fiókját bármikor törölheti a Beállítások menüben. A Felhasználó a fiókja törlése előtt jogosult adatainak exportálására a Beállítások &gt; Biztonság menüpontban elérhető adatexport funkcióval. A törlés esetén
+          A Felhasználó fiókját bármikor törölheti a Beállítások menüben. A Felhasználó a fiókja törlése előtt jogosult adatainak exportálására a Beállítások &gt; Biztonság menüpontban elérhető adatexport funkcióval, amely JSON formátumban is elérhető az adathordozhatósághoz való jog (GDPR 20. cikk) érvényesítése érdekében. A törlés esetén
           az adatok 30 napon belül véglegesen eltávolításra kerülnek. Az aktív előfizetés
           felmondása a futamidő végén lép hatályba.
         </p>

@@ -141,11 +141,13 @@ export default function CookiePage() {
         </p>
 
         <h2>5. Jogalap</h2>
-        <p>A cookie-k használatának jogalapja:</p>
+        <p>
+          A cookie-k használatának jogalapja az ePrivacy irányelv (2002/58/EK irányelv, 5. cikk (3) bekezdés) és az elektronikus kereskedelmi szolgáltatások, valamint az információs társadalommal összefüggő szolgáltatások egyes kérdéseiről szóló 2001. évi CVIII. törvény (Eker tv.) 155. § (4) bekezdése, valamint a GDPR vonatkozó rendelkezései alapján:
+        </p>
         <ul>
           <li>
             <strong>Feltétlenül szükséges cookie-k:</strong> Jogos érdek (GDPR 6. cikk (1) f) —
-            a Szolgáltatás működéséhez elengedhetetlenek
+            a Szolgáltatás működéséhez elengedhetetlenek (az ePrivacy irányelv 5. cikk (3) bekezdése és az Eker tv. 155. § (4) bekezdése alapján hozzájárulás nélkül alkalmazhatók)
           </li>
           <li>
             <strong>Funkcionális cookie-k:</strong> Hozzájárulás (GDPR 6. cikk (1) a) —

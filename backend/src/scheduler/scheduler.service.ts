@@ -15,6 +15,55 @@ export class SchedulerService {
     private readonly config: ConfigService,
   ) {}
 
+  /** Daily at 2:30 AM - downgrade expired trial users to free tier */
+  @Cron('30 2 * * *')
+  async downgradeExpiredTrials() {
+    this.logger.log('Running trial expiration job...');
+
+    const now = new Date();
+    const expiredTrialUsers = await this.prisma.user.findMany({
+      where: {
+        subscriptionTier: 'pro_trial',
+        trialEndsAt: { lt: now },
+      },
+      select: { id: true, email: true, name: true },
+    });
+
+    if (expiredTrialUsers.length === 0) {
+      this.logger.log('No expired trial users found');
+      return;
+    }
+
+    await this.prisma.user.updateMany({
+      where: {
+        id: { in: expiredTrialUsers.map((u) => u.id) },
+      },
+      data: {
+        subscriptionTier: 'free',
+      },
+    });
+
+    // Send notification to each downgraded user
+    const frontendUrl = this.config.get<string>('FRONTEND_URL', 'http://localhost:3000');
+    for (const user of expiredTrialUsers) {
+      try {
+        await this.prisma.notification.create({
+          data: {
+            userId: user.id,
+            type: 'system',
+            title: 'Pro próbaidő lejárt',
+            message: 'A 14 napos ingyenes Pro próbaidőszaka lejárt. Váltson fizetős csomagra a teljes funkcionalitás eléréséhez!',
+            link: '/settings/billing',
+          },
+        });
+      } catch (err) {
+        this.logger.error(`Failed to notify user ${user.id} about trial expiry`, err);
+      }
+    }
+
+    this.logger.log(`Downgraded ${expiredTrialUsers.length} expired trial users to free tier`);
+  }
+
   /** Daily at 9:00 AM - send reminders for pending signers */
   @Cron('0 9 * * *')
   async sendPendingReminders() {

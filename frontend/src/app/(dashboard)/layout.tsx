@@ -16,8 +16,9 @@ import GlobalSearch from "@/components/global-search";
 import MaintenanceBanner from "@/components/maintenance-banner";
 
 // Lazy-load heavy components (code-splitting)
-const OnboardingModal = dynamic(() => import("@/components/onboarding-modal"), { ssr: false });
+const OnboardingWizard = dynamic(() => import("@/components/onboarding-wizard"), { ssr: false });
 const OnboardingTour = dynamic(() => import("@/components/onboarding-tour"), { ssr: false });
+const TrialBanner = dynamic(() => import("@/components/trial-banner"), { ssr: false });
 const ChatWidget = dynamic(() => import("@/components/chat-widget"), { ssr: false });
 
 const navItemKeys = [
@@ -81,6 +82,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <MaintenanceBanner />
+      <TrialBanner />
       <nav className="bg-gradient-to-r from-brand-teal-dark to-brand-teal border-b border-brand-teal-dark/30 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Top row: logo + actions */}
@@ -130,12 +132,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <p className="text-sm font-medium text-white leading-none">{user.name}</p>
                     <p className="text-xs mt-0.5">
                       <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase ${
-                        user.subscriptionTier === "pro"
+                        user.subscriptionTier === "pro" || user.subscriptionTier === "pro_trial"
                           ? "bg-white/20 text-white"
                           : user.subscriptionTier === "basic"
                           ? "bg-white/20 text-white"
                           : "bg-white/15 text-white/80"
-                      }`}>{user.subscriptionTier} {t("auth.plan")}</span>
+                      }`}>{user.subscriptionTier === "pro_trial" ? t("trial.proTrial") : user.subscriptionTier} {t("auth.plan")}</span>
                     </p>
                   </div>
                   <svg className="w-4 h-4 text-white/60 hidden sm:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -319,7 +321,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </div>
 
-      <OnboardingModal />
+      <OnboardingWizard />
       <OnboardingTour />
       <KeyboardShortcutsHelp open={showHelp} onClose={() => setShowHelp(false)} />
       <ChatWidget />

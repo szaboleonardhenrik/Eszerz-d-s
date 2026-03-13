@@ -54,6 +54,7 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(dto.password, 12);
     const emailVerifyToken = crypto.randomBytes(32).toString('hex');
+    const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000); // 14 days trial
     const user = await this.prisma.user.create({
       data: {
         email: dto.email,
@@ -61,6 +62,8 @@ export class AuthService {
         name: dto.name,
         companyName: dto.companyName,
         taxNumber: dto.taxNumber,
+        subscriptionTier: 'pro_trial',
+        trialEndsAt,
         consentGivenAt: new Date(),
         consentVersion: CURRENT_CONSENT_VERSION,
         consentIp: ip || null,
@@ -191,6 +194,7 @@ export class AuthService {
         });
       } else {
         // Create new user with consent fields set (OAuth login implies consent)
+        const oauthTrialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
         user = await this.prisma.user.create({
           data: {
             email: profile.email,
@@ -200,6 +204,8 @@ export class AuthService {
             passwordHash: '',
             emailVerified: true,
             avatarUrl: profile.avatarUrl || null,
+            subscriptionTier: 'pro_trial',
+            trialEndsAt: oauthTrialEndsAt,
             consentGivenAt: new Date(),
             consentVersion: CURRENT_CONSENT_VERSION,
             consentIp: ip || null,
@@ -320,6 +326,8 @@ export class AuthService {
         notifyMarketing: true,
         emailDigest: true,
         consentVersion: true,
+        trialEndsAt: true,
+        onboardingCompleted: true,
         createdAt: true,
       },
     });
@@ -826,6 +834,16 @@ export class AuthService {
       invoices,
       quoteComments: quoteComments.map(qc => ({ ...qc, quoteTitle: qc.quote?.title })),
     };
+  }
+
+  async completeOnboarding(userId: string, data?: { companyName?: string; taxNumber?: string; address?: string }): Promise<void> {
+    const updateData: any = { onboardingCompleted: true };
+    if (data?.companyName) updateData.companyName = data.companyName;
+    if (data?.taxNumber) updateData.taxNumber = data.taxNumber;
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+    });
   }
 
   async updateConsent(userId: string, ip: string): Promise<void> {

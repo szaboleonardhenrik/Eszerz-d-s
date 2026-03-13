@@ -66,6 +66,8 @@ model User {
   googleId         String?    @unique @map("google_id")
   oauthProvider    String?    @map("oauth_provider")
   autoInvoice     Boolean    @default(false) @map("auto_invoice")
+  trialEndsAt      DateTime?  @map("trial_ends_at")
+  onboardingCompleted Boolean @default(false) @map("onboarding_completed")
   authorizedSigners AuthorizedSigner[]
   emailLogs       EmailLog[]
   apiUsageLogs    ApiUsageLog[]

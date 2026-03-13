@@ -42,6 +42,10 @@ export default function AdatvedelemPage() {
         </ul>
 
         <h2>3. Kezelt személyes adatok köre</h2>
+        <p>
+          A GDPR 13. cikk (1) e) pontja alapján tájékoztatjuk, hogy az alábbi adatok megadása <strong>kötelező</strong> a szolgáltatás igénybevételéhez: név, e-mail cím. Az alábbi adatok megadása <strong>opcionális</strong>: cégnév, adószám, telefonszám. A kötelező adatok megadásának elmaradása esetén a regisztráció nem lehetséges.
+        </p>
+
         <h3>3.1. Regisztráció és fiókkezelés</h3>
         <table>
           <thead>
@@ -97,6 +101,11 @@ export default function AdatvedelemPage() {
           <li>Használati statisztikák — szolgáltatásfejlesztés (anonimizálva)</li>
         </ul>
 
+        <h3>3.5. Közvetett módon gyűjtött adatok — aláírók (GDPR 14. cikk)</h3>
+        <p>
+          Amennyiben a Felhasználó (szerződés létrehozója) az aláírási folyamat során harmadik személy (aláíró) személyes adatait adja meg a Platformon (név, e-mail cím), ezen adatok nem közvetlenül az érintettől származnak. Az érintett aláírókat az aláírási meghívó e-mailben tájékoztatjuk az adatkezelés tényéről, céljáról, jogalapjáról, az adatkezelő személyéről és az érintetti jogokról a GDPR 14. cikke alapján. Az aláíró adatainak forrása a szerződést létrehozó Felhasználó. Az adatkezelés célja az elektronikus aláírási folyamat lebonyolítása, jogalapja a szerződés teljesítése (GDPR 6. cikk (1) b)).
+        </p>
+
         <h2>4. Adattovábbítás</h2>
         <p>Személyes adatokat az alábbi harmadik feleknek továbbíthatunk:</p>
         <ul>
@@ -119,6 +128,9 @@ export default function AdatvedelemPage() {
         <p>
           Harmadik országba (EU-n kívülre) csak megfelelő garanciák mellett továbbítunk adatot
           (Standard Contractual Clauses vagy EU megfelelőségi határozat alapján).
+        </p>
+        <p>
+          Amennyiben a Standard Contractual Clauses (SCC) vagy az EU-US Data Privacy Framework (DPF) érvényessége megszűnne vagy érvénytelenné válna, az adattovábbítás a GDPR 49. cikk (1) b) pontja alapján (a szerződés teljesítéséhez szükséges) vagy a GDPR 49. cikk (1) a) pontja alapján (az érintett kifejezett hozzájárulásával) folytatódhat.
         </p>
 
         <h2>5. Az érintett jogai</h2>
@@ -144,7 +156,10 @@ export default function AdatvedelemPage() {
           A <strong>törlés jogát</strong> és az <strong>adathordozhatóságot</strong> a Beállítások &gt; Biztonság
           menüpontban önkiszolgáló módon gyakorolhatja (fiók törlése, teljes adatexport letöltése).
           Egyéb jogai gyakorlásához írjon a <strong>info@legitas.hu</strong> címre.
-          Kérelmét 30 napon belül teljesítjük.
+          Kérelmét legkésőbb egy hónapon belül teljesítjük (GDPR 12. cikk (3) bekezdés). Szükség esetén — a kérelem összetettségére vagy a kérelmek számára tekintettel — ez a határidő további két hónappal meghosszabbítható, amelyről a kérelem kézhezvételétől számított egy hónapon belül, a késedelem okainak megjelölésével tájékoztatjuk.
+        </p>
+        <p>
+          A GDPR 12. cikk (5) bekezdése alapján, amennyiben az érintett kérelme nyilvánvalóan megalapozatlan vagy — különösen ismétlődő jellege miatt — túlzó, az Adatkezelő ésszerű összegű díjat számíthat fel, vagy megtagadhatja a kérelem alapján történő intézkedést.
         </p>
 
         <h3>5.1. Hozzájárulás nyilvántartása</h3>

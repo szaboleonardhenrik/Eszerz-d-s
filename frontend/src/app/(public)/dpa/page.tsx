@@ -75,7 +75,7 @@ export default function DpaPage() {
           <li>Segíti az Adatkezelőt az érintetti jogok (hozzáférés, törlés, adathordozhatóság) teljesítésében.</li>
           <li>Az Adatfeldolgozó segítséget nyújt az Adatkezelőnek az adatvédelmi hatásvizsgálat (DPIA) elkészítésében és az előzetes konzultáció (GDPR 35-36. cikk) lefolytatásában, amennyiben az adatkezelési tevékenység ilyen vizsgálatot tesz szükségessé.</li>
           <li>Az Adatkezelő fiókjának törlésekor 30 napon belül törli az összes kezelt személyes adatot,
-            kivéve a jogszabály által előírt megőrzési kötelezettségeket.</li>
+            kivéve a jogszabály által előírt megőrzési kötelezettségeket. Az Adatfeldolgozó a törlés megtörténtéről az Adatkezelőt 30 napon belül írásban (e-mailben) tájékoztatja.</li>
           <li>Az Adatkezelő rendelkezésére bocsátja a megfelelőség igazolásához szükséges információkat.</li>
           <li>Az Adatfeldolgozó haladéktalanul tájékoztatja az Adatkezelőt, amennyiben véleménye szerint valamely utasítás sérti a GDPR-t vagy más uniós, illetve tagállami adatvédelmi rendelkezést (GDPR 28. cikk (3) bekezdés h) pont).</li>
         </ul>
@@ -107,6 +107,7 @@ export default function DpaPage() {
             <tr><td>Stripe Inc.</td><td>USA (SCC alapján)</td><td>Fizetéskezelés</td></tr>
             <tr><td>Anthropic</td><td>USA (SCC alapján)</td><td>AI szerződéselemzés (ideiglenes)</td></tr>
             <tr><td>Google LLC</td><td>USA (EU-US Data Privacy Framework (DPF) tanúsított)</td><td>OAuth hitelesítés (Google-fiókkal bejelentkezés)</td></tr>
+            <tr><td>Sentry (Functional Software Inc.)</td><td>USA (DPF + SCC)</td><td>Hibamonitorozás</td></tr>
           </tbody>
         </table>
         <p>
@@ -117,9 +118,12 @@ export default function DpaPage() {
 
         <h2>7. Nemzetközi adattovábbítás</h2>
         <p>
-          Az EU-n kívüli adattovábbítás (Resend, Stripe, Anthropic) a GDPR 46. cikk (2) c)
-          bekezdése szerinti Standard Contractual Clauses (SCC) alapján történik.
+          Az EU-n kívüli adattovábbítás (Resend, Stripe, Anthropic, Sentry) a GDPR 46. cikk (2) c)
+          bekezdése szerinti Standard Contractual Clauses (SCC) és/vagy az EU-US Data Privacy Framework (DPF) alapján történik.
           Az Adatfeldolgozó biztosítja, hogy minden al-adatfeldolgozó megfelelő garanciákat nyújt.
+        </p>
+        <p>
+          Amennyiben az SCC vagy a DPF érvényessége megszűnne vagy érvénytelenné válna, az adattovábbítás a GDPR 49. cikk (1) b) pontja alapján (a szerződés teljesítéséhez szükséges) vagy a GDPR 49. cikk (1) a) pontja alapján (az érintett kifejezett hozzájárulásával) folytatódhat.
         </p>
 
         <h2>8. Audit jog</h2>
