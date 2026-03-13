@@ -1427,6 +1427,20 @@ const en: Translations = {
     saving: "Saving...",
     finish: "Finish",
   },
+  notFound: {
+    title: "Page not found",
+    message: "The page you are looking for does not exist or has been moved. Check the URL or go back to the home page.",
+    backHome: "Back to home",
+  },
+  loadingPage: {
+    text: "Loading...",
+  },
+  a11y: {
+    toggleMobileMenu: "Toggle navigation menu",
+    closeMobileMenu: "Close navigation menu",
+    openUserMenu: "Open user menu",
+    moreNavItems: "More menu items",
+  },
 };
 
 export default en;

@@ -9,43 +9,52 @@ test.describe('Cookie Consent (GDPR)', () => {
     await expect(page.locator('text=/cookie|süti/i').first()).toBeVisible({ timeout: 5000 });
   });
 
-  test('cookie banner has accept and decline options', async ({ page }) => {
+  test('cookie banner has accept all and settings options', async ({ page }) => {
     await page.goto('/landing');
     await page.evaluate(() => localStorage.removeItem('cookie_consent'));
     await page.reload();
 
-    await expect(page.locator('button:has-text("Elfogadom")')).toBeVisible({ timeout: 5000 });
-    await expect(page.locator('button:has-text("Csak szükségesek")')).toBeVisible();
+    await expect(page.locator('button:has-text("Elfogadom mind")')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('button:has-text("Beállítások")')).toBeVisible();
   });
 
-  test('accepting cookies stores preference and hides banner', async ({ page }) => {
+  test('accepting all cookies stores preference and hides banner', async ({ page }) => {
     await page.goto('/landing');
     await page.evaluate(() => localStorage.removeItem('cookie_consent'));
     await page.reload();
 
-    await page.locator('button:has-text("Elfogadom")').click();
+    await page.locator('button:has-text("Elfogadom mind")').click();
 
     const consent = await page.evaluate(() => localStorage.getItem('cookie_consent'));
-    expect(consent).toBe('accepted');
+    const parsed = JSON.parse(consent!);
+    expect(parsed.essential).toBe(true);
+    expect(parsed.functional).toBe(true);
+    expect(parsed.analytics).toBe(true);
 
     // Banner should be hidden
-    await expect(page.locator('text="Elfogadom"')).not.toBeVisible();
+    await expect(page.locator('button:has-text("Elfogadom mind")')).not.toBeVisible();
   });
 
-  test('declining cookies stores essential_only', async ({ page }) => {
+  test('saving with only essentials stores minimal preferences', async ({ page }) => {
     await page.goto('/landing');
     await page.evaluate(() => localStorage.removeItem('cookie_consent'));
     await page.reload();
 
-    await page.locator('button:has-text("Csak szükségesek")').click();
+    // Open settings
+    await page.locator('button:has-text("Beállítások")').click();
+    // Save with default (only essential checked)
+    await page.locator('button:has-text("Mentés")').click();
 
     const consent = await page.evaluate(() => localStorage.getItem('cookie_consent'));
-    expect(consent).toBe('essential_only');
+    const parsed = JSON.parse(consent!);
+    expect(parsed.essential).toBe(true);
+    expect(parsed.functional).toBe(false);
+    expect(parsed.analytics).toBe(false);
   });
 
   test('cookie consent can be withdrawn (GDPR 7(3))', async ({ page }) => {
     await page.goto('/landing');
-    await page.evaluate(() => localStorage.setItem('cookie_consent', 'accepted'));
+    await page.evaluate(() => localStorage.setItem('cookie_consent', JSON.stringify({ essential: true, functional: true, analytics: true })));
     await page.reload();
 
     // "Cookie beállítások" button should be visible for withdrawal
@@ -54,7 +63,7 @@ test.describe('Cookie Consent (GDPR)', () => {
 
     // Clicking it should show the banner again
     await settingsButton.click();
-    await expect(page.locator('button:has-text("Elfogadom")')).toBeVisible();
+    await expect(page.locator('button:has-text("Elfogadom mind")')).toBeVisible();
 
     // localStorage should be cleared
     const consent = await page.evaluate(() => localStorage.getItem('cookie_consent'));

@@ -83,7 +83,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <MaintenanceBanner />
       <TrialBanner />
-      <nav className="bg-gradient-to-r from-brand-teal-dark to-brand-teal border-b border-brand-teal-dark/30 sticky top-0 z-50">
+      <nav className="bg-gradient-to-r from-brand-teal-dark to-brand-teal border-b border-brand-teal-dark/30 sticky top-0 z-50" aria-label={t("nav.home")}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Top row: logo + actions */}
           <div className="flex justify-between items-center h-14">
@@ -115,8 +115,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <button
                 onClick={() => setMobileNav(!mobileNav)}
                 className="lg:hidden p-2 rounded-lg hover:bg-white/10"
+                aria-label={t("a11y.toggleMobileMenu")}
+                aria-expanded={mobileNav}
               >
-                <svg className="w-5 h-5 text-white/80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5 text-white/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={mobileNav ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
                 </svg>
               </button>
@@ -124,6 +126,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <button
                   onClick={() => setMenuOpen(!menuOpen)}
                   className="flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded-lg hover:bg-white/10 transition"
+                  aria-label={t("a11y.openUserMenu")}
+                  aria-expanded={menuOpen}
                 >
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-semibold">
                     {user.name.split(" ").map((n) => n[0]).join("").substring(0, 2).toUpperCase()}
@@ -247,8 +251,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <span className="text-brand-teal-dark">Legitas</span>
                 </span>
               </Link>
-              <button onClick={() => setMobileNav(false)} className="p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-                <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <button onClick={() => setMobileNav(false)} className="p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700" aria-label={t("a11y.closeMobileMenu")}>
+                <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -312,6 +316,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <button
             onClick={() => setMobileNav(!mobileNav)}
             className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg min-w-[52px] text-gray-500 dark:text-gray-400"
+            aria-label={t("a11y.moreNavItems")}
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />

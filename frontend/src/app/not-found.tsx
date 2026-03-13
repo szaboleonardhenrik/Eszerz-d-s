@@ -1,6 +1,11 @@
+'use client';
+
 import Link from 'next/link';
+import { useI18n } from '@/lib/i18n';
 
 export default function NotFound() {
+  const { t } = useI18n();
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4">
       <div className="max-w-lg w-full text-center">
@@ -13,6 +18,7 @@ export default function NotFound() {
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
             className="text-blue-600 dark:text-blue-400"
+            aria-hidden="true"
           >
             {/* Document with magnifying glass */}
             <rect x="50" y="20" width="80" height="110" rx="6" className="fill-gray-200 dark:fill-gray-700" stroke="currentColor" strokeWidth="2" />
@@ -33,11 +39,10 @@ export default function NotFound() {
 
         {/* Message */}
         <h2 className="mt-4 text-2xl font-bold text-gray-900 dark:text-white">
-          Az oldal nem található
+          {t('notFound.title')}
         </h2>
         <p className="mt-3 text-gray-600 dark:text-gray-400 text-base leading-relaxed">
-          A keresett oldal nem létezik, vagy át lett helyezve.
-          Ellenőrizd a címet, vagy térj vissza a főoldalra.
+          {t('notFound.message')}
         </p>
 
         {/* Button */}
@@ -46,10 +51,10 @@ export default function NotFound() {
             href="/dashboard"
             className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
               <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
             </svg>
-            Vissza a főoldalra
+            {t('notFound.backHome')}
           </Link>
         </div>
       </div>

@@ -1425,6 +1425,20 @@ const hu = {
     saving: "Mentés...",
     finish: "Befejezés",
   },
+  notFound: {
+    title: "Az oldal nem található",
+    message: "A keresett oldal nem létezik, vagy át lett helyezve. Ellenőrizd a címet, vagy térj vissza a főoldalra.",
+    backHome: "Vissza a főoldalra",
+  },
+  loadingPage: {
+    text: "Betöltés...",
+  },
+  a11y: {
+    toggleMobileMenu: "Navigációs menü megnyitása",
+    closeMobileMenu: "Navigációs menü bezárása",
+    openUserMenu: "Felhasználói menü megnyitása",
+    moreNavItems: "További menüpontok",
+  },
 };
 
 export default hu;

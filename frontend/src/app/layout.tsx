@@ -54,11 +54,13 @@ export const metadata: Metadata = {
     siteName: "Legitas",
     locale: "hu_HU",
     type: "website",
+    images: [{ url: "https://legitas.hu/icons/icon-512.png", width: 512, height: 512, alt: "Legitas" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Legitas - Online Szerződéskezelő",
     description: "Szerződéskötés percek alatt, bárhonnan. Magyar KKV-knak.",
+    images: ["https://legitas.hu/icons/icon-512.png"],
   },
   robots: {
     index: true,
