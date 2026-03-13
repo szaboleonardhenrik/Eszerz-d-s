@@ -10,3 +10,6 @@ coverage/
 .turbo/
 *.db
 *.db-journal
+.auth/
+test-results/
+playwright-report/

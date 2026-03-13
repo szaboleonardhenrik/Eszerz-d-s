@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
@@ -33,6 +33,11 @@ const organizationJsonLd = {
 };
 
 const inter = Inter({ subsets: ["latin", "latin-ext"] });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   title: {
@@ -71,10 +76,6 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "default",
     title: "Legitas",
-  },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
   },
   formatDetection: {
     telephone: false,

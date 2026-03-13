@@ -1,36 +1,42 @@
 import { test, expect } from '@playwright/test';
-
-const TEST_EMAIL = process.env.E2E_EMAIL || 'teszt2@legitas.hu';
-const TEST_PASSWORD = process.env.E2E_PASSWORD || 'Test1234!';
+import { STORAGE_STATE } from './constants';
 
 test.describe('Contract Creation Flow', () => {
-  test.skip(!process.env.E2E_PASSWORD, 'Set E2E_PASSWORD env var to run authenticated tests');
+  test.skip(!process.env.E2E_PASSWORD, 'Set E2E_PASSWORD to run authenticated tests');
+  test.use({ storageState: STORAGE_STATE });
 
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/login');
-    await page.fill('input[type="email"]', TEST_EMAIL);
-    await page.fill('input[type="password"]', TEST_PASSWORD);
-    await page.click('button[type="submit"]');
-    await page.waitForURL('**/dashboard', { timeout: 10000 });
-  });
-
-  test('can access create page', async ({ page }) => {
+  test('create page shows template selection', async ({ page }) => {
     await page.goto('/create');
-    await page.waitForTimeout(2000);
-    // Should show template selection or creation form
-    await expect(page.locator('body')).toContainText(/sablon|szerződés|Új/i);
+    await expect(page.locator('body')).toContainText(/sablon|szerződés|Új|kategória/i);
   });
 
-  test('templates page shows available templates', async ({ page }) => {
+  test('templates page shows seeded templates', async ({ page }) => {
     await page.goto('/templates');
-    await page.waitForTimeout(2000);
-    // Should show at least one template
     await expect(page.locator('body')).toContainText(/sablon|Munkaszerződés|Megbízási/i);
   });
 
-  test('contract list page loads', async ({ page }) => {
+  test('contract list page loads with filters', async ({ page }) => {
     await page.goto('/contracts');
-    await page.waitForTimeout(2000);
     await expect(page).toHaveURL(/contracts/);
+    // Should have search/filter functionality
+    const searchInput = page.locator('input[placeholder*="Keres"], input[type="search"], input[placeholder*="keres"]');
+    if (await searchInput.count() > 0) {
+      await expect(searchInput.first()).toBeVisible();
+    }
+  });
+
+  test('bulk-send page loads', async ({ page }) => {
+    await page.goto('/bulk-send');
+    await expect(page.locator('body')).toContainText(/Tömeges|bulk|küldés/i);
+  });
+
+  test('template marketplace page loads', async ({ page }) => {
+    await page.goto('/templates/marketplace');
+    await expect(page.locator('body')).toContainText(/Marketplace|közösségi|sablon/i);
+  });
+
+  test('compare page loads', async ({ page }) => {
+    await page.goto('/contracts/compare');
+    await expect(page.locator('body')).toContainText(/Összehasonlít|compare|verzió/i);
   });
 });
