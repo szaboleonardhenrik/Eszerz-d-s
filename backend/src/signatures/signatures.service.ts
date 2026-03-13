@@ -49,7 +49,7 @@ export class SignaturesService {
           },
         },
       },
-    });
+    }) as any; // variablesData field access
 
     if (!signer) {
       throw new NotFoundException('Érvénytelen aláírási link');
@@ -62,6 +62,30 @@ export class SignaturesService {
     }
     if (signer.status === 'declined') {
       throw new BadRequestException('Korábban visszautasította ezt a szerződést');
+    }
+
+    // Extract signer fields from variablesData if structured format
+    let signerFields: any[] = [];
+    try {
+      if (signer.contract.variablesData) {
+        const parsed = typeof signer.contract.variablesData === 'string'
+          ? JSON.parse(signer.contract.variablesData)
+          : signer.contract.variablesData;
+        if (parsed && parsed.schema && Array.isArray(parsed.schema)) {
+          const signerIndex = signer.signingOrder - 1; // 0-based
+          signerFields = parsed.schema.filter((v: any) => {
+            if (v.filledBy !== 'signer') return false;
+            // If signerIndex is defined on the var, only include if it matches this signer
+            if (v.signerIndex !== undefined) {
+              return v.signerIndex === signerIndex;
+            }
+            // If signerIndex is undefined on the var, all signers get it
+            return true;
+          });
+        }
+      }
+    } catch {
+      // Non-critical — if parsing fails, just return empty signerFields
     }
 
     return {
@@ -80,6 +104,7 @@ export class SignaturesService {
         signingOrder: signer.signingOrder,
         otpVerified: signer.otpVerified,
       },
+      signerFields,
     };
   }
 
@@ -217,6 +242,78 @@ export class SignaturesService {
       );
     }
 
+    // Handle signer variables — replace placeholder spans in contentHtml
+    let updatedContentHtml = signer.contract.contentHtml;
+    if (dto.signerVariables && Object.keys(dto.signerVariables).length > 0) {
+      // Parse variablesData to get schema
+      let schema: any[] = [];
+      let variablesDataParsed: any = null;
+      try {
+        if (signer.contract.variablesData) {
+          variablesDataParsed = typeof signer.contract.variablesData === 'string'
+            ? JSON.parse(signer.contract.variablesData)
+            : signer.contract.variablesData;
+          if (variablesDataParsed?.schema) {
+            schema = variablesDataParsed.schema;
+          }
+        }
+      } catch {
+        // If parsing fails, skip validation
+      }
+
+      // Validate only allowed signer fields are being set
+      const signerIndex = signer.signingOrder - 1;
+      const allowedFields = new Set(
+        schema
+          .filter((v: any) => {
+            if (v.filledBy !== 'signer') return false;
+            if (v.signerIndex !== undefined) return v.signerIndex === signerIndex;
+            return true;
+          })
+          .map((v: any) => v.name),
+      );
+
+      for (const key of Object.keys(dto.signerVariables)) {
+        if (allowedFields.size > 0 && !allowedFields.has(key)) {
+          throw new BadRequestException(`Nem engedélyezett mező: ${key}`);
+        }
+      }
+
+      // Replace signer-field placeholder spans with actual values
+      for (const [key, value] of Object.entries(dto.signerVariables)) {
+        const escapedValue = value
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+        const placeholderRegex = new RegExp(
+          `<span class="signer-field" data-var="${key}"[^>]*>\\[.*?\\]</span>`,
+          'g',
+        );
+        updatedContentHtml = updatedContentHtml.replace(placeholderRegex, escapedValue);
+        // Also handle raw {{key}} placeholders
+        updatedContentHtml = updatedContentHtml.replaceAll(`{{${key}}}`, escapedValue);
+      }
+
+      // Update contentHtml in the database
+      await this.prisma.contract.update({
+        where: { id: signer.contractId },
+        data: { contentHtml: updatedContentHtml },
+      });
+
+      // Update variablesData with signer-filled values
+      if (variablesDataParsed?.values) {
+        for (const [key, value] of Object.entries(dto.signerVariables)) {
+          variablesDataParsed.values[key] = value;
+        }
+        await this.prisma.contract.update({
+          where: { id: signer.contractId },
+          data: { variablesData: JSON.stringify(variablesDataParsed) },
+        });
+      }
+    }
+
     // Handle signature image upload
     let signatureImageUrl: string | undefined;
     if (dto.signatureImageBase64) {
@@ -322,7 +419,7 @@ export class SignaturesService {
 
     // Get current document hash
     const documentHash = this.pdfService.hashDocument(
-      Buffer.from(signer.contract.contentHtml),
+      Buffer.from(updatedContentHtml),
     );
 
     await this.auditService.log({
@@ -406,7 +503,7 @@ export class SignaturesService {
       }
 
       const finalPdf = await this.pdfService.addSignatureToPdf(
-        signer.contract.contentHtml,
+        updatedContentHtml,
         signer.contract.title,
         signaturesWithImages,
         branding,
@@ -446,7 +543,7 @@ export class SignaturesService {
         };
 
         const finalPdfWithTsa = await this.pdfService.addSignatureToPdf(
-          signer.contract.contentHtml,
+          updatedContentHtml,
           signer.contract.title,
           signaturesWithImages,
           branding,

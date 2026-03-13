@@ -98,6 +98,7 @@ export class ContractsService {
         'img': ['src', 'alt', 'width', 'height'],
         'td': ['colspan', 'rowspan'],
         'th': ['colspan', 'rowspan'],
+        'span': ['style', 'class', 'id', 'data-var'],
       },
       allowedSchemes: ['http', 'https', 'data'],
       // Strip all script tags, event handlers (on*), etc.
@@ -146,11 +147,18 @@ export class ContractsService {
     }
 
     let contentHtml: string;
+    let templateVars: any[] = [];
 
     if (dto.templateId && dto.variables) {
+      // Fetch template to check for signer fields
+      const template = await this.templatesService.findOne(dto.templateId);
+      templateVars = Array.isArray(template.variables) ? template.variables : [];
+      const hasSignerFields = templateVars.some((v: any) => v.filledBy === 'signer');
+
       contentHtml = await this.templatesService.renderTemplate(
         dto.templateId,
         dto.variables,
+        hasSignerFields ? { mode: 'creator' } : undefined,
       );
     } else if (dto.contentHtml) {
       contentHtml = this.sanitizeHtml(dto.contentHtml);
@@ -169,6 +177,20 @@ export class ContractsService {
     const documentHash = this.pdfService.hashDocument(pdfBuffer);
     const variablesHash = this.hashVariables(dto.variables);
 
+    // Build variablesData: structured format if template has signer fields, flat format for backward compat
+    const hasSignerFields = templateVars.some((v: any) => v.filledBy === 'signer');
+    let variablesDataStr: string | undefined;
+    if (dto.variables) {
+      if (hasSignerFields) {
+        variablesDataStr = JSON.stringify({
+          values: dto.variables,
+          schema: templateVars,
+        });
+      } else {
+        variablesDataStr = JSON.stringify(dto.variables);
+      }
+    }
+
     const contract = await this.prisma.contract.create({
       data: {
         title: dto.title,
@@ -180,7 +202,7 @@ export class ContractsService {
         verificationHash,
         documentHash,
         variablesHash,
-        variablesData: dto.variables ? JSON.stringify(dto.variables) : undefined,
+        variablesData: variablesDataStr,
         expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : undefined,
         signers: {
           create: dto.signers.map((s, i) => ({

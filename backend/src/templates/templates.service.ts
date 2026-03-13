@@ -142,16 +142,78 @@ export class TemplatesService {
   async renderTemplate(
     templateId: string,
     variables: Record<string, string>,
+    options?: { mode?: 'creator' | 'all' },
   ): Promise<string> {
     const template = await this.findOne(templateId);
     let html = template.contentHtml;
+    const templateVars: any[] = Array.isArray(template.variables) ? template.variables : [];
+    const mode = options?.mode ?? 'all';
 
-    for (const [key, value] of Object.entries(variables)) {
+    if (mode === 'creator') {
+      // Build a set of signer variable names
+      const signerVarNames = new Set(
+        templateVars
+          .filter((v: any) => v.filledBy === 'signer')
+          .map((v: any) => v.name),
+      );
+
+      // Replace creator fields normally
+      for (const [key, value] of Object.entries(variables)) {
+        if (!signerVarNames.has(key)) {
+          const escapedValue = this.escapeHtml(value);
+          html = html.replaceAll(`{{${key}}}`, escapedValue);
+          html = html.replaceAll(`!!${key}!!`, escapedValue);
+        }
+      }
+
+      // Replace signer fields with styled placeholder spans
+      for (const v of templateVars) {
+        if (v.filledBy === 'signer') {
+          const placeholder = `<span class="signer-field" data-var="${v.name}" style="background:#FEF3C7;padding:2px 8px;border-radius:4px;border:1px dashed #D97706;color:#92400E;">[${v.label} - aláíró tölti ki]</span>`;
+          html = html.replaceAll(`{{${v.name}}}`, placeholder);
+          html = html.replaceAll(`!!${v.name}!!`, placeholder);
+        }
+      }
+
+      // Handle any remaining {{...}} placeholders that might be signer vars not in the variables dict
+      const remainingPattern = /\{\{(\w+)\}\}/g;
+      html = html.replace(remainingPattern, (match, varName) => {
+        // If this var is in the template vars as a signer field, replace with placeholder
+        const tplVar = templateVars.find((v: any) => v.name === varName && v.filledBy === 'signer');
+        if (tplVar) {
+          return `<span class="signer-field" data-var="${tplVar.name}" style="background:#FEF3C7;padding:2px 8px;border-radius:4px;border:1px dashed #D97706;color:#92400E;">[${tplVar.label} - aláíró tölti ki]</span>`;
+        }
+        return match;
+      });
+    } else {
+      // 'all' mode - replace everything as before
+      for (const [key, value] of Object.entries(variables)) {
+        const escapedValue = this.escapeHtml(value);
+        html = html.replaceAll(`{{${key}}}`, escapedValue);
+        html = html.replaceAll(`!!${key}!!`, escapedValue);
+      }
+    }
+
+    return html;
+  }
+
+  renderSignerFields(
+    html: string,
+    signerVariables: Record<string, string>,
+    templateVars: any[],
+  ): string {
+    for (const [key, value] of Object.entries(signerVariables)) {
       const escapedValue = this.escapeHtml(value);
+      // Replace placeholder spans
+      const placeholderRegex = new RegExp(
+        `<span class="signer-field" data-var="${key}"[^>]*>\\[.*?\\]</span>`,
+        'g',
+      );
+      html = html.replace(placeholderRegex, escapedValue);
+      // Also handle raw {{key}} placeholders
       html = html.replaceAll(`{{${key}}}`, escapedValue);
       html = html.replaceAll(`!!${key}!!`, escapedValue);
     }
-
     return html;
   }
 

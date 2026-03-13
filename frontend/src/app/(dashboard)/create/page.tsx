@@ -13,6 +13,8 @@ interface TemplateVar {
   label: string;
   type: string;
   required: boolean;
+  filledBy?: 'creator' | 'signer';
+  signerIndex?: number;
 }
 
 interface Template {
@@ -553,8 +555,9 @@ function CreateWizardInner() {
               </div>
               {/* Progress indicator */}
               {(() => {
-                const total = selectedTemplate.variables.filter((v) => v.required).length;
-                const filled = selectedTemplate.variables.filter((v) => v.required && (variables[v.name] ?? "").trim() !== "").length;
+                const creatorVars = selectedTemplate.variables.filter(v => (v.filledBy ?? 'creator') === 'creator');
+                const total = creatorVars.filter((v) => v.required).length;
+                const filled = creatorVars.filter((v) => v.required && (variables[v.name] ?? "").trim() !== "").length;
                 const pct = total > 0 ? Math.round((filled / total) * 100) : 100;
                 return (
                   <div className="hidden sm:flex items-center gap-2.5 shrink-0">
@@ -671,8 +674,22 @@ function CreateWizardInner() {
                       <div key={v.name} className="mt-3 first:mt-0">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                           {v.label} {v.required && <span className="text-red-400">*</span>}
+                          {(v.filledBy === 'signer') && (
+                            <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full">
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                              Aláíró tölti ki
+                            </span>
+                          )}
                         </label>
-                        {v.type === "textarea" ? (
+                        {v.filledBy === 'signer' ? (
+                          <input
+                            type="text"
+                            disabled
+                            value=""
+                            placeholder={`${v.label} — az aláíró adja meg`}
+                            className="w-full px-4 py-3 border border-dashed border-amber-300 dark:border-amber-600 rounded-xl bg-amber-50/50 dark:bg-amber-900/10 text-gray-400 dark:text-gray-500 cursor-not-allowed"
+                          />
+                        ) : v.type === "textarea" ? (
                           <textarea
                             value={variables[v.name] ?? ""}
                             onChange={(e) => setVariables((prev) => ({ ...prev, [v.name]: e.target.value }))}

@@ -28,6 +28,13 @@ interface ContractInfo {
   signers: { id: string; name: string; role: string; status: string }[];
 }
 
+interface SignerField {
+  name: string;
+  label: string;
+  type: string;
+  required: boolean;
+}
+
 type Step = "verify" | "details" | "review" | "sign";
 
 export default function SignPage() {
@@ -53,6 +60,10 @@ export default function SignPage() {
   const [companyTaxNumber, setCompanyTaxNumber] = useState("");
   const [companyAddress, setCompanyAddress] = useState("");
 
+  // Signer template fields
+  const [signerFields, setSignerFields] = useState<SignerField[]>([]);
+  const [signerVariables, setSignerVariables] = useState<Record<string, string>>({});
+
   // OTP state
   const [otpCode, setOtpCode] = useState(["", "", "", "", "", ""]);
   const [otpSending, setOtpSending] = useState(false);
@@ -73,7 +84,8 @@ export default function SignPage() {
     signerFullName.trim() !== "" &&
     companyName.trim() !== "" &&
     companyTaxNumber.trim() !== "" &&
-    companyAddress.trim() !== "";
+    companyAddress.trim() !== "" &&
+    signerFields.filter(f => f.required).every(f => (signerVariables[f.name] ?? "").trim() !== "");
 
   useEffect(() => {
     loadContract();
@@ -111,6 +123,12 @@ export default function SignPage() {
       const signerData = res.data.data.signer;
       setSigner(signerData);
       setSignerFullName(signerData.name || "");
+      if (res.data.data.signerFields) {
+        setSignerFields(res.data.data.signerFields);
+        const defaults: Record<string, string> = {};
+        for (const f of res.data.data.signerFields) defaults[f.name] = '';
+        setSignerVariables(defaults);
+      }
       // If already verified, skip OTP step
       if (signerData.otpVerified) {
         setCurrentStep("details");
@@ -240,6 +258,7 @@ export default function SignPage() {
         companyTaxNumber,
         companyAddress,
         partnerConsent,
+        ...(Object.keys(signerVariables).length > 0 ? { signerVariables } : {}),
       });
       setSigned(true);
     } catch (err: any) {
@@ -634,6 +653,48 @@ export default function SignPage() {
                 </button>
               </div>
             </div>
+
+            {signerFields.length > 0 && (
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mt-6">
+                <div className="px-6 sm:px-8 py-4 bg-amber-50 border-b border-amber-100">
+                  <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Szerződés adatai
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Kérjük, töltse ki az Önre vonatkozó szerződéses adatokat.
+                  </p>
+                </div>
+                <div className="p-6 sm:p-8 space-y-5">
+                  {signerFields.map((field) => (
+                    <div key={field.name}>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                        {field.label} {field.required && <span className="text-red-400">*</span>}
+                      </label>
+                      {field.type === 'textarea' ? (
+                        <textarea
+                          value={signerVariables[field.name] ?? ''}
+                          onChange={(e) => setSignerVariables(prev => ({ ...prev, [field.name]: e.target.value }))}
+                          rows={3}
+                          placeholder={field.label}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm bg-gray-50/50 focus:bg-white focus:border-[#198296] focus:ring-2 focus:ring-[#198296]/10 outline-none transition-all resize-y"
+                        />
+                      ) : (
+                        <input
+                          type={field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : 'text'}
+                          value={signerVariables[field.name] ?? ''}
+                          onChange={(e) => setSignerVariables(prev => ({ ...prev, [field.name]: e.target.value }))}
+                          placeholder={field.type !== 'date' ? field.label : undefined}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm bg-gray-50/50 focus:bg-white focus:border-[#198296] focus:ring-2 focus:ring-[#198296]/10 outline-none transition-all"
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
