@@ -59,7 +59,7 @@ export default function DpaPage() {
 
         <h2>4. Az Adatfeldolgozó kötelezettségei</h2>
         <ul>
-          <li>A személyes adatokat kizárólag az Adatkezelő dokumentált utasítása szerint dolgozza fel.</li>
+          <li>Az Adatfeldolgozó kizárólag az Adatkezelő dokumentált utasításai alapján kezeli a személyes adatokat, kivéve, ha az Európai Unió vagy tagállami jog eltérően rendelkezik (GDPR 28. cikk (3) bekezdés a) pont).</li>
           <li>Biztosítja, hogy az adatfeldolgozásra feljogosított személyek titoktartási kötelezettséget
             vállaltak vagy jogszabályi titoktartási kötelezettség alatt állnak.</li>
           <li>A GDPR 32. cikk szerinti technikai és szervezési intézkedéseket tesz az adatbiztonság érdekében:
@@ -82,7 +82,7 @@ export default function DpaPage() {
 
         <h2>5. Adatvédelmi incidens kezelése</h2>
         <p>
-          Az Adatfeldolgozó az adatvédelmi incidensről való tudomásszerzést követő <strong>48 órán
+          Az Adatfeldolgozó az adatvédelmi incidensről való tudomásszerzést követően <strong>haladéktalanul, de legkésőbb 24 órán
           belül</strong> értesíti az Adatkezelőt. Az Adatkezelő ezt követően — a GDPR 33. cikke
           alapján — 72 órán belül értesíti a NAIH-ot, amennyiben az incidens valószínűsíthetően
           kockázattal jár az érintettek jogaira. Az értesítés tartalmazza:

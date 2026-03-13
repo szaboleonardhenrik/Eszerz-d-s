@@ -102,13 +102,14 @@ export class AuthController {
   }
 
   @Post('forgot-password')
-  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  @Throttle({ default: { limit: 3, ttl: 3600000 } })
   async forgotPassword(@Body() body: { email: string }) {
     const result = await this.authService.forgotPassword(body.email);
     return ApiResponse.ok(result);
   }
 
   @Post('reset-password')
+  @Throttle({ default: { limit: 3, ttl: 3600000 } })
   async resetPassword(@Body() body: { token: string; password: string }) {
     const result = await this.authService.resetPassword(body.token, body.password);
     return ApiResponse.ok(result);

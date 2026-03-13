@@ -98,6 +98,8 @@ export class ContractsService {
         'img': ['src', 'alt', 'width', 'height'],
         'td': ['colspan', 'rowspan'],
         'th': ['colspan', 'rowspan'],
+        // data-var is used for signer-field placeholders in the filledBy system.
+        // Values are HTML-escaped before replacement, so this attribute is safe.
         'span': ['style', 'class', 'id', 'data-var'],
       },
       allowedSchemes: ['http', 'https', 'data'],
@@ -493,6 +495,34 @@ export class ContractsService {
     }
     const url = await this.storageService.getSignedDownloadUrl(contract.pdfUrl);
     return { url };
+  }
+
+  async updateStatus(contractId: string, userId: string, status: string) {
+    const VALID_STATUSES = ['draft', 'sent', 'partially_signed', 'completed', 'declined', 'cancelled'];
+    if (!VALID_STATUSES.includes(status)) {
+      throw new BadRequestException('Érvénytelen státusz');
+    }
+
+    const contract = await this.findOneOwned(contractId, userId);
+    if (contract.status === status) return contract;
+
+    if (contract.status === 'completed') {
+      throw new BadRequestException('Teljesített szerződés státusza nem módosítható');
+    }
+
+    const updated = await this.prisma.contract.update({
+      where: { id: contractId },
+      data: { status },
+      include: { signers: true },
+    });
+
+    await this.auditService.log({
+      contractId,
+      eventType: 'contract_updated',
+      eventData: { previousStatus: contract.status, newStatus: status },
+    });
+
+    return updated;
   }
 
   async cancel(contractId: string, userId: string) {

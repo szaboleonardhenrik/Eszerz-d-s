@@ -192,16 +192,28 @@ export default function KanbanPage() {
     setDragOverColumn(null);
   };
 
-  const handleDrop = (e: DragEvent<HTMLDivElement>, targetStatus: ColumnStatus) => {
+  const handleDrop = async (e: DragEvent<HTMLDivElement>, targetStatus: ColumnStatus) => {
     e.preventDefault();
     setDragOverColumn(null);
 
     try {
       const data = JSON.parse(e.dataTransfer.getData("text/plain"));
-      if (data.status !== targetStatus) {
-        toast("Kanban n\u00e9zet: a st\u00e1tusz m\u00f3dos\u00edt\u00e1s nem t\u00e1mogatott", {
-          icon: "\u2139\uFE0F",
-        });
+      if (data.status === targetStatus) return;
+
+      // Optimistic update
+      setContracts((prev) =>
+        prev.map((c) => (c.id === data.id ? { ...c, status: targetStatus } : c))
+      );
+
+      try {
+        await api.patch(`/contracts/${data.id}/status`, { status: targetStatus });
+        toast.success("Státusz frissítve");
+      } catch {
+        // Revert on failure
+        setContracts((prev) =>
+          prev.map((c) => (c.id === data.id ? { ...c, status: data.status } : c))
+        );
+        toast.error("Nem sikerült a státusz módosítása");
       }
     } catch {
       // ignore malformed drag data

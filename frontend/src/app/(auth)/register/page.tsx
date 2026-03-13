@@ -180,7 +180,7 @@ export default function RegisterPage() {
               </span>
             </label>
             <p className="text-[11px] text-gray-400 dark:text-gray-500 leading-relaxed -mt-1 ml-7">
-              A regisztrációval digitális tartalomszolgáltatásra fizetsz elő. A 45/2014. (II. 26.) Korm. rendelet alapján 14 napon belül indokolás nélkül elállhatsz.
+              A regisztrációval digitális tartalomszolgáltatásra fizet elő. A 45/2014. (II. 26.) Korm. rendelet alapján 14 napon belül indokolás nélkül elállhat.
             </p>
 
             <button

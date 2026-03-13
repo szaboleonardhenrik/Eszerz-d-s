@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Param,
   Body,
   Query,
@@ -299,6 +300,16 @@ export class ContractsController {
   async addSelfAsSigner(@Param('id') id: string, @Req() req: any) {
     const signer = await this.contractsService.addSelfAsSigner(id, req.user.userId);
     return ApiResponse.ok(signer);
+  }
+
+  @Patch(':id/status')
+  async updateStatus(
+    @Param('id') id: string,
+    @Body() body: { status: string },
+    @Req() req: any,
+  ) {
+    const contract = await this.contractsService.updateStatus(id, req.user.userId, body.status);
+    return ApiResponse.ok(contract);
   }
 
   @Post(':id/cancel')

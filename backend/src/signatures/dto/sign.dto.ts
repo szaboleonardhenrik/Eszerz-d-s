@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsIn, IsNotEmpty, IsBoolean } from 'class-validator';
+import { IsString, IsOptional, IsIn, IsNotEmpty, IsBoolean, IsObject } from 'class-validator';
 
 export class SignContractDto {
   // Only 'simple' is currently implemented. DAP and Microsec e-signature
@@ -41,6 +41,7 @@ export class SignContractDto {
   partnerConsent?: boolean;
 
   @IsOptional()
+  @IsObject()
   signerVariables?: Record<string, string>;
 
   @IsBoolean({ message: 'Az adatkezelési hozzájárulás elfogadása kötelező' })
