@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import { useI18n } from "@/lib/i18n";
 
 interface WidgetReorderProps {
   open: boolean;
@@ -9,22 +10,23 @@ interface WidgetReorderProps {
   onSave: (newOrder: string[]) => void;
 }
 
-const WIDGET_LABELS: Record<string, string> = {
-  expiring: "Lejáró szerződések",
-  awaiting: "Aláírásra vár",
-  completed: "Nemrég kész",
-  activity: "Tevékenység",
-  chart: "Havi grafikon",
-  usage: "Használat",
-};
-
 export default function WidgetReorder({
   open,
   onClose,
   order,
   onSave,
 }: WidgetReorderProps) {
+  const { t } = useI18n();
   const [items, setItems] = useState<string[]>(order);
+
+  const WIDGET_LABELS: Record<string, string> = {
+    expiring: t("widgetReorder.expiring"),
+    awaiting: t("widgetReorder.awaiting"),
+    completed: t("widgetReorder.completed"),
+    activity: t("widgetReorder.activity"),
+    chart: t("widgetReorder.chart"),
+    usage: t("widgetReorder.usage"),
+  };
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [overIndex, setOverIndex] = useState<number | null>(null);
   const dragNode = useRef<HTMLLIElement | null>(null);
@@ -109,7 +111,7 @@ export default function WidgetReorder({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-6 py-4">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Widget sorrend
+            {t("widgetReorder.title")}
           </h2>
           <button
             onClick={handleCancel}
@@ -178,7 +180,7 @@ export default function WidgetReorder({
             onClick={handleCancel}
             className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
           >
-            Megse
+            {t("widgetReorder.cancel")}
           </button>
           <button
             onClick={handleSave}
@@ -191,7 +193,7 @@ export default function WidgetReorder({
               (e.currentTarget.style.backgroundColor = "#198296")
             }
           >
-            Mentés
+            {t("widgetReorder.save")}
           </button>
         </div>
       </div>

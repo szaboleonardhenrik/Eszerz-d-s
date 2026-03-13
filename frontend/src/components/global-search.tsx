@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import { useI18n } from "@/lib/i18n";
 
 interface SearchResults {
   contracts: { id: string; title: string; status: string; signers?: { name: string; email: string }[] }[];
@@ -11,6 +12,7 @@ interface SearchResults {
 }
 
 export default function GlobalSearch() {
+  const { t } = useI18n();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResults | null>(null);
   const [open, setOpen] = useState(false);
@@ -78,11 +80,11 @@ export default function GlobalSearch() {
   const hasResults = results && (results.contracts.length > 0 || results.contacts.length > 0 || results.templates.length > 0);
 
   const statusLabels: Record<string, string> = {
-    draft: "Piszkozat",
-    pending: "Varakoz\u00f3",
-    signed: "Al\u00e1\u00edrt",
-    declined: "Elutas\u00edtott",
-    expired: "Lej\u00e1rt",
+    draft: t("globalSearch.statusDraft"),
+    pending: t("globalSearch.statusPending"),
+    signed: t("globalSearch.statusSigned"),
+    declined: t("globalSearch.statusDeclined"),
+    expired: t("globalSearch.statusExpired"),
   };
 
   return (
@@ -94,7 +96,7 @@ export default function GlobalSearch() {
         <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
-        <span>Keres&#233;s</span>
+        <span>{t("globalSearch.button")}</span>
       </button>
 
       {open && (
@@ -110,7 +112,7 @@ export default function GlobalSearch() {
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Szerz\u0151d\u00e9s, partner vagy sablon keres\u00e9se..."
+                  placeholder={t("globalSearch.placeholder")}
                   className="flex-1 bg-transparent outline-none text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400"
                   autoFocus
                 />
@@ -124,7 +126,7 @@ export default function GlobalSearch() {
                     <div className="py-2">
                       {results!.contracts.length > 0 && (
                         <div>
-                          <p className="px-4 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Szerz\u0151d\u00e9sek</p>
+                          <p className="px-4 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">{t("globalSearch.contracts")}</p>
                           {results!.contracts.map((c) => (
                             <button
                               key={c.id}
@@ -150,7 +152,7 @@ export default function GlobalSearch() {
                       )}
                       {results!.contacts.length > 0 && (
                         <div>
-                          <p className="px-4 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Partnerek</p>
+                          <p className="px-4 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">{t("globalSearch.partners")}</p>
                           {results!.contacts.map((c) => (
                             <button
                               key={c.id}
@@ -170,7 +172,7 @@ export default function GlobalSearch() {
                       )}
                       {results!.templates.length > 0 && (
                         <div>
-                          <p className="px-4 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Sablonok</p>
+                          <p className="px-4 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">{t("globalSearch.templates")}</p>
                           {results!.templates.map((t) => (
                             <button
                               key={t.id}
@@ -191,7 +193,7 @@ export default function GlobalSearch() {
                     </div>
                   ) : !loading ? (
                     <div className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
-                      Nincs tal\u00e1lat a(z) &quot;{query}&quot; keres\u00e9sre
+                      {t("globalSearch.noResults", { query })}
                     </div>
                   ) : null}
                 </div>
@@ -199,7 +201,7 @@ export default function GlobalSearch() {
 
               {!query && (
                 <div className="px-4 py-6 text-center text-sm text-gray-400">
-                  Kezdj el g\u00e9pelni a keres\u00e9shez...
+                  {t("globalSearch.startTyping")}
                 </div>
               )}
             </div>

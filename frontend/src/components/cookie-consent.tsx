@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n";
 
 interface CookiePreferences {
   essential: boolean;
@@ -22,6 +23,7 @@ const ALL_ACCEPTED: CookiePreferences = {
 };
 
 export default function CookieConsent() {
+  const { t } = useI18n();
   const [visible, setVisible] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [hasConsent, setHasConsent] = useState(false);
@@ -78,9 +80,9 @@ export default function CookieConsent() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <div className="flex-1">
                 <p className="text-sm leading-relaxed">
-                  Az oldal cookie-kat (sütiket) használ a működéshez és a felhasználói élmény javításához.{" "}
+                  {t("cookie.description")}{" "}
                   <Link href="/cookie" className="underline text-brand-gold hover:text-brand-gold-light">
-                    Cookie szabályzat
+                    {t("cookie.policyLink")}
                   </Link>
                 </p>
               </div>
@@ -90,13 +92,13 @@ export default function CookieConsent() {
                     onClick={() => setShowSettings(true)}
                     className="px-4 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700 transition"
                   >
-                    Beállítások
+                    {t("cookie.settings")}
                   </button>
                   <button
                     onClick={acceptAll}
                     className="px-5 py-2 rounded-lg text-sm font-semibold bg-brand-gold hover:bg-brand-gold-dark text-white transition"
                   >
-                    Elfogadom mind
+                    {t("cookie.acceptAll")}
                   </button>
                 </div>
               )}
@@ -112,8 +114,8 @@ export default function CookieConsent() {
                     className="w-4 h-4 rounded accent-brand-gold opacity-60"
                   />
                   <span className="text-sm">
-                    <strong>Szükséges</strong>{" "}
-                    <span className="text-gray-400">— a weboldal alapvető működéséhez (mindig aktív)</span>
+                    <strong>{t("cookie.essential")}</strong>{" "}
+                    <span className="text-gray-400">{" \u2014 "}{t("cookie.essentialDesc")}</span>
                   </span>
                 </label>
 
@@ -127,8 +129,8 @@ export default function CookieConsent() {
                     className="w-4 h-4 rounded accent-brand-gold"
                   />
                   <span className="text-sm">
-                    <strong>Funkcionális</strong>{" "}
-                    <span className="text-gray-400">— felhasználói beállítások megjegyzése</span>
+                    <strong>{t("cookie.functional")}</strong>{" "}
+                    <span className="text-gray-400">{" \u2014 "}{t("cookie.functionalDesc")}</span>
                   </span>
                 </label>
 
@@ -142,8 +144,8 @@ export default function CookieConsent() {
                     className="w-4 h-4 rounded accent-brand-gold"
                   />
                   <span className="text-sm">
-                    <strong>Analitika</strong>{" "}
-                    <span className="text-gray-400">— látogatottsági statisztikák, fejlesztés</span>
+                    <strong>{t("cookie.analyticsLabel")}</strong>{" "}
+                    <span className="text-gray-400">{" \u2014 "}{t("cookie.analyticsDesc")}</span>
                   </span>
                 </label>
 
@@ -152,13 +154,13 @@ export default function CookieConsent() {
                     onClick={saveSelected}
                     className="px-5 py-2 rounded-lg text-sm font-semibold bg-brand-gold hover:bg-brand-gold-dark text-white transition"
                   >
-                    Mentés
+                    {t("cookie.save")}
                   </button>
                   <button
                     onClick={acceptAll}
                     className="px-4 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700 transition"
                   >
-                    Elfogadom mind
+                    {t("cookie.acceptAll")}
                   </button>
                 </div>
               </div>
@@ -172,7 +174,7 @@ export default function CookieConsent() {
           onClick={resetConsent}
           className="fixed bottom-4 left-4 z-50 px-3 py-1.5 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm hover:shadow transition"
         >
-          Cookie beállítások
+          {t("cookie.cookieSettings")}
         </button>
       )}
     </>

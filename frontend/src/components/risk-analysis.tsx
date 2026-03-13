@@ -3,6 +3,7 @@
 import { useState } from "react";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
+import { useI18n } from "@/lib/i18n";
 
 interface Issue {
   title: string;
@@ -31,12 +32,7 @@ const riskColors = {
   critical: { bg: "bg-red-50", text: "text-red-700", border: "border-red-200", badge: "bg-red-100 text-red-800", bar: "bg-red-500" },
 };
 
-const riskLabels = {
-  low: "Alacsony",
-  medium: "Közepes",
-  high: "Magas",
-  critical: "Kritikus",
-};
+// riskLabels is computed inside the component using t()
 
 const severityIcons: Record<string, string> = {
   info: "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
@@ -53,21 +49,27 @@ const severityColors: Record<string, string> = {
 };
 
 export default function RiskAnalysis({ contractId }: { contractId: string }) {
+  const { t } = useI18n();
   const [data, setData] = useState<RiskData | null>(null);
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
 
+  const riskLabels: Record<string, string> = {
+    low: t("riskAnalysis.riskLow"),
+    medium: t("riskAnalysis.riskMedium"),
+    high: t("riskAnalysis.riskHigh"),
+    critical: t("riskAnalysis.riskCritical"),
+  };
+
   const analyze = async () => {
-    const consent = window.confirm(
-      "Az elemzéshez a szerződés szövege az Anthropic (USA) AI szolgáltatónak kerül továbbításra feldolgozásra. Az adatok nem kerülnek tartós tárolásra. Folytatja?"
-    );
+    const consent = window.confirm(t("riskAnalysis.consentPrompt"));
     if (!consent) return;
     setLoading(true);
     try {
       const res = await api.post(`/ai/risk-analysis/${contractId}`);
       setData(res.data.data);
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba a kockázatelemzés során");
+      toast.error(err.response?.data?.error?.message ?? t("riskAnalysis.errorFallback"));
     } finally {
       setLoading(false);
     }
@@ -93,8 +95,8 @@ export default function RiskAnalysis({ contractId }: { contractId: string }) {
               </svg>
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100">AI Kockázatelemzés</h3>
-              <p className="text-xs text-gray-500">Automatikus jogi kockázat-feltérképezés Claude AI-val</p>
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100">{t("riskAnalysis.title")}</h3>
+              <p className="text-xs text-gray-500">{t("riskAnalysis.subtitle")}</p>
             </div>
           </div>
           <button
@@ -105,14 +107,14 @@ export default function RiskAnalysis({ contractId }: { contractId: string }) {
             {loading ? (
               <>
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Elemzés...
+                {t("riskAnalysis.analyzing")}
               </>
             ) : (
               <>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
-                Kockázatelemzés indítása
+                {t("riskAnalysis.startAnalysis")}
               </>
             )}
           </button>
@@ -148,7 +150,7 @@ export default function RiskAnalysis({ contractId }: { contractId: string }) {
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-bold text-gray-900 text-lg">Kockázati szint</h3>
+                <h3 className="font-bold text-gray-900 text-lg">{t("riskAnalysis.riskLevel")}</h3>
                 <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${rc.badge}`}>
                   {riskLabels[data.overallRisk]}
                 </span>
@@ -164,7 +166,7 @@ export default function RiskAnalysis({ contractId }: { contractId: string }) {
             <svg className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
-            Újraelemzés
+            {t("riskAnalysis.reanalyze")}
           </button>
         </div>
       </div>
@@ -187,7 +189,7 @@ export default function RiskAnalysis({ contractId }: { contractId: string }) {
                     {riskLabels[cat.risk]}
                   </span>
                   {cat.issues.length > 0 && (
-                    <span className="text-xs text-gray-400">{cat.issues.length} probléma</span>
+                    <span className="text-xs text-gray-400">{t("riskAnalysis.issues", { count: String(cat.issues.length) })}</span>
                   )}
                 </div>
                 <svg
@@ -219,7 +221,7 @@ export default function RiskAnalysis({ contractId }: { contractId: string }) {
                           {issue.suggestion && (
                             <div className="mt-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg px-3 py-2">
                               <p className="text-xs text-blue-700 dark:text-blue-400">
-                                <span className="font-semibold">Javaslat:</span> {issue.suggestion}
+                                <span className="font-semibold">{t("riskAnalysis.suggestion")}:</span> {issue.suggestion}
                               </p>
                             </div>
                           )}
@@ -236,7 +238,7 @@ export default function RiskAnalysis({ contractId }: { contractId: string }) {
 
       {data.categories.length === 0 && (
         <div className="p-8 text-center text-gray-400 text-sm">
-          Nem találtunk konkrét kockázati kategóriákat.
+          {t("riskAnalysis.noCategories")}
         </div>
       )}
     </div>

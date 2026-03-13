@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
+import { useI18n } from "@/lib/i18n";
 
 interface Signer {
   name: string;
@@ -24,10 +25,10 @@ interface ActivityFeedProps {
 
 const STATUS_CONFIG: Record<
   string,
-  { icon: React.ReactNode; label: string; color: string }
+  { icon: React.ReactNode; labelKey: string; color: string }
 > = {
   draft: {
-    label: "Piszkozat létrehozva",
+    labelKey: "activityFeed.draftCreated",
     color: "text-gray-500 dark:text-gray-400",
     icon: (
       <svg
@@ -46,7 +47,7 @@ const STATUS_CONFIG: Record<
     ),
   },
   sent: {
-    label: "Elküldve aláírásra",
+    labelKey: "activityFeed.sentForSigning",
     color: "text-blue-500 dark:text-blue-400",
     icon: (
       <svg
@@ -65,7 +66,7 @@ const STATUS_CONFIG: Record<
     ),
   },
   completed: {
-    label: "Teljesen alairva",
+    labelKey: "activityFeed.fullySigned",
     color: "text-green-500 dark:text-green-400",
     icon: (
       <svg
@@ -84,7 +85,7 @@ const STATUS_CONFIG: Record<
     ),
   },
   declined: {
-    label: "Visszautasitva",
+    labelKey: "activityFeed.declined",
     color: "text-red-500 dark:text-red-400",
     icon: (
       <svg
@@ -103,7 +104,7 @@ const STATUS_CONFIG: Record<
     ),
   },
   partially_signed: {
-    label: "Reszben alairt",
+    labelKey: "activityFeed.partiallySigned",
     color: "text-yellow-500 dark:text-yellow-400",
     icon: (
       <svg
@@ -123,28 +124,31 @@ const STATUS_CONFIG: Record<
   },
 };
 
-function relativeTime(dateStr: string): string {
-  const now = Date.now();
-  const then = new Date(dateStr).getTime();
-  const diffMs = now - then;
-  const diffSec = Math.floor(diffMs / 1000);
-  const diffMin = Math.floor(diffSec / 60);
-  const diffHour = Math.floor(diffMin / 60);
-  const diffDay = Math.floor(diffHour / 24);
-  const diffWeek = Math.floor(diffDay / 7);
-  const diffMonth = Math.floor(diffDay / 30);
-
-  if (diffSec < 60) return "most";
-  if (diffMin < 60) return `${diffMin} perce`;
-  if (diffHour < 24) return `${diffHour} oraja`;
-  if (diffDay < 7) return `${diffDay} napja`;
-  if (diffWeek < 5) return `${diffWeek} hete`;
-  return `${diffMonth} honapja`;
-}
+// relativeTime is now a method inside the component
 
 export default function ActivityFeed({ limit = 10 }: ActivityFeedProps) {
+  const { t } = useI18n();
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const relativeTime = (dateStr: string): string => {
+    const now = Date.now();
+    const then = new Date(dateStr).getTime();
+    const diffMs = now - then;
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHour = Math.floor(diffMin / 60);
+    const diffDay = Math.floor(diffHour / 24);
+    const diffWeek = Math.floor(diffDay / 7);
+    const diffMonth = Math.floor(diffDay / 30);
+
+    if (diffSec < 60) return t("activityFeed.timeNow");
+    if (diffMin < 60) return t("activityFeed.timeMinutes", { count: String(diffMin) });
+    if (diffHour < 24) return t("activityFeed.timeHours", { count: String(diffHour) });
+    if (diffDay < 7) return t("activityFeed.timeDays", { count: String(diffDay) });
+    if (diffWeek < 5) return t("activityFeed.timeWeeks", { count: String(diffWeek) });
+    return t("activityFeed.timeMonths", { count: String(diffMonth) });
+  };
 
   useEffect(() => {
     api
@@ -178,7 +182,7 @@ export default function ActivityFeed({ limit = 10 }: ActivityFeedProps) {
   if (contracts.length === 0) {
     return (
       <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-8">
-        Nincs megjeleníthető aktivitás.
+        {t("activityFeed.noActivity")}
       </p>
     );
   }
@@ -215,7 +219,7 @@ export default function ActivityFeed({ limit = 10 }: ActivityFeedProps) {
                   {contract.title}
                 </Link>
                 <p className={`text-xs mt-0.5 ${config.color}`}>
-                  {config.label}
+                  {t(config.labelKey)}
                 </p>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-xs text-gray-400 dark:text-gray-500">
@@ -244,7 +248,7 @@ export default function ActivityFeed({ limit = 10 }: ActivityFeedProps) {
           href="/dashboard"
           className="text-sm font-medium text-[#198296] hover:underline"
         >
-          Osszes megtekintese
+          {t("activityFeed.viewAll")}
         </Link>
       </div>
     </div>

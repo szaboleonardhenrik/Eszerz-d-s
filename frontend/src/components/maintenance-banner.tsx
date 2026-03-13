@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { onMaintenanceChange, getMaintenanceMessage } from "@/lib/api";
+import { useI18n } from "@/lib/i18n";
 
 export default function MaintenanceBanner() {
+  const { t } = useI18n();
   const [message, setMessage] = useState<string | null>(getMaintenanceMessage());
 
   useEffect(() => {
@@ -37,20 +39,20 @@ export default function MaintenanceBanner() {
           </svg>
         </div>
         <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-          Karbantartás alatt
+          {t("maintenance.title")}
         </h2>
         <p className="text-gray-600 dark:text-gray-400 mb-6">
           {message}
         </p>
         <div className="flex items-center justify-center gap-2 text-sm text-gray-400">
           <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-          <span>Hamarosan visszatérünk</span>
+          <span>{t("maintenance.comingBack")}</span>
         </div>
         <button
           onClick={() => window.location.reload()}
           className="mt-6 px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-medium transition"
         >
-          Újrapróbálás
+          {t("maintenance.retry")}
         </button>
       </div>
     </div>

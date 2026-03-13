@@ -5,6 +5,7 @@ import Link from "next/link";
 import api from "@/lib/api";
 import { useSocket } from "@/lib/socket";
 import toast from "react-hot-toast";
+import { useI18n } from "@/lib/i18n";
 
 interface Notification {
   id: string;
@@ -17,6 +18,7 @@ interface Notification {
 }
 
 export default function NotificationBell() {
+  const { t } = useI18n();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [open, setOpen] = useState(false);
@@ -119,12 +121,12 @@ export default function NotificationBell() {
   const timeAgo = (date: string) => {
     const diff = Date.now() - new Date(date).getTime();
     const mins = Math.floor(diff / 60000);
-    if (mins < 1) return "most";
-    if (mins < 60) return `${mins} perce`;
+    if (mins < 1) return t("notificationBell.timeNow");
+    if (mins < 60) return t("notificationBell.timeMinutes", { count: String(mins) });
     const hours = Math.floor(mins / 60);
-    if (hours < 24) return `${hours} órája`;
+    if (hours < 24) return t("notificationBell.timeHours", { count: String(hours) });
     const days = Math.floor(hours / 24);
-    return `${days} napja`;
+    return t("notificationBell.timeDays", { count: String(days) });
   };
 
   return (
@@ -149,9 +151,9 @@ export default function NotificationBell() {
           <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-gray-800 rounded-xl shadow-xl border dark:border-gray-700 z-50 max-h-[28rem] flex flex-col">
             <div className="flex items-center justify-between px-4 py-3 border-b dark:border-gray-700">
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">Értesítések</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{t("notificationBell.title")}</h3>
                 {wsConnected.current && (
-                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full" title="Valós idejű" />
+                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full" title={t("notificationBell.realtime")} />
                 )}
               </div>
               {unreadCount > 0 && (
@@ -159,14 +161,14 @@ export default function NotificationBell() {
                   onClick={markAllRead}
                   className="text-xs text-blue-600 hover:underline"
                 >
-                  Összes olvasottnak jelölése
+                  {t("notificationBell.markAllRead")}
                 </button>
               )}
             </div>
             <div className="overflow-y-auto flex-1" style={{ maxHeight: "20rem" }}>
               {notifications.length === 0 ? (
                 <div className="p-8 text-center text-gray-400 text-sm">
-                  Nincs értesítés
+                  {t("notificationBell.empty")}
                 </div>
               ) : (
                 notifications.map((n) => {
@@ -209,7 +211,7 @@ export default function NotificationBell() {
               onClick={() => setOpen(false)}
               className="block text-center py-2.5 text-xs font-medium text-[#198296] hover:bg-gray-50 dark:hover:bg-gray-700 border-t dark:border-gray-700 transition"
             >
-              Összes értesítés
+              {t("notificationBell.viewAll")}
             </Link>
           </div>
         </>

@@ -2,13 +2,14 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useI18n } from "@/lib/i18n";
 
-const shortcuts = [
-  { key: "n", ctrl: true, label: "Új szerződés", action: "/create" },
-  { key: "k", ctrl: true, label: "Keresés fókusz", action: "focus-search" },
-  { key: "h", ctrl: true, label: "Kezdőlap", action: "/dashboard" },
-  { key: "t", ctrl: true, label: "Sablonok", action: "/templates" },
-  { key: ",", ctrl: true, label: "Beállítások", action: "/settings" },
+const shortcutDefs = [
+  { key: "n", ctrl: true, labelKey: "shortcuts.newContract", action: "/create" },
+  { key: "k", ctrl: true, labelKey: "shortcuts.focusSearch", action: "focus-search" },
+  { key: "h", ctrl: true, labelKey: "shortcuts.home", action: "/dashboard" },
+  { key: "t", ctrl: true, labelKey: "shortcuts.templates", action: "/templates" },
+  { key: ",", ctrl: true, labelKey: "shortcuts.settings", action: "/settings" },
 ];
 
 export function useKeyboardShortcuts() {
@@ -47,12 +48,12 @@ export function useKeyboardShortcuts() {
 
       const isCtrlOrMeta = e.ctrlKey || e.metaKey;
 
-      for (const shortcut of shortcuts) {
+      for (const shortcut of shortcutDefs) {
         if (shortcut.ctrl && isCtrlOrMeta && e.key.toLowerCase() === shortcut.key) {
           e.preventDefault();
           if (shortcut.action === "focus-search") {
             const searchInput = document.querySelector<HTMLInputElement>(
-              'input[placeholder*="Keresés"]'
+              'input[type="search"], input[placeholder]'
             );
             if (searchInput) {
               searchInput.focus();
@@ -83,6 +84,8 @@ export default function KeyboardShortcutsHelp({
   open: boolean;
   onClose: () => void;
 }) {
+  const { t } = useI18n();
+
   if (!open) return null;
 
   return (
@@ -92,7 +95,7 @@ export default function KeyboardShortcutsHelp({
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full p-6">
           <div className="flex justify-between items-center mb-5">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Billentyűparancsok
+              {t("shortcuts.title")}
             </h2>
             <button
               onClick={onClose}
@@ -114,13 +117,13 @@ export default function KeyboardShortcutsHelp({
             </button>
           </div>
           <div className="space-y-2">
-            {shortcuts.map((s) => (
+            {shortcutDefs.map((s) => (
               <div
                 key={s.key}
                 className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
               >
                 <span className="text-sm text-gray-700 dark:text-gray-300">
-                  {s.label}
+                  {t(s.labelKey)}
                 </span>
                 <kbd className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono text-gray-600 dark:text-gray-400 border dark:border-gray-600">
                   {s.ctrl && <span>Ctrl</span>}
@@ -131,7 +134,7 @@ export default function KeyboardShortcutsHelp({
             ))}
             <div className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
               <span className="text-sm text-gray-700 dark:text-gray-300">
-                Súgó megnyitása/bezárása
+                {t("shortcuts.toggleHelp")}
               </span>
               <kbd className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono text-gray-600 dark:text-gray-400 border dark:border-gray-600">
                 ?
@@ -139,7 +142,7 @@ export default function KeyboardShortcutsHelp({
             </div>
             <div className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
               <span className="text-sm text-gray-700 dark:text-gray-300">
-                Bezárás / Fókusz elvétele
+                {t("shortcuts.closeBlur")}
               </span>
               <kbd className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono text-gray-600 dark:text-gray-400 border dark:border-gray-600">
                 Esc
@@ -147,7 +150,7 @@ export default function KeyboardShortcutsHelp({
             </div>
           </div>
           <p className="text-xs text-gray-400 mt-4 text-center">
-            Nyomj <kbd className="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-[10px] font-mono">?</kbd> billentyűt bárhol az alkalmazásban
+            {t("shortcuts.helpHint", { key: "?" })}
           </p>
         </div>
       </div>

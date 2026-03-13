@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useI18n } from "@/lib/i18n";
 
 interface Version {
   id: string;
@@ -44,11 +45,12 @@ function diffLines(oldLines: string[], newLines: string[]): { type: "same" | "ad
 }
 
 export default function VersionDiff({ versions }: { versions: Version[] }) {
+  const { t } = useI18n();
   const [leftIdx, setLeftIdx] = useState(versions.length > 1 ? 1 : 0);
   const [rightIdx, setRightIdx] = useState(0);
 
   if (versions.length < 2) {
-    return <p className="text-sm text-gray-400 py-4 text-center">Legalább 2 verzió szükséges az összehasonlításhoz.</p>;
+    return <p className="text-sm text-gray-400 py-4 text-center">{t("versionDiff.minVersions")}</p>;
   }
 
   const oldLines = stripHtml(versions[leftIdx].contentHtml);
@@ -61,14 +63,14 @@ export default function VersionDiff({ versions }: { versions: Version[] }) {
     <div>
       <div className="flex items-center gap-3 mb-4">
         <div className="flex-1">
-          <label className="block text-xs text-gray-500 mb-1">Régi verzió</label>
+          <label className="block text-xs text-gray-500 mb-1">{t("versionDiff.oldVersion")}</label>
           <select
             value={leftIdx}
             onChange={(e) => setLeftIdx(Number(e.target.value))}
             className="w-full px-3 py-1.5 border rounded-lg text-sm"
           >
             {versions.map((v, i) => (
-              <option key={v.id} value={i}>v{v.version} — {v.changeNote || `${v.version}. verzió`}</option>
+              <option key={v.id} value={i}>v{v.version} — {v.changeNote || t("versionDiff.versionLabel", { num: String(v.version) })}</option>
             ))}
           </select>
         </div>
@@ -78,20 +80,20 @@ export default function VersionDiff({ versions }: { versions: Version[] }) {
           </svg>
         </div>
         <div className="flex-1">
-          <label className="block text-xs text-gray-500 mb-1">Új verzió</label>
+          <label className="block text-xs text-gray-500 mb-1">{t("versionDiff.newVersion")}</label>
           <select
             value={rightIdx}
             onChange={(e) => setRightIdx(Number(e.target.value))}
             className="w-full px-3 py-1.5 border rounded-lg text-sm"
           >
             {versions.map((v, i) => (
-              <option key={v.id} value={i}>v{v.version} — {v.changeNote || `${v.version}. verzió`}</option>
+              <option key={v.id} value={i}>v{v.version} — {v.changeNote || t("versionDiff.versionLabel", { num: String(v.version) })}</option>
             ))}
           </select>
         </div>
       </div>
 
-      <p className="text-xs text-gray-400 mb-3">{changes} változás</p>
+      <p className="text-xs text-gray-400 mb-3">{t("versionDiff.changes", { count: String(changes) })}</p>
 
       <div className="bg-gray-50 rounded-lg border max-h-96 overflow-y-auto text-sm font-mono">
         {diff.map((line, i) => (

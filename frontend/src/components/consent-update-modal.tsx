@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { useAuth } from "@/lib/auth-store";
 import api from "@/lib/api";
+import { useI18n } from "@/lib/i18n";
 
 export default function ConsentUpdateModal() {
+  const { t } = useI18n();
   const { requiresConsentUpdate, clearConsentUpdate } = useAuth();
   const [accepted, setAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -19,7 +21,7 @@ export default function ConsentUpdateModal() {
       await api.post("/auth/update-consent");
       clearConsentUpdate();
     } catch {
-      setError("Hiba történt. Kérjük, próbáld újra.");
+      setError(t("consent.error"));
     } finally {
       setLoading(false);
     }
@@ -35,13 +37,12 @@ export default function ConsentUpdateModal() {
             </svg>
           </div>
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            Frissített feltételek
+            {t("consent.title")}
           </h2>
         </div>
 
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 leading-relaxed">
-          Az Általános Szerződési Feltételeink és Adatvédelmi Tájékoztatónk frissült.
-          A szolgáltatás további használatához kérjük, fogadd el a módosított feltételeket.
+          {t("consent.description")}
         </p>
 
         <div className="flex gap-3 mb-5">
@@ -51,7 +52,7 @@ export default function ConsentUpdateModal() {
             rel="noopener noreferrer"
             className="text-sm text-[#198296] hover:underline font-medium"
           >
-            ÁSZF megtekintése
+            {t("consent.viewTerms")}
           </a>
           <span className="text-gray-300 dark:text-gray-600">|</span>
           <a
@@ -60,7 +61,7 @@ export default function ConsentUpdateModal() {
             rel="noopener noreferrer"
             className="text-sm text-[#198296] hover:underline font-medium"
           >
-            Adatvédelmi Tájékoztató
+            {t("consent.viewPrivacy")}
           </a>
         </div>
 
@@ -72,7 +73,7 @@ export default function ConsentUpdateModal() {
             className="mt-0.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
           <span className="text-sm text-gray-700 dark:text-gray-300 leading-snug">
-            Elolvastam és elfogadom a frissített ÁSZF-et és Adatvédelmi Tájékoztatót
+            {t("consent.acceptLabel")}
           </span>
         </label>
 
@@ -85,7 +86,7 @@ export default function ConsentUpdateModal() {
           disabled={!accepted || loading}
           className="w-full py-2.5 px-4 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
         >
-          {loading ? "Feldolgozás..." : "Elfogadom"}
+          {loading ? t("consent.processing") : t("consent.accept")}
         </button>
       </div>
     </div>

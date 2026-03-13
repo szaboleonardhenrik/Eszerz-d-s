@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useI18n } from "@/lib/i18n";
 
 interface QrSigningModalProps {
   open: boolean;
@@ -10,6 +11,7 @@ interface QrSigningModalProps {
 }
 
 export default function QrSigningModal({ open, onClose, signerName, signToken }: QrSigningModalProps) {
+  const { t } = useI18n();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [signUrl, setSignUrl] = useState("");
 
@@ -96,7 +98,7 @@ export default function QrSigningModal({ open, onClose, signerName, signToken }:
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-sm w-full p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-              Aláírás QR kód
+              {t("qrModal.title")}
             </h2>
             <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
               <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -106,7 +108,7 @@ export default function QrSigningModal({ open, onClose, signerName, signToken }:
           </div>
 
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            {signerName} számára készített aláírás link QR kódja. Olvassa be mobilról az aláíráshoz.
+            {t("qrModal.description", { name: signerName })}
           </p>
 
           <div className="flex justify-center mb-4 p-4 bg-white rounded-xl border dark:border-gray-600">
@@ -124,12 +126,12 @@ export default function QrSigningModal({ open, onClose, signerName, signToken }:
               className="px-3 py-2 text-xs font-medium text-white rounded-lg"
               style={{ backgroundColor: "#198296" }}
             >
-              Másolás
+              {t("qrModal.copy")}
             </button>
           </div>
 
           <p className="text-[11px] text-gray-400 text-center">
-            A link 7 napig érvényes az utolsó kiadástól számítva
+            {t("qrModal.validity")}
           </p>
         </div>
       </div>

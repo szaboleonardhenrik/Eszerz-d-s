@@ -3,7 +3,7 @@
 import { useI18n, Locale } from "@/lib/i18n";
 
 export default function LanguageSwitcher({ variant = "dark" }: { variant?: "dark" | "light" }) {
-  const { locale, setLocale } = useI18n();
+  const { locale, setLocale, t } = useI18n();
 
   const isDark = variant === "dark";
 
@@ -15,7 +15,7 @@ export default function LanguageSwitcher({ variant = "dark" }: { variant?: "dark
           ? "hover:bg-white/10 text-white/80"
           : "hover:bg-[#F0F5F7] text-[#4A6575]"
       }`}
-      title={locale === "hu" ? "Váltás angolra" : "Magyarra váltás"}
+      title={locale === "hu" ? t("languageSwitcher.switchToEnglish") : t("languageSwitcher.switchToHungarian")}
     >
       <span className="uppercase">{locale === "hu" ? "EN" : "HU"}</span>
     </button>

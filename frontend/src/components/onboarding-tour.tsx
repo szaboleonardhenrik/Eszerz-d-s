@@ -2,42 +2,43 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useI18n } from "@/lib/i18n";
 
 interface TourStep {
   selector: string;
   fallbackSelectors?: string[];
-  title: string;
-  text: string;
+  titleKey: string;
+  textKey: string;
 }
 
 const TOUR_STEPS: TourStep[] = [
   {
     selector: 'a[href="/create"]',
-    title: "Új szerződés",
-    text: "Kattintson ide új szerződés létrehozásához. Válasszon sablont vagy töltse fel sajátját.",
+    titleKey: "tour.newContract",
+    textKey: "tour.newContractDesc",
   },
   {
-    selector: 'input[placeholder*="Keresés"]',
-    fallbackSelectors: ['input[type="search"]', 'input[placeholder*="keres"]'],
-    title: "Keresés",
-    text: "Keressen szerződések között cím, tartalom vagy aláíró alapján.",
+    selector: 'input[placeholder]',
+    fallbackSelectors: ['input[type="search"]'],
+    titleKey: "tour.search",
+    textKey: "tour.searchDesc",
   },
   {
-    selector: '[title="Értesítések"]',
-    fallbackSelectors: ['[aria-label="Értesítések"]', '[data-tour="notifications"]', 'button svg path[d*="M15 17h5l-1.405"]'],
-    title: "Értesítések",
-    text: "Itt látja az értesítéseit az aláírásokról és változásokról.",
+    selector: '[data-tour="notifications"]',
+    fallbackSelectors: ['button svg path[d*="M15 17h5l-1.405"]'],
+    titleKey: "tour.notifications",
+    textKey: "tour.notificationsDesc",
   },
   {
     selector: '[data-tour="theme-toggle"]',
-    fallbackSelectors: ['[title="Sötét mód"]', '[title="Világos mód"]', '[aria-label="Téma váltás"]', 'button:has(svg path[d*="M20.354"])'],
-    title: "Téma váltás",
-    text: "Váltson sötét módra a kényelmesebb munkához.",
+    fallbackSelectors: ['button:has(svg path[d*="M20.354"])'],
+    titleKey: "tour.themeSwitch",
+    textKey: "tour.themeSwitchDesc",
   },
   {
     selector: 'a[href="/settings"]',
-    title: "Beállítások",
-    text: "A beállításokban kezelheti profilját, csapatát és előfizetését.",
+    titleKey: "shortcuts.settings",
+    textKey: "tour.settingsDesc",
   },
 ];
 
@@ -62,6 +63,7 @@ function findElement(step: TourStep): Element | null {
 }
 
 export default function OnboardingTour() {
+  const { t } = useI18n();
   const [active, setActive] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [rect, setRect] = useState<DOMRect | null>(null);
@@ -297,12 +299,12 @@ export default function OnboardingTour() {
 
           {/* Title */}
           <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1.5">
-            {stepData?.title}
+            {stepData ? t(stepData.titleKey) : ""}
           </h3>
 
           {/* Text */}
           <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
-            {stepData?.text}
+            {stepData ? t(stepData.textKey) : ""}
           </p>
 
           {/* Buttons */}
@@ -311,7 +313,7 @@ export default function OnboardingTour() {
               onClick={handleSkip}
               className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
             >
-              Kihagyás
+              {t("tour.skip")}
             </button>
             <div className="flex gap-2">
               {!isFirst && (
@@ -319,7 +321,7 @@ export default function OnboardingTour() {
                   onClick={handlePrev}
                   className="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
                 >
-                  Előző
+                  {t("tour.previous")}
                 </button>
               )}
               <button
@@ -329,7 +331,7 @@ export default function OnboardingTour() {
                 onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#146d7d")}
                 onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#198296")}
               >
-                {isLast ? "Befejezés" : "Következő"}
+                {isLast ? t("tour.finish") : t("tour.next")}
               </button>
             </div>
           </div>

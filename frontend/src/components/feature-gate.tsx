@@ -3,15 +3,9 @@ import Link from "next/link";
 import { useAuth } from "@/lib/auth-store";
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
+import { useI18n } from "@/lib/i18n";
 
 const tierOrder = ["free", "starter", "medium", "premium", "enterprise"];
-
-const tierLabels: Record<string, string> = {
-  starter: "Kezdő",
-  medium: "Közepes",
-  premium: "Prémium",
-  enterprise: "Nagyvállalati",
-};
 
 // Cache flags globally so we don't re-fetch on every gate
 let flagsCache: Record<string, boolean> | null = null;
@@ -106,8 +100,17 @@ function UpgradePrompt({
   featureKey?: string;
   tier?: string;
 }) {
-  const label = featureName ?? featureKey ?? "Ez a funkció";
-  const tierName = tier ? tierLabels[tier] || tier : "magasabb";
+  const { t } = useI18n();
+
+  const tierLabels: Record<string, string> = {
+    starter: t("featureGate.tierStarter"),
+    medium: t("featureGate.tierMedium"),
+    premium: t("featureGate.tierPremium"),
+    enterprise: t("featureGate.tierEnterprise"),
+  };
+
+  const label = featureName ?? featureKey ?? t("featureGate.defaultFeature");
+  const tierName = tier ? tierLabels[tier] || tier : t("featureGate.tierHigher");
 
   return (
     <div className="relative">
@@ -130,10 +133,10 @@ function UpgradePrompt({
             </svg>
           </div>
           <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">
-            {label} {tierName} csomagban érhető el
+            {t("featureGate.availableIn", { label, tier: tierName })}
           </h3>
           <p className="text-sm text-gray-500 mb-4">
-            Frissítsd az előfizetésed a teljes funkcionalitásért.
+            {t("featureGate.upgradeDesc")}
           </p>
           <Link
             href="/settings/billing"
@@ -147,7 +150,7 @@ function UpgradePrompt({
                 d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
               />
             </svg>
-            Csomag frissítése
+            {t("featureGate.upgradePlan")}
           </Link>
         </div>
       </div>

@@ -3,10 +3,12 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
+import { useI18n } from "@/lib/i18n";
 
 const STORAGE_KEY = "onboarding_completed";
 
 export default function OnboardingModal() {
+  const { t } = useI18n();
   const [visible, setVisible] = useState(false);
   const [step, setStep] = useState(0);
   const [companyName, setCompanyName] = useState("");
@@ -65,13 +67,13 @@ export default function OnboardingModal() {
                 <span className="text-white font-bold text-2xl">L</span>
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-3">
-                {"\u00DCdv\u00f6z\u00f6lj\u00fck!"}
+                {t("onboardingModal.welcome")}
               </h2>
               <p className="text-gray-500 mb-2 leading-relaxed">
-                {"A Legitas seg\u00edt neked szerz\u0151d\u00e9seket l\u00e9trehozni, al\u00e1\u00edratni \u00e9s kezelni \u2014 egyszer\u0171en \u00e9s gyorsan."}
+                {t("onboardingModal.welcomeDesc")}
               </p>
               <p className="text-gray-400 text-sm">
-                {"Sablonok, digit\u00e1lis al\u00e1\u00edr\u00e1s, csapatkezel\u00e9s \u00e9s API \u2014 minden egy helyen."}
+                {t("onboardingModal.welcomeFeatures")}
               </p>
             </div>
           )}
@@ -80,27 +82,27 @@ export default function OnboardingModal() {
           {step === 1 && (
             <div>
               <h2 className="text-xl font-bold text-gray-900 mb-2 text-center">
-                {"C\u00e9gadatok"}
+                {t("onboardingModal.companyTitle")}
               </h2>
               <p className="text-sm text-gray-500 mb-6 text-center">
-                {"T\u00f6ltsd ki a c\u00e9ged adatait, vagy ugorj tov\u00e1bb \u2014 k\u00e9s\u0151bb is megadhatod."}
+                {t("onboardingModal.companyDesc")}
               </p>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {"C\u00e9gn\u00e9v"}
+                    {t("onboardingModal.companyName")}
                   </label>
                   <input
                     type="text"
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
-                    placeholder={"pl. P\u00e9lda Kft."}
+                    placeholder={t("onboardingModal.companyPlaceholder")}
                     className="w-full px-4 py-2.5 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {"Ad\u00f3sz\u00e1m"}
+                    {t("onboardingModal.taxNumber")}
                   </label>
                   <input
                     type="text"
@@ -118,31 +120,31 @@ export default function OnboardingModal() {
           {step === 2 && (
             <div>
               <h2 className="text-xl font-bold text-gray-900 mb-2 text-center">
-                {"Kezdj\u00fcnk!"}
+                {t("onboardingModal.letsStart")}
               </h2>
               <p className="text-sm text-gray-500 mb-6 text-center">
-                {"V\u00e1laszd ki, mit szeretn\u00e9l el\u0151sz\u00f6r csin\u00e1lni:"}
+                {t("onboardingModal.chooseAction")}
               </p>
               <div className="space-y-3">
                 <QuickAction
                   href="/templates"
                   icon="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6z"
-                  title={"B\u00f6ng\u00e9szd a sablonokat"}
-                  description={"V\u00e1lassz el\u0151re elk\u00e9sz\u00edtett sablonokb\u00f3l"}
+                  title={t("onboardingModal.browseTemplates")}
+                  description={t("onboardingModal.browseTemplatesDesc")}
                   onClick={finish}
                 />
                 <QuickAction
                   href="/create"
                   icon="M12 4v16m8-8H4"
-                  title={"Hozd l\u00e9tre az els\u0151 szerz\u0151d\u00e9sed"}
-                  description={"Ind\u00edts egy \u00faj szerz\u0151d\u00e9st nullar\u00f3l"}
+                  title={t("onboardingModal.createFirst")}
+                  description={t("onboardingModal.createFirstDesc")}
                   onClick={finish}
                 />
                 <QuickAction
                   href="/settings/team"
                   icon="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
-                  title={"H\u00edvj meg csapattagokat"}
-                  description={"Dolgozzatok egy\u00fctt a szerz\u0151d\u00e9seken"}
+                  title={t("onboardingModal.inviteTeam")}
+                  description={t("onboardingModal.inviteTeamDesc")}
                   onClick={finish}
                 />
               </div>
@@ -157,14 +159,14 @@ export default function OnboardingModal() {
               onClick={() => setStep(step - 1)}
               className="text-sm text-gray-500 hover:text-gray-700 font-medium"
             >
-              {"Vissza"}
+              {t("onboardingModal.back")}
             </button>
           ) : (
             <button
               onClick={finish}
               className="text-sm text-gray-400 hover:text-gray-600"
             >
-              {"Kihagy\u00e1s"}
+              {t("onboardingModal.skip")}
             </button>
           )}
 
@@ -173,7 +175,7 @@ export default function OnboardingModal() {
               onClick={() => setStep(step + 1)}
               className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition text-sm"
             >
-              {"Tov\u00e1bb"}
+              {t("onboardingModal.next")}
             </button>
           ) : (
             <button
@@ -181,7 +183,7 @@ export default function OnboardingModal() {
               disabled={saving}
               className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition text-sm disabled:opacity-50"
             >
-              {saving ? "Ment\u00e9s..." : "Befejez\u00e9s"}
+              {saving ? t("onboardingModal.saving") : t("onboardingModal.finish")}
             </button>
           )}
         </div>

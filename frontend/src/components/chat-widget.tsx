@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useAuth } from "@/lib/auth-store";
 import Link from "next/link";
 import api from "@/lib/api";
+import { useI18n } from "@/lib/i18n";
 
 interface Message {
   id: string;
@@ -12,13 +13,8 @@ interface Message {
   timestamp: Date;
 }
 
-const EXAMPLE_QUESTIONS = [
-  "Mely szerződések járnak le hamarosan?",
-  "Hány szerződés vár aláírásra?",
-  "Mi a legutóbbi szerződés státusza?",
-];
-
 export default function ChatWidget() {
+  const { t } = useI18n();
   const user = useAuth((s) => s.user);
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -26,6 +22,12 @@ export default function ChatWidget() {
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  const EXAMPLE_QUESTIONS = [
+    t("chat.exampleQ1"),
+    t("chat.exampleQ2"),
+    t("chat.exampleQ3"),
+  ];
 
   const tier = user?.subscriptionTier ?? "free";
   const hasAccess = tier === "basic" || tier === "pro" || tier === "enterprise";
@@ -61,7 +63,7 @@ export default function ChatWidget() {
 
     try {
       const res = await api.post("/chat", { question: text });
-      const answer = res.data?.data?.answer ?? "Nem sikerült választ kapni.";
+      const answer = res.data?.data?.answer ?? t("chat.noAnswer");
 
       const aiMessage: Message = {
         id: crypto.randomUUID(),
@@ -73,8 +75,8 @@ export default function ChatWidget() {
     } catch (err: any) {
       const errorMsg =
         err?.response?.status === 429
-          ? "Túl sok kérés. Kérjük, várj egy percet és próbáld újra."
-          : "Hiba történt. Kérjük, próbáld újra később.";
+          ? t("chat.rateLimitError")
+          : t("chat.genericError");
 
       setMessages((prev) => [
         ...prev,
@@ -107,7 +109,7 @@ export default function ChatWidget() {
             ? "bg-gray-600 hover:bg-gray-700 rotate-0"
             : "bg-blue-600 hover:bg-blue-700 hover:scale-110"
         }`}
-        aria-label={open ? "Chat bezárása" : "Chat megnyitása"}
+        aria-label={open ? t("chat.closeChat") : t("chat.openChat")}
       >
         {open ? (
           <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -138,8 +140,8 @@ export default function ChatWidget() {
                 </svg>
               </div>
               <div>
-                <h3 className="text-white font-semibold text-sm">Szerzodes Asszisztens</h3>
-                <p className="text-blue-100 text-xs">AI alapu segitseg</p>
+                <h3 className="text-white font-semibold text-sm">{t("chat.assistantTitle")}</h3>
+                <p className="text-blue-100 text-xs">{t("chat.assistantSubtitle")}</p>
               </div>
             </div>
             <button
@@ -162,10 +164,10 @@ export default function ChatWidget() {
                   </svg>
                 </div>
                 <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                  AI Asszisztens
+                  {t("chat.aiAssistant")}
                 </h4>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                  Frissíts Közepes vagy Prémium csomagra az AI asszisztens használatához.
+                  {t("chat.upgradeDesc")}
                 </p>
                 <Link
                   href="/settings/billing"
@@ -174,7 +176,7 @@ export default function ChatWidget() {
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                   </svg>
-                  Csomag frissítése
+                  {t("chat.upgradePlan")}
                 </Link>
               </div>
             </div>
@@ -190,7 +192,7 @@ export default function ChatWidget() {
                       </svg>
                     </div>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                      Kérdezz bármit a szerződéseiddel kapcsolatban!
+                      {t("chat.emptyPrompt")}
                     </p>
                     <div className="space-y-2 w-full">
                       {EXAMPLE_QUESTIONS.map((q) => (
@@ -246,7 +248,7 @@ export default function ChatWidget() {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Írja be a kérdését..."
+                    placeholder={t("chat.inputPlaceholder")}
                     rows={1}
                     className="flex-1 resize-none rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent max-h-24"
                     disabled={loading}
