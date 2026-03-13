@@ -7,11 +7,14 @@ import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { initSentry } from './sentry';
 import { SentryExceptionFilter } from './common/sentry-exception.filter';
+import { createAppLogger } from './common/logger.config';
 
 initSentry();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { rawBody: true });
+
+  app.useLogger(createAppLogger());
 
   app.setGlobalPrefix('api');
 

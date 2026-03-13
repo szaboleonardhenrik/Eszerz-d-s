@@ -35,6 +35,8 @@ export async function generateStaticParams() {
   return getAllSlugs().map((slug) => ({ slug }));
 }
 
-export default function BlogArticlePage() {
-  return <BlogArticleClient />;
+export default async function BlogArticlePage({ params }: Props) {
+  const { slug } = await params;
+  const article = getArticle(slug);
+  return <BlogArticleClient article={article!} />;
 }
