@@ -61,6 +61,8 @@ model User {
   quoteTemplates  QuoteTemplate[]
   invoices        Invoice[]
   companies       Company[]
+  failedLoginAttempts Int      @default(0) @map("failed_login_attempts")
+  lockedUntil      DateTime?  @map("locked_until")
   googleId         String?    @unique @map("google_id")
   oauthProvider    String?    @map("oauth_provider")
   autoInvoice     Boolean    @default(false) @map("auto_invoice")

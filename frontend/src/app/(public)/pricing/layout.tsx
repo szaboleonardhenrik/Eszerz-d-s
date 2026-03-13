@@ -31,7 +31,10 @@ export const metadata: Metadata = {
     description: "Ingyenes indulás, havi 975 Ft-tól korlátlan szerződéskezelés. Nincs kötöttség.",
     type: "website",
   },
-  alternates: { canonical: "https://legitas.hu/pricing" },
+  alternates: {
+    canonical: "https://legitas.hu/pricing",
+    languages: { "hu": "https://legitas.hu/pricing", "x-default": "https://legitas.hu/pricing" },
+  },
 };
 
 export default function PricingLayout({ children }: { children: React.ReactNode }) {

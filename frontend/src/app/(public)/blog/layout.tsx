@@ -9,7 +9,10 @@ export const metadata: Metadata = {
     description: "Szerződésjogi cikkek, útmutatók és gyakorlati tippek magyar KKV-knak.",
     type: "website",
   },
-  alternates: { canonical: "https://legitas.hu/blog" },
+  alternates: {
+    canonical: "https://legitas.hu/blog",
+    languages: { "hu": "https://legitas.hu/blog", "x-default": "https://legitas.hu/blog" },
+  },
 };
 
 export default function BlogLayout({ children }: { children: React.ReactNode }) {

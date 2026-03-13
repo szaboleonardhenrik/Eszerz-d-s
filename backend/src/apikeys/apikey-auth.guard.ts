@@ -3,12 +3,18 @@ import {
   CanActivate,
   ExecutionContext,
   UnauthorizedException,
+  ForbiddenException,
 } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { ApiKeysService } from './apikeys.service';
+import { REQUIRED_SCOPES_KEY } from './require-scope.decorator';
 
 @Injectable()
 export class ApiKeyGuard implements CanActivate {
-  constructor(private readonly apiKeysService: ApiKeysService) {}
+  constructor(
+    private readonly apiKeysService: ApiKeysService,
+    private readonly reflector: Reflector,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -23,6 +29,21 @@ export class ApiKeyGuard implements CanActivate {
 
     if (!result) {
       throw new UnauthorizedException('Érvénytelen vagy lejárt API kulcs');
+    }
+
+    // Check required scopes
+    const requiredScopes = this.reflector.getAllAndOverride<string[]>(
+      REQUIRED_SCOPES_KEY,
+      [context.getHandler(), context.getClass()],
+    );
+
+    if (requiredScopes && requiredScopes.length > 0) {
+      const missing = requiredScopes.filter(s => !result.scopes.includes(s));
+      if (missing.length > 0) {
+        throw new ForbiddenException(
+          `Hiányzó API kulcs jogosultság: ${missing.join(', ')}`,
+        );
+      }
     }
 
     request.user = {

@@ -3,19 +3,22 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useAuth } from "@/lib/auth-store";
 import api from "@/lib/api";
-import OnboardingModal from "@/components/onboarding-modal";
-import OnboardingTour from "@/components/onboarding-tour";
 import NotificationBell from "@/components/notification-bell";
 import ThemeToggle from "@/components/theme-toggle";
 import LanguageSwitcher from "@/components/language-switcher";
 import KeyboardShortcutsHelp, { useKeyboardShortcuts } from "@/components/keyboard-shortcuts";
-import ChatWidget from "@/components/chat-widget";
 import ConsentUpdateModal from "@/components/consent-update-modal";
 import { useI18n } from "@/lib/i18n";
 import GlobalSearch from "@/components/global-search";
 import MaintenanceBanner from "@/components/maintenance-banner";
+
+// Lazy-load heavy components (code-splitting)
+const OnboardingModal = dynamic(() => import("@/components/onboarding-modal"), { ssr: false });
+const OnboardingTour = dynamic(() => import("@/components/onboarding-tour"), { ssr: false });
+const ChatWidget = dynamic(() => import("@/components/chat-widget"), { ssr: false });
 
 const navItemKeys = [
   { href: "/dashboard", labelKey: "nav.home", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" },

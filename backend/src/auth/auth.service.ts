@@ -21,6 +21,10 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 
 const CURRENT_CONSENT_VERSION = '2026-03-07';
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+const MAX_MFA_ATTEMPTS = 5;
+const MFA_LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
 
 @Injectable()
 export class AuthService {
@@ -88,12 +92,41 @@ export class AuthService {
       throw new UnauthorizedException('Hibás email vagy jelszó');
     }
 
+    // Check account lockout
+    if (user.lockedUntil && user.lockedUntil > new Date()) {
+      const remainingMin = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000);
+      throw new UnauthorizedException(
+        `A fiók ideiglenesen zárolva. Próbáld újra ${remainingMin} perc múlva.`,
+      );
+    }
+
     if (!user.passwordHash) {
       throw new UnauthorizedException('Ez a fiók Google bejelentkezéssel lett létrehozva. Használd a Google gombot.');
     }
     const valid = await bcrypt.compare(dto.password, user.passwordHash);
     if (!valid) {
+      const attempts = user.failedLoginAttempts + 1;
+      const updateData: any = { failedLoginAttempts: attempts };
+      if (attempts >= MAX_LOGIN_ATTEMPTS) {
+        updateData.lockedUntil = new Date(Date.now() + LOCKOUT_DURATION_MS);
+        updateData.failedLoginAttempts = 0;
+      }
+      await this.prisma.user.update({ where: { id: user.id }, data: updateData });
+
+      if (attempts >= MAX_LOGIN_ATTEMPTS) {
+        throw new UnauthorizedException(
+          'Túl sok sikertelen próbálkozás. A fiók 15 percre zárolva.',
+        );
+      }
       throw new UnauthorizedException('Hibás email vagy jelszó');
+    }
+
+    // Reset failed attempts on successful login
+    if (user.failedLoginAttempts > 0) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { failedLoginAttempts: 0, lockedUntil: null },
+      });
     }
 
     // If 2FA enabled, return a temporary MFA token instead
@@ -140,7 +173,12 @@ export class AuthService {
       });
 
       if (user) {
-        // Link Google to existing account
+        // Only link Google to existing account if email is verified
+        if (!user.emailVerified) {
+          throw new UnauthorizedException(
+            'Ez az email cím már regisztrálva van, de nincs megerősítve. Először erősítsd meg az email címedet.',
+          );
+        }
         user = await this.prisma.user.update({
           where: { id: user.id },
           data: { googleId: profile.googleId, oauthProvider: 'google' },
@@ -180,6 +218,14 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
     if (!user || !user.twoFactorSecret) throw new UnauthorizedException('2FA nincs beállítva');
 
+    // Check MFA lockout (reuses the same lockout mechanism as login)
+    if (user.lockedUntil && user.lockedUntil > new Date()) {
+      const remainingMin = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000);
+      throw new UnauthorizedException(
+        `Túl sok sikertelen próbálkozás. Próbáld újra ${remainingMin} perc múlva.`,
+      );
+    }
+
     // Try TOTP code first
     const totpSecret = this.decryptTotpSecret(user.twoFactorSecret);
     const isValid = verifySync({ token: code, secret: totpSecret });
@@ -188,7 +234,21 @@ export class AuthService {
       // Try backup codes
       const codeHash = crypto.createHash('sha256').update(code).digest('hex');
       const backupIdx = user.twoFactorBackup.indexOf(codeHash);
-      if (backupIdx === -1) throw new UnauthorizedException('Érvénytelen kód');
+      if (backupIdx === -1) {
+        // Track failed MFA attempt
+        const attempts = user.failedLoginAttempts + 1;
+        const updateData: any = { failedLoginAttempts: attempts };
+        if (attempts >= MAX_MFA_ATTEMPTS) {
+          updateData.lockedUntil = new Date(Date.now() + MFA_LOCKOUT_DURATION_MS);
+          updateData.failedLoginAttempts = 0;
+        }
+        await this.prisma.user.update({ where: { id: user.id }, data: updateData });
+
+        if (attempts >= MAX_MFA_ATTEMPTS) {
+          throw new UnauthorizedException('Túl sok sikertelen próbálkozás. A fiók 15 percre zárolva.');
+        }
+        throw new UnauthorizedException('Érvénytelen kód');
+      }
 
       // Remove used backup code
       const newBackup = [...user.twoFactorBackup];
@@ -196,6 +256,14 @@ export class AuthService {
       await this.prisma.user.update({
         where: { id: user.id },
         data: { twoFactorBackup: newBackup },
+      });
+    }
+
+    // Reset failed attempts on successful MFA
+    if (user.failedLoginAttempts > 0) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { failedLoginAttempts: 0, lockedUntil: null },
       });
     }
 

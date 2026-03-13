@@ -1,17 +1,38 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { randomBytes, createHmac } from 'crypto';
+import { randomBytes, createHmac, randomUUID } from 'crypto';
 
 const MAX_RETRIES = 3;
 const BACKOFF_BASE_MS = 2000;
 const BACKOFF_MULTIPLIER = 4;
 const AUTO_DISABLE_THRESHOLD = 5;
+const DEDUP_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
+const MAX_DEDUP_ENTRIES = 1000;
 
 @Injectable()
 export class WebhooksService {
   private readonly logger = new Logger(WebhooksService.name);
+  private recentEventIds = new Map<string, number>(); // eventId -> timestamp
 
   constructor(private readonly prisma: PrismaService) {}
+
+  private isDuplicate(webhookId: string, event: string, entityId?: string): boolean {
+    // Evict expired entries periodically
+    if (this.recentEventIds.size > MAX_DEDUP_ENTRIES) {
+      const now = Date.now();
+      for (const [key, ts] of this.recentEventIds) {
+        if (now - ts > DEDUP_WINDOW_MS) this.recentEventIds.delete(key);
+      }
+    }
+
+    const dedupKey = `${webhookId}:${event}:${entityId || ''}`;
+    const existing = this.recentEventIds.get(dedupKey);
+    if (existing && Date.now() - existing < DEDUP_WINDOW_MS) {
+      return true;
+    }
+    this.recentEventIds.set(dedupKey, Date.now());
+    return false;
+  }
 
   async findAllByUser(userId: string) {
     const webhooks = await this.prisma.webhook.findMany({
@@ -107,8 +128,15 @@ export class WebhooksService {
       w.events.split(',').includes(event),
     );
 
+    const entityId = payload?.id || payload?.contractId || '';
+
     for (const webhook of matching) {
-      this.deliverWithRetry(webhook, event, payload).catch(() => {
+      if (this.isDuplicate(webhook.id, event, entityId)) {
+        this.logger.debug(`Webhook ${webhook.id} deduplicated for ${event}:${entityId}`);
+        continue;
+      }
+      const eventId = randomUUID();
+      this.deliverWithRetry(webhook, event, payload, eventId).catch(() => {
         // Background task - errors handled internally
       });
     }
@@ -118,8 +146,10 @@ export class WebhooksService {
     webhook: { id: string; url: string; secret: string; failedCount: number },
     event: string,
     payload: any,
+    eventId: string,
   ) {
     const body = JSON.stringify({
+      id: eventId,
       event,
       timestamp: new Date().toISOString(),
       data: payload,
@@ -132,6 +162,7 @@ export class WebhooksService {
       'Content-Type': 'application/json',
       'X-Webhook-Signature': signature,
       'X-Webhook-Event': event,
+      'X-Webhook-Id': eventId,
     };
 
     let lastError: string | null = null;

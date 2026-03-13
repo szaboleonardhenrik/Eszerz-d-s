@@ -1,16 +1,50 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { createHash } from 'crypto';
 import Anthropic from '@anthropic-ai/sdk';
+
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+const MAX_CACHE_SIZE = 200;
+
+interface CacheEntry<T> {
+  data: T;
+  expiresAt: number;
+}
 
 @Injectable()
 export class AiService {
   private client: Anthropic | null = null;
+  private readonly logger = new Logger(AiService.name);
+  private cache = new Map<string, CacheEntry<any>>();
 
   constructor(private readonly config: ConfigService) {
     const apiKey = this.config.get<string>('ANTHROPIC_API_KEY');
     if (apiKey) {
       this.client = new Anthropic({ apiKey });
     }
+  }
+
+  private getCacheKey(prefix: string, content: string): string {
+    return `${prefix}:${createHash('sha256').update(content).digest('hex')}`;
+  }
+
+  private getFromCache<T>(key: string): T | null {
+    const entry = this.cache.get(key);
+    if (!entry) return null;
+    if (Date.now() > entry.expiresAt) {
+      this.cache.delete(key);
+      return null;
+    }
+    return entry.data as T;
+  }
+
+  private setCache<T>(key: string, data: T): void {
+    // Evict oldest entries if cache is full
+    if (this.cache.size >= MAX_CACHE_SIZE) {
+      const firstKey = this.cache.keys().next().value;
+      if (firstKey) this.cache.delete(firstKey);
+    }
+    this.cache.set(key, { data, expiresAt: Date.now() + CACHE_TTL_MS });
   }
 
   async analyzeContract(contractHtml: string): Promise<{
@@ -23,6 +57,14 @@ export class AiService {
   }> {
     if (!this.client) {
       throw new Error('AI szolgáltatás nincs konfigurálva');
+    }
+
+    const strippedText = contractHtml.replace(/<[^>]*>/g, ' ').substring(0, 8000);
+    const cacheKey = this.getCacheKey('analyze', strippedText);
+    const cached = this.getFromCache<any>(cacheKey);
+    if (cached) {
+      this.logger.debug('AI analysis cache hit');
+      return cached;
     }
 
     const response = await this.client.messages.create({
@@ -42,7 +84,7 @@ export class AiService {
 
 Csak a JSON-t add vissza, semmi mást. A szerződés:
 
-${contractHtml.replace(/<[^>]*>/g, ' ').substring(0, 8000)}`,
+${strippedText}`,
         },
       ],
     });
@@ -57,7 +99,9 @@ ${contractHtml.replace(/<[^>]*>/g, ' ').substring(0, 8000)}`,
       // Extract JSON from response (handle markdown code blocks)
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (!jsonMatch) throw new Error('No JSON found');
-      return { ...JSON.parse(jsonMatch[0]), dataDisclosure };
+      const result = { ...JSON.parse(jsonMatch[0]), dataDisclosure };
+      this.setCache(cacheKey, result);
+      return result;
     } catch {
       return {
         summary: text.substring(0, 500),
@@ -82,6 +126,14 @@ ${contractHtml.replace(/<[^>]*>/g, ' ').substring(0, 8000)}`,
   }> {
     if (!this.client) {
       throw new Error('AI szolgáltatás nincs konfigurálva');
+    }
+
+    const strippedText = contractHtml.replace(/<[^>]*>/g, ' ').substring(0, 8000);
+    const cacheKey = this.getCacheKey('risk', strippedText);
+    const cached = this.getFromCache<any>(cacheKey);
+    if (cached) {
+      this.logger.debug('Risk analysis cache hit');
+      return cached;
     }
 
     const response = await this.client.messages.create({
@@ -122,7 +174,7 @@ ${contractHtml.replace(/<[^>]*>/g, ' ').substring(0, 8000)}`,
 
 Csak a JSON-t add vissza, semmi mást. A szerződés:
 
-${contractHtml.replace(/<[^>]*>/g, ' ').substring(0, 8000)}`,
+${strippedText}`,
         },
       ],
     });
@@ -132,7 +184,9 @@ ${contractHtml.replace(/<[^>]*>/g, ' ').substring(0, 8000)}`,
     try {
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (!jsonMatch) throw new Error('No JSON found');
-      return JSON.parse(jsonMatch[0]);
+      const result = JSON.parse(jsonMatch[0]);
+      this.setCache(cacheKey, result);
+      return result;
     } catch {
       return {
         overallRisk: 'medium',

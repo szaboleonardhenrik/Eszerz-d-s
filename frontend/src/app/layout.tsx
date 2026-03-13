@@ -59,6 +59,13 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  alternates: {
+    canonical: "https://legitas.hu",
+    languages: {
+      "hu": "https://legitas.hu",
+      "x-default": "https://legitas.hu",
+    },
+  },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

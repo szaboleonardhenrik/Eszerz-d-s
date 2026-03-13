@@ -1040,4 +1040,41 @@ export class NotificationsService {
       this.logger.error(`Failed to send signer OTP to ${params.to}`, error);
     }
   }
+
+  // ─── PAYMENT FAILED EMAIL ─────────────────────────────
+
+  async sendPaymentFailedEmail(params: {
+    to: string;
+    name: string;
+    billingUrl: string;
+  }) {
+    try {
+      await this.sendAndLog({
+        from: this.fromEmail,
+        to: params.to,
+        subject: 'Fizetési hiba – Legitas előfizetés',
+        html: this.wrap(
+          `<div style="text-align:center;margin:20px 0 28px;">
+             <div style="display:inline-block;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#fef2f2 0%,#fecaca 100%);text-align:center;line-height:72px;box-shadow:0 4px 16px rgba(239,68,68,0.2);">
+               <span style="font-size:36px;">&#9888;&#65039;</span>
+             </div>
+           </div>
+           <p style="text-align:center;margin:0 0 28px;font-size:22px;font-weight:800;color:#1e293b;">Fizetési hiba</p>
+
+           ${this.greeting(params.name)}
+           ${this.text('Sajnos nem sikerült levonni az előfizetés díját a megadott fizetési módról. Kérjük, frissítse fizetési adatait, hogy elkerülje az előfizetés felfüggesztését.')}
+
+           ${this.btnSimple(params.billingUrl, '&#128179;  Fizetési adatok frissítése')}
+
+           ${this.infoBox('&#9201;', 'Fontos', 'Ha a fizetés nem sikerül a következő próbálkozásnál sem, előfizetése automatikusan visszaáll az ingyenes csomagra.', '#fef2f2', '#fecaca')}
+
+           ${this.hint('Ha kérdése van, forduljon hozzánk bizalommal a support@legitas.hu címen.')}`,
+          { preheader: 'Fizetési hiba az előfizetésnél — frissítse fizetési adatait' },
+        ),
+      }, { type: 'payment_failed' });
+      this.logger.log(`Payment failed email sent to ${params.to}`);
+    } catch (error) {
+      this.logger.error(`Failed to send payment failed email to ${params.to}`, error);
+    }
+  }
 }

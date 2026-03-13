@@ -1,7 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, PayloadTooLargeException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
 import * as path from 'path';
+
+const MAX_PDF_SIZE = 50 * 1024 * 1024; // 50 MB
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
 import {
   S3Client,
   PutObjectCommand,
@@ -40,6 +44,9 @@ export class StorageService {
   }
 
   async uploadPdf(key: string, buffer: Buffer): Promise<string> {
+    if (buffer.length > MAX_PDF_SIZE) {
+      throw new PayloadTooLargeException(`A PDF mérete nem haladhatja meg az 50 MB-ot (jelenlegi: ${(buffer.length / 1024 / 1024).toFixed(1)} MB)`);
+    }
     if (this.useLocal) {
       return this.saveLocal(key, buffer);
     }
@@ -55,6 +62,9 @@ export class StorageService {
   }
 
   async uploadImage(key: string, buffer: Buffer): Promise<string> {
+    if (buffer.length > MAX_IMAGE_SIZE) {
+      throw new PayloadTooLargeException(`A kép mérete nem haladhatja meg az 5 MB-ot (jelenlegi: ${(buffer.length / 1024 / 1024).toFixed(1)} MB)`);
+    }
     if (this.useLocal) {
       return this.saveLocal(key, buffer);
     }
@@ -109,6 +119,9 @@ export class StorageService {
   }
 
   async uploadFile(key: string, buffer: Buffer, contentType: string): Promise<string> {
+    if (buffer.length > MAX_FILE_SIZE) {
+      throw new PayloadTooLargeException(`A fájl mérete nem haladhatja meg az 50 MB-ot (jelenlegi: ${(buffer.length / 1024 / 1024).toFixed(1)} MB)`);
+    }
     if (this.useLocal) {
       return this.saveLocal(key, buffer);
     }

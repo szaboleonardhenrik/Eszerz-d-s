@@ -15,7 +15,10 @@ export const metadata: Metadata = {
     title: "Legitas - Online Szerződéskezelő Platform",
     description: "Készíts szerződést percek alatt. Magyar KKV-knak.",
   },
-  alternates: { canonical: "https://legitas.hu/landing" },
+  alternates: {
+    canonical: "https://legitas.hu/landing",
+    languages: { "hu": "https://legitas.hu/landing", "x-default": "https://legitas.hu/landing" },
+  },
 };
 
 export default function LandingLayout({ children }: { children: React.ReactNode }) {

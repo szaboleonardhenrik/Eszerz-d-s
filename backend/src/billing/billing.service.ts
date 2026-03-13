@@ -1,6 +1,7 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import Stripe from 'stripe';
 
 @Injectable()
@@ -14,6 +15,7 @@ export class BillingService {
   constructor(
     private readonly config: ConfigService,
     private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
   ) {
     const secretKey = this.config.get<string>('STRIPE_SECRET_KEY', '');
     this.stripe = new Stripe(secretKey);
@@ -137,6 +139,23 @@ export class BillingService {
             data: { subscriptionTier: 'free' },
           });
           this.logger.log(`User ${user.id} subscription canceled, reverted to free`);
+        }
+        break;
+      }
+
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object as Stripe.Invoice;
+        const customerId = invoice.customer as string;
+        const user = await this.prisma.user.findFirst({
+          where: { stripeCustomerId: customerId },
+        });
+        if (user) {
+          this.logger.warn(`Payment failed for user ${user.id} (${user.email})`);
+          this.notificationsService.sendPaymentFailedEmail({
+            to: user.email,
+            name: user.name,
+            billingUrl: `${this.frontendUrl}/settings/billing`,
+          }).catch(err => this.logger.error('Failed to send payment failure email', err));
         }
         break;
       }

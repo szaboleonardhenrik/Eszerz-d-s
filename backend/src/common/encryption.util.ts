@@ -4,20 +4,25 @@ const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 16;
 const AUTH_TAG_LENGTH = 16;
 
+let cachedKey: Buffer | null = null;
+
 function getEncryptionKey(): Buffer {
+  if (cachedKey) return cachedKey;
+
   const envKey = process.env.ENCRYPTION_KEY;
-  if (envKey) {
-    // Expect a 64-char hex string (32 bytes)
-    return Buffer.from(envKey, 'hex');
+  if (!envKey) {
+    throw new Error(
+      'ENCRYPTION_KEY environment variable is required. ' +
+      'Generate one with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"',
+    );
   }
 
-  // Fallback: derive key from JWT_SECRET
-  const jwtSecret = process.env.JWT_SECRET;
-  if (!jwtSecret) {
-    throw new Error('Neither ENCRYPTION_KEY nor JWT_SECRET is set');
+  if (envKey.length !== 64 || !/^[0-9a-fA-F]+$/.test(envKey)) {
+    throw new Error('ENCRYPTION_KEY must be a 64-character hex string (32 bytes)');
   }
 
-  return crypto.pbkdf2Sync(jwtSecret, 'legitas-2fa-encryption-salt', 100000, 32, 'sha256');
+  cachedKey = Buffer.from(envKey, 'hex');
+  return cachedKey;
 }
 
 /**
