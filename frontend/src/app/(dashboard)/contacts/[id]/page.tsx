@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
+import { useI18n } from "@/lib/i18n";
 
 interface Partner {
   id: string;
@@ -36,22 +37,11 @@ interface TimelineEvent {
   signer: { name: string; email: string } | null;
 }
 
-const statusLabels: Record<string, string> = {
-  draft: "Piszkozat", sent: "Elküldve", partially_signed: "Részben aláírt",
-  completed: "Teljesítve", declined: "Visszautasítva", expired: "Lejárt", cancelled: "Visszavonva",
-};
 const statusColors: Record<string, string> = {
   draft: "bg-gray-100 text-gray-600", sent: "bg-blue-100 text-blue-700",
   partially_signed: "bg-yellow-100 text-yellow-700", completed: "bg-green-100 text-green-700",
   declined: "bg-red-100 text-red-700", expired: "bg-orange-100 text-orange-700",
   cancelled: "bg-gray-100 text-gray-500",
-};
-const eventLabels: Record<string, string> = {
-  contract_created: "Szerződés létrehozva", email_sent: "Email elküldve",
-  document_viewed: "Megtekintve", signed: "Aláírva", declined: "Visszautasítva",
-  reminder_sent: "Emlékeztető küldve", expired: "Lejárt", downloaded: "Letöltve",
-  contract_duplicated: "Duplikálva", contract_updated: "Módosítva",
-  contract_archived: "Archiválva", contract_unarchived: "Visszaállítva",
 };
 const eventIcons: Record<string, { color: string; icon: string }> = {
   signed: { color: "bg-green-500", icon: "M5 13l4 4L19 7" },
@@ -66,6 +56,7 @@ const defaultEventIcon = { color: "bg-gray-400", icon: "M13 16h-1v-4h-1m1-4h.01M
 export default function PartnerDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { t } = useI18n();
   const [partner, setPartner] = useState<Partner | null>(null);
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,6 +64,36 @@ export default function PartnerDetailPage() {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ company: "", phone: "", taxNumber: "", address: "", notes: "", group: "" });
   const [saving, setSaving] = useState(false);
+
+  const statusLabels: Record<string, string> = {
+    draft: t("contracts.status.draft"), sent: t("contracts.status.sent"),
+    partially_signed: t("contracts.status.partially_signed"),
+    completed: t("contracts.status.completed"), declined: t("contracts.status.declined"),
+    expired: t("contracts.status.expired"), cancelled: t("contracts.status.cancelled"),
+  };
+
+  const eventLabels: Record<string, string> = {
+    contract_created: t("contactDetail.eventContractCreated"),
+    email_sent: t("contactDetail.eventEmailSent"),
+    document_viewed: t("contactDetail.eventDocumentViewed"),
+    signed: t("contactDetail.eventSigned"),
+    declined: t("contactDetail.eventDeclined"),
+    reminder_sent: t("contactDetail.eventReminderSent"),
+    expired: t("contactDetail.eventExpired"),
+    downloaded: t("contactDetail.eventDownloaded"),
+    contract_duplicated: t("contactDetail.eventDuplicated"),
+    contract_updated: t("contactDetail.eventUpdated"),
+    contract_archived: t("contactDetail.eventArchived"),
+    contract_unarchived: t("contactDetail.eventUnarchived"),
+  };
+
+  const groups = [
+    t("contactDetail.groupClients"),
+    t("contactDetail.groupSuppliers"),
+    t("contactDetail.groupSubcontractors"),
+    t("contactDetail.groupPartners"),
+    t("contactDetail.groupOther"),
+  ];
 
   useEffect(() => {
     loadPartner();
@@ -86,7 +107,7 @@ export default function PartnerDetailPage() {
       setPartner(res.data.data);
       const p = res.data.data;
       setForm({ company: p.company ?? "", phone: p.phone ?? "", taxNumber: p.taxNumber ?? "", address: p.address ?? "", notes: p.notes ?? "", group: p.group ?? "" });
-    } catch { toast.error("Partner nem található"); router.push("/contacts"); }
+    } catch { toast.error(t("contactDetail.loadError")); router.push("/contacts"); }
     finally { setLoading(false); }
   };
 
@@ -101,10 +122,10 @@ export default function PartnerDetailPage() {
     setSaving(true);
     try {
       await api.put(`/contacts/${id}`, form);
-      toast.success("Partner adatok mentve");
+      toast.success(t("contactDetail.saveSuccess"));
       setEditing(false);
       loadPartner();
-    } catch { toast.error("Hiba a mentéskor"); }
+    } catch { toast.error(t("contactDetail.saveError")); }
     finally { setSaving(false); }
   };
 
@@ -122,13 +143,11 @@ export default function PartnerDetailPage() {
   const signedContracts = partner.contracts?.filter(c => c.signers.some(s => s.status === "signed")).length ?? 0;
   const totalContracts = partner.contracts?.length ?? 0;
 
-  const groups = ["Ügyfelek", "Beszállítók", "Alvállalkozók", "Partnerek", "Egyéb"];
-
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-2 text-sm text-gray-400">
-        <Link href="/contacts" className="hover:text-[#198296] transition">Partnerek</Link>
+        <Link href="/contacts" className="hover:text-[#198296] transition">{t("nav.contacts")}</Link>
         <span>/</span>
         <span className="text-gray-600 dark:text-gray-300">{partner.name}</span>
       </div>
@@ -157,51 +176,51 @@ export default function PartnerDetailPage() {
             <div className="grid grid-cols-2 gap-3 mb-4">
               <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 text-center">
                 <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{totalContracts}</p>
-                <p className="text-xs text-gray-400">Szerződés</p>
+                <p className="text-xs text-gray-400">{t("contactDetail.contract")}</p>
               </div>
               <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 text-center">
                 <p className="text-2xl font-bold text-green-600">{signedContracts}</p>
-                <p className="text-xs text-gray-400">Aláírt</p>
+                <p className="text-xs text-gray-400">{t("contactDetail.signed")}</p>
               </div>
             </div>
 
             {/* Details */}
             {!editing ? (
               <div className="space-y-3">
-                {partner.company && <InfoRow label="Cégnév" value={partner.company} />}
-                {partner.phone && <InfoRow label="Telefon" value={partner.phone} />}
-                {partner.taxNumber && <InfoRow label="Adószám" value={partner.taxNumber} />}
-                {partner.address && <InfoRow label="Cím" value={partner.address} />}
-                {partner.notes && <InfoRow label="Megjegyzés" value={partner.notes} />}
+                {partner.company && <InfoRow label={t("contactDetail.companyName")} value={partner.company} />}
+                {partner.phone && <InfoRow label={t("contactDetail.phone")} value={partner.phone} />}
+                {partner.taxNumber && <InfoRow label={t("contactDetail.taxNumber")} value={partner.taxNumber} />}
+                {partner.address && <InfoRow label={t("contactDetail.address")} value={partner.address} />}
+                {partner.notes && <InfoRow label={t("contactDetail.notes")} value={partner.notes} />}
                 <button onClick={() => setEditing(true)}
                   className="w-full mt-2 px-4 py-2 text-sm font-medium border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                  Adatok szerkesztése
+                  {t("contactDetail.editData")}
                 </button>
               </div>
             ) : (
               <div className="space-y-2">
-                <EditField label="Cégnév" value={form.company} onChange={v => setForm({ ...form, company: v })} />
-                <EditField label="Telefon" value={form.phone} onChange={v => setForm({ ...form, phone: v })} />
-                <EditField label="Adószám" value={form.taxNumber} onChange={v => setForm({ ...form, taxNumber: v })} />
-                <EditField label="Cím" value={form.address} onChange={v => setForm({ ...form, address: v })} />
+                <EditField label={t("contactDetail.companyName")} value={form.company} onChange={v => setForm({ ...form, company: v })} />
+                <EditField label={t("contactDetail.phone")} value={form.phone} onChange={v => setForm({ ...form, phone: v })} />
+                <EditField label={t("contactDetail.taxNumber")} value={form.taxNumber} onChange={v => setForm({ ...form, taxNumber: v })} />
+                <EditField label={t("contactDetail.address")} value={form.address} onChange={v => setForm({ ...form, address: v })} />
                 <div>
-                  <label className="block text-xs text-gray-400 mb-1">Csoport</label>
+                  <label className="block text-xs text-gray-400 mb-1">{t("contactDetail.group")}</label>
                   <select value={form.group} onChange={e => setForm({ ...form, group: e.target.value })}
                     className="w-full px-3 py-2 border rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600">
-                    <option value="">Nincs</option>
+                    <option value="">{t("contactDetail.noGroup")}</option>
                     {groups.map(g => <option key={g} value={g}>{g}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-400 mb-1">Megjegyzés</label>
+                  <label className="block text-xs text-gray-400 mb-1">{t("contactDetail.notes")}</label>
                   <textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} rows={2}
                     className="w-full px-3 py-2 border rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600" />
                 </div>
                 <div className="flex gap-2 pt-1">
-                  <button onClick={() => setEditing(false)} className="flex-1 px-3 py-2 text-sm border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">Mégse</button>
+                  <button onClick={() => setEditing(false)} className="flex-1 px-3 py-2 text-sm border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">{t("contactDetail.cancel")}</button>
                   <button onClick={handleSave} disabled={saving}
                     className="flex-1 px-3 py-2 text-sm font-medium text-white bg-[#198296] hover:bg-[#146d7d] rounded-lg transition disabled:opacity-50">
-                    {saving ? "Mentés..." : "Mentés"}
+                    {saving ? t("contactDetail.saving") : t("contactDetail.save")}
                   </button>
                 </div>
               </div>
@@ -215,7 +234,7 @@ export default function PartnerDetailPage() {
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              Új szerződés ezzel a partnerrel
+              {t("contactDetail.newContractWith")}
             </Link>
           </div>
         </div>
@@ -226,11 +245,11 @@ export default function PartnerDetailPage() {
           <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1 mb-4">
             <button onClick={() => setActiveTab("contracts")}
               className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition ${activeTab === "contracts" ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm" : "text-gray-500"}`}>
-              Szerződések ({totalContracts})
+              {t("contactDetail.contractsTab")} ({totalContracts})
             </button>
             <button onClick={() => setActiveTab("timeline")}
               className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition ${activeTab === "timeline" ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm" : "text-gray-500"}`}>
-              Tevékenység
+              {t("contactDetail.activityTab")}
             </button>
           </div>
 
@@ -238,10 +257,10 @@ export default function PartnerDetailPage() {
             <div className="bg-white dark:bg-gray-800 rounded-xl border">
               {!partner.contracts?.length ? (
                 <div className="p-12 text-center">
-                  <p className="text-gray-400">Nincs közös szerződés</p>
+                  <p className="text-gray-400">{t("contactDetail.noContracts")}</p>
                   <Link href={`/create?signerName=${encodeURIComponent(partner.name)}&signerEmail=${encodeURIComponent(partner.email)}`}
                     className="inline-block mt-3 text-sm text-[#198296] hover:underline">
-                    Hozz létre egyet
+                    {t("contactDetail.createOne")}
                   </Link>
                 </div>
               ) : (
@@ -256,7 +275,7 @@ export default function PartnerDetailPage() {
                           <div className="flex items-center gap-3 mt-1">
                             <span className="text-xs text-gray-400">{formatDate(c.createdAt)}</span>
                             {signerStatus?.signedAt && (
-                              <span className="text-xs text-green-600">Aláírva: {formatDate(signerStatus.signedAt)}</span>
+                              <span className="text-xs text-green-600">{t("contactDetail.signedAt")}: {formatDate(signerStatus.signedAt)}</span>
                             )}
                           </div>
                         </div>
@@ -272,7 +291,7 @@ export default function PartnerDetailPage() {
           ) : (
             <div className="bg-white dark:bg-gray-800 rounded-xl border p-5">
               {timeline.length === 0 ? (
-                <p className="text-center text-gray-400 py-8">Nincs tevékenység</p>
+                <p className="text-center text-gray-400 py-8">{t("contactDetail.noActivity")}</p>
               ) : (
                 <div className="relative">
                   <div className="absolute left-[15px] top-2 bottom-2 w-0.5 bg-gray-100 dark:bg-gray-700" />

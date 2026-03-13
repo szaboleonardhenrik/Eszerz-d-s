@@ -18,6 +18,10 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from './admin.guard';
 import { SuperAdminOnly } from './superadmin.decorator';
 import { ApiResponse } from '../common/api-response';
+import { CreatePromoCodeDto } from './dto/create-promo-code.dto';
+import { UpdatePromoCodeDto } from './dto/update-promo-code.dto';
+import { CreateAuthorizedSignerDto } from './dto/create-authorized-signer.dto';
+import { UpdateAuthorizedSignerDto } from './dto/update-authorized-signer.dto';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, AdminGuard)
@@ -188,14 +192,14 @@ export class AdminController {
 
   @Post('promo-codes')
   @SuperAdminOnly()
-  async createPromoCode(@Body() body: any, @Req() req: any) {
+  async createPromoCode(@Body() body: CreatePromoCodeDto, @Req() req: any) {
     const code = await this.adminService.createPromoCode(body, req.user.userId);
     return ApiResponse.ok(code);
   }
 
   @Patch('promo-codes/:id')
   @SuperAdminOnly()
-  async updatePromoCode(@Param('id') id: string, @Body() body: any) {
+  async updatePromoCode(@Param('id') id: string, @Body() body: UpdatePromoCodeDto) {
     const code = await this.adminService.updatePromoCode(id, body);
     return ApiResponse.ok(code);
   }
@@ -299,7 +303,7 @@ export class AdminController {
   }
 
   @Post('authorized-signers')
-  async createAuthorizedSigner(@Req() req: any, @Body() body: any) {
+  async createAuthorizedSigner(@Req() req: any, @Body() body: CreateAuthorizedSignerDto) {
     const signer = await this.adminService.createAuthorizedSigner(req.user.userId, body);
     return ApiResponse.ok(signer);
   }
@@ -308,7 +312,7 @@ export class AdminController {
   async updateAuthorizedSigner(
     @Req() req: any,
     @Param('id') id: string,
-    @Body() body: any,
+    @Body() body: UpdateAuthorizedSignerDto,
   ) {
     const signer = await this.adminService.updateAuthorizedSigner(id, req.user.userId, body);
     return ApiResponse.ok(signer);

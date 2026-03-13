@@ -6,27 +6,7 @@ import api from "@/lib/api";
 import toast from "react-hot-toast";
 import { sanitizeHtml } from "@/lib/sanitize";
 import WysiwygEditor from "@/components/wysiwyg-editor";
-
-const categoryOptions = [
-  { value: "munkajogi", label: "Munkajogi" },
-  { value: "b2b", label: "Vállalati B2B" },
-  { value: "ingatlan", label: "Ingatlan" },
-  { value: "fogyasztoi", label: "Fogyasztói" },
-  { value: "it", label: "IT / Szoftver" },
-  { value: "szolgaltatasi", label: "Szolgáltatási" },
-  { value: "egyeb", label: "Egyéb" },
-];
-
-const fieldTypeOptions = [
-  { value: "text", label: "Egysoros szövegmező" },
-  { value: "textarea", label: "Többsoros szövegmező" },
-  { value: "number", label: "Szám" },
-  { value: "date", label: "Dátum" },
-  { value: "select", label: "Legördülő lista" },
-  { value: "checkbox", label: "Jelölőnégyzet" },
-  { value: "receiver_fills", label: "Fogadó fél tölti ki" },
-  { value: "attachment", label: "Csatolmány" },
-];
+import { useI18n } from "@/lib/i18n";
 
 type VariableGroup = "sender" | "receiver" | "contract";
 
@@ -38,12 +18,6 @@ interface Variable {
   group: VariableGroup;
   options?: string;
 }
-
-const groupLabels: Record<VariableGroup, string> = {
-  sender: "Küldő fél adatai",
-  receiver: "Fogadó fél adatai",
-  contract: "Szerződéses változók",
-};
 
 const groupColors: Record<VariableGroup, { bg: string; border: string; badge: string }> = {
   sender: { bg: "bg-blue-50", border: "border-blue-200", badge: "bg-blue-100 text-blue-700" },
@@ -64,6 +38,7 @@ export default function EditTemplatePage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
+  const { t } = useI18n();
 
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -80,6 +55,33 @@ export default function EditTemplatePage() {
   const [versions, setVersions] = useState<{ id: string; version: number; changeNote: string | null; createdAt: string }[]>([]);
   const [versionsLoading, setVersionsLoading] = useState(false);
 
+  const categoryOptions = [
+    { value: "munkajogi", label: t("templateEdit.categoryLabels.munkajogi") },
+    { value: "b2b", label: t("templateEdit.categoryLabels.b2b") },
+    { value: "ingatlan", label: t("templateEdit.categoryLabels.ingatlan") },
+    { value: "fogyasztoi", label: t("templateEdit.categoryLabels.fogyasztoi") },
+    { value: "it", label: t("templateEdit.categoryLabels.it") },
+    { value: "szolgaltatasi", label: t("templateEdit.categoryLabels.szolgaltatasi") },
+    { value: "egyeb", label: t("templateEdit.categoryLabels.egyeb") },
+  ];
+
+  const fieldTypeOptions = [
+    { value: "text", label: t("templateEdit.fieldTypes.text") },
+    { value: "textarea", label: t("templateEdit.fieldTypes.textarea") },
+    { value: "number", label: t("templateEdit.fieldTypes.number") },
+    { value: "date", label: t("templateEdit.fieldTypes.date") },
+    { value: "select", label: t("templateEdit.fieldTypes.select") },
+    { value: "checkbox", label: t("templateEdit.fieldTypes.checkbox") },
+    { value: "receiver_fills", label: t("templateEdit.fieldTypes.receiver_fills") },
+    { value: "attachment", label: t("templateEdit.fieldTypes.attachment") },
+  ];
+
+  const groupLabels: Record<VariableGroup, string> = {
+    sender: t("templateEdit.senderFields"),
+    receiver: t("templateEdit.receiverFields"),
+    contract: t("templateEdit.contractFields"),
+  };
+
   useEffect(() => {
     loadTemplate();
   }, [id]);
@@ -87,22 +89,22 @@ export default function EditTemplatePage() {
   const loadTemplate = async () => {
     try {
       const res = await api.get(`/templates/${id}`);
-      const t = res.data.data;
-      setName(t.name);
-      setCategory(t.category);
-      setDescription(t.description ?? "");
-      setContentHtml(t.contentHtml);
-      setContentHtmlEn(t.contentHtmlEn ?? "");
-      setLegalBasis(t.legalBasis ?? "");
+      const tpl = res.data.data;
+      setName(tpl.name);
+      setCategory(tpl.category);
+      setDescription(tpl.description ?? "");
+      setContentHtml(tpl.contentHtml);
+      setContentHtmlEn(tpl.contentHtmlEn ?? "");
+      setLegalBasis(tpl.legalBasis ?? "");
       // Migrate old variables without group
-      const vars = (t.variables ?? []).map((v: any) => ({
+      const vars = (tpl.variables ?? []).map((v: any) => ({
         ...v,
         group: v.group || "contract",
         options: v.options || "",
       }));
       setVariables(vars);
     } catch {
-      toast.error("Nem sikerült betölteni a sablont");
+      toast.error(t("templateEdit.loadError"));
       router.push("/templates");
     } finally {
       setLoading(false);
@@ -132,12 +134,12 @@ export default function EditTemplatePage() {
 
   const insertPlaceholder = (varName: string) => {
     navigator.clipboard.writeText(`!!${varName}!!`);
-    toast.success(`!!${varName}!! vágólapra másolva`);
+    toast.success(`!!${varName}!! ${t("templateEdit.copiedToClipboard")}`);
   };
 
   const handleSave = async () => {
     if (!name.trim() || !contentHtml.trim()) {
-      toast.error("A név és a tartalom megadása kötelező");
+      toast.error(t("templateEdit.nameRequired"));
       return;
     }
     setSaving(true);
@@ -151,10 +153,10 @@ export default function EditTemplatePage() {
         variables,
         legalBasis: legalBasis || undefined,
       });
-      toast.success("Sablon sikeresen frissítve");
+      toast.success(t("templateEdit.saveSuccess"));
       router.push("/templates");
     } catch (err: any) {
-      const msg = err?.response?.data?.error?.message ?? "Hiba a sablon mentése közben";
+      const msg = err?.response?.data?.error?.message ?? t("templateEdit.saveError");
       toast.error(msg);
     } finally {
       setSaving(false);
@@ -187,21 +189,21 @@ export default function EditTemplatePage() {
       setVersions(res.data.data ?? []);
       setShowVersions(true);
     } catch {
-      toast.error("Nem sikerült betölteni a verziókat");
+      toast.error(t("templateEdit.versionsLoadError"));
     } finally {
       setVersionsLoading(false);
     }
   };
 
   const handleRevert = async (versionId: string) => {
-    if (!confirm("Biztosan visszaállítod ezt a verziót?")) return;
+    if (!confirm(t("templateEdit.revertConfirm"))) return;
     try {
       await api.post(`/templates/${id}/revert/${versionId}`);
-      toast.success("Verzió visszaállítva");
+      toast.success(t("templateEdit.revertSuccess"));
       setShowVersions(false);
       await loadTemplate();
     } catch {
-      toast.error("Hiba a verzió visszaállításakor");
+      toast.error(t("templateEdit.revertError"));
     }
   };
 
@@ -220,7 +222,7 @@ export default function EditTemplatePage() {
             <span className={`px-2.5 py-0.5 rounded-md text-xs font-bold ${colors.badge}`}>
               {groupLabels[group]}
             </span>
-            <span className="text-xs text-gray-400">{groupVars.length} mező</span>
+            <span className="text-xs text-gray-400">{groupVars.length} {t("templateEdit.fieldCount")}</span>
           </div>
           <button
             type="button"
@@ -230,21 +232,21 @@ export default function EditTemplatePage() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
-            Mező hozzáadása
+            {t("templateEdit.addField")}
           </button>
         </div>
 
         {groupVars.length === 0 ? (
           <div className="px-5 py-4 text-sm text-gray-400 bg-white">
-            Még nincsenek mezők. Kattintson a &quot;Mező hozzáadása&quot; gombra.
+            {t("templateEdit.noFields")}
           </div>
         ) : (
           <div className="bg-white">
             <div className="grid grid-cols-[1fr_160px_180px_auto] gap-3 px-5 py-2 bg-gray-50 border-b text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              <span>Mező megnevezése</span>
-              <span>Mező típusa</span>
-              <span>Helyettesítő szöveg</span>
-              <span className="text-right">Műveletek</span>
+              <span>{t("templateEdit.fieldName")}</span>
+              <span>{t("templateEdit.fieldType")}</span>
+              <span>{t("templateEdit.placeholder")}</span>
+              <span className="text-right">{t("templateEdit.actions")}</span>
             </div>
 
             {groupVars.map((v) => (
@@ -256,7 +258,7 @@ export default function EditTemplatePage() {
                   type="text"
                   value={v.label}
                   onChange={(e) => updateVariable(v.originalIndex, "label", e.target.value)}
-                  placeholder="pl. Diák neve"
+                  placeholder={t("templateEdit.fieldNamePlaceholder")}
                   className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:border-[#198296] focus:ring-1 focus:ring-[#198296]/20 outline-none"
                 />
                 <select
@@ -278,7 +280,7 @@ export default function EditTemplatePage() {
                     <button
                       type="button"
                       onClick={() => insertPlaceholder(v.name)}
-                      title="Másolás vágólapra"
+                      title={t("templateEdit.copyToClipboard")}
                       className="p-1 text-gray-400 hover:text-[#198296] transition-colors flex-shrink-0"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -288,20 +290,20 @@ export default function EditTemplatePage() {
                   )}
                 </div>
                 <div className="flex items-center gap-1.5 justify-end">
-                  <label className="flex items-center gap-1 text-xs text-gray-500 cursor-pointer" title="Kötelező mező">
+                  <label className="flex items-center gap-1 text-xs text-gray-500 cursor-pointer" title={t("templateEdit.required")}>
                     <input
                       type="checkbox"
                       checked={v.required}
                       onChange={(e) => updateVariable(v.originalIndex, "required", e.target.checked)}
                       className="rounded border-gray-300 text-[#198296] focus:ring-[#198296]/30 w-3.5 h-3.5"
                     />
-                    Köt.
+                    {t("templateEdit.required")}
                   </label>
                   <button
                     type="button"
                     onClick={() => removeVariable(v.originalIndex)}
                     className="p-1 text-gray-300 hover:text-red-500 transition-colors"
-                    title="Törlés"
+                    title={t("common.delete")}
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -314,13 +316,13 @@ export default function EditTemplatePage() {
             {groupVars.filter((v) => v.type === "select").map((v) => (
               <div key={`opts-${v.originalIndex}`} className="px-5 py-2 bg-gray-50 border-t">
                 <label className="text-xs font-medium text-gray-500 mb-1 block">
-                  Legördülő opciók: {v.label || v.name} (vesszővel elválasztva)
+                  {t("templateEdit.selectOptions")}: {v.label || v.name} ({t("templateEdit.selectOptionsHelp")})
                 </label>
                 <input
                   type="text"
                   value={v.options || ""}
                   onChange={(e) => updateVariable(v.originalIndex, "options", e.target.value)}
-                  placeholder="pl. 1500 Ft, 2000 Ft, 2500 Ft, 3000 Ft"
+                  placeholder={t("templateEdit.selectOptionsPlaceholder")}
                   className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:border-[#198296] focus:ring-1 focus:ring-[#198296]/20 outline-none"
                 />
               </div>
@@ -352,7 +354,7 @@ export default function EditTemplatePage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <h1 className="text-lg font-bold text-gray-900">Sablon szerkesztése</h1>
+          <h1 className="text-lg font-bold text-gray-900">{t("templateEdit.pageTitle")}</h1>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -360,7 +362,7 @@ export default function EditTemplatePage() {
             disabled={versionsLoading}
             className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-colors"
           >
-            {versionsLoading ? "Betöltés..." : "Verziók"}
+            {versionsLoading ? t("templateEdit.versionsLoading") : t("templateEdit.versionsBtn")}
           </button>
           <button
             onClick={() => setShowPreview(!showPreview)}
@@ -370,14 +372,14 @@ export default function EditTemplatePage() {
                 : "border-gray-200 text-gray-600 hover:bg-gray-50"
             }`}
           >
-            {showPreview ? "Szerkesztő" : "Előnézet"}
+            {showPreview ? t("templateEdit.editor") : t("templateEdit.preview")}
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
             className="px-6 py-2 bg-[#198296] text-white rounded-lg text-sm font-semibold hover:bg-[#146d7d] disabled:opacity-50 transition-colors shadow-sm"
           >
-            {saving ? "Mentés..." : "Változások mentése"}
+            {saving ? t("templateEdit.saving") : t("templateEdit.saveChanges")}
           </button>
         </div>
       </div>
@@ -386,7 +388,7 @@ export default function EditTemplatePage() {
       {showVersions && (
         <div className="mb-6 bg-white rounded-2xl border p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Verzió előzmények</h2>
+            <h2 className="text-lg font-semibold text-gray-900">{t("templateEdit.versionHistory")}</h2>
             <button onClick={() => setShowVersions(false)} className="text-gray-400 hover:text-gray-600">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -394,7 +396,7 @@ export default function EditTemplatePage() {
             </button>
           </div>
           {versions.length === 0 ? (
-            <p className="text-sm text-gray-400">Nincs korábbi verzió</p>
+            <p className="text-sm text-gray-400">{t("templateEdit.noVersions")}</p>
           ) : (
             <div className="space-y-2">
               {versions.map((v) => (
@@ -412,7 +414,7 @@ export default function EditTemplatePage() {
                     onClick={() => handleRevert(v.id)}
                     className="text-sm font-medium px-3 py-1 rounded-lg text-white bg-[#198296] hover:bg-[#146d7d] transition"
                   >
-                    Visszaállítás
+                    {t("templateEdit.revert")}
                   </button>
                 </div>
               ))}
@@ -424,7 +426,7 @@ export default function EditTemplatePage() {
       {showPreview ? (
         <div className="bg-white rounded-2xl border p-8">
           <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-4">
-            Előnézet
+            {t("templateEdit.preview")}
           </h2>
           <div
             className="prose prose-sm max-w-none border rounded-xl p-6 bg-gray-50 min-h-[400px]"
@@ -435,10 +437,10 @@ export default function EditTemplatePage() {
         <div className="space-y-6">
           {/* Metadata */}
           <div className="bg-white rounded-2xl border p-6">
-            <h2 className="text-sm font-semibold text-gray-900 mb-4">Alapadatok</h2>
+            <h2 className="text-sm font-semibold text-gray-900 mb-4">{t("templateEdit.metadata")}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Sablon neve *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t("templateEdit.templateName")}</label>
                 <input
                   type="text"
                   value={name}
@@ -447,7 +449,7 @@ export default function EditTemplatePage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Kategória</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t("templateEdit.category")}</label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
@@ -459,22 +461,22 @@ export default function EditTemplatePage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Leírás</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t("templateEdit.descriptionLabel")}</label>
                 <input
                   type="text"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Rövid leírás a sablonról..."
+                  placeholder={t("templateEdit.descriptionPlaceholder")}
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:border-[#198296] focus:ring-2 focus:ring-[#198296]/10 outline-none transition-all"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Jogi alap</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t("templateEdit.legalBasis")}</label>
                 <input
                   type="text"
                   value={legalBasis}
                   onChange={(e) => setLegalBasis(e.target.value)}
-                  placeholder="pl. Ptk. 6:58. §"
+                  placeholder={t("templateEdit.legalBasisPlaceholder")}
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:border-[#198296] focus:ring-2 focus:ring-[#198296]/10 outline-none transition-all"
                 />
               </div>
@@ -485,9 +487,9 @@ export default function EditTemplatePage() {
           <div className="bg-white rounded-2xl border p-6">
             <div className="flex items-center justify-between mb-3">
               <div>
-                <h2 className="text-sm font-semibold text-gray-900">Tartalom *</h2>
+                <h2 className="text-sm font-semibold text-gray-900">{t("templateEdit.content")}</h2>
                 <p className="text-xs text-gray-400 mt-0.5">
-                  Írja vagy illessze be a szöveget. Változókat a <code className="bg-gray-100 px-1 rounded">!!nev!!</code> formátumban illessze be, vagy használja a változó gombot.
+                  {t("templateEdit.contentHelp")} <code className="bg-gray-100 px-1 rounded">!!nev!!</code> {t("templateEdit.contentHelpFormat")}
                 </p>
               </div>
               <div className="flex gap-1 bg-gray-100 rounded-lg p-0.5">
@@ -498,7 +500,7 @@ export default function EditTemplatePage() {
                     contentLang === "hu" ? "bg-white text-[#198296] shadow-sm" : "text-gray-500"
                   }`}
                 >
-                  Magyar
+                  {t("templateEdit.hungarian")}
                 </button>
                 <button
                   type="button"
@@ -507,7 +509,7 @@ export default function EditTemplatePage() {
                     contentLang === "en" ? "bg-white text-[#198296] shadow-sm" : "text-gray-500"
                   }`}
                 >
-                  English
+                  {t("templateEdit.english")}
                 </button>
               </div>
             </div>
@@ -516,14 +518,14 @@ export default function EditTemplatePage() {
               <WysiwygEditor
                 value={contentHtml}
                 onChange={setContentHtml}
-                placeholder="Illessze be a szerződés szövegét vagy kezdjen el írni..."
+                placeholder={t("templateEdit.huPlaceholder")}
                 variables={variableNames}
               />
             ) : (
               <WysiwygEditor
                 value={contentHtmlEn}
                 onChange={setContentHtmlEn}
-                placeholder="Illessze be vagy gépelje be az angol verziót..."
+                placeholder={t("templateEdit.enPlaceholder")}
                 variables={variableNames}
               />
             )}
@@ -532,9 +534,9 @@ export default function EditTemplatePage() {
           {/* Variables */}
           <div className="bg-white rounded-2xl border p-6">
             <div className="mb-5">
-              <h2 className="text-sm font-semibold text-gray-900">Változók</h2>
+              <h2 className="text-sm font-semibold text-gray-900">{t("templateEdit.variables")}</h2>
               <p className="text-xs text-gray-400 mt-0.5">
-                Adja meg a kitöltendő mezőket. A rendszer automatikusan generálja a helyettesítő szöveget a megnevezésből.
+                {t("templateEdit.variablesHelp")}
               </p>
             </div>
 

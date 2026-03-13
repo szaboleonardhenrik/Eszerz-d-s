@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import WysiwygEditor from "@/components/wysiwyg-editor";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { getEsignWarning } from "@/lib/esign-warnings";
+import { useI18n } from "@/lib/i18n";
 
 interface TemplateVar {
   name: string;
@@ -61,6 +62,7 @@ const stepThemes = [
 ];
 
 function CreateWizardInner() {
+  const { t } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
   const templateIdParam = searchParams.get("templateId");
@@ -130,10 +132,10 @@ function CreateWizardInner() {
     api.get("/templates").then((res) => {
       setTemplates(res.data.data);
       if (templateIdParam) {
-        const t = res.data.data.find((t: Template) => t.id === templateIdParam);
-        if (t) {
-          setSelectedTemplate(t);
-          setTitle(t.name);
+        const found = res.data.data.find((tpl: Template) => tpl.id === templateIdParam);
+        if (found) {
+          setSelectedTemplate(found);
+          setTitle(found.name);
           setStep(2);
         }
       }
@@ -153,11 +155,11 @@ function CreateWizardInner() {
           headers: { "Content-Type": "multipart/form-data" },
         });
         setPdfFileName(file.name);
-        setUploadedHtml(`<!-- PDF:${res.data.data.key} --><div style="text-align:center;padding:40px;background:#f8f9fa;border-radius:8px;"><p style="font-size:18px;font-weight:bold;color:#198296;">PDF feltöltve</p><p style="color:#666;">${file.name} (${(file.size / 1024).toFixed(0)} KB)</p></div>`);
+        setUploadedHtml(`<!-- PDF:${res.data.data.key} --><div style="text-align:center;padding:40px;background:#f8f9fa;border-radius:8px;"><p style="font-size:18px;font-weight:bold;color:#198296;">${t("create.upload.pdfUploaded")}</p><p style="color:#666;">${file.name} (${(file.size / 1024).toFixed(0)} KB)</p></div>`);
         if (!title) setTitle(file.name.replace(/\.pdf$/i, ""));
-        toast.success("PDF sikeresen feltöltve!");
+        toast.success(t("create.upload.pdfSuccess"));
       } catch (err: any) {
-        toast.error(err.response?.data?.error?.message ?? "Hiba a PDF feltöltésekor");
+        toast.error(err.response?.data?.error?.message ?? t("create.upload.pdfError"));
       } finally {
         setUploadingPdf(false);
       }
@@ -177,11 +179,11 @@ function CreateWizardInner() {
     reader.readAsText(file, "utf-8");
   };
 
-  const selectTemplate = (t: Template) => {
-    setSelectedTemplate(t);
-    setTitle(t.name);
+  const selectTemplate = (tpl: Template) => {
+    setSelectedTemplate(tpl);
+    setTitle(tpl.name);
     const defaults: Record<string, string> = {};
-    t.variables.forEach((v) => (defaults[v.name] = ""));
+    tpl.variables.forEach((v) => (defaults[v.name] = ""));
     setVariables(defaults);
     setStep(2);
   };
@@ -214,16 +216,16 @@ function CreateWizardInner() {
       let allSigners: Signer[] = [];
 
       if (signingMode === "owner_only") {
-        allSigners = [{ name: ownerName, email: ownerEmail, role: "Kibocsátó", signingOrder: 1 }];
+        allSigners = [{ name: ownerName, email: ownerEmail, role: t("create.owner.issuerRole"), signingOrder: 1 }];
       } else if (signingMode === "both_partner_first") {
         const maxPartnerOrder = partnerSigners.length > 0 ? Math.max(...partnerSigners.map(s => s.signingOrder)) : 0;
         allSigners = [
           ...partnerSigners,
-          { name: ownerName, email: ownerEmail, role: "Kibocsátó", signingOrder: maxPartnerOrder + 1 },
+          { name: ownerName, email: ownerEmail, role: t("create.owner.issuerRole"), signingOrder: maxPartnerOrder + 1 },
         ];
       } else if (signingMode === "both_owner_first") {
         allSigners = [
-          { name: ownerName, email: ownerEmail, role: "Kibocsátó", signingOrder: 1 },
+          { name: ownerName, email: ownerEmail, role: t("create.owner.issuerRole"), signingOrder: 1 },
           ...partnerSigners.map((s) => ({ ...s, signingOrder: s.signingOrder + 1 })),
         ];
       } else {
@@ -242,11 +244,11 @@ function CreateWizardInner() {
         payload.contentHtml = uploadedHtml;
       }
       const res = await api.post("/contracts", payload);
-      toast.success("Szerződés létrehozva!");
+      toast.success(t("create.summary.success"));
       router.push(`/contracts/${res.data.data.id}`);
     } catch (err: any) {
       toast.error(
-        err.response?.data?.error?.message ?? "Hiba a szerződés létrehozásakor"
+        err.response?.data?.error?.message ?? t("create.summary.error")
       );
     } finally {
       setLoading(false);
@@ -254,10 +256,10 @@ function CreateWizardInner() {
   };
 
   const steps = [
-    { label: "Sablon", desc: "Válassz sablont vagy tölts fel", icon: "M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6z" },
-    { label: "Kitöltés", desc: "Add meg az adatokat", icon: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" },
-    { label: "Aláírók", desc: "Ki írja alá a szerződést?", icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" },
-    { label: "Összegzés", desc: "Ellenőrizd és hozd létre", icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" },
+    { label: t("create.steps.template"), desc: t("create.steps.templateDesc"), icon: "M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6z" },
+    { label: t("create.steps.fill"), desc: t("create.steps.fillDesc"), icon: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" },
+    { label: t("create.steps.signers"), desc: t("create.steps.signersDesc"), icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" },
+    { label: t("create.steps.summary"), desc: t("create.steps.summaryDesc"), icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" },
   ];
 
   const theme = stepThemes[(step - 1) % stepThemes.length];
@@ -279,7 +281,7 @@ function CreateWizardInner() {
         </div>
         <div className="relative z-10">
           <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-            Új szerződés létrehozása
+            {t("create.title")}
           </h1>
           <p className="text-white/70 text-sm sm:text-base">
             {steps[step - 1].desc}
@@ -322,7 +324,7 @@ function CreateWizardInner() {
                     <p className={`text-[10px] font-bold uppercase tracking-widest ${
                       isCurrent ? st.text : isFuture ? "text-gray-400 dark:text-gray-500" : "text-gray-500 dark:text-gray-400"
                     }`}>
-                      {i + 1}. lépés
+                      {t("create.stepLabel", { num: i + 1 })}
                     </p>
                     <p className={`text-sm font-semibold ${
                       isDone
@@ -350,7 +352,7 @@ function CreateWizardInner() {
           })}
         </div>
         <p className="sm:hidden text-center text-xs text-gray-500 dark:text-gray-400 mt-3 font-medium">
-          {step}. lépés / {steps.length} — {steps[step - 1].label}
+          {t("create.stepProgress", { current: step, total: steps.length, label: steps[step - 1].label })}
         </p>
       </div>
 
@@ -359,9 +361,9 @@ function CreateWizardInner() {
         <>
           <div className="flex gap-2 mb-6">
             {[
-              { active: !uploadMode, label: "Sablon választás", icon: "M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5z", onClick: () => setUploadMode(false) },
-              { active: uploadMode && !uploadedHtml, label: "Fájl feltöltés", icon: "M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12", onClick: () => setUploadMode(true) },
-              { active: uploadMode && !!uploadedHtml, label: "Szerkesztő", icon: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z", onClick: () => { setUploadMode(true); if (!uploadedHtml) setUploadedHtml("<p></p>"); } },
+              { active: !uploadMode, label: t("create.tabs.selectTemplate"), icon: "M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5z", onClick: () => setUploadMode(false) },
+              { active: uploadMode && !uploadedHtml, label: t("create.tabs.uploadFile"), icon: "M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12", onClick: () => setUploadMode(true) },
+              { active: uploadMode && !!uploadedHtml, label: t("create.tabs.editor"), icon: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z", onClick: () => { setUploadMode(true); if (!uploadedHtml) setUploadedHtml("<p></p>"); } },
             ].map((tab, idx) => (
               <button
                 key={idx}
@@ -403,14 +405,14 @@ function CreateWizardInner() {
                 {uploadingPdf && (
                   <div className="mb-4">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto" />
-                    <p className="text-sm text-blue-600 mt-2">PDF feltöltése...</p>
+                    <p className="text-sm text-blue-600 mt-2">{t("create.upload.pdfUploading")}</p>
                   </div>
                 )}
-                <p className="text-gray-700 dark:text-gray-200 font-semibold mb-1">Húzd ide a fájlt, vagy kattints</p>
-                <p className="text-sm text-gray-400 mb-5">.pdf, .html, .txt — max 10 MB</p>
+                <p className="text-gray-700 dark:text-gray-200 font-semibold mb-1">{t("create.upload.dragOrClick")}</p>
+                <p className="text-sm text-gray-400 mb-5">{t("create.upload.fileTypes")}</p>
                 <label className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-medium text-sm hover:shadow-lg hover:shadow-blue-200 dark:hover:shadow-blue-900/30 transition-all cursor-pointer">
                   <Ico d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" className="w-4 h-4" />
-                  Fájl kiválasztása
+                  {t("create.upload.chooseFile")}
                   <input
                     type="file"
                     accept=".pdf,.html,.htm,.txt"
@@ -428,25 +430,25 @@ function CreateWizardInner() {
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Szerződés címe"
+                    placeholder={t("create.upload.contractTitle")}
                     className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
                   />
-                  <WysiwygEditor value={uploadedHtml} onChange={setUploadedHtml} placeholder="Szerkessze a szerződés tartalmát..." />
+                  <WysiwygEditor value={uploadedHtml} onChange={setUploadedHtml} placeholder={t("create.upload.editorPlaceholder")} />
                   <button
                     onClick={() => { if (title.trim()) setStep(3); }}
                     disabled={!title.trim()}
                     className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl text-sm font-semibold hover:shadow-lg transition-all disabled:opacity-50"
                   >
-                    Tovább az aláírókhoz
+                    {t("create.upload.nextToSigners")}
                   </button>
                 </div>
               )}
             </div>
           ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {templates.map((t, idx) => (
+            {templates.map((tpl, idx) => (
               <div
-                key={t.id}
+                key={tpl.id}
                 className="group bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg hover:shadow-blue-100 dark:hover:shadow-blue-900/10 hover:-translate-y-0.5 transition-all"
               >
                 <div className={`h-1.5 bg-gradient-to-r ${stepThemes[idx % 4].bg}`} />
@@ -456,14 +458,14 @@ function CreateWizardInner() {
                       <Ico d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" className="text-white w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-[.95rem]">{t.name}</h3>
+                      <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-[.95rem]">{tpl.name}</h3>
                       <p className="text-xs text-gray-400 mt-0.5">
-                        {t.variables.length} kitöltendő mező
+                        {t("create.fieldsCount", { count: tpl.variables.length })}
                       </p>
                     </div>
                   </div>
                   {(() => {
-                    const esignWarning = getEsignWarning(t.category, t.name);
+                    const esignWarning = getEsignWarning(tpl.category, tpl.name);
                     return esignWarning ? (
                       <div className="mb-3 flex items-start gap-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg px-3 py-2 text-xs text-amber-800 dark:text-amber-300">
                         <Ico d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" className="w-4 h-4 shrink-0 mt-0.5 text-amber-500" />
@@ -473,22 +475,22 @@ function CreateWizardInner() {
                   })()}
                   <div className="flex gap-2">
                     <button
-                      onClick={() => selectTemplate(t)}
+                      onClick={() => selectTemplate(tpl)}
                       className={`flex-1 py-2 rounded-xl text-sm font-semibold text-white transition-all bg-gradient-to-r ${stepThemes[idx % 4].bg} hover:shadow-md`}
                     >
-                      Kiválasztás
+                      {t("create.selectBtn")}
                     </button>
                     <button
                       onClick={async () => {
                         setPreviewLoading(true);
                         try {
-                          const res = await api.get(`/templates/${t.id}/preview`);
+                          const res = await api.get(`/templates/${tpl.id}/preview`);
                           setPreviewHtml(res.data.data.contentHtml);
-                        } catch { toast.error("Hiba"); }
+                        } catch { toast.error(t("create.previewError")); }
                         finally { setPreviewLoading(false); }
                       }}
                       className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl text-sm text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
-                      title="Előnézet"
+                      title={t("templates.preview")}
                     >
                       <Ico d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" className="w-4 h-4" />
                     </button>
@@ -506,9 +508,7 @@ function CreateWizardInner() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                A sablonok általános tájékoztató jellegűek, és nem helyettesítik az egyedi jogi tanácsadást.
-                A Legitas egyszerű elektronikus aláírást (SES) biztosít, amely nem azonos a minősített e-aláírással (QES).
-                Bonyolultabb ügyleteknél javasoljuk ügyvéd bevonását.
+                {t("create.disclaimer")}
               </p>
             </div>
           )}
@@ -518,7 +518,7 @@ function CreateWizardInner() {
             <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
               <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-3xl w-full max-h-[80vh] overflow-y-auto shadow-2xl">
                 <div className="sticky top-0 bg-white dark:bg-gray-800 border-b dark:border-gray-700 p-4 flex justify-between items-center rounded-t-2xl">
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Sablon előnézet</h2>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t("create.previewTitle")}</h2>
                   <button onClick={() => setPreviewHtml(null)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
                     <Ico d="M6 18L18 6M6 6l12 12" className="w-5 h-5 text-gray-500" />
                   </button>
@@ -551,7 +551,7 @@ function CreateWizardInner() {
               </div>
               <div className="flex-1 min-w-0">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{selectedTemplate.name}</h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Töltsd ki a szerződés adatait</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t("create.fill.fillData")}</p>
               </div>
               {/* Progress indicator */}
               {(() => {
@@ -584,7 +584,7 @@ function CreateWizardInner() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Szerződés neve *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t("create.fill.contractName")}</label>
                 <input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
@@ -677,7 +677,7 @@ function CreateWizardInner() {
                           {(v.filledBy === 'signer') && (
                             <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full">
                               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                              Aláíró tölti ki
+                              {t("create.fill.signerFills")}
                             </span>
                           )}
                         </label>
@@ -686,7 +686,7 @@ function CreateWizardInner() {
                             type="text"
                             disabled
                             value=""
-                            placeholder={`${v.label} — az aláíró adja meg`}
+                            placeholder={t("create.fill.signerPlaceholder", { label: v.label })}
                             className="w-full px-4 py-3 border border-dashed border-amber-300 dark:border-amber-600 rounded-xl bg-amber-50/50 dark:bg-amber-900/10 text-gray-400 dark:text-gray-500 cursor-not-allowed"
                           />
                         ) : v.type === "textarea" ? (
@@ -717,10 +717,10 @@ function CreateWizardInner() {
 
             <div className="flex gap-3 mt-6">
               <button onClick={() => setStep(1)} className="px-5 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium">
-                Vissza
+                {t("common.back")}
               </button>
               <button onClick={() => setStep(3)} className={`px-6 py-3 text-white rounded-xl font-semibold transition-all hover:shadow-lg bg-gradient-to-r ${theme.bg}`}>
-                Tovább
+                {t("common.next")}
               </button>
             </div>
           </div>
@@ -739,17 +739,17 @@ function CreateWizardInner() {
                   <Ico d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" className="text-white" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Ki írja alá?</h2>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Válaszd ki, kinek kell aláírnia</p>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t("create.signerMode.title")}</h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t("create.signerMode.description")}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {([
-                  { value: "partner_only" as SigningMode, label: "Csak a partner(ek)", desc: "Partnereink írják alá, mi nem", icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z", color: "blue" },
-                  { value: "owner_only" as SigningMode, label: "Csak mi (kibocsátó)", desc: "Csak mi írjuk alá a cégünk nevében", icon: "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4", color: "teal" },
-                  { value: "both_partner_first" as SigningMode, label: "Mindkét fél — partner előbb", desc: "Partner ír alá először, utána mi", icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z", color: "violet" },
-                  { value: "both_owner_first" as SigningMode, label: "Mindkét fél — mi előbb", desc: "Mi írjuk alá először, utána a partner", icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4", color: "amber" },
+                  { value: "partner_only" as SigningMode, label: t("create.signerMode.partnerOnly"), desc: t("create.signerMode.partnerOnlyDesc"), icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z", color: "blue" },
+                  { value: "owner_only" as SigningMode, label: t("create.signerMode.ownerOnly"), desc: t("create.signerMode.ownerOnlyDesc"), icon: "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4", color: "teal" },
+                  { value: "both_partner_first" as SigningMode, label: t("create.signerMode.bothPartnerFirst"), desc: t("create.signerMode.bothPartnerFirstDesc"), icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z", color: "violet" },
+                  { value: "both_owner_first" as SigningMode, label: t("create.signerMode.bothOwnerFirst"), desc: t("create.signerMode.bothOwnerFirstDesc"), icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4", color: "amber" },
                 ]).map((opt) => {
                   const colorMap: Record<string, { active: string; icon: string }> = {
                     blue: { active: "border-blue-500 bg-blue-50 dark:bg-blue-900/20", icon: "bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-400" },
@@ -793,13 +793,13 @@ function CreateWizardInner() {
                     <div className="w-8 h-8 rounded-lg bg-teal-600 flex items-center justify-center">
                       <Ico d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" className="w-4 h-4 text-white" />
                     </div>
-                    <p className="text-sm font-semibold text-teal-800 dark:text-teal-300">Kibocsátó aláíró kiválasztása</p>
+                    <p className="text-sm font-semibold text-teal-800 dark:text-teal-300">{t("create.owner.selectSigner")}</p>
                   </div>
 
                   {/* Authorized signer dropdown */}
                   {authorizedSigners.length > 0 && (
                     <div className="mb-4">
-                      <label className="block text-xs font-medium text-teal-700 dark:text-teal-400 mb-1.5 uppercase tracking-wider">Előre beállított aláíró</label>
+                      <label className="block text-xs font-medium text-teal-700 dark:text-teal-400 mb-1.5 uppercase tracking-wider">{t("create.owner.presetSigner")}</label>
                       <div className="space-y-2">
                         <button
                           type="button"
@@ -814,8 +814,8 @@ function CreateWizardInner() {
                             <Ico d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" className="w-4 h-4 text-gray-500" />
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Saját magam</p>
-                            <p className="text-xs text-gray-400">Bejelentkezett felhasználó adatai</p>
+                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{t("create.owner.selfLabel")}</p>
+                            <p className="text-xs text-gray-400">{t("create.owner.selfDesc")}</p>
                           </div>
                           {selectedAuthSigner === "self" && (
                             <svg className="w-5 h-5 text-teal-600 ml-auto" fill="currentColor" viewBox="0 0 20 20">
@@ -841,7 +841,7 @@ function CreateWizardInner() {
                               <div className="flex items-center gap-2">
                                 <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{as.name}</p>
                                 {as.isDefault && (
-                                  <span className="px-1.5 py-0.5 bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400 rounded text-[9px] font-bold uppercase">Alapért.</span>
+                                  <span className="px-1.5 py-0.5 bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400 rounded text-[9px] font-bold uppercase">{t("create.owner.defaultBadge")}</span>
                                 )}
                               </div>
                               <p className="text-xs text-gray-400 truncate">
@@ -863,13 +863,13 @@ function CreateWizardInner() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <input
-                      placeholder="Név *"
+                      placeholder={t("create.owner.namePlaceholder")}
                       value={ownerName}
                       onChange={(e) => setOwnerName(e.target.value)}
                       className="px-3 py-2.5 border border-teal-200 dark:border-teal-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 outline-none focus:ring-2 focus:ring-teal-500"
                     />
                     <input
-                      placeholder="Email *"
+                      placeholder={t("create.owner.emailPlaceholder")}
                       type="email"
                       value={ownerEmail}
                       onChange={(e) => setOwnerEmail(e.target.value)}
@@ -878,10 +878,10 @@ function CreateWizardInner() {
                   </div>
                   <p className="text-xs text-teal-600 dark:text-teal-400 mt-2">
                     {signingMode === "both_partner_first"
-                      ? "A partner aláírása után Ön kap értesítést az aláíráshoz."
+                      ? t("create.owner.afterPartner")
                       : signingMode === "both_owner_first"
-                        ? "Ön írja alá először, utána kapják meg a partnerek."
-                        : "Ön fogja aláírni a szerződést."}
+                        ? t("create.owner.beforePartner")
+                        : t("create.owner.onlyOwner")}
                   </p>
                 </div>
               )}
@@ -898,8 +898,8 @@ function CreateWizardInner() {
                     <Ico d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" className="text-white" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Partner aláírók</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Add meg a partner oldali aláírókat</p>
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t("create.partner.title")}</h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{t("create.partner.description")}</p>
                   </div>
                 </div>
 
@@ -909,37 +909,37 @@ function CreateWizardInner() {
                       <div className="flex justify-between items-center mb-3">
                         <span className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
                           <span className="w-6 h-6 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 flex items-center justify-center text-xs font-bold">{i + 1}</span>
-                          Partner aláíró
+                          {t("create.partner.signerLabel")}
                         </span>
                         {signers.length > 1 && (
                           <button onClick={() => removeSigner(i)} className="text-sm text-red-500 hover:text-red-700 font-medium">
-                            Törlés
+                            {t("create.partner.removeSigner")}
                           </button>
                         )}
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <input
-                          placeholder="Név *"
+                          placeholder={t("create.partner.namePlaceholder")}
                           value={signer.name}
                           onChange={(e) => updateSigner(i, "name", e.target.value)}
                           className="px-3 py-2.5 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 outline-none focus:ring-2 focus:ring-violet-500"
                         />
                         <input
-                          placeholder="Email *"
+                          placeholder={t("create.partner.emailPlaceholder")}
                           type="email"
                           value={signer.email}
                           onChange={(e) => updateSigner(i, "email", e.target.value)}
                           className="px-3 py-2.5 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 outline-none focus:ring-2 focus:ring-violet-500"
                         />
                         <input
-                          placeholder="Szerepkör (pl. Megbízó)"
+                          placeholder={t("create.partner.rolePlaceholder")}
                           value={signer.role}
                           onChange={(e) => updateSigner(i, "role", e.target.value)}
                           className="px-3 py-2.5 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 outline-none focus:ring-2 focus:ring-violet-500"
                         />
                         <input
                           type="number"
-                          placeholder="Sorrend"
+                          placeholder={t("create.partner.orderPlaceholder")}
                           value={signer.signingOrder}
                           onChange={(e) => updateSigner(i, "signingOrder", parseInt(e.target.value) || 1)}
                           min={1}
@@ -952,7 +952,7 @@ function CreateWizardInner() {
 
                 <button onClick={addSigner} className="mt-4 flex items-center gap-2 text-sm text-violet-600 hover:text-violet-700 font-semibold">
                   <Ico d="M12 4v16m8-8H4" className="w-4 h-4" />
-                  Partner aláíró hozzáadása
+                  {t("create.partner.addSigner")}
                 </button>
               </div>
             </div>
@@ -961,7 +961,7 @@ function CreateWizardInner() {
           {/* Expiry + Navigation */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-              Aláírási határidő (opcionális)
+              {t("create.expiry.label")}
             </label>
             <input
               type="date"
@@ -973,30 +973,30 @@ function CreateWizardInner() {
             {/* Signing order visual */}
             {signingMode !== "partner_only" && signingMode !== "owner_only" && (
               <div className="mt-5 p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700/50 dark:to-gray-700/30 rounded-xl">
-                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3">Aláírási sorrend</p>
+                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3">{t("create.expiry.signingOrder")}</p>
                 <div className="flex items-center gap-3">
                   {signingMode === "both_owner_first" ? (
                     <>
                       <div className="flex items-center gap-2 px-4 py-2.5 bg-teal-100 dark:bg-teal-900/30 rounded-xl">
                         <div className="w-7 h-7 rounded-full bg-teal-600 flex items-center justify-center text-white text-xs font-bold">1</div>
-                        <span className="text-sm font-semibold text-teal-700 dark:text-teal-300">Mi (kibocsátó)</span>
+                        <span className="text-sm font-semibold text-teal-700 dark:text-teal-300">{t("create.expiry.ownerLabel")}</span>
                       </div>
                       <Ico d="M13 7l5 5m0 0l-5 5m5-5H6" className="w-5 h-5 text-gray-300" />
                       <div className="flex items-center gap-2 px-4 py-2.5 bg-violet-100 dark:bg-violet-900/30 rounded-xl">
                         <div className="w-7 h-7 rounded-full bg-violet-600 flex items-center justify-center text-white text-xs font-bold">2</div>
-                        <span className="text-sm font-semibold text-violet-700 dark:text-violet-300">Partner(ek)</span>
+                        <span className="text-sm font-semibold text-violet-700 dark:text-violet-300">{t("create.expiry.partnerLabel")}</span>
                       </div>
                     </>
                   ) : (
                     <>
                       <div className="flex items-center gap-2 px-4 py-2.5 bg-violet-100 dark:bg-violet-900/30 rounded-xl">
                         <div className="w-7 h-7 rounded-full bg-violet-600 flex items-center justify-center text-white text-xs font-bold">1</div>
-                        <span className="text-sm font-semibold text-violet-700 dark:text-violet-300">Partner(ek)</span>
+                        <span className="text-sm font-semibold text-violet-700 dark:text-violet-300">{t("create.expiry.partnerLabel")}</span>
                       </div>
                       <Ico d="M13 7l5 5m0 0l-5 5m5-5H6" className="w-5 h-5 text-gray-300" />
                       <div className="flex items-center gap-2 px-4 py-2.5 bg-teal-100 dark:bg-teal-900/30 rounded-xl">
                         <div className="w-7 h-7 rounded-full bg-teal-600 flex items-center justify-center text-white text-xs font-bold">2</div>
-                        <span className="text-sm font-semibold text-teal-700 dark:text-teal-300">Mi (kibocsátó)</span>
+                        <span className="text-sm font-semibold text-teal-700 dark:text-teal-300">{t("create.expiry.ownerLabel")}</span>
                       </div>
                     </>
                   )}
@@ -1006,10 +1006,10 @@ function CreateWizardInner() {
 
             <div className="flex gap-3 mt-6">
               <button onClick={() => setStep(2)} className="px-5 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium">
-                Vissza
+                {t("common.back")}
               </button>
               <button onClick={() => setStep(4)} className={`px-6 py-3 text-white rounded-xl font-semibold transition-all hover:shadow-lg bg-gradient-to-r ${theme.bg}`}>
-                Tovább
+                {t("common.next")}
               </button>
             </div>
           </div>
@@ -1026,8 +1026,8 @@ function CreateWizardInner() {
                 <Ico d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" className="text-white" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Összegzés</h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Ellenőrizd a szerződés adatait</p>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t("create.summary.title")}</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t("create.summary.description")}</p>
               </div>
             </div>
 
@@ -1035,7 +1035,7 @@ function CreateWizardInner() {
               <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
                 <Ico d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" className="text-gray-400 shrink-0" />
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Szerződés neve</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">{t("create.summary.contractName")}</p>
                   <p className="font-semibold text-gray-900 dark:text-gray-100">{title}</p>
                 </div>
               </div>
@@ -1047,13 +1047,13 @@ function CreateWizardInner() {
                       <Ico d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5z" className="w-4 h-4 text-white" />
                     </div>
                     <div>
-                      <p className="text-xs text-blue-600 dark:text-blue-400 uppercase tracking-wider font-medium">Sablon</p>
+                      <p className="text-xs text-blue-600 dark:text-blue-400 uppercase tracking-wider font-medium">{t("create.summary.templateLabel")}</p>
                       <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedTemplate.name}</p>
                     </div>
                   </div>
                   {Object.entries(variables).filter(([, v]) => v).length > 0 && (
                     <div className="bg-violet-50 dark:bg-violet-900/10 rounded-xl p-4">
-                      <p className="text-xs text-violet-600 dark:text-violet-400 uppercase tracking-wider font-medium mb-2">Kitöltött adatok</p>
+                      <p className="text-xs text-violet-600 dark:text-violet-400 uppercase tracking-wider font-medium mb-2">{t("create.summary.filledData")}</p>
                       <div className="space-y-1.5">
                         {Object.entries(variables).filter(([, v]) => v).map(([key, value]) => {
                           const varDef = selectedTemplate.variables.find((v) => v.name === key);
@@ -1072,32 +1072,32 @@ function CreateWizardInner() {
                 <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
                   <Ico d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" className="text-gray-400 shrink-0" />
                   <div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Forrás</p>
-                    <p className="font-semibold text-gray-900 dark:text-gray-100">Saját feltöltés / szerkesztő</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">{t("create.summary.sourceLabel")}</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{t("create.summary.sourceUpload")}</p>
                   </div>
                 </div>
               )}
 
               <div className="bg-teal-50 dark:bg-teal-900/10 rounded-xl p-4">
-                <p className="text-xs text-teal-600 dark:text-teal-400 uppercase tracking-wider font-medium mb-3">Aláírók</p>
+                <p className="text-xs text-teal-600 dark:text-teal-400 uppercase tracking-wider font-medium mb-3">{t("create.summary.signersLabel")}</p>
                 <div className="space-y-2">
                   {(() => {
                     const allSummarySigners = [];
                     if (signingMode === "owner_only") {
-                      allSummarySigners.push({ name: ownerName, email: ownerEmail, role: "Kibocsátó" });
+                      allSummarySigners.push({ name: ownerName, email: ownerEmail, role: t("create.owner.issuerRole") });
                     } else if (signingMode === "both_owner_first") {
-                      allSummarySigners.push({ name: ownerName, email: ownerEmail, role: "Kibocsátó" });
+                      allSummarySigners.push({ name: ownerName, email: ownerEmail, role: t("create.owner.issuerRole") });
                       signers.filter(s => s.name).forEach(s => allSummarySigners.push(s));
                     } else if (signingMode === "both_partner_first") {
                       signers.filter(s => s.name).forEach(s => allSummarySigners.push(s));
-                      allSummarySigners.push({ name: ownerName, email: ownerEmail, role: "Kibocsátó" });
+                      allSummarySigners.push({ name: ownerName, email: ownerEmail, role: t("create.owner.issuerRole") });
                     } else {
                       signers.filter(s => s.name).forEach(s => allSummarySigners.push(s));
                     }
                     return allSummarySigners.map((s, i) => (
                       <div key={i} className="flex items-center gap-3 p-3 bg-white dark:bg-gray-700/50 rounded-lg">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ${
-                          s.role === "Kibocsátó" ? "bg-gradient-to-br from-teal-500 to-emerald-600" : "bg-gradient-to-br from-violet-500 to-purple-600"
+                          s.role === t("create.owner.issuerRole") ? "bg-gradient-to-br from-teal-500 to-emerald-600" : "bg-gradient-to-br from-violet-500 to-purple-600"
                         }`}>
                           {i + 1}
                         </div>
@@ -1107,7 +1107,7 @@ function CreateWizardInner() {
                         </div>
                         {s.role && (
                           <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${
-                            s.role === "Kibocsátó"
+                            s.role === t("create.owner.issuerRole")
                               ? "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300"
                               : "bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300"
                           }`}>
@@ -1123,7 +1123,7 @@ function CreateWizardInner() {
 
             <div className="flex gap-3 mt-8">
               <button onClick={() => setStep(3)} className="px-5 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium">
-                Vissza
+                {t("common.back")}
               </button>
               <button
                 onClick={handleSubmit}
@@ -1133,12 +1133,12 @@ function CreateWizardInner() {
                 {loading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                    Létrehozás...
+                    {t("create.summary.creating")}
                   </>
                 ) : (
                   <>
                     <Ico d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" className="w-5 h-5" />
-                    Szerződés létrehozása
+                    {t("create.summary.createBtn")}
                   </>
                 )}
               </button>

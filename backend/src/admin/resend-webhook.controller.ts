@@ -1,5 +1,6 @@
 import { Controller, Post, Body, Headers, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { ResendWebhookDto } from './dto/resend-webhook.dto';
 
 /**
  * Handles Resend webhook events for email delivery tracking.
@@ -14,7 +15,7 @@ export class ResendWebhookController {
 
   @Post()
   async handleWebhook(
-    @Body() body: any,
+    @Body() body: ResendWebhookDto,
     @Headers('svix-id') svixId?: string,
   ) {
     const { type, data } = body;

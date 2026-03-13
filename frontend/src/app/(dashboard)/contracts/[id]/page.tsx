@@ -9,6 +9,7 @@ import VersionDiff from "@/components/version-diff";
 import QrSigningModal from "@/components/qr-signing-modal";
 import RiskAnalysis from "@/components/risk-analysis";
 import { sanitizeHtml } from "@/lib/sanitize";
+import { useI18n } from "@/lib/i18n";
 
 /* ── Interfaces ──────────────────────────────────────────────────── */
 
@@ -83,16 +84,6 @@ interface AiAnalysis {
 
 /* ── Constants ───────────────────────────────────────────────────── */
 
-const statusLabels: Record<string, string> = {
-  draft: "Piszkozat",
-  sent: "Elküldve",
-  partially_signed: "Részben aláírt",
-  completed: "Teljesítve",
-  declined: "Visszautasítva",
-  expired: "Lejárt",
-  cancelled: "Visszavonva",
-};
-
 const statusColors: Record<string, string> = {
   draft: "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300",
   sent: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
@@ -113,26 +104,6 @@ const statusDotColors: Record<string, string> = {
   cancelled: "bg-gray-500",
 };
 
-const signerStatusConfig: Record<string, { dot: string; bg: string; label: string }> = {
-  pending: { dot: "bg-yellow-400", bg: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300", label: "Várakozik" },
-  signed: { dot: "bg-green-500", bg: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300", label: "Aláírta" },
-  declined: { dot: "bg-red-500", bg: "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-300", label: "Visszautasította" },
-  expired: { dot: "bg-gray-400", bg: "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400", label: "Lejárt" },
-};
-
-const eventLabels: Record<string, string> = {
-  contract_created: "Szerződés létrehozva",
-  contract_updated: "Szerződés szerkesztve",
-  email_sent: "Email elküldve",
-  document_viewed: "Dokumentum megtekintve",
-  signed: "Aláírva",
-  declined: "Visszautasítva",
-  reminder_sent: "Emlékeztető küldve",
-  expired: "Lejárt / Visszavonva",
-  downloaded: "Letöltve",
-  contract_duplicated: "Szerződés duplikálva",
-};
-
 const eventIcons: Record<string, string> = {
   contract_created: "M12 4v16m8-8H4",
   contract_updated: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z",
@@ -148,8 +119,15 @@ const eventIcons: Record<string, string> = {
 
 /* ── Signing Timeline Component ──────────────────────────────────── */
 
-function SigningTimeline({ signers }: { signers: Signer[] }) {
+function SigningTimeline({ signers, t }: { signers: Signer[]; t: (key: string, params?: Record<string, string | number>) => string }) {
   const sorted = [...signers].sort((a, b) => a.signingOrder - b.signingOrder);
+
+  const signerStatusConfig: Record<string, { dot: string; bg: string; label: string }> = {
+    pending: { dot: "bg-yellow-400", bg: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300", label: t("contractDetail.signerPending") },
+    signed: { dot: "bg-green-500", bg: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300", label: t("contractDetail.signerSigned") },
+    declined: { dot: "bg-red-500", bg: "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-300", label: t("contractDetail.signerDeclined") },
+    expired: { dot: "bg-gray-400", bg: "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400", label: t("contractDetail.signerExpired") },
+  };
 
   return (
     <div className="relative">
@@ -249,6 +227,7 @@ function SectionCard({ title, icon, children, className = "", headerAction }: {
 export default function ContractDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { t } = useI18n();
   const [contract, setContract] = useState<Contract | null>(null);
   const [loading, setLoading] = useState(true);
   const [aiAnalysis, setAiAnalysis] = useState<AiAnalysis | null>(null);
@@ -272,6 +251,29 @@ export default function ContractDetailPage() {
   const [addingSelf, setAddingSelf] = useState(false);
   const { user: currentUser } = useAuth();
 
+  const statusLabels: Record<string, string> = {
+    draft: t("contracts.status.draft"),
+    sent: t("contracts.status.sent"),
+    partially_signed: t("contracts.status.partially_signed"),
+    completed: t("contracts.status.completed"),
+    declined: t("contracts.status.declined"),
+    expired: t("contracts.status.expired"),
+    cancelled: t("contracts.status.cancelled"),
+  };
+
+  const eventLabels: Record<string, string> = {
+    contract_created: t("contractDetail.eventContractCreated"),
+    contract_updated: t("contractDetail.eventContractUpdated"),
+    email_sent: t("contractDetail.eventEmailSent"),
+    document_viewed: t("contractDetail.eventDocumentViewed"),
+    signed: t("contractDetail.eventSigned"),
+    declined: t("contractDetail.eventDeclined"),
+    reminder_sent: t("contractDetail.eventReminderSent"),
+    expired: t("contractDetail.eventExpired"),
+    downloaded: t("contractDetail.eventDownloaded"),
+    contract_duplicated: t("contractDetail.eventDuplicated"),
+  };
+
   useEffect(() => {
     loadContract();
     loadComments();
@@ -283,7 +285,7 @@ export default function ContractDetailPage() {
       const res = await api.get(`/contracts/${id}`);
       setContract(res.data.data);
     } catch {
-      toast.error("Hiba a szerződés betöltésekor");
+      toast.error(t("contractDetail.loadError"));
       router.push("/dashboard");
     } finally {
       setLoading(false);
@@ -305,7 +307,7 @@ export default function ContractDetailPage() {
       setVersions(res.data.data);
       setShowVersions(true);
     } catch {
-      toast.error("Hiba a verziók betöltésekor");
+      toast.error(t("contractDetail.versionsError"));
     }
   };
 
@@ -313,10 +315,10 @@ export default function ContractDetailPage() {
     setReminderLoading(signerId);
     try {
       await api.post(`/contracts/${id}/remind/${signerId}`);
-      toast.success("Emlékeztető elküldve!");
+      toast.success(t("contractDetail.reminderSuccess"));
       loadContract();
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba az emlékeztető küldésekor");
+      toast.error(err.response?.data?.error?.message ?? t("contractDetail.reminderError"));
     } finally {
       setReminderLoading(null);
     }
@@ -331,7 +333,7 @@ export default function ContractDetailPage() {
       }
       loadContract();
     } catch {
-      toast.error("Hiba a címke módosításakor");
+      toast.error(t("contractDetail.tagError"));
     }
   };
 
@@ -342,9 +344,9 @@ export default function ContractDetailPage() {
       await api.post(`/contracts/${id}/comments`, { content: newComment });
       setNewComment("");
       await loadComments();
-      toast.success("Megjegyzés hozzáadva");
+      toast.success(t("contractDetail.commentAdded"));
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba a megjegyzés mentésekor");
+      toast.error(err.response?.data?.error?.message ?? t("contractDetail.commentError"));
     } finally {
       setCommentLoading(false);
     }
@@ -354,30 +356,30 @@ export default function ContractDetailPage() {
     try {
       await api.delete(`/comments/${commentId}`);
       await loadComments();
-      toast.success("Megjegyzés törölve");
+      toast.success(t("contractDetail.commentDeleted"));
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba a törléskor");
+      toast.error(err.response?.data?.error?.message ?? t("contractDetail.commentDeleteError"));
     }
   };
 
   const handleSend = async () => {
     try {
       await api.post(`/contracts/${id}/send`);
-      toast.success("Szerződés elküldve aláírásra!");
+      toast.success(t("contractDetail.sendSuccess"));
       loadContract();
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba az elküldéskor");
+      toast.error(err.response?.data?.error?.message ?? t("contractDetail.sendError"));
     }
   };
 
   const handleCancel = async () => {
-    if (!confirm("Biztosan visszavonod a szerződést?")) return;
+    if (!confirm(t("contractDetail.cancelConfirm"))) return;
     try {
       await api.post(`/contracts/${id}/cancel`);
-      toast.success("Szerződés visszavonva");
+      toast.success(t("contractDetail.cancelSuccess"));
       loadContract();
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba");
+      toast.error(err.response?.data?.error?.message ?? t("contractDetail.cancelError"));
     }
   };
 
@@ -385,10 +387,10 @@ export default function ContractDetailPage() {
     setDuplicating(true);
     try {
       const res = await api.post(`/contracts/${id}/duplicate`);
-      toast.success("Szerződés duplikálva!");
+      toast.success(t("contractDetail.duplicateSuccess"));
       router.push(`/contracts/${res.data.data.id}`);
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba a duplikáláskor");
+      toast.error(err.response?.data?.error?.message ?? t("contractDetail.duplicateError"));
     } finally {
       setDuplicating(false);
     }
@@ -399,14 +401,12 @@ export default function ContractDetailPage() {
       const res = await api.get(`/contracts/${id}/download`);
       window.open(res.data.data.url, "_blank");
     } catch {
-      toast.error("Hiba a letöltéskor");
+      toast.error(t("contractDetail.downloadError"));
     }
   };
 
   const handleAiAnalysis = async () => {
-    const consent = window.confirm(
-      "Az elemzéshez a szerződés szövege az Anthropic (USA) AI szolgáltatónak kerül továbbításra feldolgozásra. Az adatok nem kerülnek tartós tárolásra. Folytatja?"
-    );
+    const consent = window.confirm(t("contractDetail.aiConsent"));
     if (!consent) return;
     setAiLoading(true);
     setAiAnalysis(null);
@@ -415,10 +415,10 @@ export default function ContractDetailPage() {
       if (res.data.success) {
         setAiAnalysis(res.data.data);
       } else {
-        toast.error(res.data.error?.message ?? "Hiba az AI elemzés során");
+        toast.error(res.data.error?.message ?? t("contractDetail.aiError"));
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba az AI elemzés során");
+      toast.error(err.response?.data?.error?.message ?? t("contractDetail.aiError"));
     } finally {
       setAiLoading(false);
     }
@@ -428,10 +428,10 @@ export default function ContractDetailPage() {
     setArchiving(true);
     try {
       await api.post(`/contracts/${id}/archive`);
-      toast.success("Szerződés archiválva");
+      toast.success(t("contractDetail.archiveSuccess"));
       loadContract();
     } catch {
-      toast.error("Hiba az archiváláskor");
+      toast.error(t("contractDetail.archiveError"));
     } finally {
       setArchiving(false);
     }
@@ -441,10 +441,10 @@ export default function ContractDetailPage() {
     setCloning(true);
     try {
       const res = await api.post(`/contracts/${id}/clone-as-template`);
-      toast.success("Sablon létrehozva!");
+      toast.success(t("contractDetail.templateCreated"));
       router.push(`/templates/${res.data.data.id}/edit`);
     } catch {
-      toast.error("Hiba a sablon létrehozásakor");
+      toast.error(t("contractDetail.templateError"));
     } finally {
       setCloning(false);
     }
@@ -454,10 +454,10 @@ export default function ContractDetailPage() {
     setAddingSelf(true);
     try {
       await api.post(`/contracts/${id}/add-self-signer`);
-      toast.success("Sikeresen hozzáadva aláíróként!");
+      toast.success(t("contractDetail.addSelfSuccess"));
       loadContract();
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? err.response?.data?.message ?? "Hiba a hozzáadáskor");
+      toast.error(err.response?.data?.error?.message ?? err.response?.data?.message ?? t("contractDetail.addSelfError"));
     } finally {
       setAddingSelf(false);
     }
@@ -469,7 +469,7 @@ export default function ContractDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4">
         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" />
-        <p className="text-sm text-gray-400 dark:text-gray-500">Betöltés...</p>
+        <p className="text-sm text-gray-400 dark:text-gray-500">{t("contractDetail.loading")}</p>
       </div>
     );
   }
@@ -492,7 +492,7 @@ export default function ContractDetailPage() {
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
         </svg>
-        Vissza a főoldalra
+        {t("contractDetail.backToDashboard")}
       </button>
 
       {/* ── Header Card ──────────────────────────────────────────────── */}
@@ -513,7 +513,7 @@ export default function ContractDetailPage() {
             {/* Registration number */}
             {contract.registrationNumber && (
               <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">Iktatószám:</span>
+                <span className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">{t("contractDetail.registrationNumber")}:</span>
                 <code className="px-2.5 py-1 bg-gray-100 dark:bg-gray-700 rounded-lg text-xs font-bold text-gray-700 dark:text-gray-200 tracking-wide">
                   {contract.registrationNumber}
                 </code>
@@ -534,20 +534,20 @@ export default function ContractDetailPage() {
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                Létrehozva: {new Date(contract.createdAt).toLocaleDateString("hu-HU")}
+                {t("contractDetail.createdAt")}: {new Date(contract.createdAt).toLocaleDateString("hu-HU")}
               </span>
               <span className="flex items-center gap-1.5">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                Módosítva: {new Date(contract.updatedAt).toLocaleDateString("hu-HU")}
+                {t("contractDetail.updatedAt")}: {new Date(contract.updatedAt).toLocaleDateString("hu-HU")}
               </span>
               {contract.expiresAt && (
                 <span className="flex items-center gap-1.5 text-orange-600 dark:text-orange-400">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
                   </svg>
-                  Lejárat: {new Date(contract.expiresAt).toLocaleDateString("hu-HU")}
+                  {t("contractDetail.expiresAt")}: {new Date(contract.expiresAt).toLocaleDateString("hu-HU")}
                 </span>
               )}
               {totalSigners > 0 && (
@@ -555,7 +555,7 @@ export default function ContractDetailPage() {
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0" />
                   </svg>
-                  {signedCount}/{totalSigners} aláírta
+                  {signedCount}/{totalSigners} {t("contractDetail.signedOf")}
                 </span>
               )}
             </div>
@@ -579,7 +579,7 @@ export default function ContractDetailPage() {
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                   </svg>
-                  Címke
+                  {t("contractDetail.tag")}
                 </button>
                 {showTagMenu && allTags.length > 0 && (
                   <>
@@ -618,7 +618,7 @@ export default function ContractDetailPage() {
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                 </svg>
-                Elküldés aláírásra
+                {t("contractDetail.sendForSigning")}
               </button>
             )}
 
@@ -637,20 +637,20 @@ export default function ContractDetailPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  Elemzés...
+                  {t("contractDetail.aiAnalyzing")}
                 </>
               ) : (
                 <>
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19 14.5" />
                   </svg>
-                  AI Elemzés
+                  {t("contractDetail.aiAnalysis")}
                 </>
               )}
             </button>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-xs">
-              Az elemzés során a szerződés szövege az Anthropic (USA) szerverére kerül feldolgozásra. Részletek az{" "}
-              <a href="/adatvedelem" target="_blank" className="underline hover:text-gray-700 dark:hover:text-gray-300">Adatvédelmi tájékoztatóban</a>.
+              {t("contractDetail.aiDisclaimer")}{" "}
+              <a href="/adatvedelem" target="_blank" className="underline hover:text-gray-700 dark:hover:text-gray-300">{t("contractDetail.aiPrivacyLink")}</a>.
             </p>
 
             {/* PDF Download */}
@@ -675,7 +675,7 @@ export default function ContractDetailPage() {
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
                 </svg>
-                Egyéb
+                {t("contractDetail.more")}
               </button>
               {showActions && (
                 <>
@@ -689,7 +689,7 @@ export default function ContractDetailPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
-                      {showPreview ? "Előnézet elrejtése" : "Tartalom megtekintése"}
+                      {showPreview ? t("contractDetail.hideContent") : t("contractDetail.showContent")}
                     </button>
                     <button
                       onClick={() => { loadVersions(); setShowActions(false); }}
@@ -698,7 +698,7 @@ export default function ContractDetailPage() {
                       <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      Verziók
+                      {t("contractDetail.versions")}
                     </button>
                     <button
                       onClick={() => { handleDuplicate(); setShowActions(false); }}
@@ -708,7 +708,7 @@ export default function ContractDetailPage() {
                       <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                       </svg>
-                      {duplicating ? "Duplikálás..." : "Duplikálás"}
+                      {duplicating ? t("contractDetail.duplicating") : t("contractDetail.duplicate")}
                     </button>
                     <button
                       onClick={() => { handleCloneAsTemplate(); setShowActions(false); }}
@@ -718,7 +718,7 @@ export default function ContractDetailPage() {
                       <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                       </svg>
-                      {cloning ? "Mentés..." : "Sablonként mentés"}
+                      {cloning ? t("contractDetail.savingAsTemplate") : t("contractDetail.saveAsTemplate")}
                     </button>
                     {!["completed", "cancelled", "archived"].includes(contract.status) && (
                       <button
@@ -729,7 +729,7 @@ export default function ContractDetailPage() {
                         <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
                         </svg>
-                        {archiving ? "Archiválás..." : "Archiválás"}
+                        {archiving ? t("contractDetail.archiving") : t("contractDetail.archive")}
                       </button>
                     )}
                     {!["completed", "cancelled"].includes(contract.status) && (
@@ -742,7 +742,7 @@ export default function ContractDetailPage() {
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                           </svg>
-                          Visszavonás
+                          {t("contractDetail.cancelContract")}
                         </button>
                       </>
                     )}
@@ -757,7 +757,7 @@ export default function ContractDetailPage() {
       {/* ── Content Preview (collapsible) ────────────────────────────── */}
       {showPreview && (
         <SectionCard
-          title="Szerződés tartalma"
+          title={t("contractDetail.contractContent")}
           icon="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
           headerAction={
             <button onClick={() => setShowPreview(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
@@ -777,7 +777,7 @@ export default function ContractDetailPage() {
       {/* ── Version History (collapsible) ────────────────────────────── */}
       {showVersions && (
         <SectionCard
-          title="Verzió előzmények"
+          title={t("contractDetail.versionHistory")}
           icon="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
           headerAction={
             <div className="flex items-center gap-3">
@@ -786,7 +786,7 @@ export default function ContractDetailPage() {
                   onClick={() => setShowDiff(!showDiff)}
                   className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
                 >
-                  {showDiff ? "Lista nézet" : "Összehasonlítás"}
+                  {showDiff ? t("contractDetail.listView") : t("contractDetail.compare")}
                 </button>
               )}
               <button onClick={() => setShowVersions(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
@@ -798,7 +798,7 @@ export default function ContractDetailPage() {
           }
         >
           {versions.length === 0 ? (
-            <p className="text-gray-400 dark:text-gray-500 text-sm">Nincs korábbi verzió</p>
+            <p className="text-gray-400 dark:text-gray-500 text-sm">{t("contractDetail.noVersions")}</p>
           ) : showDiff ? (
             <VersionDiff versions={versions} />
           ) : (
@@ -825,7 +825,7 @@ export default function ContractDetailPage() {
         <div className="lg:col-span-2 space-y-6">
           {/* Signers Timeline */}
           <SectionCard
-            title="Aláírók állapota"
+            title={t("contractDetail.signersStatus")}
             icon="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0"
             headerAction={
               totalSigners > 0 ? (
@@ -844,10 +844,10 @@ export default function ContractDetailPage() {
             }
           >
             {contract.signers.length === 0 ? (
-              <p className="text-gray-400 dark:text-gray-500 text-sm">Nincs aláíró hozzáadva</p>
+              <p className="text-gray-400 dark:text-gray-500 text-sm">{t("contractDetail.noSigners")}</p>
             ) : (
               <div className="space-y-0">
-                <SigningTimeline signers={contract.signers} />
+                <SigningTimeline signers={contract.signers} t={t} />
 
                 {/* Owner sign button — if they're a pending signer */}
                 {["sent", "partially_signed"].includes(contract.status) && (() => {
@@ -870,14 +870,14 @@ export default function ContractDetailPage() {
                             </svg>
                           </div>
                           <div className="flex-1">
-                            <p className="text-sm font-semibold text-blue-800 dark:text-blue-200">Az Ön aláírása szükséges</p>
-                            <p className="text-xs text-blue-600 dark:text-blue-400">Ön is aláíró ezen a szerződésen. Kattintson az aláíráshoz.</p>
+                            <p className="text-sm font-semibold text-blue-800 dark:text-blue-200">{t("contractDetail.yourSignatureRequired")}</p>
+                            <p className="text-xs text-blue-600 dark:text-blue-400">{t("contractDetail.yourSignatureDesc")}</p>
                           </div>
                           <a
                             href={`/sign/${(ownerSigner as any).signToken}`}
                             className="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition shrink-0"
                           >
-                            Aláírás most
+                            {t("contractDetail.signNow")}
                           </a>
                         </div>
                       </div>
@@ -898,15 +898,15 @@ export default function ContractDetailPage() {
                           </svg>
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">Ön nem aláíró</p>
-                          <p className="text-xs text-amber-600 dark:text-amber-400">Adja hozzá magát aláíróként, ha Ön is szeretné aláírni a szerződést.</p>
+                          <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">{t("contractDetail.notASigner")}</p>
+                          <p className="text-xs text-amber-600 dark:text-amber-400">{t("contractDetail.addSelfDesc")}</p>
                         </div>
                         <button
                           onClick={handleAddSelfAsSigner}
                           disabled={addingSelf}
                           className="px-5 py-2.5 bg-amber-600 text-white rounded-lg text-sm font-semibold hover:bg-amber-700 transition shrink-0 disabled:opacity-50"
                         >
-                          {addingSelf ? "Hozzáadás..." : "Magam hozzáadása"}
+                          {addingSelf ? t("contractDetail.addingSelf") : t("contractDetail.addSelf")}
                         </button>
                       </div>
                     </div>
@@ -916,7 +916,7 @@ export default function ContractDetailPage() {
                 {/* Signer action buttons */}
                 {["sent", "partially_signed"].includes(contract.status) && contract.signers.some((s) => s.status === "pending") && (
                   <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-700">
-                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Műveletek</p>
+                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">{t("contractDetail.actions")}</p>
                     <div className="flex flex-wrap gap-2">
                       {contract.signers
                         .filter((s) => s.status === "pending")
@@ -930,12 +930,12 @@ export default function ContractDetailPage() {
                               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                               </svg>
-                              {reminderLoading === signer.id ? "Küldés..." : `Emlékeztető: ${signer.name}`}
+                              {reminderLoading === signer.id ? t("contractDetail.reminderSending") : `${t("contractDetail.reminderPrefix")}: ${signer.name}`}
                             </button>
                             <button
                               onClick={() => setQrSigner({ name: signer.name, token: (signer as any).signToken })}
                               className="inline-flex items-center p-1.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
-                              title="QR kód"
+                              title={t("contractDetail.qrCode")}
                             >
                               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h7v7H3V3zm11 0h7v7h-7V3zM3 14h7v7H3v-7zm14 3h.01M17 14h.01M14 17h.01M14 14h3v3h-3v-3zm3 3h3v3h-3v-3z" />
@@ -954,11 +954,11 @@ export default function ContractDetailPage() {
         {/* Right column: Audit Log */}
         <div>
           <SectionCard
-            title="Napló"
+            title={t("contractDetail.auditLog")}
             icon="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z"
           >
             {contract.auditLogs.length === 0 ? (
-              <p className="text-gray-400 dark:text-gray-500 text-sm">Nincs bejegyzés</p>
+              <p className="text-gray-400 dark:text-gray-500 text-sm">{t("contractDetail.noAuditEntries")}</p>
             ) : (
               <div className="relative">
                 {/* Timeline line */}
@@ -966,7 +966,6 @@ export default function ContractDetailPage() {
 
                 <div className="space-y-4">
                   {contract.auditLogs.map((log) => {
-                    const iconPath = eventIcons[log.eventType] ?? "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z";
                     return (
                       <div key={log.id} className="relative flex gap-3 pl-0">
                         {/* Dot */}
@@ -1002,10 +1001,10 @@ export default function ContractDetailPage() {
 
       {/* ── Comments Section ─────────────────────────────────────────── */}
       <SectionCard
-        title="Megjegyzések"
+        title={t("contractDetail.comments")}
         icon="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 011.037-.443 48.282 48.282 0 005.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"
         headerAction={
-          <span className="text-xs text-gray-400 dark:text-gray-500">{comments.length} megjegyzés</span>
+          <span className="text-xs text-gray-400 dark:text-gray-500">{comments.length} {t("contractDetail.commentCount")}</span>
         }
       >
         {/* New comment input */}
@@ -1013,7 +1012,7 @@ export default function ContractDetailPage() {
           <textarea
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Írj megjegyzést..."
+            placeholder={t("contractDetail.commentPlaceholder")}
             rows={3}
             className="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-3 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-colors"
           />
@@ -1032,9 +1031,9 @@ export default function ContractDetailPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  Mentés...
+                  {t("contractDetail.commentSaving")}
                 </>
-              ) : "Hozzáadás"}
+              ) : t("contractDetail.commentAdd")}
             </button>
           </div>
         </div>
@@ -1046,7 +1045,7 @@ export default function ContractDetailPage() {
               <svg className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 011.037-.443 48.282 48.282 0 005.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
               </svg>
-              <p className="text-gray-400 dark:text-gray-500 text-sm">Nincs megjegyzés</p>
+              <p className="text-gray-400 dark:text-gray-500 text-sm">{t("contractDetail.noAuditEntries")}</p>
             </div>
           )}
           {comments.map((comment) => (
@@ -1070,7 +1069,7 @@ export default function ContractDetailPage() {
                   <button
                     onClick={() => handleDeleteComment(comment.id)}
                     className="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
-                    title="Törlés"
+                    title={t("common.delete")}
                   >
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
@@ -1097,8 +1096,8 @@ export default function ContractDetailPage() {
               </svg>
             </div>
             <div>
-              <p className="text-gray-900 dark:text-gray-100 font-medium">AI elemzés folyamatban...</p>
-              <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">A Claude AI elemzi a szerződés tartalmát</p>
+              <p className="text-gray-900 dark:text-gray-100 font-medium">{t("contractDetail.aiInProgress")}</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">{t("contractDetail.aiAnalyzingContent")}</p>
             </div>
           </div>
         </div>
@@ -1109,7 +1108,7 @@ export default function ContractDetailPage() {
           {/* AI Disclaimer */}
           <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 rounded-lg px-4 py-3">
             <p className="text-xs text-amber-800 dark:text-amber-300">
-              {"\u26A0\uFE0F"} Az AI elemzés tájékoztató jellegű, és nem minősül jogi véleménynek vagy tanácsadásnak. A szerződés jogi értékeléshez kérjük, forduljon ügyvédhez.
+              {"\u26A0\uFE0F"} {t("contractDetail.aiDisclaimerWarning")}
             </p>
           </div>
 
@@ -1119,12 +1118,12 @@ export default function ContractDetailPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19 14.5" />
               </svg>
             </div>
-            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">AI Elemzés</h2>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">{t("contractDetail.aiAnalysis")}</h2>
           </div>
 
           {/* Summary */}
           <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-5 border border-amber-200 dark:border-amber-800">
-            <h3 className="font-semibold text-amber-800 dark:text-amber-300 mb-2 text-sm uppercase tracking-wider">Összefoglaló</h3>
+            <h3 className="font-semibold text-amber-800 dark:text-amber-300 mb-2 text-sm uppercase tracking-wider">{t("contractDetail.aiSummary")}</h3>
             <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm">{aiAnalysis.summary}</p>
           </div>
 
@@ -1135,7 +1134,7 @@ export default function ContractDetailPage() {
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z" />
                   </svg>
-                  Kockázatok
+                  {t("contractDetail.aiRisks")}
                 </h3>
                 <ul className="space-y-2">
                   {aiAnalysis.risks.map((risk, i) => (
@@ -1153,7 +1152,7 @@ export default function ContractDetailPage() {
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
                   </svg>
-                  Javaslatok
+                  {t("contractDetail.aiSuggestions")}
                 </h3>
                 <ul className="space-y-2">
                   {aiAnalysis.suggestions.map((s, i) => (
@@ -1171,7 +1170,7 @@ export default function ContractDetailPage() {
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12l-3-3m0 0l-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                   </svg>
-                  Hiányzó záradékok
+                  {t("contractDetail.aiMissingClauses")}
                 </h3>
                 <ul className="space-y-2">
                   {aiAnalysis.missingClauses.map((c, i) => (
@@ -1188,7 +1187,7 @@ export default function ContractDetailPage() {
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
                 </svg>
-                Jogi megfelelőség (Ptk.)
+                {t("contractDetail.aiLegalCompliance")}
               </h3>
               <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{aiAnalysis.legalCompliance}</p>
             </div>
@@ -1221,22 +1220,22 @@ export default function ContractDetailPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Szerződés archiválása</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t("contractDetail.archiveConfirmTitle")}</h3>
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-              Biztosan archiválni szeretné a <strong>&quot;{contract?.title}&quot;</strong> szerződést?
+              {t("contractDetail.archiveConfirmMsg")} <strong>&quot;{contract?.title}&quot;</strong> {t("contractDetail.archiveConfirmSuffix")}
             </p>
             <ul className="text-sm text-gray-500 dark:text-gray-400 mb-5 space-y-1 ml-4 list-disc">
-              <li>Az archivált szerződés nem lesz módosítható</li>
-              <li>A függőben lévő aláírási felkérések érvényüket vesztik</li>
-              <li>Később visszaállíthatja az archívumból</li>
+              <li>{t("contractDetail.archiveNote1")}</li>
+              <li>{t("contractDetail.archiveNote2")}</li>
+              <li>{t("contractDetail.archiveNote3")}</li>
             </ul>
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setShowArchiveConfirm(false)}
                 className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
               >
-                Mégsem
+                {t("common.cancel")}
               </button>
               <button
                 onClick={() => {
@@ -1246,7 +1245,7 @@ export default function ContractDetailPage() {
                 disabled={archiving}
                 className="px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-lg hover:bg-amber-700 disabled:opacity-50"
               >
-                {archiving ? "Archiválás..." : "Archiválás"}
+                {archiving ? t("contractDetail.archiving") : t("contractDetail.archive")}
               </button>
             </div>
           </div>

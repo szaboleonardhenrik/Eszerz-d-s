@@ -6,6 +6,7 @@ import SignaturePad from "signature_pad";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { sanitizeHtml } from "@/lib/sanitize";
+import { useI18n } from "@/lib/i18n";
 
 const publicApi = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api",
@@ -38,6 +39,7 @@ interface SignerField {
 type Step = "verify" | "details" | "review" | "sign";
 
 export default function SignPage() {
+  const { t } = useI18n();
   const { token } = useParams<{ token: string }>();
   const [contract, setContract] = useState<ContractInfo | null>(null);
   const [signer, setSigner] = useState<SignerInfo | null>(null);
@@ -136,7 +138,7 @@ export default function SignPage() {
     } catch (err: any) {
       setError(
         err.response?.data?.error?.message ??
-          "Érvénytelen vagy lejárt aláírási link"
+          t("sign.invalidLink")
       );
     } finally {
       setLoading(false);
@@ -158,11 +160,11 @@ export default function SignPage() {
       setOtpSent(true);
       setOtpCooldown(60);
       setOtpCode(["", "", "", "", "", ""]);
-      toast.success("Hitelesítési kód elküldve");
+      toast.success(t("sign.otp.codeSent"));
       // Focus first input
       setTimeout(() => otpInputRefs.current[0]?.focus(), 100);
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba a kód küldésekor");
+      toast.error(err.response?.data?.error?.message ?? t("sign.otp.sendError"));
     } finally {
       setOtpSending(false);
     }
@@ -171,17 +173,17 @@ export default function SignPage() {
   const verifyOtp = async () => {
     const code = otpCode.join("");
     if (code.length !== 6) {
-      toast.error("Kérjük, írja be a teljes 6 jegyű kódot");
+      toast.error(t("sign.otp.enterFullCode"));
       return;
     }
     setOtpVerifying(true);
     try {
       await publicApi.post(`/sign/${token}/verify-otp`, { code });
       setSigner((s) => s ? { ...s, otpVerified: true } : s);
-      toast.success("Email cím sikeresen hitelesítve!");
+      toast.success(t("sign.otp.emailVerified"));
       setCurrentStep("details");
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hibás kód");
+      toast.error(err.response?.data?.error?.message ?? t("sign.otp.invalidCode"));
       setOtpCode(["", "", "", "", "", ""]);
       otpInputRefs.current[0]?.focus();
     } finally {
@@ -235,13 +237,13 @@ export default function SignPage() {
     let signatureImageBase64: string | undefined;
     if (signMethod === "draw") {
       if (padRef.current?.isEmpty()) {
-        toast.error("Kérjük, írja alá a szerződést");
+        toast.error(t("sign.signature.pleaseSign"));
         return;
       }
       signatureImageBase64 = padRef.current?.toDataURL("image/png");
     } else {
       if (!typedName.trim()) {
-        toast.error("Kérjük, írja be a nevét");
+        toast.error(t("sign.signature.pleaseTypeName"));
         return;
       }
     }
@@ -262,7 +264,7 @@ export default function SignPage() {
       });
       setSigned(true);
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba az aláíráskor");
+      toast.error(err.response?.data?.error?.message ?? t("sign.signature.signError"));
     } finally {
       setSigning(false);
     }
@@ -275,19 +277,19 @@ export default function SignPage() {
         reason: declineReason,
         note: signerNote || undefined,
       });
-      setError("Visszautasította a szerződést");
+      setError(t("sign.decline.declinedMessage"));
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba");
+      toast.error(err.response?.data?.error?.message ?? t("sign.signature.signError"));
     } finally {
       setSigning(false);
     }
   };
 
   const steps: { key: Step; label: string }[] = [
-    { key: "verify", label: "Hitelesítés" },
-    { key: "details", label: "Adatok" },
-    { key: "review", label: "Szerződés" },
-    { key: "sign", label: "Aláírás" },
+    { key: "verify", label: t("sign.steps.verify") },
+    { key: "details", label: t("sign.steps.details") },
+    { key: "review", label: t("sign.steps.review") },
+    { key: "sign", label: t("sign.steps.sign") },
   ];
 
   const stepIndex = steps.findIndex((s) => s.key === currentStep);
@@ -298,7 +300,7 @@ export default function SignPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-teal-50/30 flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-[#198296]/20 border-t-[#198296] rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-sm text-gray-500">Szerződés betöltése...</p>
+          <p className="text-sm text-gray-500">{t("sign.loadingContract")}</p>
         </div>
       </div>
     );
@@ -306,7 +308,7 @@ export default function SignPage() {
 
   // ── ERROR ──
   if (error) {
-    const isDecline = error.includes("Visszautasította");
+    const isDecline = error === t("sign.decline.declinedMessage");
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-teal-50/30 flex items-center justify-center px-4">
         <div className="text-center max-w-md">
@@ -319,7 +321,7 @@ export default function SignPage() {
             </span>
           </div>
           <h1 className="text-xl font-bold text-gray-900 mb-2">
-            {isDecline ? "Szerződés visszautasítva" : "Nem sikerült betölteni"}
+            {isDecline ? t("sign.contractDeclined") : t("sign.loadFailed")}
           </h1>
           <p className="text-gray-500 text-sm leading-relaxed">{error}</p>
         </div>
@@ -341,19 +343,18 @@ export default function SignPage() {
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-3">
-            Sikeresen aláírta a szerződést!
+            {t("sign.successTitle")}
           </h1>
           <div className="bg-white rounded-xl border border-emerald-200 p-5 mb-4 shadow-sm">
             <p className="text-sm text-gray-600 leading-relaxed">
-              Az aláírása rögzítésre került. Amennyiben minden fél aláírta a szerződést,
-              a <strong>végleges dokumentumot PDF-ben emailben kapja meg</strong>.
+              {t("sign.successMessage")}
             </p>
           </div>
           <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
-            <span>Biztonságos elektronikus aláírás a Legitas platformon</span>
+            <span>{t("sign.secureSignature")}</span>
           </div>
         </div>
       </div>
@@ -445,10 +446,9 @@ export default function SignPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
-              <h2 className="text-xl font-bold text-gray-900">Email hitelesítés</h2>
+              <h2 className="text-xl font-bold text-gray-900">{t("sign.otp.title")}</h2>
               <p className="text-sm text-gray-500 mt-1.5 max-w-md mx-auto">
-                A biztonságos aláíráshoz szükséges az email címének ellenőrzése.
-                Egy 6 jegyű kódot küldünk az Ön email címére.
+                {t("sign.otp.description")}
               </p>
             </div>
 
@@ -464,7 +464,7 @@ export default function SignPage() {
                           </svg>
                         </div>
                         <div>
-                          <p className="text-xs text-gray-500">Kód küldése erre a címre:</p>
+                          <p className="text-xs text-gray-500">{t("sign.otp.sendTo")}</p>
                           <p className="text-sm font-semibold text-gray-900">{signer.email}</p>
                         </div>
                       </div>
@@ -478,10 +478,10 @@ export default function SignPage() {
                       {otpSending ? (
                         <span className="flex items-center justify-center gap-2">
                           <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                          Kód küldése...
+                          {t("sign.otp.sending")}
                         </span>
                       ) : (
-                        "Hitelesítési kód kérése"
+                        t("sign.otp.requestCode")
                       )}
                     </button>
                   </>
@@ -494,7 +494,7 @@ export default function SignPage() {
                         </svg>
                       </div>
                       <p className="text-sm text-gray-600">
-                        Kód elküldve: <strong>{otpMaskedEmail}</strong>
+                        {t("sign.otp.codeSentTo")} <strong>{otpMaskedEmail}</strong>
                       </p>
                     </div>
 
@@ -530,10 +530,10 @@ export default function SignPage() {
                       {otpVerifying ? (
                         <span className="flex items-center justify-center gap-2">
                           <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                          Ellenőrzés...
+                          {t("sign.otp.verifying")}
                         </span>
                       ) : (
-                        "Kód ellenőrzése"
+                        t("sign.otp.verifyCode")
                       )}
                     </button>
 
@@ -544,8 +544,8 @@ export default function SignPage() {
                         className="text-sm text-[#198296] hover:text-[#146d7d] font-medium disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
                       >
                         {otpCooldown > 0
-                          ? `Új kód kérése (${otpCooldown}s)`
-                          : "Új kód kérése"}
+                          ? t("sign.otp.newCodeCooldown", { seconds: otpCooldown })
+                          : t("sign.otp.newCode")}
                       </button>
                     </div>
                   </>
@@ -558,8 +558,7 @@ export default function SignPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                     <p className="text-xs text-gray-500 leading-relaxed">
-                      Az email hitelesítés megerősíti, hogy Ön a jogosult aláíró.
-                      Ez növeli az aláírás bizonyító erejét vitás esetben.
+                      {t("sign.otp.securityNote")}
                     </p>
                   </div>
                 </div>
@@ -572,9 +571,9 @@ export default function SignPage() {
         {currentStep === "details" && (
           <div className="animate-in fade-in duration-300">
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Aláíró adatai</h2>
+              <h2 className="text-xl font-bold text-gray-900">{t("sign.details.title")}</h2>
               <p className="text-sm text-gray-500 mt-1">
-                Kérjük, töltse ki vállalkozása adatait a szerződés aláírásához.
+                {t("sign.details.description")}
               </p>
             </div>
 
@@ -582,7 +581,7 @@ export default function SignPage() {
               <div className="p-6 sm:p-8 space-y-5">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    Aláíró teljes neve
+                    {t("sign.details.signerName")}
                   </label>
                   <input
                     type="text"
@@ -595,7 +594,7 @@ export default function SignPage() {
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    Vállalkozás neve
+                    {t("sign.details.companyName")}
                   </label>
                   <input
                     type="text"
@@ -609,7 +608,7 @@ export default function SignPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                      Adószám
+                      {t("sign.details.taxNumber")}
                     </label>
                     <input
                       type="text"
@@ -621,7 +620,7 @@ export default function SignPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                      Székhely
+                      {t("sign.details.address")}
                     </label>
                     <input
                       type="text"
@@ -640,7 +639,7 @@ export default function SignPage() {
                     <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
                     </svg>
-                    Minden mező kitöltése szükséges
+                    {t("sign.details.allFieldsRequired")}
                   </p>
                 )}
                 {allFieldsFilled && <div />}
@@ -649,7 +648,7 @@ export default function SignPage() {
                   disabled={!allFieldsFilled}
                   className="px-6 py-2.5 bg-[#198296] text-white rounded-xl text-sm font-semibold hover:bg-[#146d7d] disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md"
                 >
-                  Tovább a szerződéshez
+                  {t("sign.details.nextToContract")}
                 </button>
               </div>
             </div>
@@ -661,10 +660,10 @@ export default function SignPage() {
                     <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    Szerződés adatai
+                    {t("sign.details.contractData")}
                   </h3>
                   <p className="text-sm text-gray-500 mt-1">
-                    Kérjük, töltse ki az Önre vonatkozó szerződéses adatokat.
+                    {t("sign.details.contractDataDesc")}
                   </p>
                 </div>
                 <div className="p-6 sm:p-8 space-y-5">
@@ -705,7 +704,7 @@ export default function SignPage() {
               <div>
                 <h2 className="text-xl font-bold text-gray-900">{contract.title}</h2>
                 <p className="text-sm text-gray-500 mt-1">
-                  Kérjük, olvassa át a szerződés teljes tartalmát.
+                  {t("sign.review.readContract")}
                 </p>
               </div>
               {/* Summary chip */}
@@ -730,7 +729,7 @@ export default function SignPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                 </svg>
                 <p className="text-sm text-amber-700">
-                  Kérjük, görgessen a szerződés végére a továbblépéshez.
+                  {t("sign.review.scrollToBottom")}
                 </p>
               </div>
             )}
@@ -740,14 +739,14 @@ export default function SignPage() {
                 onClick={() => setCurrentStep("details")}
                 className="px-5 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors"
               >
-                Vissza
+                {t("common.back")}
               </button>
               <button
                 onClick={() => setCurrentStep("sign")}
                 disabled={!hasRead}
                 className="px-6 py-2.5 bg-[#198296] text-white rounded-xl text-sm font-semibold hover:bg-[#146d7d] disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md"
               >
-                Tovább az aláíráshoz
+                {t("sign.review.nextToSign")}
               </button>
             </div>
           </div>
@@ -757,9 +756,9 @@ export default function SignPage() {
         {currentStep === "sign" && (
           <div className="animate-in fade-in duration-300">
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Elektronikus aláírás</h2>
+              <h2 className="text-xl font-bold text-gray-900">{t("sign.signature.title")}</h2>
               <p className="text-sm text-gray-500 mt-1">
-                Válassza ki az aláírás módját és hitelesítse a szerződést.
+                {t("sign.signature.description")}
               </p>
             </div>
 
@@ -769,7 +768,7 @@ export default function SignPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
               <p className="text-sm text-emerald-700 font-medium">
-                Email cím hitelesítve
+                {t("sign.signature.emailVerified")}
               </p>
             </div>
 
@@ -777,19 +776,19 @@ export default function SignPage() {
             <div className="bg-[#198296]/5 border border-[#198296]/15 rounded-2xl p-5 mb-5">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-xs font-semibold text-[#198296]/60 uppercase tracking-wider mb-1.5">Aláíró fél</p>
+                  <p className="text-xs font-semibold text-[#198296]/60 uppercase tracking-wider mb-1.5">{t("sign.signature.signerParty")}</p>
                   <p className="font-bold text-gray-900">{signerFullName}</p>
                   <p className="text-sm text-gray-600">{companyName}</p>
                   <div className="flex flex-wrap gap-x-5 gap-y-0.5 mt-1.5 text-xs text-gray-500">
-                    <span>Adószám: {companyTaxNumber}</span>
-                    <span>Székhely: {companyAddress}</span>
+                    <span>{t("sign.signature.taxNumberLabel")} {companyTaxNumber}</span>
+                    <span>{t("sign.signature.addressLabel")} {companyAddress}</span>
                   </div>
                 </div>
                 <button
                   onClick={() => setCurrentStep("details")}
                   className="text-xs text-[#198296] hover:text-[#146d7d] font-medium underline underline-offset-2 flex-shrink-0"
                 >
-                  Szerkesztés
+                  {t("sign.signature.editDetails")}
                 </button>
               </div>
             </div>
@@ -810,7 +809,7 @@ export default function SignPage() {
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                       </svg>
-                      Kézírásos
+                      {t("sign.signature.drawMethod")}
                     </span>
                   </button>
                   <button
@@ -825,7 +824,7 @@ export default function SignPage() {
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h11M9 21V3m4 0h6m-6 18h6" />
                       </svg>
-                      Gépelt
+                      {t("sign.signature.typeMethod")}
                     </span>
                   </button>
                 </div>
@@ -833,7 +832,7 @@ export default function SignPage() {
                 {signMethod === "draw" ? (
                   <div className="mb-5">
                     <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-                      Írja ide az aláírását
+                      {t("sign.signature.drawLabel")}
                     </label>
                     <div className="relative border-2 border-dashed border-gray-200 rounded-xl overflow-hidden hover:border-[#198296]/40 transition-colors">
                       <canvas
@@ -844,14 +843,14 @@ export default function SignPage() {
                         onClick={() => padRef.current?.clear()}
                         className="absolute bottom-2 right-2 text-xs text-gray-400 hover:text-gray-600 bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded-md border transition-colors"
                       >
-                        Tisztítás
+                        {t("sign.signature.clear")}
                       </button>
                     </div>
                   </div>
                 ) : (
                   <div className="mb-5">
                     <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-                      Gépelje be a teljes nevét
+                      {t("sign.signature.typeLabel")}
                     </label>
                     <input
                       type="text"
@@ -862,7 +861,7 @@ export default function SignPage() {
                     />
                     {typedName && (
                       <div className="mt-3 p-3 bg-gray-50 rounded-lg border">
-                        <p className="text-xs text-gray-400 mb-1">Előnézet:</p>
+                        <p className="text-xs text-gray-400 mb-1">{t("sign.signature.preview")}</p>
                         <p className="text-xl sm:text-2xl font-serif italic text-gray-900">{typedName}</p>
                       </div>
                     )}
@@ -872,12 +871,12 @@ export default function SignPage() {
                 {/* Note */}
                 <div className="mb-5">
                   <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-                    Megjegyzés <span className="normal-case font-normal">(opcionális)</span>
+                    {t("sign.signature.noteLabel")} <span className="normal-case font-normal">{t("sign.signature.noteOptional")}</span>
                   </label>
                   <textarea
                     value={signerNote}
                     onChange={(e) => setSignerNote(e.target.value)}
-                    placeholder="Ha szeretne megjegyzést fűzni az aláírásához..."
+                    placeholder={t("sign.signature.notePlaceholder")}
                     rows={2}
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm bg-gray-50/50 focus:bg-white focus:border-[#198296] focus:ring-2 focus:ring-[#198296]/10 outline-none resize-none transition-all"
                   />
@@ -891,13 +890,10 @@ export default function SignPage() {
                     </svg>
                     <div className="space-y-1.5">
                       <p className="text-xs text-gray-500 leading-relaxed">
-                        Az aláírással elfogadom a szerződés feltételeit. Az aláírás
-                        időbélyeggel, IP-címmel és böngészőadatokkal kerül rögzítésre.
+                        {t("sign.signature.legalInfo")}
                       </p>
                       <p className="text-xs text-gray-400 leading-relaxed">
-                        Jelen elektronikus aláírás az eIDAS rendelet (EU 910/2014) szerinti
-                        egyszerű elektronikus aláírásnak minősül. A platform
-                        SHA-256 dokumentum hash-t és audit naplót biztosít a hitelesség igazolásához.
+                        {t("sign.signature.eidasInfo")}
                       </p>
                     </div>
                   </div>
@@ -912,14 +908,13 @@ export default function SignPage() {
                     className="w-4.5 h-4.5 mt-0.5 rounded border-gray-300 text-[#198296] focus:ring-[#198296]/30 cursor-pointer"
                   />
                   <span className="text-sm text-gray-600 leading-relaxed group-hover:text-gray-800 transition-colors">
-                    Tudomásul veszem, hogy az aláírás során a rendszer rögzíti az IP-címemet, böngészőadataimat,
-                    az aláírás időpontját és az aláírásképemet az eIDAS rendelet és a GDPR előírásainak megfelelően.{" "}
+                    {t("sign.signature.dataConsent")}{" "}
                     <a
                       href="/adatvedelem"
                       target="_blank"
                       className="text-[#198296] underline underline-offset-2 hover:text-[#146d7d]"
                     >
-                      Adatvédelmi tájékoztató
+                      {t("sign.signature.privacyPolicy")}
                     </a>
                   </span>
                 </label>
@@ -933,8 +928,7 @@ export default function SignPage() {
                     className="w-4.5 h-4.5 mt-0.5 rounded border-gray-300 text-[#198296] focus:ring-[#198296]/30 cursor-pointer"
                   />
                   <span className="text-xs text-gray-500 leading-relaxed group-hover:text-gray-700 transition-colors">
-                    Hozzájárulok, hogy a megadott adataimat (név, e-mail, cégnév) a kibocsátó a partneri
-                    nyilvántartásában tárolja a jövőbeli kapcsolattartás céljából. (Opcionális)
+                    {t("sign.signature.partnerConsent")}
                   </span>
                 </label>
 
@@ -945,34 +939,34 @@ export default function SignPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <div className="text-[11px] text-gray-400 leading-relaxed space-y-1.5">
-                      <p className="font-semibold text-gray-500">Adatkezelési tájékoztató (GDPR 14. cikk)</p>
+                      <p className="font-semibold text-gray-500">{t("sign.signature.gdprTitle")}</p>
                       <p>
-                        <strong>Adatkezelő:</strong> T-DIGITAL Solutions Kft. (Legitas), e-mail: info@legitas.hu
+                        <strong>{t("sign.signature.gdprController")}</strong> {t("sign.signature.gdprControllerValue")}
                       </p>
                       <p>
-                        <strong>Kezelt adatok:</strong> név, e-mail cím, IP-cím, böngészőadatok, aláíráskép, aláírás időpontja.
+                        <strong>{t("sign.signature.gdprData")}</strong> {t("sign.signature.gdprDataValue")}
                       </p>
                       <p>
-                        <strong>Jogalap:</strong> az adatkezelés a szerződés teljesítéséhez szükséges (GDPR 6. cikk (1) b)), valamint jogos érdek az aláírás hitelességének igazolására (GDPR 6. cikk (1) f)).
+                        <strong>{t("sign.signature.gdprBasis")}</strong> {t("sign.signature.gdprBasisValue")}
                       </p>
                       <p>
-                        <strong>Cél:</strong> elektronikus aláírás hitelesítése, szerződés érvényességének biztosítása, audit napló vezetése.
+                        <strong>{t("sign.signature.gdprPurpose")}</strong> {t("sign.signature.gdprPurposeValue")}
                       </p>
                       <p>
-                        <strong>Megőrzési idő:</strong> a szerződés megszűnésétől számított 5 év (Ptk. általános elévülési idő), audit napló: 2 év.
+                        <strong>{t("sign.signature.gdprRetention")}</strong> {t("sign.signature.gdprRetentionValue")}
                       </p>
                       <p>
-                        <strong>Érintetti jogok:</strong> Önnek joga van a hozzáféréshez, helyesbítéshez, törléshez, az adatkezelés korlátozásához, adathordozhatósághoz és tiltakozáshoz. Panaszt tehet a NAIH-nál (naih.hu).
+                        <strong>{t("sign.signature.gdprRights")}</strong> {t("sign.signature.gdprRightsValue")}
                       </p>
                       <p>
-                        Részletes tájékoztató:{" "}
+                        {t("sign.signature.gdprDetailsLink")}{" "}
                         <a
                           href="/adatvedelem"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-[#198296]/70 underline underline-offset-2 hover:text-[#198296] transition-colors"
                         >
-                          Adatvédelmi szabályzat
+                          {t("sign.signature.gdprDetailsLinkText")}
                         </a>
                       </p>
                     </div>
@@ -986,14 +980,14 @@ export default function SignPage() {
                   onClick={() => setCurrentStep("review")}
                   className="px-5 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors order-2 sm:order-1"
                 >
-                  Vissza
+                  {t("common.back")}
                 </button>
                 <div className="flex-1 flex gap-3 order-1 sm:order-2 sm:justify-end">
                   <button
                     onClick={() => setDeclining(true)}
                     className="px-5 py-2.5 border border-red-200 text-red-600 rounded-xl text-sm font-medium hover:bg-red-50 transition-colors"
                   >
-                    Visszautasítás
+                    {t("sign.signature.decline")}
                   </button>
                   <button
                     onClick={handleSign}
@@ -1003,10 +997,10 @@ export default function SignPage() {
                     {signing ? (
                       <span className="flex items-center justify-center gap-2">
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Aláírás folyamatban...
+                        {t("sign.signature.signing")}
                       </span>
                     ) : (
-                      "Elfogadom és aláírom"
+                      t("sign.signature.acceptAndSign")
                     )}
                   </button>
                 </div>
@@ -1021,13 +1015,13 @@ export default function SignPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                   <p className="text-sm font-semibold text-red-700">
-                    Biztosan visszautasítja a szerződést?
+                    {t("sign.decline.confirmTitle")}
                   </p>
                 </div>
                 <textarea
                   value={declineReason}
                   onChange={(e) => setDeclineReason(e.target.value)}
-                  placeholder="Indoklás (opcionális)"
+                  placeholder={t("sign.decline.reasonPlaceholder")}
                   rows={2}
                   className="w-full px-4 py-2.5 border border-red-200 rounded-xl text-sm mb-3 outline-none focus:border-red-300 bg-white"
                 />
@@ -1037,13 +1031,13 @@ export default function SignPage() {
                     disabled={signing}
                     className="px-5 py-2 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700 disabled:opacity-50 transition-colors"
                   >
-                    Visszautasítás megerősítése
+                    {t("sign.decline.confirm")}
                   </button>
                   <button
                     onClick={() => setDeclining(false)}
                     className="px-5 py-2 text-gray-500 text-sm hover:text-gray-700 transition-colors"
                   >
-                    Mégse
+                    {t("common.cancel")}
                   </button>
                 </div>
               </div>
@@ -1055,7 +1049,7 @@ export default function SignPage() {
         {contract.signers.length > 1 && (
           <div className="mt-6 bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-              Aláírók státusza
+              {t("sign.signerStatus")}
             </h3>
             <div className="space-y-2.5">
               {contract.signers.map((s) => (
@@ -1090,10 +1084,10 @@ export default function SignPage() {
                     }`}
                   >
                     {s.status === "signed"
-                      ? "Aláírta"
+                      ? t("sign.statusSigned")
                       : s.status === "pending"
-                        ? "Várakozik"
-                        : "Visszautasította"}
+                        ? t("sign.statusPending")
+                        : t("sign.statusDeclined")}
                   </span>
                 </div>
               ))}
@@ -1107,7 +1101,7 @@ export default function SignPage() {
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
-            <span>Biztonságos elektronikus aláírás</span>
+            <span>{t("sign.secureSignatureShort")}</span>
             <span className="mx-1">&middot;</span>
             <span className="font-medium text-[#198296]/60">Legitas</span>
           </div>
