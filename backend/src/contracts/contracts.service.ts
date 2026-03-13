@@ -111,8 +111,8 @@ export class ContractsService {
     const tier = user?.subscriptionTier ?? 'free';
 
     // ── Tier limits ──
-    const contractLimits: Record<string, number> = { free: 2, starter: 2, medium: 12, premium: 35, enterprise: 500 };
-    const signerLimits: Record<string, number> = { free: 2, starter: 2, medium: 10, premium: 10, enterprise: 10 };
+    const contractLimits: Record<string, number> = { free: 3, starter: 10, medium: 12, premium: 35, enterprise: 500 };
+    const signerLimits: Record<string, number> = { free: 2, starter: 5, medium: 10, premium: 10, enterprise: 10 };
 
     // Admins bypass limits
     const isAdmin = ['superadmin', 'employee'].includes(user?.role ?? '');
@@ -1032,7 +1032,7 @@ export class ContractsService {
     const monthlyUsage = await this.prisma.contract.count({
       where: { ownerId: userId, createdAt: { gte: firstOfMonth } },
     });
-    const tierLimitsMap: Record<string, number> = { free: 2, starter: 2, medium: 12, premium: 35, enterprise: 500, basic: 12, pro: 35 };
+    const tierLimitsMap: Record<string, number> = { free: 3, starter: 10, medium: 12, premium: 35, enterprise: 500, basic: 12, pro: 35 };
     const monthlyLimit = tierLimitsMap[tier] ?? 2;
 
     return {

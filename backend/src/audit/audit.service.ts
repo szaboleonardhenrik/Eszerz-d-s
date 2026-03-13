@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import * as crypto from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 
 export type AuditEventType =
@@ -30,6 +31,23 @@ export class AuditService {
     userAgent?: string;
     documentHash?: string;
   }) {
+    // ── Hash chain: fetch the latest audit entry for this contract ──
+    const previous = await this.prisma.auditLog.findFirst({
+      where: { contractId: params.contractId },
+      orderBy: { createdAt: 'desc' },
+      select: { integrityHash: true },
+    });
+    const previousHash = previous?.integrityHash ?? 'GENESIS';
+
+    const now = new Date();
+    const integrityHash = this.computeIntegrityHash({
+      previousHash,
+      action: params.eventType,
+      userId: params.signerId ?? '',
+      contractId: params.contractId,
+      timestamp: now.toISOString(),
+    });
+
     return this.prisma.auditLog.create({
       data: {
         contractId: params.contractId,
@@ -39,8 +57,26 @@ export class AuditService {
         ipAddress: params.ipAddress,
         userAgent: params.userAgent,
         documentHash: params.documentHash,
+        previousHash,
+        integrityHash,
+        createdAt: now,
       },
     });
+  }
+
+  /**
+   * Compute SHA-256 integrity hash for audit chain.
+   * Hash = SHA-256(previousHash + action + userId + contractId + timestamp)
+   */
+  private computeIntegrityHash(input: {
+    previousHash: string;
+    action: string;
+    userId: string;
+    contractId: string;
+    timestamp: string;
+  }): string {
+    const payload = `${input.previousHash}|${input.action}|${input.userId}|${input.contractId}|${input.timestamp}`;
+    return crypto.createHash('sha256').update(payload).digest('hex');
   }
 
   /**

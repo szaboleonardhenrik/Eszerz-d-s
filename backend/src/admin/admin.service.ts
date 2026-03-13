@@ -140,7 +140,7 @@ export class AdminService {
 
   // ── User Impersonation ──
 
-  async impersonateUser(targetUserId: string, adminUserId: string, adminRole: string) {
+  async impersonateUser(targetUserId: string, adminUserId: string, adminRole: string, ip?: string) {
     if (adminRole !== 'superadmin') {
       throw new ForbiddenException('Csak szuperadmin használhat imperszonálást');
     }
@@ -176,6 +176,19 @@ export class AdminService {
         expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
       },
     });
+
+    // Audit log the impersonation event via in-app notification (persistent, queryable record)
+    await this.inAppNotifications.create(adminUserId, {
+      type: 'system',
+      title: 'Admin imperszonálás',
+      message: `Imperszonálás: ${targetUser.name} (${targetUser.email}) — admin: ${adminUserId}, IP: ${ip || 'ismeretlen'}`,
+      link: undefined,
+    }).catch(() => {});
+
+    // Also log to console for server-side audit trail
+    console.log(
+      `[AUDIT] admin_impersonation | admin=${adminUserId} target=${targetUserId} (${targetUser.email}) ip=${ip || 'unknown'} time=${new Date().toISOString()}`,
+    );
 
     return {
       token,
@@ -463,7 +476,6 @@ export class AdminService {
   async createUser(data: {
     name: string;
     email: string;
-    password: string;
     role?: string;
     subscriptionTier?: string;
     companyName?: string;
@@ -481,13 +493,15 @@ export class AdminService {
       throw new BadRequestException('Érvénytelen előfizetési szint');
     }
 
-    const passwordHash = await bcrypt.hash(data.password, 10);
+    // Create user without a usable password — they'll set it via the invitation link.
+    // A random placeholder hash prevents login until the user sets their own password.
+    const placeholderHash = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 10);
 
     const user = await this.prisma.user.create({
       data: {
         name: data.name,
         email: data.email,
-        passwordHash,
+        passwordHash: placeholderHash,
         role,
         subscriptionTier: tier,
         companyName: data.companyName || null,
@@ -504,13 +518,25 @@ export class AdminService {
       },
     });
 
-    // Send welcome email with login credentials (fire-and-forget)
-    this.notifications.sendAdminWelcomeEmail({
+    // Generate a password reset token so the user can set their own password
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    await this.prisma.passwordReset.create({
+      data: {
+        userId: user.id,
+        token: resetToken,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days for invitation
+      },
+    });
+
+    const frontendUrl = process.env.FRONTEND_URL || 'https://legitas.hu';
+
+    // Send invitation email with password setup link (no plaintext password — GDPR Art. 32)
+    this.notifications.sendAdminInvitationEmail({
       to: data.email,
       name: data.name,
-      password: data.password,
       role,
       tier,
+      setupUrl: `${frontendUrl}/reset-password/${resetToken}`,
     });
 
     return user;

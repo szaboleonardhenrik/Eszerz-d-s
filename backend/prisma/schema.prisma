@@ -72,6 +72,7 @@ model User {
   promoCodeUsages PromoCodeUsage[]
   sendCredits     Int        @default(0) @map("send_credits")
   creditTransactions CreditTransaction[]
+  authAuditLogs   AuthAuditLog[]
 
   @@map("users")
 }
@@ -270,15 +271,17 @@ model Signer {
 }
 
 model AuditLog {
-  id           String   @id @default(uuid())
-  contractId   String   @map("contract_id")
-  signerId     String?  @map("signer_id")
-  eventType    String   @map("event_type")
-  eventData    String?  @map("event_data")
-  ipAddress    String?  @map("ip_address")
-  userAgent    String?  @map("user_agent")
-  documentHash String?  @map("document_hash")
-  createdAt    DateTime @default(now()) @map("created_at")
+  id            String   @id @default(uuid())
+  contractId    String   @map("contract_id")
+  signerId      String?  @map("signer_id")
+  eventType     String   @map("event_type")
+  eventData     String?  @map("event_data")
+  ipAddress     String?  @map("ip_address")
+  userAgent     String?  @map("user_agent")
+  documentHash  String?  @map("document_hash")
+  integrityHash String?  @map("integrity_hash")
+  previousHash  String?  @map("previous_hash")
+  createdAt     DateTime @default(now()) @map("created_at")
 
   contract Contract @relation(fields: [contractId], references: [id])
   signer   Signer?  @relation(fields: [signerId], references: [id])
@@ -764,4 +767,21 @@ model SystemSetting {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("system_settings")
+}
+
+model AuthAuditLog {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  action    String   // login | login_failed | logout | 2fa_enabled | 2fa_disabled | password_changed | account_deleted
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  metadata  String?  // JSON extra data
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("auth_audit_logs")
 }

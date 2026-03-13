@@ -1,20 +1,7 @@
 import type { MetadataRoute } from "next";
+import { getAllSlugs } from "@/lib/blog-data";
 
 const BASE_URL = "https://legitas.hu";
-
-const blogSlugs = [
-  "mesterseges-intelligencia-szerzodesek-jovo",
-  "vallalkozas-inditasa-szukseges-szerzodesek",
-  "freelancer-szerzodes-szabalyok-2026",
-  "berles-szerzodes-buktatoi-amikre-figyelj",
-  "szerzodes-felmondasanak-szabalyai",
-  "elektronikus-alairas-magyarorszagon-2026",
-  "szerzodeskezeles-kkv-digitalizacio",
-  "ptk-szerzodeskotes-alapjai",
-  "nda-titoktartasi-szerzodes-minta",
-  "gdpr-szerzodes-adatvedelem",
-  "munkaszerodes-2026-valtozasok",
-];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticPages = [
@@ -33,7 +20,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/status`, lastModified: new Date(), changeFrequency: "daily" as const, priority: 0.3 },
   ];
 
-  const blogPages = blogSlugs.map((slug) => ({
+  const blogPages = getAllSlugs().map((slug) => ({
     url: `${BASE_URL}/blog/${slug}`,
     lastModified: new Date(),
     changeFrequency: "monthly" as const,

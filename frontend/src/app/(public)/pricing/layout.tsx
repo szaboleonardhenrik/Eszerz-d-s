@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 
 const faqItems = [
-  { q: "Tényleg ingyenes a Kezdő csomag?", a: "Igen, a Kezdő csomag tartósan ingyenes, havi 5 szerződéssel és alapfunkciókkal." },
+  { q: "Tényleg ingyenes a Kezdő csomag?", a: "Igen, a Kezdő csomag tartósan ingyenes, havi 3 szerződéssel és alapfunkciókkal." },
   { q: "Mikor kell bankkártyát megadni?", a: "Csak fizetős csomaghoz. Az ingyenes regisztrációhoz nem kell bankkártya." },
   { q: "Lehet-e csomagot váltani?", a: "Igen, bármikor up- vagy downgrade-elhetsz a beállításoknál." },
   { q: "Van-e szerződéses kötöttség?", a: "Nincs. Havi fizetésnél bármikor lemondható, éves fizetésnél az időszak végéig érvényes." },

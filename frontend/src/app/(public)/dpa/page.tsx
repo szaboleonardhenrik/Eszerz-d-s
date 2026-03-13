@@ -77,6 +77,7 @@ export default function DpaPage() {
           <li>Az Adatkezelő fiókjának törlésekor 30 napon belül törli az összes kezelt személyes adatot,
             kivéve a jogszabály által előírt megőrzési kötelezettségeket.</li>
           <li>Az Adatkezelő rendelkezésére bocsátja a megfelelőség igazolásához szükséges információkat.</li>
+          <li>Az Adatfeldolgozó haladéktalanul tájékoztatja az Adatkezelőt, amennyiben véleménye szerint valamely utasítás sérti a GDPR-t vagy más uniós, illetve tagállami adatvédelmi rendelkezést (GDPR 28. cikk (3) bekezdés h) pont).</li>
         </ul>
 
         <h2>5. Adatvédelmi incidens kezelése</h2>

@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
+import * as crypto from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import type { Request } from 'express';
 
@@ -22,11 +23,42 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       ]),
       ignoreExpiration: false,
       secretOrKey: secret,
+      passReqToCallback: true,
     });
   }
 
-  async validate(payload: { sub: string; email: string }) {
-    // Verify user still exists and is active in the database
+  async validate(req: Request, payload: { sub: string; email: string }) {
+    // Extract the raw JWT token from the request
+    const token = req?.cookies?.token
+      || req?.headers?.authorization?.replace('Bearer ', '');
+
+    if (!token) {
+      throw new UnauthorizedException('A munkamenet érvénytelen.');
+    }
+
+    // Hash the token with SHA-256 and verify it exists as a valid, non-expired session
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+    const session = await this.prisma.session.findFirst({
+      where: {
+        tokenHash,
+        userId: payload.sub,
+        expiresAt: { gt: new Date() },
+      },
+      select: { id: true },
+    });
+
+    if (!session) {
+      throw new UnauthorizedException('A munkamenet érvénytelen, visszavonták vagy lejárt.');
+    }
+
+    // Update lastActive timestamp (fire-and-forget, don't block the request)
+    this.prisma.session.update({
+      where: { id: session.id },
+      data: { lastActive: new Date() },
+    }).catch(() => {});
+
+    // Verify user still exists
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
       select: { id: true, email: true },

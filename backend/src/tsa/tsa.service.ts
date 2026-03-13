@@ -44,18 +44,64 @@ export class TsaService {
   }
 
   /**
-   * Verify that a stored TSA token matches the given document hash.
-   * Returns true if the token contains valid timestamp data.
+   * Perform a basic (non-cryptographic) check that a stored TSA token
+   * contains the expected document hash.
+   *
+   * IMPORTANT LIMITATION: This does NOT perform full RFC 3161 verification.
+   * It only checks that the document hash bytes are present within the TSA
+   * response token (DER structure). A production-grade implementation should
+   * use an ASN.1 library (e.g. asn1js / pkijs) to properly parse the
+   * TimeStampToken, extract the MessageImprint, and verify the TSA signature
+   * against a trusted certificate.
+   *
+   * TODO: Replace with proper ASN.1 parsing and cryptographic verification
+   * using an RFC 3161-compliant library.
    */
-  verifyTimestamp(tsaToken: string, documentHash: string): boolean {
+  verifyTimestampBasic(tsaToken: string, documentHash: string): {
+    hashPresent: boolean;
+    verificationLevel: 'basic';
+  } {
     try {
       const tokenBuffer = Buffer.from(tsaToken, 'base64');
-      // Basic structural verification: check the token is a valid DER structure
-      // and contains the document hash
       const hashBuffer = Buffer.from(documentHash, 'hex');
-      return tokenBuffer.includes(hashBuffer);
-    } catch {
-      return false;
+
+      // Verify the token starts with a SEQUENCE tag (valid DER)
+      if (tokenBuffer.length < 2 || tokenBuffer[0] !== 0x30) {
+        this.logger.warn('TSA token is not a valid DER SEQUENCE');
+        return { hashPresent: false, verificationLevel: 'basic' };
+      }
+
+      // Search for the hash at a plausible offset within the DER structure.
+      // In a TimeStampToken the MessageImprint hash appears after the
+      // AlgorithmIdentifier for SHA-256 (OID 2.16.840.1.101.3.4.2.1).
+      const sha256OidBytes = Buffer.from([
+        0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01,
+      ]);
+      const oidIndex = tokenBuffer.indexOf(sha256OidBytes);
+
+      let hashPresent = false;
+      if (oidIndex !== -1) {
+        // The hash should appear shortly after the OID (within ~20 bytes
+        // to account for NULL param + OCTET STRING tag/length).
+        const searchStart = oidIndex + sha256OidBytes.length;
+        const searchEnd = Math.min(searchStart + 40, tokenBuffer.length);
+        const searchRegion = tokenBuffer.subarray(searchStart, searchEnd);
+        hashPresent = searchRegion.includes(hashBuffer);
+      } else {
+        // Fallback: check anywhere in the token (less reliable)
+        hashPresent = tokenBuffer.includes(hashBuffer);
+      }
+
+      if (!hashPresent) {
+        this.logger.warn(
+          'TSA basic verification failed: document hash not found in expected location within TSA token',
+        );
+      }
+
+      return { hashPresent, verificationLevel: 'basic' };
+    } catch (error) {
+      this.logger.warn('TSA basic verification error', error);
+      return { hashPresent: false, verificationLevel: 'basic' };
     }
   }
 

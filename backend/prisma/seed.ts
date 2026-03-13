@@ -74,7 +74,7 @@ const templates = [
   },
   {
     name: 'Megbízási szerződés',
-    category: 'munkajogi',
+    category: 'polgári jogi',
     description: 'Megbízási szerződés sablon a Polgári Törvénykönyv alapján.',
     legalBasis: 'Ptk. 6:272-6:280. §',
     variables: [
@@ -210,7 +210,7 @@ const templates = [
   },
   {
     name: 'Vállalkozási szerződés',
-    category: 'munkajogi',
+    category: 'polgári jogi',
     description: 'Vállalkozási szerződés munka elvégzésére a Ptk. alapján.',
     legalBasis: 'Ptk. 6:238-6:250. §',
     variables: [

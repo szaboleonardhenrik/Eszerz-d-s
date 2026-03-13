@@ -27,7 +27,7 @@ const plans = [
   {
     name: "Kezdő",
     monthlyPrice: 975,
-    yearlyPrice: 11700,
+    yearlyPrice: 9000,
     desc: "Egyéni vállalkozókra tervezve",
     contracts: "2 szerződés / hó",
     subAccounts: "0 társfiók",
@@ -49,7 +49,7 @@ const plans = [
   {
     name: "Közepes",
     monthlyPrice: 14950,
-    yearlyPrice: 179400,
+    yearlyPrice: 138000,
     desc: "Mikro-vállalkozásoknak",
     contracts: "12 szerződés / hó",
     subAccounts: "2 társfiók",
@@ -71,7 +71,7 @@ const plans = [
   {
     name: "Prémium",
     monthlyPrice: 26000,
-    yearlyPrice: 312000,
+    yearlyPrice: 240000,
     desc: "KKV-knak",
     contracts: "35 szerződés / hó",
     subAccounts: "5 társfiók",
@@ -94,7 +94,7 @@ const plans = [
   {
     name: "Nagyvállalati",
     monthlyPrice: 149500,
-    yearlyPrice: 1794000,
+    yearlyPrice: 1380000,
     desc: "Nagyvállalatoknak",
     contracts: "500 szerződés / hó",
     subAccounts: "20 társfiók",

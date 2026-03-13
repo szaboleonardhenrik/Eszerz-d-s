@@ -1,5 +1,9 @@
 "use client";
 
+// SEO note: Despite "use client", Next.js App Router still pre-renders this page
+// as static HTML at build time (SSG). The directive only means JS hydrates on the
+// client — the full HTML is in the initial response for search engine crawlers.
+
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import ThemeToggle from "@/components/theme-toggle";

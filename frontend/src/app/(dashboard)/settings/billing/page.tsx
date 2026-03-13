@@ -34,13 +34,13 @@ const plans: Plan[] = [
     yearlyPrice: 11700,
     monthlyPriceId: "price_1T96w70CjO0XpW1r4a09Iuga",
     yearlyPriceId: "price_1T96w90CjO0XpW1rrKk2XqDG",
-    contractsPerMonth: 2,
+    contractsPerMonth: 10,
     subAccounts: 0,
     signersPerContract: 2,
     timestampsPerYear: 24,
     supportResponseTime: "72 óra",
     features: [
-      "2 szerződés / hó",
+      "10 szerződés / hó",
       "2 aláíró / szerződés",
       "Korlátlan tárolás és letöltés",
       "AI asszisztens és elemző",
@@ -132,8 +132,8 @@ const plans: Plan[] = [
 ];
 
 const USAGE_LIMITS: Record<string, { contracts: number; users: number }> = {
-  free: { contracts: 5, users: 1 },
-  starter: { contracts: 2, users: 1 },
+  free: { contracts: 3, users: 1 },
+  starter: { contracts: 10, users: 1 },
   medium: { contracts: 12, users: 3 },
   premium: { contracts: 35, users: 6 },
   enterprise: { contracts: 500, users: 21 },

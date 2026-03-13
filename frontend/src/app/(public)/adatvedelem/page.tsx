@@ -14,8 +14,13 @@ export default function AdatvedelemPage() {
       <div className="prose prose-gray max-w-none prose-headings:text-gray-900 prose-p:text-gray-600 prose-li:text-gray-600">
         <h2>1. Adatkezelő</h2>
         <ul>
-          <li><strong>Név:</strong> T-DIGITAL Solutions Kft. (Legitas)</li>
+          <li><strong>Név:</strong> T-DIGITAL Solutions Korlátolt Felelősségű Társaság (Legitas)</li>
+          <li><strong>Székhely:</strong> 1117 Budapest, Nándorfejérvári út 32. 1. em. 4. ajtó</li>
+          <li><strong>Cégjegyzékszám:</strong> 01-09-428831</li>
+          <li><strong>Adószám:</strong> 32526620-2-43</li>
+          <li><strong>Képviselő:</strong> Yilmaz Attila Zoltán ügyvezető</li>
           <li><strong>E-mail:</strong> info@legitas.hu</li>
+          <li><strong>Telefon:</strong> +36 70 560 0637</li>
           <li><strong>Weboldal:</strong> https://legitas.hu</li>
         </ul>
         <p>
@@ -101,6 +106,7 @@ export default function AdatvedelemPage() {
           <li><strong>Stripe Inc.</strong> — fizetéskezelés (PCI DSS tanúsított) — USA — EU-US Data Privacy Framework (DPF), PCI DSS tanúsított</li>
           <li><strong>Anthropic</strong> — AI elemzés (a szerződés tartalmát csak az elemzés idejére továbbítjuk, nem tároljuk) — USA — Standard Contractual Clauses (SCC, EU 2021/914), az adatok nem kerülnek tartós tárolásra</li>
           <li><strong>Google LLC</strong> — OAuth hitelesítés (Google-fiókkal bejelentkezés; kizárólag a név és e-mail cím kerül átadásra) — USA — EU-US Data Privacy Framework (DPF)</li>
+          <li><strong>Sentry (Functional Software Inc.)</strong> — hibamonitorozás és teljesítményfigyelés (crash reporting); kizárólag technikai adatokat továbbítunk (hibaüzenetek, stack trace, böngésző/OS verzió, IP cím anonimizálva) — USA — EU-US Data Privacy Framework (DPF) és Standard Contractual Clauses (SCC)</li>
           <li><strong>Webhook végpontok</strong> — a felhasználó által megadott harmadik fél URL-ekre továbbíthatunk
             aláírói adatokat (név, e-mail, aláírási státusz). A felhasználó felelős a fogadó fél
             GDPR-megfelelőségéért és adatfeldolgozási megállapodás meglétéért.</li>

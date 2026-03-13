@@ -26,8 +26,15 @@ export class NotificationsService {
    * Send email via Resend and log to database.
    * Wraps this.resend.emails.send with automatic logging.
    */
+  private get unsubscribeHeaders(): Record<string, string> {
+    return {
+      'List-Unsubscribe': `<${this.frontendUrl}/settings/notifications>`,
+      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+    };
+  }
+
   private async sendAndLog(
-    emailParams: { from: string; to: string; subject: string; html: string; attachments?: any[] },
+    emailParams: { from: string; to: string; subject: string; html: string; headers?: Record<string, string>; attachments?: any[] },
     logMeta: { type: string; userId?: string; contractId?: string },
   ) {
     try {
@@ -394,6 +401,7 @@ export class NotificationsService {
     try {
       await this.sendAndLog({
         from: this.fromEmail,
+        headers: this.unsubscribeHeaders,
         to: params.to,
         subject: `Aláírásra vár: ${params.contractTitle}`,
         html: this.wrap(
@@ -466,6 +474,7 @@ export class NotificationsService {
     try {
       await this.sendAndLog({
         from: this.fromEmail,
+        headers: this.unsubscribeHeaders,
         to: params.to,
         subject,
         html: this.wrap(
@@ -532,6 +541,7 @@ export class NotificationsService {
     try {
       await this.sendAndLog({
         from: this.fromEmail,
+        headers: this.unsubscribeHeaders,
         to: params.to,
         subject: `Emlékeztető: ${params.contractTitle} aláírásra vár`,
         html: this.wrap(
@@ -572,6 +582,7 @@ export class NotificationsService {
     try {
       await this.sendAndLog({
         from: this.fromEmail,
+        headers: this.unsubscribeHeaders,
         to: params.to,
         subject: params.subject,
         html: this.wrap(params.html),
@@ -678,6 +689,7 @@ export class NotificationsService {
     try {
       await this.sendAndLog({
         from: this.fromEmail,
+        headers: this.unsubscribeHeaders,
         to: params.to,
         subject: 'Fiókja létrejött – Legitas',
         html: this.wrap(
@@ -712,6 +724,55 @@ export class NotificationsService {
     }
   }
 
+  // ─── ADMIN INVITATION EMAIL (GDPR-compliant, no plaintext password) ────
+
+  async sendAdminInvitationEmail(params: {
+    to: string;
+    name: string;
+    role: string;
+    tier: string;
+    setupUrl: string;
+  }) {
+    const roleLabel: Record<string, string> = { superadmin: 'Szuperadmin', employee: 'Munkatárs', user: 'Felhasználó' };
+    const tierLabel: Record<string, string> = { free: 'Ingyenes', starter: 'Kezdő', medium: 'Közepes', premium: 'Prémium', enterprise: 'Nagyvállalati' };
+
+    try {
+      await this.sendAndLog({
+        from: this.fromEmail,
+        headers: this.unsubscribeHeaders,
+        to: params.to,
+        subject: 'Meghívó – Legitas fiók aktiválása',
+        html: this.wrap(
+          `<div style="text-align:center;margin:20px 0 28px;">
+             <div style="display:inline-block;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#d1fae5 0%,#6ee7b7 100%);text-align:center;line-height:72px;box-shadow:0 4px 16px rgba(16,185,129,0.2);">
+               <span style="font-size:36px;">&#127881;</span>
+             </div>
+           </div>
+           <p style="text-align:center;margin:0 0 8px;font-size:13px;font-weight:600;color:#198296;text-transform:uppercase;letter-spacing:1px;">Meghívó</p>
+           <p style="text-align:center;margin:0 0 28px;font-size:22px;font-weight:800;color:#1e293b;">Fiókja elkészült!</p>
+
+           ${this.greeting(params.name)}
+           ${this.text('Az adminisztrátor létrehozta az Ön fiókját a Legitas elektronikus szerződéskezelő platformon. A fiók aktiválásához és jelszó beállításához kattintson az alábbi gombra.')}
+
+           ${this.infoBox('&#128273;', 'Fiók adatok', `
+             <strong>Email:</strong> ${params.to}<br>
+             <strong>Szerepkör:</strong> ${roleLabel[params.role] || params.role}<br>
+             <strong>Csomag:</strong> ${tierLabel[params.tier] || params.tier}
+           `, '#f0fdf4', '#86efac')}
+
+           ${this.btnSimple(params.setupUrl, '&#128272;  Jelszó beállítása')}
+
+           ${this.hint('Ez a link 7 napig érvényes. Ha nem Ön várta ezt az emailt, kérjük hagyja figyelmen kívül.')}`,
+          { preheader: 'Fiókja elkészült a Legitas platformon — állítsa be jelszavát!' },
+        ),
+      }, { type: 'admin_invitation', userId: undefined });
+      this.logger.log(`Admin invitation email sent to ${params.to}`);
+    } catch (error) {
+      this.logger.error(`Failed to send admin invitation email to ${params.to}`, error);
+      // Don't throw — user creation should succeed even if email fails
+    }
+  }
+
   // ─── QUOTE NOTIFICATIONS ─────────────────────────────
 
   async sendQuoteToClient(params: {
@@ -727,6 +788,7 @@ export class NotificationsService {
     try {
       await this.sendAndLog({
         from: this.fromEmail,
+        headers: this.unsubscribeHeaders,
         to: params.to,
         subject: `Árajánlat: ${params.quoteTitle} – ${params.senderName}`,
         html: this.wrap(
@@ -778,6 +840,7 @@ export class NotificationsService {
     try {
       await this.sendAndLog({
         from: this.fromEmail,
+        headers: this.unsubscribeHeaders,
         to: params.to,
         subject: `Ajánlat elfogadva! – ${params.quoteTitle}`,
         html: this.wrap(
@@ -824,6 +887,7 @@ export class NotificationsService {
     try {
       await this.sendAndLog({
         from: this.fromEmail,
+        headers: this.unsubscribeHeaders,
         to: params.to,
         subject: `Ajánlat visszautasítva – ${params.quoteTitle}`,
         html: this.wrap(
@@ -907,6 +971,7 @@ export class NotificationsService {
     try {
       await this.sendAndLog({
         from: this.fromEmail,
+        headers: this.unsubscribeHeaders,
         to: params.to,
         subject: `Aláírt szerződés kész – ${params.contractTitle}`,
         html: this.wrap(
@@ -964,6 +1029,7 @@ export class NotificationsService {
     try {
       await this.sendAndLog({
         from: this.fromEmail,
+        headers: this.unsubscribeHeaders,
         to: params.to,
         subject: `${urgencyLabel}: „${params.contractTitle}" ${params.daysLeft} nap múlva lejár`,
         html: this.wrap(
@@ -1051,6 +1117,7 @@ export class NotificationsService {
     try {
       await this.sendAndLog({
         from: this.fromEmail,
+        headers: this.unsubscribeHeaders,
         to: params.to,
         subject: 'Fizetési hiba – Legitas előfizetés',
         html: this.wrap(

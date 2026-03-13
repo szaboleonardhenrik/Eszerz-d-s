@@ -1,7 +1,11 @@
 import { IsString, IsOptional, IsIn, IsNotEmpty, IsBoolean } from 'class-validator';
 
 export class SignContractDto {
-  @IsIn(['simple', 'dap', 'microsec'])
+  // Only 'simple' is currently implemented. DAP and Microsec e-signature
+  // provider integrations are planned but not yet available — accepting them
+  // here without real cryptographic validation would be misleading and could
+  // create a false sense of legal compliance.
+  @IsIn(['simple'])
   signatureMethod: string;
 
   @IsOptional()

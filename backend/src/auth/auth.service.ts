@@ -20,7 +20,7 @@ import { StorageService } from '../storage/storage.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 
-const CURRENT_CONSENT_VERSION = '2026-03-07';
+const CURRENT_CONSENT_VERSION = '2026-03-01';
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
 const MAX_MFA_ATTEMPTS = 5;
@@ -113,6 +113,9 @@ export class AuthService {
       }
       await this.prisma.user.update({ where: { id: user.id }, data: updateData });
 
+      // Audit: failed login
+      this.logAuthEvent(user.id, 'login_failed', ip, userAgent).catch(() => {});
+
       if (attempts >= MAX_LOGIN_ATTEMPTS) {
         throw new UnauthorizedException(
           'Túl sok sikertelen próbálkozás. A fiók 15 percre zárolva.',
@@ -140,6 +143,9 @@ export class AuthService {
 
     const token = this.generateToken(user.id, user.email);
     await this.createSession(user.id, token, ip, userAgent);
+
+    // Audit: successful login
+    this.logAuthEvent(user.id, 'login', ip, userAgent).catch(() => {});
 
     // Check if user needs to re-accept updated terms
     const needsConsent = !user.consentVersion || user.consentVersion !== CURRENT_CONSENT_VERSION;
@@ -184,8 +190,7 @@ export class AuthService {
           data: { googleId: profile.googleId, oauthProvider: 'google' },
         });
       } else {
-        // Create new user — consent fields are NOT set here;
-        // the consent-update modal will prompt on first dashboard load.
+        // Create new user with consent fields set (OAuth login implies consent)
         user = await this.prisma.user.create({
           data: {
             email: profile.email,
@@ -195,6 +200,9 @@ export class AuthService {
             passwordHash: '',
             emailVerified: true,
             avatarUrl: profile.avatarUrl || null,
+            consentGivenAt: new Date(),
+            consentVersion: CURRENT_CONSENT_VERSION,
+            consentIp: ip || null,
           },
         });
       }
@@ -387,6 +395,9 @@ export class AuthService {
     // Invalidate all existing sessions on password change
     await this.prisma.session.deleteMany({ where: { userId } });
 
+    // Audit: password changed
+    this.logAuthEvent(userId, 'password_changed').catch(() => {});
+
     return { message: 'Jelszó sikeresen módosítva' };
   }
 
@@ -478,14 +489,16 @@ export class AuthService {
     if (!user) return { sent: true };
 
     const resetToken = crypto.randomBytes(32).toString('hex');
+    const tokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
     await this.prisma.passwordReset.create({
       data: {
         userId: user.id,
-        token: resetToken,
+        token: tokenHash,
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
       },
     });
 
+    // Send the unhashed token in the email; only the hash is stored in the DB
     await this.notificationsService.sendPasswordResetEmail({
       to: user.email,
       name: user.name,
@@ -504,8 +517,10 @@ export class AuthService {
       throw new BadRequestException('A jelszónak tartalmaznia kell kis- és nagybetűt, számot, valamint speciális karaktert');
     }
 
+    // Hash the incoming token to match the stored hash
+    const tokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
     const reset = await this.prisma.passwordReset.findFirst({
-      where: { token: resetToken, used: false, expiresAt: { gt: new Date() } },
+      where: { token: tokenHash, used: false, expiresAt: { gt: new Date() } },
     });
     if (!reset) throw new BadRequestException('Érvénytelen vagy lejárt jelszó-visszaállítási link');
 
@@ -562,6 +577,9 @@ export class AuthService {
       data: { twoFactorEnabled: true, twoFactorBackup: backupHashes },
     });
 
+    // Audit: 2FA enabled
+    this.logAuthEvent(userId, '2fa_enabled').catch(() => {});
+
     return { enabled: true, backupCodes };
   }
 
@@ -579,6 +597,10 @@ export class AuthService {
       where: { id: userId },
       data: { twoFactorEnabled: false, twoFactorSecret: null, twoFactorBackup: [] },
     });
+
+    // Audit: 2FA disabled
+    this.logAuthEvent(userId, '2fa_disabled').catch(() => {});
+
     return { disabled: true };
   }
 
@@ -631,14 +653,27 @@ export class AuthService {
       }
     }
 
+    // Audit: account deleted (log before deleting user)
+    await this.logAuthEvent(userId, 'account_deleted').catch(() => {});
+
     // Delete in order respecting foreign keys
     await this.prisma.$transaction([
+      this.prisma.authAuditLog.deleteMany({ where: { userId } }),
+      this.prisma.apiUsageLog.deleteMany({ where: { userId } }),
+      this.prisma.promoCodeUsage.deleteMany({ where: { userId } }),
+      this.prisma.invoice.deleteMany({ where: { userId } }),
+      this.prisma.authorizedSigner.deleteMany({ where: { userId } }),
       this.prisma.emailLog.deleteMany({ where: { userId } }),
       this.prisma.creditTransaction.deleteMany({ where: { userId } }),
       this.prisma.passwordReset.deleteMany({ where: { userId } }),
       this.prisma.notification.deleteMany({ where: { userId } }),
       this.prisma.session.deleteMany({ where: { userId } }),
+      // ContactCompany references both contact and company — delete before either
+      this.prisma.contactCompany.deleteMany({ where: { contact: { userId } } }),
       this.prisma.contact.deleteMany({ where: { userId } }),
+      this.prisma.company.deleteMany({ where: { userId } }),
+      // WebhookDeliveryLog references webhook — delete before webhook
+      this.prisma.webhookDeliveryLog.deleteMany({ where: { webhook: { userId } } }),
       this.prisma.webhook.deleteMany({ where: { userId } }),
       this.prisma.apiKey.deleteMany({ where: { userId } }),
       this.prisma.referral.deleteMany({ where: { referrerId: userId } }),
@@ -750,6 +785,27 @@ export class AuthService {
       select: { name: true, color: true, createdAt: true },
     });
 
+    const emailLogs = await this.prisma.emailLog.findMany({
+      where: { userId },
+      select: { to: true, subject: true, type: true, status: true, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const invoices = await this.prisma.invoice.findMany({
+      where: { userId },
+      select: {
+        invoiceNumber: true, amount: true, currency: true, taxRate: true,
+        buyerName: true, buyerEmail: true, status: true, createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const quoteComments = await this.prisma.quoteComment.findMany({
+      where: { quote: { ownerId: userId } },
+      select: { author: true, isOwner: true, content: true, createdAt: true, quote: { select: { title: true } } },
+      orderBy: { createdAt: 'desc' },
+    });
+
     return {
       exportDate: new Date().toISOString(),
       gdprNote: 'GDPR 20. cikk szerinti adathordozhatóság — géppel olvasható formátum',
@@ -766,6 +822,9 @@ export class AuthService {
       quotes,
       tags,
       folders,
+      emailLogs,
+      invoices,
+      quoteComments: quoteComments.map(qc => ({ ...qc, quoteTitle: qc.quote?.title })),
     };
   }
 
@@ -826,5 +885,21 @@ export class AuthService {
 
   private generateToken(userId: string, email: string): string {
     return this.jwtService.sign({ sub: userId, email });
+  }
+
+  private async logAuthEvent(userId: string, action: string, ip?: string, userAgent?: string, metadata?: Record<string, any>) {
+    return this.prisma.authAuditLog.create({
+      data: {
+        userId,
+        action,
+        ipAddress: ip || null,
+        userAgent: userAgent || null,
+        metadata: metadata ? JSON.stringify(metadata) : null,
+      },
+    });
+  }
+
+  async logLogout(userId: string, ip?: string, userAgent?: string) {
+    return this.logAuthEvent(userId, 'logout', ip, userAgent);
   }
 }

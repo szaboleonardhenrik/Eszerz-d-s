@@ -79,12 +79,19 @@ export class ReferralsService {
       },
     });
 
-    // Log bonus contracts for both users (no actual tier change)
+    // Grant +5 sendCredits to both the referrer and the referred user
+    await this.prisma.user.update({
+      where: { id: referral.referrerId },
+      data: { sendCredits: { increment: 5 } },
+    });
+
+    await this.prisma.user.update({
+      where: { id: newUserId },
+      data: { sendCredits: { increment: 5 } },
+    });
+
     console.log(
-      `[Referral] +5 bonus contracts for referrer ${referral.referrerId} (referral ${referral.id})`,
-    );
-    console.log(
-      `[Referral] +5 bonus contracts for referred ${newUserId} (referral ${referral.id})`,
+      `[Referral] +5 credits granted to referrer ${referral.referrerId} and referred ${newUserId} (referral ${referral.id})`,
     );
 
     return updated;

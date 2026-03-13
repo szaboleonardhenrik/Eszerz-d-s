@@ -21,7 +21,7 @@ const organizationJsonLd = {
     "@type": "AggregateOffer",
     priceCurrency: "HUF",
     lowPrice: "0",
-    highPrice: "2475",
+    highPrice: "149500",
     offerCount: "4",
   },
   publisher: {
@@ -75,8 +75,6 @@ export const metadata: Metadata = {
   viewport: {
     width: "device-width",
     initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
   },
   formatDetection: {
     telephone: false,

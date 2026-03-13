@@ -303,17 +303,32 @@ export class SchedulerService {
       const users = await this.prisma.user.findMany({
         where: {
           createdAt: { gte: dayStart, lte: dayEnd },
+          notifyMarketing: true,
         },
         select: { email: true, name: true },
       });
 
       for (const user of users) {
         try {
+          const baseHtml = step.buildHtml(user.name);
+          const unsubscribeFooter = `
+            <div style="margin-top:32px;padding-top:16px;border-top:1px solid #eee;text-align:center;">
+              <p style="font-size:11px;color:#999;">
+                Ezt az e-mailt azért kapta, mert feliratkozott a Legitas marketing értesítéseire.
+                <a href="${frontendUrl}/settings/notifications" style="color:#2563eb;text-decoration:underline;">Leiratkozás</a>
+              </p>
+            </div>
+          `;
+          // Insert unsubscribe footer before the closing wrapper div
+          const htmlWithUnsubscribe = baseHtml.replace(
+            /<\/div>\s*$/,
+            `${unsubscribeFooter}</div>`,
+          );
           await this.notificationsService.sendOnboardingEmail({
             to: user.email,
             name: user.name,
             subject: step.subject,
-            html: step.buildHtml(user.name),
+            html: htmlWithUnsubscribe,
           });
           totalSent++;
         } catch (error) {
@@ -471,6 +486,35 @@ export class SchedulerService {
           this.logger.error(`Failed to send expiry warning for ${contract.id}`, error);
         }
       }
+    }
+  }
+
+  /** Daily at 3:00 AM - clean up expired sessions and password reset tokens */
+  @Cron('0 3 * * *')
+  async cleanupExpiredRecords() {
+    this.logger.log('Running expired records cleanup job...');
+
+    const now = new Date();
+
+    // Delete expired sessions
+    const expiredSessions = await this.prisma.session.deleteMany({
+      where: { expiresAt: { lt: now } },
+    });
+
+    // Delete expired or used password reset tokens
+    const expiredResets = await this.prisma.passwordReset.deleteMany({
+      where: {
+        OR: [
+          { expiresAt: { lt: now } },
+          { used: true },
+        ],
+      },
+    });
+
+    if (expiredSessions.count > 0 || expiredResets.count > 0) {
+      this.logger.log(
+        `Cleanup complete: ${expiredSessions.count} expired sessions, ${expiredResets.count} expired/used password resets deleted`,
+      );
     }
   }
 

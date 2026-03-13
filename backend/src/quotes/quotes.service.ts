@@ -540,6 +540,31 @@ export class QuotesService {
       throw new BadRequestException('Csak elfogadott ajánlatból hozható létre szerződés');
     }
 
+    // Contract monthly limit check
+    const contractTierLimits: Record<string, number> = { free: 3, starter: 10, medium: 12, premium: 35, enterprise: 500 };
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const tier = user?.subscriptionTier ?? 'free';
+    const isAdmin = ['superadmin', 'employee'].includes(user?.role ?? '');
+
+    if (!isAdmin) {
+      const maxContracts = contractTierLimits[tier] ?? 2;
+      if (maxContracts > 0) {
+        const firstOfMonth = new Date();
+        firstOfMonth.setDate(1);
+        firstOfMonth.setHours(0, 0, 0, 0);
+
+        const monthlyContractCount = await this.prisma.contract.count({
+          where: { ownerId: userId, createdAt: { gte: firstOfMonth } },
+        });
+
+        if (monthlyContractCount >= maxContracts) {
+          throw new ForbiddenException(
+            'Elérted a havi szerződés limitedet. Válts magasabb csomagra!',
+          );
+        }
+      }
+    }
+
     // Build contract HTML from quote
     const contractHtml = this.generateContractHtml(quote);
 
@@ -681,6 +706,28 @@ ${quote.outroText ? `<h2>4. Egyéb feltételek</h2><p>${esc(quote.outroText)}</p
   }
 
   async duplicate(id: string, userId: string) {
+    // Subscription limit check (same as create)
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const tier = user?.subscriptionTier ?? 'free';
+    const maxQuotes = this.quoteTierLimits[tier] ?? 3;
+
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const monthlyCount = await this.prisma.quote.count({
+      where: {
+        ownerId: userId,
+        createdAt: { gte: startOfMonth },
+      },
+    });
+
+    if (monthlyCount >= maxQuotes) {
+      throw new ForbiddenException(
+        'Elérted a havi ajánlat limitedet. Frissíts magasabb csomagra a további ajánlatokhoz.',
+      );
+    }
+
     const original = await this.findOne(id, userId);
     const quoteNumber = await this.generateQuoteNumber(userId);
 

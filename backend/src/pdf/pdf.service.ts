@@ -36,9 +36,19 @@ export class PdfService {
     }
 
     const fullHtml = this.wrapInDocument(html + qrBlock, title, branding);
+    // Security note: --no-sandbox is required when running as root in Docker/Linux.
+    // The production Dockerfile runs as non-root (USER nestjs), but Chromium still
+    // needs --no-sandbox in many containerised environments.
+    // --disable-dev-shm-usage avoids /dev/shm size issues in Docker (uses /tmp instead).
+    // --disable-gpu is not needed for headless PDF generation and avoids GPU-related crashes.
     const browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+      ],
     });
 
     const footerName = branding?.companyName ? this.escapeHtml(branding.companyName) : 'Legitas';

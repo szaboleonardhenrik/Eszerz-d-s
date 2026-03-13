@@ -77,7 +77,6 @@ export default function AdminUsersPage() {
   const [createForm, setCreateForm] = useState({
     name: "",
     email: "",
-    password: "",
     role: "user",
     subscriptionTier: "free",
     companyName: "",
@@ -137,8 +136,8 @@ export default function AdminUsersPage() {
   };
 
   const handleCreate = async () => {
-    if (!createForm.name || !createForm.email || !createForm.password) {
-      toast.error("Név, email és jelszó kötelező");
+    if (!createForm.name || !createForm.email) {
+      toast.error("Név és email kötelező");
       return;
     }
     setCreating(true);
@@ -147,9 +146,9 @@ export default function AdminUsersPage() {
         ...createForm,
         companyName: createForm.companyName || undefined,
       });
-      toast.success("Felhasználó létrehozva");
+      toast.success("Felhasználó létrehozva — meghívó email elküldve");
       setShowCreate(false);
-      setCreateForm({ name: "", email: "", password: "", role: "user", subscriptionTier: "free", companyName: "" });
+      setCreateForm({ name: "", email: "", role: "user", subscriptionTier: "free", companyName: "" });
       loadUsers();
     } catch (err: any) {
       toast.error(err.response?.data?.error?.message || "Hiba történt");
@@ -292,15 +291,10 @@ export default function AdminUsersPage() {
                     placeholder="email@pelda.hu"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Jelszó *</label>
-                  <input
-                    type="password"
-                    value={createForm.password}
-                    onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-violet-500 outline-none"
-                    placeholder="Min. 6 karakter"
-                  />
+                <div className="col-span-2">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg px-3 py-2">
+                    A felhasznalo meghivo emailt kap egy jelszo-beallitasi linkkel. Nem kell jelszot megadni.
+                  </p>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Cégnév</label>

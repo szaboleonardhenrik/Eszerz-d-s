@@ -58,7 +58,6 @@ export class AdminController {
     @Body() body: {
       name: string;
       email: string;
-      password: string;
       role?: string;
       subscriptionTier?: string;
       companyName?: string;
@@ -86,7 +85,8 @@ export class AdminController {
     @Req() req: any,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const result = await this.adminService.impersonateUser(id, req.user.userId, req.userRole);
+    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip;
+    const result = await this.adminService.impersonateUser(id, req.user.userId, req.userRole, ip);
 
     // Set the impersonation token as httpOnly cookie
     res.cookie('token', result.token, {

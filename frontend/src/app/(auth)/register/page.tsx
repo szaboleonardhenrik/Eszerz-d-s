@@ -57,7 +57,7 @@ export default function RegisterPage() {
           </p>
           <div className="mt-10 space-y-4 text-left max-w-xs mx-auto">
             {[
-              "5 szerződés havonta ingyen",
+              "3 szerződés havonta ingyen",
               "Jogász által ellenőrzött sablonok",
               "Digitális aláírás bárhonnan",
               "Nem kell bankkártya",
@@ -179,6 +179,9 @@ export default function RegisterPage() {
                 . *
               </span>
             </label>
+            <p className="text-[11px] text-gray-400 dark:text-gray-500 leading-relaxed -mt-1 ml-7">
+              A regisztrációval digitális tartalomszolgáltatásra fizetsz elő. A 45/2014. (II. 26.) Korm. rendelet alapján 14 napon belül indokolás nélkül elállhatsz.
+            </p>
 
             <button
               type="submit"

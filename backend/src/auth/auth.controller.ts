@@ -78,7 +78,12 @@ export class AuthController {
   }
 
   @Post('logout')
-  logout(@Res({ passthrough: true }) res: Response) {
+  @UseGuards(JwtAuthGuard)
+  async logout(@Req() req: any, @Res({ passthrough: true }) res: Response) {
+    // Audit: logout (best-effort, don't block)
+    if (req.user?.userId) {
+      this.authService.logLogout(req.user.userId, req.ip, req.headers['user-agent']).catch(() => {});
+    }
     res.clearCookie('token', COOKIE_OPTIONS(process.env.NODE_ENV === 'production'));
     return ApiResponse.ok({ success: true });
   }

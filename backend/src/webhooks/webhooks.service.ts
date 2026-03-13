@@ -1,6 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { randomBytes, createHmac, randomUUID } from 'crypto';
+import { encrypt, decrypt } from '../common/encryption.util';
 
 const MAX_RETRIES = 3;
 const BACKOFF_BASE_MS = 2000;
@@ -71,18 +72,20 @@ export class WebhooksService {
     data: { url: string; events: string; secret?: string },
   ) {
     this.validateWebhookUrl(data.url);
-    const secret = data.secret || `whsec_${randomBytes(24).toString('hex')}`;
+    const plaintextSecret = data.secret || `whsec_${randomBytes(24).toString('hex')}`;
+    const encryptedSecret = encrypt(plaintextSecret);
 
     const webhook = await this.prisma.webhook.create({
       data: {
         userId,
         url: data.url,
         events: data.events,
-        secret,
+        secret: encryptedSecret,
       },
     });
 
-    return webhook;
+    // Return plaintext secret on creation so the user can store it
+    return { ...webhook, secret: plaintextSecret };
   }
 
   async update(
@@ -116,6 +119,52 @@ export class WebhooksService {
     return this.prisma.webhook.delete({ where: { id } });
   }
 
+  /**
+   * Sanitize a webhook payload by redacting PII fields before sending
+   * to external webhook endpoints.
+   */
+  private sanitizePayload(payload: any): any {
+    if (!payload || typeof payload !== 'object') return payload;
+
+    const redacted = Array.isArray(payload) ? [...payload] : { ...payload };
+
+    const emailFields = ['email', 'clientEmail', 'signerEmail', 'ownerEmail', 'recipientEmail'];
+    const removeFields = ['phone', 'clientPhone', 'taxNumber', 'clientTaxNumber', 'address', 'clientAddress'];
+    const nameFields = ['clientName', 'signerName', 'recipientName'];
+
+    for (const key of Object.keys(redacted)) {
+      // Mask email fields: "john@example.com" -> "j***@example.com"
+      if (emailFields.includes(key) && typeof redacted[key] === 'string') {
+        const email = redacted[key] as string;
+        const atIdx = email.indexOf('@');
+        if (atIdx > 0) {
+          redacted[key] = email[0] + '***' + email.substring(atIdx);
+        }
+        continue;
+      }
+
+      // Remove sensitive fields entirely
+      if (removeFields.includes(key)) {
+        delete redacted[key];
+        continue;
+      }
+
+      // Mask name fields: "John Doe" -> "J***"
+      if (nameFields.includes(key) && typeof redacted[key] === 'string') {
+        const name = redacted[key] as string;
+        redacted[key] = name.length > 0 ? name[0] + '***' : '***';
+        continue;
+      }
+
+      // Recursively sanitize nested objects
+      if (typeof redacted[key] === 'object' && redacted[key] !== null) {
+        redacted[key] = this.sanitizePayload(redacted[key]);
+      }
+    }
+
+    return redacted;
+  }
+
   async triggerWebhooks(userId: string, event: string, payload: any) {
     const webhooks = await this.prisma.webhook.findMany({
       where: {
@@ -129,6 +178,7 @@ export class WebhooksService {
     );
 
     const entityId = payload?.id || payload?.contractId || '';
+    const sanitizedPayload = this.sanitizePayload(payload);
 
     for (const webhook of matching) {
       if (this.isDuplicate(webhook.id, event, entityId)) {
@@ -136,7 +186,7 @@ export class WebhooksService {
         continue;
       }
       const eventId = randomUUID();
-      this.deliverWithRetry(webhook, event, payload, eventId).catch(() => {
+      this.deliverWithRetry(webhook, event, sanitizedPayload, eventId).catch(() => {
         // Background task - errors handled internally
       });
     }
@@ -154,7 +204,8 @@ export class WebhooksService {
       timestamp: new Date().toISOString(),
       data: payload,
     });
-    const signature = createHmac('sha256', webhook.secret)
+    const decryptedSecret = decrypt(webhook.secret);
+    const signature = createHmac('sha256', decryptedSecret)
       .update(body)
       .digest('hex');
 

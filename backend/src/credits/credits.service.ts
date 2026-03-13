@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotImplementedException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 export const CREDIT_PACKS = [
@@ -91,12 +91,27 @@ export class CreditsService {
   }
 
   /**
-   * Add credits from a purchased pack.
+   * Purchase a credit pack.
+   * TODO: Integrate with Stripe Checkout — create a Checkout Session for the
+   * selected pack and only call addCredits() from the Stripe webhook
+   * (checkout.session.completed) after successful payment.
    */
   async purchasePack(userId: string, packId: string): Promise<{ balance: number; added: number }> {
     const pack = CREDIT_PACKS.find((p) => p.id === packId);
     if (!pack) throw new BadRequestException('Érvénytelen kredit csomag');
 
+    // Block direct credit purchase until Stripe payment is integrated
+    throw new NotImplementedException(
+      'Kredit vásárlás hamarosan elérhető. Stripe fizetési integráció folyamatban.',
+    );
+  }
+
+  /**
+   * Internal method: add credits to a user's account.
+   * Used by system processes (monthly tier refills, webhook callbacks, admin grants).
+   * This method should NOT be exposed via a public API endpoint.
+   */
+  async addCredits(userId: string, amount: number, description: string): Promise<{ balance: number; added: number }> {
     return this.prisma.$transaction(async (tx) => {
       const user = await tx.user.findUnique({
         where: { id: userId },
@@ -104,7 +119,7 @@ export class CreditsService {
       });
       if (!user) throw new BadRequestException('Felhasználó nem található');
 
-      const newBalance = user.sendCredits + pack.amount;
+      const newBalance = user.sendCredits + amount;
 
       await tx.user.update({
         where: { id: userId },
@@ -114,14 +129,14 @@ export class CreditsService {
       await tx.creditTransaction.create({
         data: {
           userId,
-          amount: pack.amount,
+          amount,
           balance: newBalance,
           type: 'purchase',
-          description: `${pack.label} vásárlás (${pack.price} Ft)`,
+          description,
         },
       });
 
-      return { balance: newBalance, added: pack.amount };
+      return { balance: newBalance, added: amount };
     });
   }
 

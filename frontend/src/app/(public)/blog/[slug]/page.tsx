@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getArticle, getAllSlugs } from "@/lib/blog-data";
+import { getArticle, getAllSlugs, posts } from "@/lib/blog-data";
 import BlogArticleClient from "./blog-article-client";
 
 interface Props {
@@ -12,12 +12,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!article) {
     return { title: "Cikk nem található" };
   }
+  const post = posts.find((p) => p.slug === slug);
+  const description = post?.excerpt || article.title;
   return {
     title: article.title,
-    description: article.title,
+    description,
     openGraph: {
       title: article.title,
-      description: article.title,
+      description,
       type: "article",
       publishedTime: article.date,
       images: [{ url: article.image, width: 1200, height: 630, alt: article.title }],
@@ -25,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     twitter: {
       card: "summary_large_image",
       title: article.title,
-      description: article.title,
+      description,
       images: [article.image],
     },
   };
