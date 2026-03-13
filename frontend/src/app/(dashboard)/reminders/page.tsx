@@ -5,6 +5,7 @@ import Link from "next/link";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
 import FeatureGate from "@/components/feature-gate";
+import { useI18n } from "@/lib/i18n";
 
 /* ── Interfaces ──────────────────────────────────────────────────── */
 
@@ -54,6 +55,7 @@ const typeLabels: Record<string, string> = {
 /* ══════════════════════════════════════════════════════════════════ */
 
 export default function RemindersPage() {
+  const { t } = useI18n();
   const [alerts, setAlerts] = useState<AlertsData | null>(null);
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [contracts, setContracts] = useState<ContractOption[]>([]);
@@ -146,10 +148,10 @@ export default function RemindersPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-            Emlékeztetők és figyelmeztetések
+            {t("reminders.title")}
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Követsd a lejáró és aláírás nélküli szerződéseidet
+            {t("reminders.subtitle")}
           </p>
         </div>
         {alerts && alerts.totalAlerts > 0 && (
@@ -157,7 +159,7 @@ export default function RemindersPage() {
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
-            {alerts.totalAlerts} aktív figyelmeztetés
+            {alerts.totalAlerts} {t("reminders.activeAlerts")}
           </span>
         )}
       </div>
@@ -173,7 +175,7 @@ export default function RemindersPage() {
               </svg>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-red-700 dark:text-red-400">Hamarosan lejár</h3>
+              <h3 className="text-sm font-semibold text-red-700 dark:text-red-400">{t("reminders.expiringSoon")}</h3>
               <p className="text-xs text-gray-500 dark:text-gray-400">7 napon belül</p>
             </div>
             <span className="ml-auto text-lg font-bold text-red-600 dark:text-red-400">
@@ -209,7 +211,7 @@ export default function RemindersPage() {
               </svg>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-yellow-700 dark:text-yellow-400">Figyelmeztetés</h3>
+              <h3 className="text-sm font-semibold text-yellow-700 dark:text-yellow-400">{t("reminders.warning")}</h3>
               <p className="text-xs text-gray-500 dark:text-gray-400">30 napon belül</p>
             </div>
             <span className="ml-auto text-lg font-bold text-yellow-600 dark:text-yellow-400">
@@ -245,7 +247,7 @@ export default function RemindersPage() {
               </svg>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-blue-700 dark:text-blue-400">Aláírásra vár</h3>
+              <h3 className="text-sm font-semibold text-blue-700 dark:text-blue-400">{t("reminders.awaitingSignature")}</h3>
               <p className="text-xs text-gray-500 dark:text-gray-400">3+ napja elkuldve</p>
             </div>
             <span className="ml-auto text-lg font-bold text-blue-600 dark:text-blue-400">
@@ -283,7 +285,7 @@ export default function RemindersPage() {
         <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
           <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
             <h2 className="font-semibold text-sm text-gray-900 dark:text-gray-100">
-              Közelgő emlékeztetők (következő 7 nap)
+              {t("reminders.upcoming")}
             </h2>
           </div>
           {reminders.length > 0 ? (
@@ -345,8 +347,8 @@ export default function RemindersPage() {
               <svg className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
               </svg>
-              <p className="text-sm text-gray-400">Nincs közelgő emlékeztető</p>
-              <p className="text-xs text-gray-400 mt-1">Hozz létre egyet a jobb oldali űrlap segítségével</p>
+              <p className="text-sm text-gray-400">{t("reminders.empty")}</p>
+              <p className="text-xs text-gray-400 mt-1">{t("reminders.emptyDesc")}</p>
             </div>
           )}
         </div>
@@ -354,7 +356,7 @@ export default function RemindersPage() {
         {/* RIGHT: Add Reminder Form */}
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
           <h2 className="font-semibold text-sm text-gray-900 dark:text-gray-100 mb-4">
-            Új emlékeztető
+            {t("reminders.newReminder")}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Contract select */}
@@ -427,7 +429,7 @@ export default function RemindersPage() {
               disabled={submitting}
               className="w-full bg-gray-900 dark:bg-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition disabled:opacity-50"
             >
-              {submitting ? "Mentés..." : "Emlékeztető létrehozása"}
+              {submitting ? t("reminders.creating") : t("reminders.createReminder")}
             </button>
           </form>
         </div>

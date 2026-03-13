@@ -5,6 +5,7 @@ import api from "@/lib/api";
 import { useAuth } from "@/lib/auth-store";
 import toast from "react-hot-toast";
 import FeatureGate from "@/components/feature-gate";
+import { useI18n } from "@/lib/i18n";
 
 const PRESET_COLORS = [
   "#198296", "#2563eb", "#7c3aed", "#dc2626", "#059669",
@@ -12,6 +13,7 @@ const PRESET_COLORS = [
 ];
 
 export default function BrandingSettings() {
+  const { t } = useI18n();
   const { user, loadProfile } = useAuth();
   const [logoUrl, setLogoUrl] = useState("");
   const [brandColor, setBrandColor] = useState("#198296");
@@ -46,16 +48,16 @@ export default function BrandingSettings() {
       <div className="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 p-6 space-y-6">
         <div>
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            PDF arculat
+            {t("branding.title")}
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Testreszabhatja a generált PDF dokumentumok megjelenését a saját logóval és színeivel.
+            {t("branding.subtitle")}
           </p>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Logo URL
+            {t("branding.logo")}
           </label>
           <input
             value={logoUrl}
@@ -70,7 +72,7 @@ export default function BrandingSettings() {
 
         {logoUrl && (
           <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-            <span className="text-sm text-gray-500 dark:text-gray-400">Előnézet:</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">{t("branding.preview")}:</span>
             <img
               src={logoUrl}
               alt="Logo"
@@ -84,7 +86,7 @@ export default function BrandingSettings() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Márka szín
+            {t("branding.color")}
           </label>
           <div className="flex items-center gap-3 flex-wrap">
             {PRESET_COLORS.map((c) => (
@@ -118,7 +120,7 @@ export default function BrandingSettings() {
         {/* Preview */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            PDF előnézet
+            {t("branding.pdfPreview")}
           </label>
           <div className="border dark:border-gray-600 rounded-lg p-6 bg-white dark:bg-gray-900">
             <div className="flex items-center justify-between pb-3 mb-4" style={{ borderBottom: `2px solid ${brandColor}` }}>
@@ -155,7 +157,7 @@ export default function BrandingSettings() {
             className="text-white px-6 py-2.5 rounded-lg font-medium hover:opacity-90 disabled:opacity-50 transition"
             style={{ backgroundColor: brandColor }}
           >
-            {saving ? "Mentés..." : "Mentés"}
+            {saving ? t("settings.saving") : t("common.save")}
           </button>
         </div>
       </div>

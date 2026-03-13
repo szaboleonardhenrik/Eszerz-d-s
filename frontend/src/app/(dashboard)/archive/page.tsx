@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
+import { useI18n } from "@/lib/i18n";
 
 interface Signer {
   name: string;
@@ -58,6 +59,7 @@ function formatDate(dateStr: string): string {
 }
 
 export default function ArchivePage() {
+  const { t } = useI18n();
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -163,10 +165,10 @@ export default function ArchivePage() {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-          Archívum
+          {t("archive.title")}
         </h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Archivált szerződések
+          {t("archive.subtitle")}
         </p>
       </div>
 
@@ -236,7 +238,7 @@ export default function ArchivePage() {
             />
           </svg>
           <p className="text-gray-500 dark:text-gray-400 text-lg font-medium">
-            Nincs archivált szerződés
+            {t("archive.empty")}
           </p>
           {search && (
             <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">
@@ -376,7 +378,7 @@ export default function ArchivePage() {
                         />
                       </svg>
                     )}
-                    Visszaállítás
+                    {t("archive.restore")}
                   </button>
                 </li>
               );

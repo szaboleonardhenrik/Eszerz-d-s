@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
 import FeatureGate from "@/components/feature-gate";
+import { useI18n } from "@/lib/i18n";
 
 interface QuoteItem {
   description: string;
@@ -52,13 +53,7 @@ interface Pagination {
   totalPages: number;
 }
 
-const statusLabels: Record<string, string> = {
-  draft: "Piszkozat",
-  sent: "Elküldve",
-  accepted: "Elfogadva",
-  declined: "Visszautasítva",
-  expired: "Lejárt",
-};
+const STATUS_KEYS = ["draft", "sent", "accepted", "declined", "expired"];
 
 const statusColors: Record<string, string> = {
   draft: "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300",
@@ -105,6 +100,7 @@ function calcTotals(items: QuoteItem[], currency: string, globalDiscount?: numbe
 }
 
 export default function QuotesPage() {
+  const { t } = useI18n();
   const router = useRouter();
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [stats, setStats] = useState<QuoteStats | null>(null);
@@ -151,7 +147,7 @@ export default function QuotesPage() {
         setTotal(data.total ?? 0);
       }
     } catch {
-      toast.error("Hiba az ajánlatok betöltésekor");
+      toast.error(t("quotes.loadError"));
     } finally {
       setLoading(false);
     }
@@ -160,7 +156,7 @@ export default function QuotesPage() {
   const handleDuplicate = async (id: string) => {
     try {
       const res = await api.post(`/quotes/${id}/duplicate`);
-      toast.success("Ajánlat duplikálva!");
+      toast.success(t("quotes.duplicateSuccess"));
       const newId = res.data.data?.id;
       if (newId) {
         router.push(`/quotes/${newId}`);
@@ -169,30 +165,30 @@ export default function QuotesPage() {
         loadStats();
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba a duplikáláskor");
+      toast.error(err.response?.data?.error?.message ?? t("quotes.duplicateError"));
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Biztosan törli az ajánlatot?")) return;
+    if (!confirm(t("quotes.deleteConfirm"))) return;
     try {
       await api.delete(`/quotes/${id}`);
-      toast.success("Ajánlat törölve!");
+      toast.success(t("quotes.deleteSuccess"));
       loadQuotes();
       loadStats();
     } catch {
-      toast.error("Hiba a törléskor");
+      toast.error(t("quotes.deleteError"));
     }
   };
 
   const statCards = stats
     ? [
-        { label: "Összes", value: stats.total, color: "bg-white dark:bg-gray-800" },
-        { label: "Piszkozat", value: stats.draft, color: "bg-gray-50 dark:bg-gray-800" },
-        { label: "Elküldve", value: stats.sent, color: "bg-teal-50 dark:bg-teal-900/20" },
-        { label: "Elfogadva", value: stats.accepted, color: "bg-green-50 dark:bg-green-900/20" },
-        { label: "Visszautasítva", value: stats.declined, color: "bg-red-50 dark:bg-red-900/20" },
-        { label: "Összes bevétel", value: formatCurrency(stats.totalRevenue, "HUF"), color: "bg-white dark:bg-gray-800", isRevenue: true },
+        { label: t("quotes.stats.total"), value: stats.total, color: "bg-white dark:bg-gray-800" },
+        { label: t("quotes.stats.draft"), value: stats.draft, color: "bg-gray-50 dark:bg-gray-800" },
+        { label: t("quotes.stats.sent"), value: stats.sent, color: "bg-teal-50 dark:bg-teal-900/20" },
+        { label: t("quotes.stats.accepted"), value: stats.accepted, color: "bg-green-50 dark:bg-green-900/20" },
+        { label: t("quotes.stats.declined"), value: stats.declined, color: "bg-red-50 dark:bg-red-900/20" },
+        { label: t("quotes.stats.totalRevenue"), value: formatCurrency(stats.totalRevenue, "HUF"), color: "bg-white dark:bg-gray-800", isRevenue: true },
       ]
     : null;
 
@@ -202,9 +198,9 @@ export default function QuotesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Ajánlatok</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t("quotes.title")}</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Ajánlatok és árajánlatok kezelése
+            {t("quotes.subtitle")}
           </p>
         </div>
         <div className="flex gap-2">
@@ -212,7 +208,7 @@ export default function QuotesPage() {
             href="/quotes/templates"
             className="px-4 py-2.5 rounded-lg font-medium transition text-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
-            Sablonok
+            {t("quotes.templates")}
           </Link>
           <Link
             href="/quotes/new"
@@ -221,7 +217,7 @@ export default function QuotesPage() {
             onMouseEnter={(e) => ((e.target as HTMLElement).style.backgroundColor = "#0e5f6e")}
             onMouseLeave={(e) => ((e.target as HTMLElement).style.backgroundColor = "#198296")}
           >
-            + Új ajánlat
+            + {t("quotes.new")}
           </Link>
         </div>
       </div>
@@ -258,7 +254,7 @@ export default function QuotesPage() {
           type="text"
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          placeholder="Keresés cím, ügyfél vagy cég szerint..."
+          placeholder={t("quotes.searchPlaceholder")}
           className="flex-1 max-w-md px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#198296]"
         />
         <select
@@ -266,12 +262,10 @@ export default function QuotesPage() {
           onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
           className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-[#198296]"
         >
-          <option value="">Minden statusz</option>
-          <option value="draft">Piszkozat</option>
-          <option value="sent">Elküldve</option>
-          <option value="accepted">Elfogadva</option>
-          <option value="declined">Visszautasítva</option>
-          <option value="expired">Lejárt</option>
+          <option value="">{t("quotes.allStatuses")}</option>
+          {STATUS_KEYS.map((key) => (
+            <option key={key} value={key}>{t(`quotes.status.${key}`)}</option>
+          ))}
         </select>
       </div>
 
@@ -298,9 +292,9 @@ export default function QuotesPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Nincsenek ajánlatok</h3>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">{t("quotes.empty")}</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 text-center max-w-sm">
-              {search || statusFilter ? "Nincs találat a szűrőknek megfelelő ajánlat." : "Még nincs ajánlatod. Hozz létre egyet!"}
+              {search || statusFilter ? t("quotes.emptyFiltered") : t("quotes.emptyDesc")}
             </p>
             {!search && !statusFilter && (
               <Link
@@ -308,7 +302,7 @@ export default function QuotesPage() {
                 className="text-white px-6 py-2.5 rounded-lg font-medium transition text-sm"
                 style={{ backgroundColor: "#198296" }}
               >
-                + Új ajánlat
+                + {t("quotes.new")}
               </Link>
             )}
           </div>
@@ -318,12 +312,12 @@ export default function QuotesPage() {
               <table className="w-full">
                 <thead>
                   <tr className="text-left text-sm text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                    <th className="px-4 py-3 font-medium">Cím</th>
-                    <th className="px-4 py-3 font-medium">Ügyfél</th>
-                    <th className="px-4 py-3 font-medium hidden md:table-cell">Összeg</th>
-                    <th className="px-4 py-3 font-medium">Státusz</th>
-                    <th className="px-4 py-3 font-medium hidden lg:table-cell">Érvényes</th>
-                    <th className="px-4 py-3 font-medium w-32 sm:w-40 md:w-48">Műveletek</th>
+                    <th className="px-4 py-3 font-medium">{t("quotes.table.title")}</th>
+                    <th className="px-4 py-3 font-medium">{t("quotes.table.client")}</th>
+                    <th className="px-4 py-3 font-medium hidden md:table-cell">{t("quotes.table.amount")}</th>
+                    <th className="px-4 py-3 font-medium">{t("quotes.table.status")}</th>
+                    <th className="px-4 py-3 font-medium hidden lg:table-cell">{t("quotes.table.validUntil")}</th>
+                    <th className="px-4 py-3 font-medium w-32 sm:w-40 md:w-48">{t("quotes.table.actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -356,14 +350,14 @@ export default function QuotesPage() {
                             {totals.bruttoStr}
                           </p>
                           <p className="text-xs text-gray-400">
-                            netto: {totals.nettoStr}
+                            {t("quotes.table.netto")}: {totals.nettoStr}
                           </p>
                         </td>
                         <td className="px-4 py-3">
                           <span
                             className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[q.status] ?? "bg-gray-100 text-gray-700"}`}
                           >
-                            {statusLabels[q.status] ?? q.status}
+                            {t(`quotes.status.${q.status}`) !== `quotes.status.${q.status}` ? t(`quotes.status.${q.status}`) : q.status}
                           </span>
                         </td>
                         <td className="px-4 py-3 hidden lg:table-cell">
@@ -379,19 +373,19 @@ export default function QuotesPage() {
                               href={`/quotes/${q.id}`}
                               className="text-xs px-3 py-1 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 transition"
                             >
-                              Szerkesztés
+                              {t("quotes.actions.edit")}
                             </Link>
                             <button
                               onClick={() => handleDuplicate(q.id)}
                               className="text-xs px-3 py-1 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition"
                             >
-                              Duplikálás
+                              {t("quotes.actions.duplicate")}
                             </button>
                             <button
                               onClick={() => handleDelete(q.id)}
                               className="text-xs px-3 py-1 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition"
                             >
-                              Törlés
+                              {t("quotes.actions.delete")}
                             </button>
                           </div>
                         </td>
@@ -406,7 +400,7 @@ export default function QuotesPage() {
             {totalPages > 1 && (
               <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700">
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Össz.: {total} ajánlat
+                  {t("quotes.total", { count: total })}
                 </p>
                 <div className="flex gap-1">
                   <button
@@ -414,7 +408,7 @@ export default function QuotesPage() {
                     disabled={page <= 1}
                     className="px-3 py-1 rounded-lg text-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 transition"
                   >
-                    Előző
+                    {t("common.previous")}
                   </button>
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                     <button
@@ -435,7 +429,7 @@ export default function QuotesPage() {
                     disabled={page >= totalPages}
                     className="px-3 py-1 rounded-lg text-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 transition"
                   >
-                    Következő
+                    {t("common.next")}
                   </button>
                 </div>
               </div>

@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
+import { useI18n } from "@/lib/i18n";
 
 interface Signer {
   name: string;
@@ -21,17 +22,6 @@ interface Contract {
   signers: Signer[];
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  draft: "Piszkozat",
-  sent: "Elküldve",
-  completed: "Aláírva",
-  declined: "Visszautasítva",
-  partially_signed: "Részben aláírt",
-  expired: "Lejárt",
-  cancelled: "Visszavont",
-  archived: "Archivált",
-};
-
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300",
   sent: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
@@ -43,15 +33,7 @@ const STATUS_COLORS: Record<string, string> = {
   archived: "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400",
 };
 
-const STATUS_FILTER_OPTIONS = [
-  { value: "", label: "Összes" },
-  { value: "draft", label: "Piszkozat" },
-  { value: "sent", label: "Elküldve" },
-  { value: "partially_signed", label: "Részben aláírt" },
-  { value: "completed", label: "Aláírva" },
-  { value: "declined", label: "Visszautasítva" },
-  { value: "expired", label: "Lejárt" },
-];
+const STATUS_FILTER_KEYS = ["draft", "sent", "partially_signed", "completed", "declined", "expired"];
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("hu-HU", {
@@ -62,6 +44,7 @@ function formatDate(dateStr: string): string {
 }
 
 export default function ContractsListPage() {
+  const { t } = useI18n();
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -83,7 +66,7 @@ export default function ContractsListPage() {
       setContracts(data.items ?? []);
       setTotalPages(data.totalPages ?? 1);
     } catch {
-      toast.error("Nem sikerült betölteni a szerződéseket.");
+      toast.error(t("contracts.loadError"));
     } finally {
       setLoading(false);
     }
@@ -123,7 +106,7 @@ export default function ContractsListPage() {
     );
 
     if (ids.length === 0) {
-      toast.error("Nincs letölthető PDF a kiválasztott szerződésekhez.");
+      toast.error(t("contracts.exportNoFiles"));
       return;
     }
 
@@ -143,9 +126,9 @@ export default function ContractsListPage() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      toast.success(`${ids.length} szerződés letöltve ZIP-ben.`);
+      toast.success(t("contracts.exportSuccess", { count: ids.length }));
     } catch {
-      toast.error("Hiba a ZIP exportálás során.");
+      toast.error(t("contracts.exportError"));
     } finally {
       setExporting(false);
     }
@@ -157,10 +140,10 @@ export default function ContractsListPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            Szerződések
+            {t("contracts.title")}
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Összes szerződés kezelése
+            {t("contracts.manage")}
           </p>
         </div>
         <Link
@@ -170,7 +153,7 @@ export default function ContractsListPage() {
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
           </svg>
-          Új szerződés
+          {t("contracts.new")}
         </Link>
       </div>
 
@@ -178,7 +161,7 @@ export default function ContractsListPage() {
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-4">
         <input
           type="text"
-          placeholder="Keresés cím alapján..."
+          placeholder={t("contracts.searchPlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="flex-1 sm:max-w-xs px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600
@@ -193,15 +176,16 @@ export default function ContractsListPage() {
             bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm
             focus:outline-none focus:ring-2 focus:ring-[#198296] focus:border-transparent"
         >
-          {STATUS_FILTER_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>{o.label}</option>
+          <option value="">{t("contracts.filter.all")}</option>
+          {STATUS_FILTER_KEYS.map((key) => (
+            <option key={key} value={key}>{t(`contracts.status.${key}`)}</option>
           ))}
         </select>
 
         {selectedIds.size > 0 && (
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-500 dark:text-gray-400">
-              {selectedIds.size} kiválasztva
+              {t("contracts.selected", { count: selectedIds.size })}
             </span>
             <button
               onClick={handleBulkExport}
@@ -219,13 +203,13 @@ export default function ContractsListPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
                 </svg>
               )}
-              {exporting ? "Exportálás..." : "ZIP letöltés"}
+              {exporting ? t("contracts.actions.exporting") : t("contracts.actions.exportZip")}
             </button>
             <button
               onClick={() => setSelectedIds(new Set())}
               className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"
             >
-              Mégsem
+              {t("contracts.actions.deselect")}
             </button>
           </div>
         )}
@@ -244,11 +228,11 @@ export default function ContractsListPage() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
           </svg>
           <p className="text-gray-500 dark:text-gray-400 text-lg font-medium">
-            {search || statusFilter ? "Nincs találat a szűrőkkel" : "Még nincs szerződés"}
+            {search || statusFilter ? t("contracts.emptyFiltered") : t("contracts.empty")}
           </p>
           {!search && !statusFilter && (
             <Link href="/create" className="text-sm text-[#198296] hover:underline font-medium mt-2 inline-block">
-              Első szerződés létrehozása
+              {t("contracts.createFirst")}
             </Link>
           )}
         </div>
@@ -264,11 +248,11 @@ export default function ContractsListPage() {
                 className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-[#198296] focus:ring-[#198296] cursor-pointer"
               />
             </span>
-            <span>Cím</span>
-            <span>Státusz</span>
-            <span>Létrehozva</span>
-            <span>Aláírók</span>
-            <span>PDF</span>
+            <span>{t("contracts.title_column")}</span>
+            <span>{t("contracts.status_column")}</span>
+            <span>{t("contracts.createdAt")}</span>
+            <span>{t("contracts.signers")}</span>
+            <span>{t("contracts.pdf")}</span>
           </div>
 
           {/* Table rows */}
@@ -314,7 +298,7 @@ export default function ContractsListPage() {
 
                   {/* Status */}
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium w-fit ${STATUS_COLORS[contract.status] ?? "bg-gray-100 text-gray-600"}`}>
-                    {STATUS_LABELS[contract.status] ?? contract.status}
+                    {t(`contracts.status.${contract.status}`) !== `contracts.status.${contract.status}` ? t(`contracts.status.${contract.status}`) : contract.status}
                   </span>
 
                   {/* Date */}
@@ -324,7 +308,7 @@ export default function ContractsListPage() {
 
                   {/* Signers */}
                   <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">
-                    {signerSummary} aláíró
+                    {t("contracts.signerCount", { count: signerSummary })}
                   </span>
 
                   {/* PDF indicator */}
@@ -355,7 +339,7 @@ export default function ContractsListPage() {
             disabled={page <= 1}
             className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition"
           >
-            Előző
+            {t("common.previous")}
           </button>
           <span className="text-sm text-gray-500 dark:text-gray-400">
             {page} / {totalPages}
@@ -365,7 +349,7 @@ export default function ContractsListPage() {
             disabled={page >= totalPages}
             className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition"
           >
-            Következő
+            {t("common.next")}
           </button>
         </div>
       )}

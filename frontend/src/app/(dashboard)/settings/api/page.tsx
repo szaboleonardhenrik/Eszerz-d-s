@@ -5,6 +5,7 @@ import api from "@/lib/api";
 import toast from "react-hot-toast";
 import EmptyState from "@/components/empty-state";
 import FeatureGate from "@/components/feature-gate";
+import { useI18n } from "@/lib/i18n";
 
 interface ApiKey {
   id: string;
@@ -24,6 +25,7 @@ const scopeOptions = [
 ];
 
 export default function ApiKeysSettings() {
+  const { t } = useI18n();
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [showCreate, setShowCreate] = useState(false);
   const [name, setName] = useState("");
@@ -87,9 +89,9 @@ export default function ApiKeysSettings() {
       {/* New key alert */}
       {newKey && (
         <div className="bg-green-50 border border-green-200 rounded-xl p-6">
-          <h3 className="font-semibold text-green-900 mb-2">Új API kulcs létrehozva</h3>
+          <h3 className="font-semibold text-green-900 mb-2">{t("apiKeys.newKeyCreated")}</h3>
           <p className="text-sm text-green-700 mb-3">
-            Másold ki most! Ez a kulcs többé nem lesz látható.
+            {t("apiKeys.copyWarning")}
           </p>
           <div className="flex gap-2">
             <code className="flex-1 bg-white border rounded-lg px-4 py-2.5 text-sm font-mono text-green-800 select-all">
@@ -102,7 +104,7 @@ export default function ApiKeysSettings() {
               }}
               className="px-4 py-2.5 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700"
             >
-              Másolás
+              {t("apiKeys.copy")}
             </button>
           </div>
           <button
@@ -117,16 +119,16 @@ export default function ApiKeysSettings() {
       <div className="bg-white rounded-xl border p-6">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">API kulcsok</h2>
+            <h2 className="text-lg font-semibold text-gray-900">{t("apiKeys.title")}</h2>
             <p className="text-sm text-gray-500 mt-1">
-              Használd az API-t a szerződéskezelés automatizálásához.
+              {t("apiKeys.subtitle")}
             </p>
           </div>
           <button
             onClick={() => setShowCreate(!showCreate)}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
           >
-            + Új kulcs
+            {t("apiKeys.create")}
           </button>
         </div>
 
@@ -134,7 +136,7 @@ export default function ApiKeysSettings() {
           <div className="border rounded-xl p-5 mb-6 bg-gray-50">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Kulcs neve</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t("apiKeys.keyName")}</label>
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -143,7 +145,7 @@ export default function ApiKeysSettings() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Jogosultságok</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t("apiKeys.scopes")}</label>
                 <div className="grid grid-cols-2 gap-2">
                   {scopeOptions.map((opt) => (
                     <label
@@ -166,7 +168,7 @@ export default function ApiKeysSettings() {
                 disabled={creating || !name}
                 className="bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
               >
-                {creating ? "Létrehozás..." : "Kulcs létrehozása"}
+                {creating ? t("apiKeys.creating") : t("apiKeys.createKey")}
               </button>
             </div>
           </div>
@@ -176,8 +178,8 @@ export default function ApiKeysSettings() {
           {keys.length === 0 ? (
             <EmptyState
               icon="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-              title="Nincs API kulcs"
-              description="Hozz l\u00e9tre egy API kulcsot a szerz\u0151d\u00e9skezel\u00e9s automatiz\u00e1l\u00e1s\u00e1hoz."
+              title={t("apiKeys.empty")}
+              description={t("apiKeys.emptyDesc")}
             />
           ) : (
             keys.map((k) => (
@@ -195,13 +197,13 @@ export default function ApiKeysSettings() {
                           : "bg-gray-100 text-gray-500"
                       }`}
                     >
-                      {k.active ? "Aktív" : "Letiltva"}
+                      {k.active ? t("apiKeys.active") : t("apiKeys.disabled")}
                     </span>
                   </div>
                   <p className="text-xs text-gray-400 mt-1 font-mono">
                     {k.prefix}...
                     <span className="ml-3">
-                      Utoljára használva: {k.lastUsed ? new Date(k.lastUsed).toLocaleDateString("hu-HU") : "soha"}
+                      {t("apiKeys.lastUsed")}: {k.lastUsed ? new Date(k.lastUsed).toLocaleDateString("hu-HU") : t("apiKeys.never")}
                     </span>
                   </p>
                   <p className="text-xs text-gray-400 mt-0.5">
@@ -212,7 +214,7 @@ export default function ApiKeysSettings() {
                   onClick={() => handleDelete(k.id)}
                   className="text-sm text-red-500 hover:text-red-700"
                 >
-                  Törlés
+                  {t("common.delete")}
                 </button>
               </div>
             ))

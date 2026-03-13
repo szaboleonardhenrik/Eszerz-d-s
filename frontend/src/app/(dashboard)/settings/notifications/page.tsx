@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import { useAuth } from "@/lib/auth-store";
 import toast from "react-hot-toast";
+import { useI18n } from "@/lib/i18n";
 
 interface NotificationForm {
   notifyOnSign: boolean;
@@ -93,6 +94,7 @@ function Toggle({
 }
 
 export default function NotificationSettings() {
+  const { t } = useI18n();
   const { user, loadProfile } = useAuth();
   const [form, setForm] = useState<NotificationForm>({
     notifyOnSign: true,
@@ -165,10 +167,10 @@ export default function NotificationSettings() {
       <div className="bg-white rounded-xl border p-6">
         <div className="mb-6">
           <h2 className="text-lg font-semibold text-gray-900">
-            Szerződés értesítések
+            {t("notificationSettings.contractNotifications")}
           </h2>
           <p className="text-sm text-gray-500 mt-1">
-            Állítsd be, milyen szerződés-eseményekről kapsz értesítést emailben.
+            {t("notificationSettings.contractNotificationsDesc")}
           </p>
         </div>
 
@@ -197,10 +199,10 @@ export default function NotificationSettings() {
       <div className="bg-white rounded-xl border p-6">
         <div className="mb-6">
           <h2 className="text-lg font-semibold text-gray-900">
-            Email gyakoriság
+            {t("notificationSettings.emailFrequency")}
           </h2>
           <p className="text-sm text-gray-500 mt-1">
-            Milyen gyakran küldjünk összesítőt az értesítésekről?
+            {t("notificationSettings.emailFrequencyDesc")}
           </p>
         </div>
 
@@ -231,10 +233,10 @@ export default function NotificationSettings() {
       <div className="bg-white rounded-xl border p-6">
         <div className="mb-6">
           <h2 className="text-lg font-semibold text-gray-900">
-            Marketing és egyéb
+            {t("notificationSettings.marketing")}
           </h2>
           <p className="text-sm text-gray-500 mt-1">
-            Opcionális értesítések a Legitas szolgáltatásairól.
+            {t("notificationSettings.marketingDesc")}
           </p>
         </div>
 
@@ -266,7 +268,7 @@ export default function NotificationSettings() {
           disabled={saving}
           className="bg-[#198296] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-[#146d7d] disabled:opacity-50 transition"
         >
-          {saving ? "Mentés..." : "Beállítások mentése"}
+          {saving ? t("notificationSettings.saving") : t("notificationSettings.saveSettings")}
         </button>
       </div>
     </div>

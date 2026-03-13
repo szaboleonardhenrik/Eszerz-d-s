@@ -5,6 +5,7 @@ import Link from "next/link";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
 import FeatureGate from "@/components/feature-gate";
+import { useI18n } from "@/lib/i18n";
 
 interface Partner {
   id: string;
@@ -37,6 +38,7 @@ const emptyCompanyForm = { name: "", taxNumber: "", address: "", phone: "", emai
 const defaultGroups = ["Ügyfelek", "Beszállítók", "Alvállalkozók", "Partnerek", "Egyéb"];
 
 export default function PartnersPage() {
+  const { t } = useI18n();
   const [tab, setTab] = useState<"partners" | "companies">("partners");
   const [partners, setPartners] = useState<Partner[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -71,7 +73,7 @@ export default function PartnersPage() {
       if (groupFilter) params.group = groupFilter;
       const res = await api.get("/contacts", { params });
       setPartners(res.data.data ?? []);
-    } catch { toast.error("Hiba a partnerek betöltésekor"); }
+    } catch { toast.error(t("contacts.loadError")); }
     finally { setLoading(false); }
   };
 
@@ -99,10 +101,10 @@ export default function PartnersPage() {
     try {
       if (editingId) {
         await api.put(`/contacts/${editingId}`, form);
-        toast.success("Partner frissítve!");
+        toast.success(t("contacts.partnerUpdated"));
       } else {
         await api.post("/contacts", form);
-        toast.success("Partner hozzáadva!");
+        toast.success(t("contacts.partnerAdded"));
       }
       setForm(emptyForm);
       setShowForm(false);
@@ -110,7 +112,7 @@ export default function PartnersPage() {
       load();
       loadGroups();
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba történt");
+      toast.error(err.response?.data?.error?.message ?? t("contacts.genericError"));
     } finally { setSaving(false); }
   };
 
@@ -120,17 +122,17 @@ export default function PartnersPage() {
     try {
       if (editingCompanyId) {
         await api.put(`/contacts/companies/${editingCompanyId}`, companyForm);
-        toast.success("Cég frissítve!");
+        toast.success(t("contacts.companyUpdated"));
       } else {
         await api.post("/contacts/companies", companyForm);
-        toast.success("Cég hozzáadva!");
+        toast.success(t("contacts.companyAdded"));
       }
       setCompanyForm(emptyCompanyForm);
       setShowCompanyForm(false);
       setEditingCompanyId(null);
       loadCompanies();
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba történt");
+      toast.error(err.response?.data?.error?.message ?? t("contacts.genericError"));
     } finally { setSaving(false); }
   };
 
@@ -138,24 +140,24 @@ export default function PartnersPage() {
     if (!linkModal || !linkCompanyId) return;
     try {
       await api.post(`/contacts/${linkModal.contactId}/companies/${linkCompanyId}`, { role: linkRole || undefined });
-      toast.success("Partner hozzárendelve a céghez!");
+      toast.success(t("contacts.partnerLinked"));
       setLinkModal(null);
       setLinkCompanyId("");
       setLinkRole("");
       load();
       loadCompanies();
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba történt");
+      toast.error(err.response?.data?.error?.message ?? t("contacts.genericError"));
     }
   };
 
   const handleUnlink = async (contactId: string, companyId: string) => {
     try {
       await api.delete(`/contacts/${contactId}/companies/${companyId}`);
-      toast.success("Cég leválasztva!");
+      toast.success(t("contacts.companyUnlinked"));
       load();
       loadCompanies();
-    } catch { toast.error("Hiba"); }
+    } catch { toast.error(t("contacts.genericError")); }
   };
 
   const startEdit = (p: Partner) => {
@@ -171,21 +173,21 @@ export default function PartnersPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Biztosan törli a partnert?")) return;
+    if (!confirm(t("contacts.deleteConfirm"))) return;
     try {
       await api.delete(`/contacts/${id}`);
-      toast.success("Partner törölve!");
+      toast.success(t("contacts.partnerDeleted"));
       load();
-    } catch { toast.error("Hiba a törléskor"); }
+    } catch { toast.error(t("contacts.deleteError")); }
   };
 
   const handleDeleteCompany = async (id: string) => {
-    if (!confirm("Biztosan törli a céget? A hozzárendelt partnerek nem törlődnek.")) return;
+    if (!confirm(t("contacts.deleteCompanyConfirm"))) return;
     try {
       await api.delete(`/contacts/companies/${id}`);
-      toast.success("Cég törölve!");
+      toast.success(t("contacts.companyDeleted"));
       loadCompanies();
-    } catch { toast.error("Hiba a törléskor"); }
+    } catch { toast.error(t("contacts.deleteError")); }
   };
 
   const handleExport = async (format: "csv" | "json") => {
@@ -200,8 +202,8 @@ export default function PartnersPage() {
       a.download = format === "json" ? "partnerek.json" : "partnerek.csv";
       a.click();
       URL.revokeObjectURL(url);
-      toast.success("Export letöltve");
-    } catch { toast.error("Hiba az exportáláskor"); }
+      toast.success(t("contacts.exportSuccess"));
+    } catch { toast.error(t("contacts.exportError")); }
   };
 
   const formatDate = (d: string | null) => {
@@ -217,11 +219,11 @@ export default function PartnersPage() {
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Partnerek & Cégek</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t("contacts.title")}</h1>
           <p className="text-sm text-gray-500 mt-1">
             {tab === "partners"
-              ? `${partners.length} partner${groupFilter ? ` (${groupFilter})` : ""}`
-              : `${companies.length} cég`}
+              ? (groupFilter ? t("contacts.subtitleFiltered", { count: partners.length, group: groupFilter }) : t("contacts.subtitle", { count: partners.length }))
+              : t("contacts.subtitleCompanies", { count: companies.length })}
           </p>
         </div>
         <div className="flex gap-2">
@@ -237,14 +239,14 @@ export default function PartnersPage() {
               </button>
               <button onClick={() => { setForm(emptyForm); setEditingId(null); setShowForm(true); }}
                 className="bg-[#198296] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#146d7d] transition text-sm">
-                + Új partner
+                + {t("contacts.new")}
               </button>
             </>
           )}
           {tab === "companies" && (
             <button onClick={() => { setCompanyForm(emptyCompanyForm); setEditingCompanyId(null); setShowCompanyForm(true); }}
               className="bg-[#198296] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#146d7d] transition text-sm">
-              + Új cég
+              + {t("contacts.newCompany")}
             </button>
           )}
         </div>
@@ -260,7 +262,7 @@ export default function PartnersPage() {
               : "text-gray-500 dark:text-gray-400 hover:text-gray-700"
           }`}
         >
-          Partnerek
+          {t("contacts.tabs.partners")}
         </button>
         <button
           onClick={() => setTab("companies")}
@@ -270,7 +272,7 @@ export default function PartnersPage() {
               : "text-gray-500 dark:text-gray-400 hover:text-gray-700"
           }`}
         >
-          Cégek
+          {t("contacts.tabs.companies")}
         </button>
       </div>
 
@@ -283,7 +285,7 @@ export default function PartnersPage() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Keresés név, email vagy cég..."
+              placeholder={t("contacts.searchPlaceholder")}
               className="flex-1 min-w-[200px] max-w-md px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#41A5B9]"
             />
             <select
@@ -291,13 +293,13 @@ export default function PartnersPage() {
               onChange={(e) => setGroupFilter(e.target.value)}
               className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             >
-              <option value="">Minden csoport</option>
+              <option value="">{t("contacts.allGroups")}</option>
               {allGroups.map(g => <option key={g} value={g}>{g}</option>)}
-              <option value="__none">Nincs csoport</option>
+              <option value="__none">{t("contacts.noGroup")}</option>
             </select>
             {(search || groupFilter) && (
               <button onClick={() => { setSearch(""); setGroupFilter(""); }}
-                className="px-3 py-2 text-sm text-red-500 hover:underline">Törlés</button>
+                className="px-3 py-2 text-sm text-red-500 hover:underline">{t("contacts.clearFilters")}</button>
             )}
           </div>
 
@@ -314,10 +316,10 @@ export default function PartnersPage() {
                     d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
                 <p className="text-gray-500 dark:text-gray-400 font-medium">
-                  {search || groupFilter ? "Nincs találat" : "Még nincsenek partnerek"}
+                  {search || groupFilter ? t("contacts.emptyFiltered") : t("contacts.empty")}
                 </p>
                 <p className="text-sm text-gray-400 mt-1">
-                  Az aláírók automatikusan megjelennek itt, vagy adj hozzá kézzel.
+                  {t("contacts.emptyDesc")}
                 </p>
               </div>
             ) : (
@@ -325,11 +327,11 @@ export default function PartnersPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="text-left text-sm text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                      <th className="px-4 py-3 font-medium">Partner</th>
-                      <th className="px-4 py-3 font-medium hidden sm:table-cell">Cégek</th>
-                      <th className="px-4 py-3 font-medium hidden md:table-cell">Csoport</th>
-                      <th className="px-4 py-3 font-medium hidden md:table-cell">Szerződések</th>
-                      <th className="px-4 py-3 font-medium hidden lg:table-cell">Utolsó aláírás</th>
+                      <th className="px-4 py-3 font-medium">{t("contacts.table.partner")}</th>
+                      <th className="px-4 py-3 font-medium hidden sm:table-cell">{t("contacts.table.companies")}</th>
+                      <th className="px-4 py-3 font-medium hidden md:table-cell">{t("contacts.table.group")}</th>
+                      <th className="px-4 py-3 font-medium hidden md:table-cell">{t("contacts.table.contracts")}</th>
+                      <th className="px-4 py-3 font-medium hidden lg:table-cell">{t("contacts.table.lastSigned")}</th>
                       <th className="px-4 py-3 font-medium w-48"></th>
                     </tr>
                   </thead>
@@ -391,11 +393,11 @@ export default function PartnersPage() {
                               </svg>
                             </Link>
                             <Link href={`/contacts/${p.id}`}
-                              className="text-xs px-2 py-1 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-600 transition">Profil</Link>
+                              className="text-xs px-2 py-1 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-600 transition">{t("contacts.actions.profile")}</Link>
                             <button onClick={() => startEdit(p)}
-                              className="text-xs px-2 py-1 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition">Szerk.</button>
+                              className="text-xs px-2 py-1 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition">{t("contacts.actions.edit")}</button>
                             <button onClick={() => handleDelete(p.id)}
-                              className="text-xs px-2 py-1 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition">Törlés</button>
+                              className="text-xs px-2 py-1 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition">{t("contacts.actions.delete")}</button>
                           </div>
                         </td>
                       </tr>
@@ -416,7 +418,7 @@ export default function PartnersPage() {
               type="text"
               value={companySearch}
               onChange={(e) => setCompanySearch(e.target.value)}
-              placeholder="Keresés cégnév vagy adószám..."
+              placeholder={t("contacts.searchCompanyPlaceholder")}
               className="flex-1 min-w-[200px] max-w-md px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#41A5B9]"
             />
           </div>
@@ -428,8 +430,8 @@ export default function PartnersPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                     d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
-                <p className="text-gray-500 dark:text-gray-400 font-medium">Még nincsenek cégek</p>
-                <p className="text-sm text-gray-400 mt-1">Aláíráskor automatikusan létrejönnek, vagy add hozzá kézzel.</p>
+                <p className="text-gray-500 dark:text-gray-400 font-medium">{t("contacts.emptyCompanies")}</p>
+                <p className="text-sm text-gray-400 mt-1">{t("contacts.emptyCompaniesDesc")}</p>
               </div>
             ) : (
               <div className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -473,9 +475,9 @@ export default function PartnersPage() {
                       </div>
                       <div className="flex gap-1 shrink-0">
                         <button onClick={() => startEditCompany(c)}
-                          className="text-xs px-2 py-1 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition">Szerk.</button>
+                          className="text-xs px-2 py-1 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition">{t("contacts.actions.edit")}</button>
                         <button onClick={() => handleDeleteCompany(c.id)}
-                          className="text-xs px-2 py-1 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition">Törlés</button>
+                          className="text-xs px-2 py-1 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition">{t("contacts.actions.delete")}</button>
                       </div>
                     </div>
                   </div>
@@ -491,53 +493,53 @@ export default function PartnersPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-              {editingId ? "Partner szerkesztése" : "Új partner"}
+              {editingId ? t("contacts.form.editPartner") : t("contacts.form.newPartner")}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="col-span-2 sm:col-span-1">
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Név *</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t("contacts.form.name")} *</label>
                 <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputCls} />
               </div>
               <div className="col-span-2 sm:col-span-1">
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Email *</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t("contacts.form.email")} *</label>
                 <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={inputCls} />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Cégnév</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t("contacts.form.companyName")}</label>
                 <input type="text" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} className={inputCls} />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Telefon</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t("contacts.form.phone")}</label>
                 <input type="text" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={inputCls} />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Adószám</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t("contacts.form.taxNumber")}</label>
                 <input type="text" value={form.taxNumber} onChange={(e) => setForm({ ...form, taxNumber: e.target.value })} className={inputCls} />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Cím</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t("contacts.form.address")}</label>
                 <input type="text" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className={inputCls} />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Csoport</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t("contacts.form.group")}</label>
                 <select value={form.group} onChange={(e) => setForm({ ...form, group: e.target.value })}
                   className={inputCls}>
-                  <option value="">Nincs</option>
+                  <option value="">{t("contacts.form.noGroup")}</option>
                   {allGroups.map(g => <option key={g} value={g}>{g}</option>)}
                 </select>
               </div>
               <div className="col-span-2">
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Megjegyzés</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t("contacts.form.notes")}</label>
                 <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })}
                   rows={2} className={inputCls} />
               </div>
             </div>
             <div className="flex justify-end gap-2 mt-5">
               <button onClick={() => { setShowForm(false); setEditingId(null); }}
-                className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition">Mégse</button>
+                className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition">{t("common.cancel")}</button>
               <button onClick={handleSubmit} disabled={saving || !form.name.trim() || !form.email.trim()}
                 className="px-5 py-2 text-sm font-medium text-white bg-[#198296] hover:bg-[#146d7d] rounded-lg transition disabled:opacity-50">
-                {saving ? "Mentés..." : editingId ? "Frissítés" : "Létrehozás"}
+                {saving ? t("contacts.form.saving") : editingId ? t("contacts.form.update") : t("contacts.form.create")}
               </button>
             </div>
           </div>
@@ -549,41 +551,41 @@ export default function PartnersPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-              {editingCompanyId ? "Cég szerkesztése" : "Új cég"}
+              {editingCompanyId ? t("contacts.form.editCompany") : t("contacts.form.newCompany")}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="col-span-2">
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Cégnév *</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t("contacts.form.companyName")} *</label>
                 <input type="text" value={companyForm.name} onChange={(e) => setCompanyForm({ ...companyForm, name: e.target.value })} className={inputCls} />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Adószám</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t("contacts.form.taxNumber")}</label>
                 <input type="text" value={companyForm.taxNumber} onChange={(e) => setCompanyForm({ ...companyForm, taxNumber: e.target.value })} className={inputCls} />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Cím</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t("contacts.form.address")}</label>
                 <input type="text" value={companyForm.address} onChange={(e) => setCompanyForm({ ...companyForm, address: e.target.value })} className={inputCls} />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Telefon</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t("contacts.form.phone")}</label>
                 <input type="text" value={companyForm.phone} onChange={(e) => setCompanyForm({ ...companyForm, phone: e.target.value })} className={inputCls} />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Email</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t("contacts.form.email")}</label>
                 <input type="email" value={companyForm.email} onChange={(e) => setCompanyForm({ ...companyForm, email: e.target.value })} className={inputCls} />
               </div>
               <div className="col-span-2">
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Megjegyzés</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t("contacts.form.notes")}</label>
                 <textarea value={companyForm.notes} onChange={(e) => setCompanyForm({ ...companyForm, notes: e.target.value })}
                   rows={2} className={inputCls} />
               </div>
             </div>
             <div className="flex justify-end gap-2 mt-5">
               <button onClick={() => { setShowCompanyForm(false); setEditingCompanyId(null); }}
-                className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition">Mégse</button>
+                className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition">{t("common.cancel")}</button>
               <button onClick={handleCompanySubmit} disabled={saving || !companyForm.name.trim()}
                 className="px-5 py-2 text-sm font-medium text-white bg-[#198296] hover:bg-[#146d7d] rounded-lg transition disabled:opacity-50">
-                {saving ? "Mentés..." : editingCompanyId ? "Frissítés" : "Létrehozás"}
+                {saving ? t("contacts.form.saving") : editingCompanyId ? t("contacts.form.update") : t("contacts.form.create")}
               </button>
             </div>
           </div>
@@ -595,29 +597,29 @@ export default function PartnersPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
-              Céghez rendelés
+              {t("contacts.linkModal.title")}
             </h2>
             <p className="text-sm text-gray-500 mb-4">{linkModal.contactName}</p>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Cég *</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t("contacts.linkModal.company")} *</label>
                 <select value={linkCompanyId} onChange={(e) => setLinkCompanyId(e.target.value)} className={inputCls}>
-                  <option value="">Válassz céget...</option>
+                  <option value="">{t("contacts.linkModal.selectCompany")}</option>
                   {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Szerepkör (opcionális)</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t("contacts.linkModal.role")}</label>
                 <input type="text" value={linkRole} onChange={(e) => setLinkRole(e.target.value)}
-                  placeholder="pl. Ügyvezető, Kapcsolattartó" className={inputCls} />
+                  placeholder={t("contacts.linkModal.rolePlaceholder")} className={inputCls} />
               </div>
             </div>
             <div className="flex justify-end gap-2 mt-5">
               <button onClick={() => { setLinkModal(null); setLinkCompanyId(""); setLinkRole(""); }}
-                className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition">Mégse</button>
+                className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition">{t("common.cancel")}</button>
               <button onClick={handleLinkSubmit} disabled={!linkCompanyId}
                 className="px-5 py-2 text-sm font-medium text-white bg-[#198296] hover:bg-[#146d7d] rounded-lg transition disabled:opacity-50">
-                Hozzárendelés
+                {t("contacts.linkModal.assign")}
               </button>
             </div>
           </div>

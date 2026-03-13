@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-store";
+import { useI18n } from "@/lib/i18n";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
 
@@ -64,6 +65,7 @@ const roleBadge: Record<string, string> = {
 
 export default function AdminUsersPage() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const [data, setData] = useState<UsersResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -195,10 +197,10 @@ export default function AdminUsersPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Nincs jogosultságod</h2>
-          <p className="text-gray-500 dark:text-gray-400">Ez az oldal csak adminisztrátorok számára érhető el.</p>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">{t("admin.noPermission")}</h2>
+          <p className="text-gray-500 dark:text-gray-400">{t("admin.noPermissionDesc")}</p>
           <Link href="/dashboard" className="inline-block mt-4 px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition">
-            Vissza a kezdőlapra
+            {t("admin.backToHome")}
           </Link>
         </div>
       </div>
@@ -216,10 +218,10 @@ export default function AdminUsersPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </Link>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Felhasználók kezelése</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t("admin.users.title")}</h1>
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Összes felhasználó: {data?.total ?? "..."}
+            {t("admin.users.totalUsers")}: {data?.total ?? "..."}
           </p>
         </div>
 
@@ -232,7 +234,7 @@ export default function AdminUsersPage() {
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              Új felhasználó
+              {t("admin.users.newUser")}
             </button>
           )}
           {/* Role filter */}
@@ -241,7 +243,7 @@ export default function AdminUsersPage() {
             onChange={(e) => setRoleFilter(e.target.value)}
             className="px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
           >
-            <option value="">Minden szerepkör</option>
+            <option value="">{t("admin.users.allRoles")}</option>
             <option value="superadmin">Szuperadmin</option>
             <option value="employee">Munkatárs</option>
             <option value="user">Felhasználó</option>
@@ -254,7 +256,7 @@ export default function AdminUsersPage() {
             </svg>
             <input
               type="text"
-              placeholder="Keresés név, email vagy cég szerint..."
+              placeholder={t("admin.users.search")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
@@ -269,7 +271,7 @@ export default function AdminUsersPage() {
           <div className="fixed inset-0 bg-black/40 z-50" onClick={() => setShowCreate(false)} />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
-              <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Új felhasználó regisztrálása</h2>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">{t("admin.users.createUser")}</h2>
               <div className="space-y-3">
                 <div>
                   <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Név *</label>
@@ -340,14 +342,14 @@ export default function AdminUsersPage() {
                   onClick={() => setShowCreate(false)}
                   className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"
                 >
-                  Mégse
+                  {t("admin.users.cancel")}
                 </button>
                 <button
                   onClick={handleCreate}
                   disabled={creating}
                   className="px-5 py-2 bg-violet-600 text-white text-sm font-medium rounded-lg hover:bg-violet-700 disabled:opacity-50 transition"
                 >
-                  {creating ? "Létrehozás..." : "Felhasználó létrehozása"}
+                  {creating ? t("admin.users.creating") : t("admin.users.createBtn")}
                 </button>
               </div>
             </div>
@@ -363,19 +365,19 @@ export default function AdminUsersPage() {
             <p className="mt-3 text-sm text-gray-400">Betöltés...</p>
           </div>
         ) : !data || data.users.length === 0 ? (
-          <div className="p-12 text-center text-sm text-gray-400">Nincs találat</div>
+          <div className="p-12 text-center text-sm text-gray-400">{t("admin.users.noResults")}</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Felhasználó</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Szint</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Szerepkör</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Szerződések</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400 hidden lg:table-cell">Regisztráció</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400 hidden xl:table-cell">Utolsó belépés</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Műveletek</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t("admin.users.name")}</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t("admin.users.tier")}</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t("admin.users.role")}</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t("admin.users.contracts")}</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400 hidden lg:table-cell">{t("admin.users.registered")}</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400 hidden xl:table-cell">{t("admin.users.lastLogin")}</th>
+                  <th className="text-right px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{t("admin.users.actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -449,13 +451,13 @@ export default function AdminUsersPage() {
                               disabled={saving}
                               className="px-3 py-1.5 bg-violet-600 text-white text-xs rounded-lg hover:bg-violet-700 disabled:opacity-50 transition"
                             >
-                              {saving ? "..." : "Mentés"}
+                              {saving ? "..." : t("admin.users.save")}
                             </button>
                             <button
                               onClick={cancelEdit}
                               className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition"
                             >
-                              Mégse
+                              {t("admin.users.cancel")}
                             </button>
                           </div>
                         ) : (
@@ -466,14 +468,14 @@ export default function AdminUsersPage() {
                                 className="px-2 py-1.5 text-xs text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition"
                                 title="Belépés felhasználóként"
                               >
-                                Belépés
+                                {t("admin.users.impersonate")}
                               </button>
                             )}
                             <button
                               onClick={() => startEdit(u)}
                               className="px-2 py-1.5 text-xs text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 rounded-lg transition"
                             >
-                              Szerkesztés
+                              {t("admin.users.edit")}
                             </button>
                           </div>
                         )}
@@ -498,7 +500,7 @@ export default function AdminUsersPage() {
                 disabled={page <= 1}
                 className="px-3 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 transition"
               >
-                Előző
+                {t("admin.users.previous")}
               </button>
               <span className="px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400">
                 {data.page} / {data.totalPages}
@@ -508,7 +510,7 @@ export default function AdminUsersPage() {
                 disabled={page >= data.totalPages}
                 className="px-3 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 transition"
               >
-                Következő
+                {t("admin.users.next")}
               </button>
             </div>
           </div>

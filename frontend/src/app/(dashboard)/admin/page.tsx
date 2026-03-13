@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-store";
+import { useI18n } from "@/lib/i18n";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
 
@@ -140,6 +141,7 @@ function timeAgo(dateStr: string) {
 
 export default function AdminDashboard() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const [stats, setStats] = useState<SystemStats | null>(null);
   const [subs, setSubs] = useState<SubscriptionData | null>(null);
   const [activity, setActivity] = useState<ActivityEntry[]>([]);
@@ -233,10 +235,10 @@ export default function AdminDashboard() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Nincs jogosultságod</h2>
-          <p className="text-gray-500 dark:text-gray-400">Ez az oldal csak adminisztrátorok számára érhető el.</p>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">{t("admin.noPermission")}</h2>
+          <p className="text-gray-500 dark:text-gray-400">{t("admin.noPermissionDesc")}</p>
           <Link href="/dashboard" className="inline-block mt-4 px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition">
-            Vissza a kezdőlapra
+            {t("admin.backToHome")}
           </Link>
         </div>
       </div>
@@ -248,7 +250,7 @@ export default function AdminDashboard() {
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-violet-600 mx-auto" />
-          <p className="mt-4 text-sm text-gray-400">Admin panel betöltése...</p>
+          <p className="mt-4 text-sm text-gray-400">{t("admin.loadingPanel")}</p>
         </div>
       </div>
     );
@@ -261,8 +263,8 @@ export default function AdminDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Admin panel</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Rendszer áttekintés és felhasználókezelés</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t("admin.title")}</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t("admin.subtitle")}</p>
         </div>
         <Link
           href="/admin/users"
@@ -271,51 +273,51 @@ export default function AdminDashboard() {
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
           </svg>
-          Felhasználók kezelése
+          {t("admin.manageUsers")}
         </Link>
       </div>
 
       {/* Quick Links */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <QuickLink href="/admin/users" label="Felhasználók" icon="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" color="violet" />
-        <QuickLink href="/admin/revenue" label="Bevételek" icon="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" color="emerald" />
-        <QuickLink href="/admin/api-usage" label="API használat" icon="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" color="blue" />
-        <QuickLink href="/admin/email-logs" label="Email napló" icon="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" color="indigo" />
-        <QuickLink href="/admin/broadcasts" label="Közlemények" icon="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" color="amber" />
-        <QuickLink href="/admin/audit" label="Audit napló" icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" color="gray" />
+        <QuickLink href="/admin/users" label={t("admin.quickLinks.users")} icon="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" color="violet" />
+        <QuickLink href="/admin/revenue" label={t("admin.quickLinks.revenue")} icon="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" color="emerald" />
+        <QuickLink href="/admin/api-usage" label={t("admin.quickLinks.apiUsage")} icon="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" color="blue" />
+        <QuickLink href="/admin/email-logs" label={t("admin.quickLinks.emailLog")} icon="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" color="indigo" />
+        <QuickLink href="/admin/broadcasts" label={t("admin.quickLinks.broadcasts")} icon="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" color="amber" />
+        <QuickLink href="/admin/audit" label={t("admin.quickLinks.auditLog")} icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" color="gray" />
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        <QuickLink href="/admin/promo-codes" label="Promó kódok" icon="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" color="emerald" />
-        <QuickLink href="/admin/feature-flags" label="Feature flags" icon="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" color="blue" />
-        <QuickLink href="/admin/webhook-logs" label="Webhook napló" icon="M13 10V3L4 14h7v7l9-11h-7z" color="amber" />
-        <QuickLink href="/admin/maintenance" label="Karbantartás" icon="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" color="gray" />
-        <QuickLink href="/admin/invoices" label="Számlák" icon="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" color="indigo" />
+        <QuickLink href="/admin/promo-codes" label={t("admin.quickLinks.promoCodes")} icon="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" color="emerald" />
+        <QuickLink href="/admin/feature-flags" label={t("admin.quickLinks.featureFlags")} icon="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" color="blue" />
+        <QuickLink href="/admin/webhook-logs" label={t("admin.quickLinks.webhookLog")} icon="M13 10V3L4 14h7v7l9-11h-7z" color="amber" />
+        <QuickLink href="/admin/maintenance" label={t("admin.quickLinks.maintenance")} icon="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" color="gray" />
+        <QuickLink href="/admin/invoices" label={t("admin.quickLinks.invoices")} icon="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" color="indigo" />
       </div>
 
       {/* Stats Grid */}
       {stats && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
-            label="Összes felhasználó"
+            label={t("admin.stats.totalUsers")}
             value={stats.totalUsers}
             icon="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
             color="violet"
           />
           <StatCard
-            label="Összes szerződés"
+            label={t("admin.stats.totalContracts")}
             value={stats.totalContracts}
             icon="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
             color="indigo"
           />
           <StatCard
-            label="Mai szerződés"
+            label={t("admin.stats.todayContracts")}
             value={stats.contractsToday}
             sub={`Heti: ${stats.contractsThisWeek} | Havi: ${stats.contractsThisMonth}`}
             icon="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
             color="blue"
           />
           <StatCard
-            label="Tárolt fájlok"
+            label={t("admin.stats.storedFiles")}
             value={`${stats.estimatedStorageMb} MB`}
             sub={`${stats.totalQuotes} ajánlat | ${stats.totalSigners} aláíró`}
             icon="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"
@@ -328,7 +330,7 @@ export default function AdminDashboard() {
         {/* Contract Status Breakdown */}
         {stats && (
           <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Szerződések státusz szerint</h3>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">{t("admin.stats.contractsByStatus")}</h3>
             <div className="space-y-3">
               {Object.entries(stats.contractsByStatus).map(([status, count]) => {
                 const pct = stats.totalContracts > 0 ? (count / stats.totalContracts) * 100 : 0;
@@ -354,7 +356,7 @@ export default function AdminDashboard() {
         {/* Subscription Breakdown */}
         {subs && (
           <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Előfizetési szintek</h3>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">{t("admin.stats.subscriptionTiers")}</h3>
             <div className="space-y-4">
               {Object.entries(subs.breakdown).map(([tier, count]) => {
                 const pct = totalSubs > 0 ? (count / totalSubs) * 100 : 0;
@@ -384,7 +386,7 @@ export default function AdminDashboard() {
             {subs.roles && (
               <>
                 <div className="mt-5 pt-4 border-t dark:border-gray-700">
-                  <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-3 uppercase">Szerepkörök</h4>
+                  <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-3 uppercase">{t("admin.stats.roles")}</h4>
                   <div className="space-y-2">
                     {Object.entries(subs.roles).map(([role, count]) => (
                       <div key={role} className="flex justify-between items-center">
@@ -401,7 +403,7 @@ export default function AdminDashboard() {
             )}
             <div className="mt-4 pt-4 border-t dark:border-gray-700">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500 dark:text-gray-400">Összes felhasználó</span>
+                <span className="text-gray-500 dark:text-gray-400">{t("admin.stats.totalUsers")}</span>
                 <span className="font-bold text-gray-900 dark:text-gray-100">{subs.total}</span>
               </div>
             </div>
@@ -411,7 +413,7 @@ export default function AdminDashboard() {
         {/* System Health */}
         {stats && (
           <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Rendszer állapot</h3>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">{t("admin.stats.systemHealth")}</h3>
             <div className="space-y-3">
               <HealthItem label="Adatbázis" status="ok" detail="Kapcsolódva" />
               <HealthItem label="API" status="ok" detail="Működőképes" />
@@ -440,8 +442,8 @@ export default function AdminDashboard() {
               </svg>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Kibocsátói aláírók</h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Előre megadott személyek, akik a cég nevében aláírhatnak</p>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{t("admin.signers.title")}</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t("admin.signers.subtitle")}</p>
             </div>
           </div>
           <button
@@ -451,7 +453,7 @@ export default function AdminDashboard() {
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
             </svg>
-            Új aláíró
+            {t("admin.signers.newSigner")}
           </button>
         </div>
 
@@ -459,7 +461,7 @@ export default function AdminDashboard() {
         {signerFormOpen && (
           <div className="p-6 bg-teal-50/50 dark:bg-teal-900/10 border-b border-gray-100 dark:border-gray-700">
             <h4 className="text-sm font-semibold text-teal-800 dark:text-teal-300 mb-4">
-              {editingSignerId ? "Aláíró szerkesztése" : "Új aláíró hozzáadása"}
+              {editingSignerId ? t("admin.signers.editSigner") : t("admin.signers.addSigner")}
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               <input
@@ -508,20 +510,20 @@ export default function AdminDashboard() {
                   onChange={(e) => setSignerForm({ ...signerForm, isDefault: e.target.checked })}
                   className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
                 />
-                Alapértelmezett aláíró
+                {t("admin.signers.defaultSigner")}
               </label>
               <div className="flex gap-2">
                 <button
                   onClick={() => { setSignerFormOpen(false); setEditingSignerId(null); }}
                   className="px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
-                  Mégse
+                  {t("admin.signers.cancel")}
                 </button>
                 <button
                   onClick={saveAuthorizedSigner}
                   className="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-medium transition"
                 >
-                  {editingSignerId ? "Mentés" : "Hozzáadás"}
+                  {editingSignerId ? t("admin.signers.save") : t("admin.signers.add")}
                 </button>
               </div>
             </div>
@@ -537,8 +539,8 @@ export default function AdminDashboard() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                 </svg>
               </div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Még nincs kibocsátói aláíró.</p>
-              <p className="text-xs text-gray-400 mt-1">Add hozzá azokat, akik a cég nevében írják alá a szerződéseket.</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t("admin.signers.empty")}</p>
+              <p className="text-xs text-gray-400 mt-1">{t("admin.signers.emptyHint")}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -551,7 +553,7 @@ export default function AdminDashboard() {
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{s.name}</span>
                       {s.isDefault && (
-                        <span className="px-2 py-0.5 bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 rounded-full text-[10px] font-semibold uppercase">Alapértelmezett</span>
+                        <span className="px-2 py-0.5 bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 rounded-full text-[10px] font-semibold uppercase">{t("admin.signers.default")}</span>
                       )}
                       {s.title && (
                         <span className="text-xs text-gray-400">{s.title}</span>
@@ -592,9 +594,9 @@ export default function AdminDashboard() {
 
       {/* Recent Activity */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Legutolsó tevékenységek</h3>
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">{t("admin.stats.recentActivity")}</h3>
         {activity.length === 0 ? (
-          <p className="text-sm text-gray-400">Nincs újabb tevékenység.</p>
+          <p className="text-sm text-gray-400">{t("admin.stats.noActivity")}</p>
         ) : (
           <div className="space-y-3">
             {activity.map((entry) => (

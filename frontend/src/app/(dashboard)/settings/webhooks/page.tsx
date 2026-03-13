@@ -5,6 +5,7 @@ import api from "@/lib/api";
 import toast from "react-hot-toast";
 import EmptyState from "@/components/empty-state";
 import FeatureGate from "@/components/feature-gate";
+import { useI18n } from "@/lib/i18n";
 
 interface Webhook {
   id: string;
@@ -30,6 +31,7 @@ const eventOptions = [
 ];
 
 export default function WebhooksSettings() {
+  const { t } = useI18n();
   const [webhooks, setWebhooks] = useState<Webhook[]>([]);
   const [showCreate, setShowCreate] = useState(false);
   const [url, setUrl] = useState("");
@@ -167,9 +169,9 @@ export default function WebhooksSettings() {
       <div className="bg-white rounded-xl border p-6">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">Webhookok</h2>
+            <h2 className="text-lg font-semibold text-gray-900">{t("webhooks.title")}</h2>
             <p className="text-sm text-gray-500 mt-1">
-              Kapj valós idejű értesítéseket a szerződéseid eseményeiről HTTP callback-eken keresztül.
+              {t("webhooks.subtitle")}
             </p>
             <div className="mt-2 flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 max-w-xl">
               <svg className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -189,7 +191,7 @@ export default function WebhooksSettings() {
             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#146d7d")}
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#198296")}
           >
-            + Új webhook
+            {t("webhooks.add")}
           </button>
         </div>
 
@@ -199,7 +201,7 @@ export default function WebhooksSettings() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Webhook URL
+                  {t("webhooks.url")}
                 </label>
                 <input
                   value={url}
@@ -210,7 +212,7 @@ export default function WebhooksSettings() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Események
+                  {t("webhooks.events")}
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {eventOptions.map((opt) => (
@@ -239,7 +241,7 @@ export default function WebhooksSettings() {
                   className="text-white px-5 py-2.5 rounded-lg text-sm font-medium disabled:opacity-50 transition"
                   style={{ backgroundColor: "#198296" }}
                 >
-                  {creating ? "Létrehozás..." : "Webhook létrehozása"}
+                  {creating ? t("webhooks.creating") : t("webhooks.createWebhook")}
                 </button>
                 <button
                   onClick={() => {
@@ -261,8 +263,8 @@ export default function WebhooksSettings() {
           {webhooks.length === 0 ? (
             <EmptyState
               icon="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-              title="Nincs webhook"
-              description="Hozz létre egy webhookot, hogy valós időben értesülj a szerződések eseményeiről."
+              title={t("webhooks.empty")}
+              description={t("webhooks.emptyDesc")}
             />
           ) : (
             webhooks.map((w) =>
@@ -340,7 +342,7 @@ export default function WebhooksSettings() {
                               : "bg-gray-100 text-gray-500"
                           }`}
                         >
-                          {w.active ? "Aktív" : "Inaktív"}
+                          {w.active ? t("webhooks.active") : t("webhooks.inactive")}
                         </span>
                       </div>
 
@@ -401,13 +403,13 @@ export default function WebhooksSettings() {
                         onClick={() => startEdit(w)}
                         className="text-sm font-medium hover:text-[#198296] text-gray-500 transition"
                       >
-                        Szerkesztés
+                        {t("common.edit")}
                       </button>
                       <button
                         onClick={() => handleDelete(w.id)}
                         className="text-sm text-red-500 hover:text-red-700 font-medium transition"
                       >
-                        Törlés
+                        {t("common.delete")}
                       </button>
                     </div>
                   </div>

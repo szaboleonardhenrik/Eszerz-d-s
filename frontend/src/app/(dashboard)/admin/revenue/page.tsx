@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-store";
+import { useI18n } from "@/lib/i18n";
 import api from "@/lib/api";
 
 const ADMIN_ROLES = ["superadmin", "employee"];
@@ -42,6 +43,7 @@ function formatHuf(amount: number) {
 
 export default function AdminRevenuePage() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const [data, setData] = useState<RevenueData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -65,7 +67,7 @@ export default function AdminRevenuePage() {
     );
   }
 
-  if (!data) return <div className="text-center text-gray-400 py-20">Nem sikerült betölteni az adatokat.</div>;
+  if (!data) return <div className="text-center text-gray-400 py-20">{t("admin.revenue.loadError")}</div>;
 
   const totalRevenue = Object.values(data.tierRevenue).reduce((sum, t) => sum + t.revenue, 0);
 
@@ -76,21 +78,21 @@ export default function AdminRevenuePage() {
         <Link href="/admin" className="text-violet-600 hover:text-violet-700 dark:text-violet-400">
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Bevétel áttekintés</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t("admin.revenue.title")}</h1>
       </div>
 
       {/* MRR / ARR cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard label="Havi bevétel (MRR)" value={formatHuf(data.mrr)} color="emerald" />
-        <MetricCard label="Éves bevétel (ARR)" value={formatHuf(data.arr)} color="blue" />
+        <MetricCard label={t("admin.revenue.mrr")} value={formatHuf(data.mrr)} color="emerald" />
+        <MetricCard label={t("admin.revenue.arr")} value={formatHuf(data.arr)} color="blue" />
         <MetricCard
-          label="Konverziós arány"
+          label={t("admin.revenue.conversionRate")}
           value={`${data.conversionRate}%`}
           sub={`${data.totalPaid} fizetős / ${data.totalFree} ingyenes`}
           color="violet"
         />
         <MetricCard
-          label="Új felhasználók"
+          label={t("admin.revenue.newUsers")}
           value={`${data.newUsersThisMonth}`}
           sub={`${data.userGrowthPct >= 0 ? "+" : ""}${data.userGrowthPct}% vs. előző hó`}
           color="amber"
@@ -100,7 +102,7 @@ export default function AdminRevenuePage() {
       {/* Tier breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Bevétel csomag szerint</h3>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">{t("admin.revenue.tierBreakdown")}</h3>
           <div className="space-y-4">
             {Object.entries(data.tierRevenue)
               .sort(([, a], [, b]) => b.revenue - a.revenue)
@@ -129,22 +131,22 @@ export default function AdminRevenuePage() {
 
         {/* Conversion funnel */}
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Konverziós tölcsér</h3>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">{t("admin.revenue.conversionFunnel")}</h3>
           <div className="space-y-4">
-            <FunnelStep label="Összes felhasználó" value={data.totalFree + data.totalPaid} pct={100} color="#3B82F6" />
-            <FunnelStep label="Fizetős előfizetők" value={data.totalPaid} pct={data.totalFree + data.totalPaid > 0 ? (data.totalPaid / (data.totalFree + data.totalPaid)) * 100 : 0} color="#8B5CF6" />
-            <FunnelStep label="Havi konverziók" value={data.conversionsThisMonth} pct={data.newUsersThisMonth > 0 ? (data.conversionsThisMonth / data.newUsersThisMonth) * 100 : 0} color="#10B981" />
+            <FunnelStep label={t("admin.revenue.totalUsers")} value={data.totalFree + data.totalPaid} pct={100} color="#3B82F6" />
+            <FunnelStep label={t("admin.revenue.paidSubscribers")} value={data.totalPaid} pct={data.totalFree + data.totalPaid > 0 ? (data.totalPaid / (data.totalFree + data.totalPaid)) * 100 : 0} color="#8B5CF6" />
+            <FunnelStep label={t("admin.revenue.monthlyConversions")} value={data.conversionsThisMonth} pct={data.newUsersThisMonth > 0 ? (data.conversionsThisMonth / data.newUsersThisMonth) * 100 : 0} color="#10B981" />
           </div>
 
           <div className="mt-6 pt-4 border-t dark:border-gray-700">
             <div className="grid grid-cols-2 gap-4 text-center">
               <div>
                 <p className="text-2xl font-bold text-emerald-600">{formatHuf(data.mrr)}</p>
-                <p className="text-xs text-gray-400 mt-1">Havi bevétel</p>
+                <p className="text-xs text-gray-400 mt-1">{t("admin.revenue.monthlyRevenue")}</p>
               </div>
               <div>
                 <p className="text-2xl font-bold text-blue-600">{formatHuf(data.arr)}</p>
-                <p className="text-xs text-gray-400 mt-1">Éves vetítés</p>
+                <p className="text-xs text-gray-400 mt-1">{t("admin.revenue.yearlyProjection")}</p>
               </div>
             </div>
           </div>

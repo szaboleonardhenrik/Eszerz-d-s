@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-store";
+import { useI18n } from "@/lib/i18n";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
 
@@ -65,6 +66,7 @@ const statusColor: Record<string, string> = {
 
 export default function AdminEmailLogsPage() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const [data, setData] = useState<EmailLogsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -116,7 +118,7 @@ export default function AdminEmailLogsPage() {
           <Link href="/admin" className="text-violet-600 hover:text-violet-700 dark:text-violet-400">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Email napló</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t("admin.emailLogs.title")}</h1>
         </div>
       </div>
 
@@ -138,7 +140,7 @@ export default function AdminEmailLogsPage() {
           onChange={(e) => setStatusFilter(e.target.value)}
           className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm"
         >
-          <option value="">Minden státusz</option>
+          <option value="">{t("admin.emailLogs.allStatuses")}</option>
           <option value="sent">Elküldve</option>
           <option value="delivered">Kézbesítve</option>
           <option value="bounced">Visszapattant</option>
@@ -149,7 +151,7 @@ export default function AdminEmailLogsPage() {
           onChange={(e) => setTypeFilter(e.target.value)}
           className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm"
         >
-          <option value="">Minden típus</option>
+          <option value="">{t("admin.emailLogs.allTypes")}</option>
           {Object.entries(typeLabel).map(([k, v]) => (
             <option key={k} value={k}>{v}</option>
           ))}
@@ -160,7 +162,7 @@ export default function AdminEmailLogsPage() {
           </svg>
           <input
             type="text"
-            placeholder="Keresés címzett vagy tárgy szerint..."
+            placeholder={t("admin.emailLogs.search")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm outline-none focus:ring-2 focus:ring-violet-500"
@@ -173,18 +175,18 @@ export default function AdminEmailLogsPage() {
         {loading ? (
           <div className="p-12 text-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600 mx-auto" /></div>
         ) : !data || data.logs.length === 0 ? (
-          <div className="p-12 text-center text-sm text-gray-400">Nincs email napló bejegyzés.</div>
+          <div className="p-12 text-center text-sm text-gray-400">{t("admin.emailLogs.noResults")}</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-                  <th className="text-left px-4 py-3 font-medium text-gray-500">Címzett</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-500">Tárgy</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-500">Típus</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-500">Státusz</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-500 hidden lg:table-cell">Dátum</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-500">Művelet</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-500">{t("admin.emailLogs.to")}</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-500">{t("admin.emailLogs.subject")}</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-500">{t("admin.emailLogs.type")}</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-500">{t("admin.emailLogs.status")}</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 hidden lg:table-cell">{t("admin.emailLogs.date")}</th>
+                  <th className="text-right px-4 py-3 font-medium text-gray-500">{t("admin.emailLogs.action")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -220,7 +222,7 @@ export default function AdminEmailLogsPage() {
                           onClick={() => handleResend(log.id)}
                           className="text-xs text-violet-600 hover:text-violet-700 dark:text-violet-400"
                         >
-                          Újraküldés
+                          {t("admin.emailLogs.resend")}
                         </button>
                       )}
                     </td>
@@ -233,11 +235,11 @@ export default function AdminEmailLogsPage() {
 
         {data && data.totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700">
-            <p className="text-xs text-gray-400">{data.total} bejegyzés</p>
+            <p className="text-xs text-gray-400">{data.total} {t("admin.emailLogs.entries")}</p>
             <div className="flex items-center gap-1">
-              <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="px-3 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 disabled:opacity-40">Előző</button>
+              <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="px-3 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 disabled:opacity-40">{t("admin.emailLogs.previous")}</button>
               <span className="px-3 py-1.5 text-xs text-gray-500">{data.page} / {data.totalPages}</span>
-              <button onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))} disabled={page >= data.totalPages} className="px-3 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 disabled:opacity-40">Következő</button>
+              <button onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))} disabled={page >= data.totalPages} className="px-3 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 disabled:opacity-40">{t("admin.emailLogs.next")}</button>
             </div>
           </div>
         )}

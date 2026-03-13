@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
+import { useI18n } from "@/lib/i18n";
 
 /* ── Types ─────────────────────────────────────────────────────────── */
 
@@ -100,6 +101,7 @@ function getMonthGrid(year: number, month: number) {
 /* ── Component ─────────────────────────────────────────────────────── */
 
 export default function CalendarPage() {
+  const { t } = useI18n();
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentYear, setCurrentYear] = useState(() => new Date().getFullYear());
@@ -226,7 +228,7 @@ export default function CalendarPage() {
     <div className="space-y-6">
       {/* ── Page header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Naptar</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t("calendar.title")}</h1>
         {/* Legend */}
         <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
           {(Object.keys(EVENT_CONFIG) as CalendarEvent["type"][]).map((type) => (
@@ -269,7 +271,7 @@ export default function CalendarPage() {
             onClick={goToToday}
             className="px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
           >
-            Ma
+            {t("calendar.today")}
           </button>
         </div>
 
@@ -363,7 +365,7 @@ export default function CalendarPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                   <p className="text-sm text-gray-400 dark:text-gray-500">
-                    Nincs esemeny ebben a honapban
+                    {t("calendar.empty")}
                   </p>
                 </div>
               );
@@ -425,7 +427,7 @@ export default function CalendarPage() {
         }).length === 0 && (
           <div className="hidden sm:block px-5 pb-6 text-center">
             <p className="text-sm text-gray-400 dark:text-gray-500">
-              Nincs esemeny ebben a honapban
+              {t("calendar.empty")}
             </p>
           </div>
         )}
@@ -477,7 +479,7 @@ export default function CalendarPage() {
             </div>
           ) : (
             <div className="px-5 py-8 text-center">
-              <p className="text-sm text-gray-400 dark:text-gray-500">Nincs esemeny ezen a napon</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500">{t("calendar.emptyDay")}</p>
             </div>
           )}
         </div>

@@ -5,6 +5,7 @@ import api from "@/lib/api";
 import toast from "react-hot-toast";
 import EmptyState from "@/components/empty-state";
 import FeatureGate from "@/components/feature-gate";
+import { useI18n } from "@/lib/i18n";
 
 interface TeamMember {
   id: string;
@@ -26,6 +27,7 @@ const roleLabels: Record<string, string> = {
 };
 
 export default function TeamSettings() {
+  const { t } = useI18n();
   const [team, setTeam] = useState<Team | null>(null);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("member");
@@ -84,9 +86,9 @@ export default function TeamSettings() {
     <FeatureGate featureKey="team_management" requiredTier="medium" featureName="Csapatkezelés">
     <div className="max-w-3xl space-y-6">
       <div className="bg-white rounded-xl border p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-1">Csapattagok</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-1">{t("team.title")}</h2>
         <p className="text-sm text-gray-500 mb-6">
-          Hívd meg kollégáidat és kezeld a jogosultságaikat.
+          {t("team.subtitle")}
         </p>
 
         <div className="flex gap-3 mb-6">
@@ -102,16 +104,16 @@ export default function TeamSettings() {
             onChange={(e) => setRole(e.target.value)}
             className="px-3 py-2.5 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-sm"
           >
-            <option value="admin">Admin</option>
-            <option value="member">Tag</option>
-            <option value="viewer">Megtekintő</option>
+            <option value="admin">{t("team.roleAdmin")}</option>
+            <option value="member">{t("team.roleMember")}</option>
+            <option value="viewer">{t("team.roleViewer")}</option>
           </select>
           <button
             onClick={handleInvite}
             disabled={inviting || !email}
             className="bg-blue-600 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition whitespace-nowrap"
           >
-            {inviting ? "..." : "Meghívás"}
+            {inviting ? "..." : t("team.invite")}
           </button>
         </div>
 
@@ -119,8 +121,8 @@ export default function TeamSettings() {
           {team && team.members.length <= 1 && (
             <EmptyState
               icon="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-              title="M\u00e9g nincsenek csapattagok"
-              description="H\u00edvd meg koll\u00e9g\u00e1idat, hogy egy\u00fctt dolgozhassatok a szerz\u0151d\u00e9seken."
+              title={t("team.empty")}
+              description={t("team.emptyDesc")}
             />
           )}
           {team?.members.map((m) => (
@@ -143,15 +145,15 @@ export default function TeamSettings() {
                   onChange={(e) => handleRoleChange(m.id, e.target.value)}
                   className="text-sm border rounded-lg px-2 py-1.5 outline-none"
                 >
-                  <option value="admin">Admin</option>
-                  <option value="member">Tag</option>
-                  <option value="viewer">Megtekintő</option>
+                  <option value="admin">{t("team.roleAdmin")}</option>
+                  <option value="member">{t("team.roleMember")}</option>
+                  <option value="viewer">{t("team.roleViewer")}</option>
                 </select>
                 <button
                   onClick={() => handleRemove(m.id)}
                   className="text-sm text-red-500 hover:text-red-700"
                 >
-                  Eltávolítás
+                  {t("team.remove")}
                 </button>
               </div>
             </div>
@@ -160,7 +162,7 @@ export default function TeamSettings() {
       </div>
 
       <div className="bg-blue-50 border border-blue-100 rounded-xl p-6">
-        <h3 className="font-semibold text-blue-900 mb-2">Szerepkörök</h3>
+        <h3 className="font-semibold text-blue-900 mb-2">{t("team.roles")}</h3>
         <div className="space-y-2 text-sm text-blue-800">
           <p><strong>Admin:</strong> Teljes hozzáférés, meghívhat tagokat, szerződéseket kezelhet</p>
           <p><strong>Tag:</strong> Szerződéseket hozhat létre, sablonokat használhat</p>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
+import { useI18n } from "@/lib/i18n";
 
 interface ReferralStats {
   totalInvites: number;
@@ -23,6 +24,7 @@ interface Referral {
 }
 
 export default function ReferralSettings() {
+  const { t } = useI18n();
   const [code, setCode] = useState("");
   const [stats, setStats] = useState<ReferralStats | null>(null);
   const [referrals, setReferrals] = useState<Referral[]>([]);
@@ -67,10 +69,9 @@ export default function ReferralSettings() {
     <div className="max-w-2xl space-y-6">
       {/* Referral Code */}
       <div className="bg-gradient-to-br from-[#198296] to-[#41A5B9] rounded-xl p-6 text-white">
-        <h2 className="text-lg font-semibold mb-2">Hívd meg ismerőseidet!</h2>
+        <h2 className="text-lg font-semibold mb-2">{t("referral.title")}</h2>
         <p className="text-sm text-white/80 mb-4">
-          Minden sikeres ajánlás után Te és a meghívott is kap +5 bónusz
-          szerződést. Oszd meg az ajánló linkedet!
+          {t("referral.subtitle")}
         </p>
         <div className="flex gap-2">
           <div className="flex-1 bg-white/10 rounded-lg px-4 py-3 font-mono text-sm backdrop-blur">
@@ -83,7 +84,7 @@ export default function ReferralSettings() {
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
-            Másolás
+            {t("referral.copy")}
           </button>
         </div>
       </div>
@@ -92,10 +93,10 @@ export default function ReferralSettings() {
       {stats && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { label: "Meghívások", value: stats.totalInvites, color: "text-blue-600" },
-            { label: "Csatlakozott", value: stats.converted, color: "text-green-600" },
-            { label: "Függőben", value: stats.pending, color: "text-yellow-600" },
-            { label: "Bónusz szerződés", value: stats.bonusContracts, color: "text-[#198296]" },
+            { label: t("referral.invites"), value: stats.totalInvites, color: "text-blue-600" },
+            { label: t("referral.converted"), value: stats.converted, color: "text-green-600" },
+            { label: t("referral.pending"), value: stats.pending, color: "text-yellow-600" },
+            { label: t("referral.bonusContracts"), value: stats.bonusContracts, color: "text-[#198296]" },
           ].map((stat) => (
             <div key={stat.label} className="bg-white rounded-xl border p-4 text-center">
               <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
@@ -108,11 +109,11 @@ export default function ReferralSettings() {
       {/* Referral History */}
       <div className="bg-white rounded-xl border p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Ajánlási előzmények
+          {t("referral.history")}
         </h2>
         {referrals.length === 0 ? (
           <p className="text-sm text-gray-400 text-center py-6">
-            Még nincs ajánlásod. Oszd meg a kódodat!
+            {t("referral.empty")}
           </p>
         ) : (
           <div className="space-y-3">
@@ -157,7 +158,7 @@ export default function ReferralSettings() {
       {/* How It Works */}
       <div className="bg-white rounded-xl border p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Hogyan működik?
+          {t("referral.howItWorks")}
         </h2>
         <div className="space-y-4">
           {[

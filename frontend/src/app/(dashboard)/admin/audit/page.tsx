@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useI18n } from "@/lib/i18n";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
 
@@ -73,6 +74,7 @@ const eventTypeColors: Record<string, string> = {
 };
 
 export default function AuditLogPage() {
+  const { t } = useI18n();
   const [data, setData] = useState<AuditResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
@@ -175,10 +177,10 @@ export default function AuditLogPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            Audit napló
+            {t("admin.audit.title")}
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Minden szerződéshez kapcsolódó esemény nyomon követése
+            {t("admin.audit.subtitle")}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -200,7 +202,7 @@ export default function AuditLogPage() {
                 d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
               />
             </svg>
-            CSV exportálás
+            {t("admin.audit.csvExport")}
           </button>
           <button
             onClick={() => handleExport("json")}
@@ -220,7 +222,7 @@ export default function AuditLogPage() {
                 d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
               />
             </svg>
-            JSON exportálás
+            {t("admin.audit.jsonExport")}
           </button>
         </div>
       </div>
@@ -231,13 +233,13 @@ export default function AuditLogPage() {
           {/* Contract search */}
           <div>
             <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-              Szerződés keresés
+              {t("admin.audit.contractSearch")}
             </label>
             <input
               type="text"
               value={contractSearch}
               onChange={(e) => setContractSearch(e.target.value)}
-              placeholder="Szerződés neve..."
+              placeholder={t("admin.audit.contractSearchPlaceholder")}
               className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
             />
           </div>
@@ -245,7 +247,7 @@ export default function AuditLogPage() {
           {/* Event type filter */}
           <div>
             <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-              Esemény típusa
+              {t("admin.audit.eventType")}
             </label>
             <select
               value={eventType}
@@ -266,7 +268,7 @@ export default function AuditLogPage() {
           {/* Date from */}
           <div>
             <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-              Dátumtól
+              {t("admin.audit.dateFrom")}
             </label>
             <input
               type="date"
@@ -282,7 +284,7 @@ export default function AuditLogPage() {
           {/* Date to */}
           <div>
             <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-              Dátumig
+              {t("admin.audit.dateTo")}
             </label>
             <input
               type="date"
@@ -301,7 +303,7 @@ export default function AuditLogPage() {
               onClick={handleFilterReset}
               className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
             >
-              Szűrők törlése
+              {t("admin.audit.clearFilters")}
             </button>
           </div>
         </div>
@@ -330,7 +332,7 @@ export default function AuditLogPage() {
               />
             </svg>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Nincs találat a megadott szűrőkkel
+              {t("admin.audit.noResults")}
             </p>
           </div>
         ) : (
@@ -339,19 +341,19 @@ export default function AuditLogPage() {
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
                   <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Dátum
+                    {t("admin.audit.date")}
                   </th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Szerződés
+                    {t("admin.audit.contract")}
                   </th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Esemény
+                    {t("admin.audit.event")}
                   </th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Aláíró
+                    {t("admin.audit.signer")}
                   </th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    IP cím
+                    {t("admin.audit.ipAddress")}
                   </th>
                 </tr>
               </thead>
@@ -413,7 +415,7 @@ export default function AuditLogPage() {
                 disabled={page <= 1}
                 className="px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg disabled:opacity-40 hover:bg-gray-100 dark:hover:bg-gray-700 transition text-gray-600 dark:text-gray-300"
               >
-                Előző
+                {t("admin.audit.previous")}
               </button>
               {generatePageNumbers(data.page, data.totalPages).map((p, i) =>
                 p === "..." ? (
@@ -442,7 +444,7 @@ export default function AuditLogPage() {
                 disabled={page >= data.totalPages}
                 className="px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg disabled:opacity-40 hover:bg-gray-100 dark:hover:bg-gray-700 transition text-gray-600 dark:text-gray-300"
               >
-                Következő
+                {t("admin.audit.next")}
               </button>
             </div>
           </div>

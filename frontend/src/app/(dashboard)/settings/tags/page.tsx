@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
+import { useI18n } from "@/lib/i18n";
 
 interface Tag {
   id: string;
@@ -17,6 +18,7 @@ const presetColors = [
 ];
 
 export default function TagsSettingsPage() {
+  const { t } = useI18n();
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
   const [newName, setNewName] = useState("");
@@ -88,17 +90,17 @@ export default function TagsSettingsPage() {
 
   return (
     <div>
-      <h2 className="text-lg font-semibold text-gray-900 mb-1">Címkék</h2>
+      <h2 className="text-lg font-semibold text-gray-900 mb-1">{t("tags.title")}</h2>
       <p className="text-sm text-gray-500 mb-6">
-        Hozz létre címkéket a szerződéseid rendszerezéséhez. A címkéket a dashboard-on és a szerződés részleteken tudod hozzárendelni.
+        {t("tags.subtitle")}
       </p>
 
       {/* Create new tag */}
       <div className="bg-white rounded-xl border p-5 mb-6">
-        <h3 className="text-sm font-medium text-gray-700 mb-3">Új címke</h3>
+        <h3 className="text-sm font-medium text-gray-700 mb-3">{t("tags.newTag")}</h3>
         <div className="flex items-end gap-3">
           <div className="flex-1">
-            <label className="block text-xs text-gray-500 mb-1">Név</label>
+            <label className="block text-xs text-gray-500 mb-1">{t("tags.name")}</label>
             <input
               type="text"
               value={newName}
@@ -109,7 +111,7 @@ export default function TagsSettingsPage() {
             />
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Szín</label>
+            <label className="block text-xs text-gray-500 mb-1">{t("tags.color")}</label>
             <div className="flex gap-1.5">
               {presetColors.map((c) => (
                 <button
@@ -129,13 +131,13 @@ export default function TagsSettingsPage() {
             className="px-5 py-2 rounded-lg text-sm font-medium text-white transition disabled:opacity-50"
             style={{ backgroundColor: "#198296" }}
           >
-            {creating ? "Mentés..." : "Létrehozás"}
+            {creating ? t("common.loading") : t("tags.add")}
           </button>
         </div>
         {/* Preview */}
         {newName.trim() && (
           <div className="mt-3">
-            <span className="text-xs text-gray-400 mr-2">Előnézet:</span>
+            <span className="text-xs text-gray-400 mr-2">{t("tags.preview")}:</span>
             <span
               className="inline-block px-2.5 py-0.5 rounded text-xs font-medium text-white"
               style={{ backgroundColor: newColor }}
@@ -150,7 +152,7 @@ export default function TagsSettingsPage() {
       <div className="bg-white rounded-xl border">
         <div className="px-5 py-3 border-b">
           <h3 className="text-sm font-medium text-gray-700">
-            Meglévő címkék ({tags.length})
+            {t("tags.existingTags")} ({tags.length})
           </h3>
         </div>
 
@@ -160,7 +162,7 @@ export default function TagsSettingsPage() {
           </div>
         ) : tags.length === 0 ? (
           <div className="p-8 text-center text-gray-400 text-sm">
-            Még nincs címkéd. Hozz létre egyet fent!
+            {t("tags.empty")}
           </div>
         ) : (
           <div className="divide-y">
@@ -197,7 +199,7 @@ export default function TagsSettingsPage() {
                       {tag.name}
                     </span>
                     <span className="text-xs text-gray-400">
-                      {tag.contracts.length} szerződés
+                      {tag.contracts.length} {t("tags.contracts")}
                     </span>
                   </div>
                 )}
@@ -209,13 +211,13 @@ export default function TagsSettingsPage() {
                         onClick={() => handleUpdate(tag.id)}
                         className="text-xs px-3 py-1 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 transition"
                       >
-                        Mentés
+                        {t("common.save")}
                       </button>
                       <button
                         onClick={() => setEditingId(null)}
                         className="text-xs px-3 py-1 rounded-lg text-gray-500 hover:bg-gray-100 transition"
                       >
-                        Mégse
+                        {t("common.cancel")}
                       </button>
                     </>
                   ) : (
@@ -224,13 +226,13 @@ export default function TagsSettingsPage() {
                         onClick={() => startEdit(tag)}
                         className="text-xs px-3 py-1 rounded-lg text-gray-500 hover:bg-gray-100 transition"
                       >
-                        Szerkesztés
+                        {t("common.edit")}
                       </button>
                       <button
                         onClick={() => handleDelete(tag.id)}
                         className="text-xs px-3 py-1 rounded-lg text-red-500 hover:bg-red-50 transition"
                       >
-                        Törlés
+                        {t("common.delete")}
                       </button>
                     </>
                   )}
