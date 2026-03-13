@@ -3,12 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
+import { useI18n } from "@/lib/i18n";
 import toast from "react-hot-toast";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const { t } = useI18n();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,7 +19,7 @@ export default function ForgotPasswordPage() {
       await api.post("/auth/forgot-password", { email });
       setSent(true);
     } catch {
-      toast.error("Hiba történt, próbáld újra később");
+      toast.error(t("auth.error.forgotPassword"));
     } finally {
       setLoading(false);
     }
@@ -35,9 +37,9 @@ export default function ForgotPasswordPage() {
               Legitas
             </span>
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Elfelejtett jelszó</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t("auth.forgotPassword")}</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
-            Add meg az email címedet és küldünk egy jelszó-visszaállító linket
+            {t("auth.resetPasswordSubtitle")}
           </p>
         </div>
 
@@ -48,19 +50,18 @@ export default function ForgotPasswordPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
             </div>
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Email elküldve!</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{t("auth.emailSent")}</h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-              Ha a megadott email cím regisztrálva van, küldtünk egy jelszó-visszaállító linket.
-              Nézd meg a postafiókodat (és a spam mappát is).
+              {t("auth.emailSentDescription")}
             </p>
             <Link href="/login" className="text-brand-teal-dark font-semibold text-sm hover:underline">
-              Vissza a bejelentkezéshez
+              {t("auth.backToLogin")}
             </Link>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border dark:border-gray-700 p-8 space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email cím</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("auth.email")}</label>
               <input
                 type="email"
                 value={email}
@@ -75,14 +76,14 @@ export default function ForgotPasswordPage() {
               disabled={loading}
               className="w-full bg-brand-teal-dark text-white py-3 rounded-xl font-semibold hover:bg-brand-teal-darker disabled:opacity-50 transition"
             >
-              {loading ? "Küldés..." : "Jelszó-visszaállító link küldése"}
+              {loading ? t("auth.sendingResetLink") : t("auth.sendResetLink")}
             </button>
           </form>
         )}
 
         <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
           <Link href="/login" className="text-brand-teal-dark font-semibold hover:underline">
-            Vissza a bejelentkezéshez
+            {t("auth.backToLogin")}
           </Link>
         </p>
       </div>

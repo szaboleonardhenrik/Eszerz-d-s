@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import ThemeToggle from "@/components/theme-toggle";
 import LanguageSwitcher from "@/components/language-switcher";
+import { useI18n } from "@/lib/i18n";
 
 /* ── Helpers ───────────────────────────────────────────────────────── */
 function Ico({ d, className = "", style }: { d: string; className?: string; style?: React.CSSProperties }) {
@@ -655,6 +656,7 @@ function CTA() {
 
 /* ── FOOTER ────────────────────────────────────────────────────────── */
 function Foot() {
+  const { t } = useI18n();
   return (
     <footer className="bg-[#0F1A22] text-[rgba(255,255,255,.55)]">
       <div className="max-w-7xl mx-auto px-5 py-16">
@@ -667,36 +669,36 @@ function Foot() {
             <p className="text-[.85rem] leading-relaxed">A magyar KKV-k szerződéskezelő platformja.</p>
           </div>
           <div>
-            <h3 className="text-white font-semibold mb-4 text-sm">Termék</h3>
+            <h3 className="text-white font-semibold mb-4 text-sm">{t("footer.product")}</h3>
             <ul className="space-y-2 text-[.85rem]">
-              <li><Link href="#funkciok" className="hover:text-white transition">Funkciók</Link></li>
-              <li><Link href="/pricing" className="hover:text-white transition">Árazás</Link></li>
-              <li><Link href="/blog" className="hover:text-white transition">Blog</Link></li>
+              <li><Link href="#funkciok" className="hover:text-white transition">{t("footer.features")}</Link></li>
+              <li><Link href="/pricing" className="hover:text-white transition">{t("footer.pricing")}</Link></li>
+              <li><Link href="/blog" className="hover:text-white transition">{t("footer.blog")}</Link></li>
             </ul>
           </div>
           <div>
-            <h3 className="text-white font-semibold mb-4 text-sm">Jogi</h3>
+            <h3 className="text-white font-semibold mb-4 text-sm">{t("footer.legal")}</h3>
             <ul className="space-y-2 text-[.85rem]">
-              <li><Link href="/adatvedelem" className="hover:text-white transition">Adatvédelem</Link></li>
-              <li><Link href="/aszf" className="hover:text-white transition">ÁSZF</Link></li>
-              <li><Link href="/cookie" className="hover:text-white transition">Cookie</Link></li>
+              <li><Link href="/adatvedelem" className="hover:text-white transition">{t("footer.privacy")}</Link></li>
+              <li><Link href="/aszf" className="hover:text-white transition">{t("footer.terms")}</Link></li>
+              <li><Link href="/cookie" className="hover:text-white transition">{t("footer.cookies")}</Link></li>
               <li><Link href="/impresszum" className="hover:text-white transition">Impresszum</Link></li>
               <li><Link href="/dpa" className="hover:text-white transition">DPA</Link></li>
             </ul>
           </div>
           <div>
-            <h3 className="text-white font-semibold mb-4 text-sm">Kapcsolat</h3>
+            <h3 className="text-white font-semibold mb-4 text-sm">{t("footer.contact")}</h3>
             <ul className="space-y-2 text-[.85rem]">
               <li><a href="mailto:info@legitas.hu" className="hover:text-white transition">info@legitas.hu</a></li>
-              <li>Budapest, Magyarország</li>
+              <li>{t("footer.location")}</li>
               <li className="pt-2"><Link href="/portal" className="text-[#46A0A0] hover:text-white transition">Aláírói portál</Link></li>
               <li><Link href="/status" className="hover:text-white transition">Rendszer állapot</Link></li>
             </ul>
           </div>
         </div>
         <div className="border-t border-white/10 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-[.8rem]">&copy; {new Date().getFullYear()} Legitas. Minden jog fenntartva.</p>
-          <p className="text-[.72rem] text-white/30">A platform nem helyettesíti a jogi tanácsadást.</p>
+          <p className="text-[.8rem]">&copy; {new Date().getFullYear()} {t("footer.copyright")}</p>
+          <p className="text-[.72rem] text-white/30">{t("footer.disclaimer")}</p>
         </div>
       </div>
     </footer>

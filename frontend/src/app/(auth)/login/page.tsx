@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-store";
+import { useI18n } from "@/lib/i18n";
 import toast from "react-hot-toast";
 
 export default function LoginPage() {
@@ -11,6 +12,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const login = useAuth((s) => s.login);
+  const { t } = useI18n();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,7 +27,7 @@ export default function LoginPage() {
       }
     } catch (err: any) {
       toast.error(
-        err.response?.data?.error?.message ?? "Hiba történt a bejelentkezéskor"
+        err.response?.data?.error?.message ?? t("auth.error.login")
       );
     } finally {
       setLoading(false);
@@ -45,7 +47,7 @@ export default function LoginPage() {
             <span className="text-white font-bold text-2xl">L</span>
           </div>
           <h2 className="text-3xl font-extrabold text-white mb-4">
-            Üdvözlünk újra!
+            {t("auth.welcomeBack")}
           </h2>
           <p className="text-white/70 text-lg leading-relaxed">
             Kezeld szerződéseidet egyetlen platformon — gyorsan, biztonságosan, papír nélkül.
@@ -79,8 +81,8 @@ export default function LoginPage() {
                 Legitas
               </span>
             </Link>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Bejelentkezés</h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Lépj be a fiókodba a folytatáshoz</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t("auth.login")}</h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">{t("auth.loginSubtitle")}</p>
           </div>
 
           <form
@@ -88,7 +90,7 @@ export default function LoginPage() {
             className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border dark:border-gray-700 p-8 space-y-5"
           >
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email cím</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("auth.email")}</label>
               <input
                 type="email"
                 value={email}
@@ -100,7 +102,7 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Jelszó</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("auth.password")}</label>
               <input
                 type="password"
                 value={password}
@@ -116,18 +118,18 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full bg-brand-teal-dark text-white py-3 rounded-xl font-semibold hover:bg-brand-teal-darker disabled:opacity-50 transition"
             >
-              {loading ? "Bejelentkezés..." : "Bejelentkezés"}
+              {loading ? t("auth.loggingIn") : t("auth.loginBtn")}
             </button>
 
             <div className="text-right">
               <Link href="/forgot-password" className="text-sm text-brand-teal-dark hover:underline">
-                Elfelejtett jelszó?
+                {t("auth.forgotPassword")}?
               </Link>
             </div>
 
             <div className="relative flex items-center gap-3 my-1">
               <div className="flex-1 h-px bg-gray-200 dark:bg-gray-600" />
-              <span className="text-xs text-gray-400 dark:text-gray-500">vagy</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500">{t("common.or")}</span>
               <div className="flex-1 h-px bg-gray-200 dark:bg-gray-600" />
             </div>
 
@@ -141,19 +143,19 @@ export default function LoginPage() {
                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
               </svg>
-              Bejelentkezés Google-lel
+              {t("auth.googleLogin")}
             </a>
           </form>
 
           <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
-            Nincs még fiókod?{" "}
+            {t("auth.noAccount")}{" "}
             <Link href="/register" className="text-brand-teal-dark font-semibold hover:underline">
-              Regisztráció
+              {t("auth.register")}
             </Link>
           </p>
           <p className="text-center text-sm text-gray-400 dark:text-gray-500 mt-3">
             <Link href="/portal" className="hover:text-brand-teal-dark transition hover:underline">
-              Ügyfélportál (aláíróknak)
+              {t("auth.clientPortal")}
             </Link>
           </p>
         </div>

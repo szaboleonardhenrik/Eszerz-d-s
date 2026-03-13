@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
+import { useI18n } from "@/lib/i18n";
 
 function getPasswordStrength(password: string): {
   label: string;
@@ -54,6 +55,7 @@ function deviceIcon(device: string | null): string {
 }
 
 export default function SecuritySettings() {
+  const { t } = useI18n();
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -238,12 +240,12 @@ export default function SecuritySettings() {
       {/* Password Change */}
       <div className="bg-white rounded-xl border p-6 space-y-5">
         <h2 className="text-lg font-semibold text-gray-900">
-          Jelszó módosítása
+          {t("settings.changePassword")}
         </h2>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Jelenlegi jelszó
+            {t("settings.currentPassword")}
           </label>
           <input
             type="password"
@@ -255,7 +257,7 @@ export default function SecuritySettings() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Új jelszó
+            {t("settings.newPassword")}
           </label>
           <input
             type="password"
@@ -295,7 +297,7 @@ export default function SecuritySettings() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Új jelszó megerősítése
+            {t("settings.confirmPassword")}
           </label>
           <input
             type="password"
@@ -315,7 +317,7 @@ export default function SecuritySettings() {
           disabled={!isValid || saving}
           className="bg-[#198296] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-[#14697a] disabled:opacity-50 transition"
         >
-          {saving ? "Mentés..." : "Jelszó módosítása"}
+          {saving ? t("settings.saving") : t("settings.changePassword")}
         </button>
       </div>
 
@@ -394,7 +396,7 @@ export default function SecuritySettings() {
       <div className="bg-white rounded-xl border p-6 space-y-5">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">Kétfaktoros hitelesítés (2FA)</h2>
+            <h2 className="text-lg font-semibold text-gray-900">{t("settings.twoFactor")} (2FA)</h2>
             <p className="text-sm text-gray-500 mt-1">Extra biztonsági réteg a fiókodhoz</p>
           </div>
           {twoFaEnabled && (
@@ -444,7 +446,7 @@ export default function SecuritySettings() {
                 disabled={twoFaLoading}
                 className="bg-[#198296] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-[#14697a] disabled:opacity-50 transition"
               >
-                {twoFaLoading ? "Betöltés..." : "2FA bekapcsolása"}
+                {twoFaLoading ? t("common.loading") : t("settings.enable2fa")}
               </button>
             ) : (
               <div className="space-y-4">
@@ -509,7 +511,7 @@ export default function SecuritySettings() {
                 disabled={twoFaLoading || !disablePassword}
                 className="text-red-600 border border-red-300 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-red-50 disabled:opacity-50 transition"
               >
-                2FA kikapcsolása
+                {t("settings.disable2fa")}
               </button>
             </div>
           </div>

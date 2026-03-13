@@ -11,6 +11,7 @@ import { SkeletonTemplateCard } from "@/components/skeleton";
 import EmptyState from "@/components/empty-state";
 import { isFavorite, toggleFavorite } from "@/lib/favorites";
 import { getEsignWarning } from "@/lib/esign-warnings";
+import { useI18n } from "@/lib/i18n";
 
 interface Template {
   id: string;
@@ -53,6 +54,7 @@ const categoryColors: Record<string, string> = {
 };
 
 export default function TemplatesPage() {
+  const { t } = useI18n();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [filter, setFilter] = useState("");
   const [search, setSearch] = useState("");
@@ -136,13 +138,13 @@ export default function TemplatesPage() {
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Sablonkönyvtár</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t("templates.title")}</h1>
         <div className="flex gap-2">
           <Link
             href="/templates/marketplace"
             className="border border-gray-200 dark:border-gray-600 px-4 py-2 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
           >
-            Piactér
+            {t("templates.marketplace")}
           </Link>
           <Link
             href="/templates/new"
@@ -158,7 +160,7 @@ export default function TemplatesPage() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Keresés..."
+          placeholder={`${t("common.search")}...`}
           className="px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none w-64 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
         />
         <div className="flex gap-2">
@@ -270,12 +272,12 @@ export default function TemplatesPage() {
                   }
                   className="flex-1 bg-brand-teal-dark text-white py-2 rounded-xl text-sm font-medium hover:bg-brand-teal transition"
                 >
-                  Használat
+                  {t("templates.use")}
                 </button>
                 <button
                   onClick={() => handlePreview(template.id)}
                   className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
-                  title="Előnézet"
+                  title={t("templates.preview")}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />

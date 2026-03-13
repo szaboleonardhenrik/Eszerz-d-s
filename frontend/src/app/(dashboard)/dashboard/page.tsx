@@ -5,6 +5,7 @@ import Link from "next/link";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
 import { useAuth } from "@/lib/auth-store";
+import { useI18n } from "@/lib/i18n";
 import ActivityFeed from "@/components/activity-feed";
 
 /* ── Tier Limits ─────────────────────────────────────────────────── */
@@ -25,22 +26,14 @@ const tierBadgeColors: Record<string, string> = {
   enterprise: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
 };
 
-const tierLabels: Record<string, string> = {
-  free: "Ingyenes",
-  starter: "Kezdő",
-  medium: "Közepes",
-  premium: "Prémium",
-  enterprise: "Nagyvállalati",
-};
-
-const statusLabels: Record<string, string> = {
-  draft: "Piszkozat",
-  sent: "Elküldve",
-  partially_signed: "Részben aláírt",
-  completed: "Befejezett",
-  declined: "Elutasított",
-  expired: "Lejárt",
-  cancelled: "Visszavont",
+const STATUS_KEYS: Record<string, string> = {
+  draft: "contracts.status.draft",
+  sent: "contracts.status.sent",
+  partially_signed: "contracts.status.partially_signed",
+  completed: "contracts.status.completed",
+  declined: "contracts.status.declined",
+  expired: "contracts.status.expired",
+  cancelled: "contracts.status.cancelled",
 };
 
 const statusColors: Record<string, string> = {
@@ -51,6 +44,16 @@ const statusColors: Record<string, string> = {
   declined: "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-300",
   expired: "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
   cancelled: "bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400",
+};
+
+const statusLabels: Record<string, string> = {
+  draft: "Piszkozat",
+  sent: "Elküldve",
+  partially_signed: "Részben aláírt",
+  completed: "Befejezett",
+  declined: "Elutasított",
+  expired: "Lejárt",
+  cancelled: "Visszavont",
 };
 
 /* ── Interfaces ──────────────────────────────────────────────────── */
@@ -98,7 +101,7 @@ interface DashboardAlerts {
 
 /* ── Progress Bar Component ──────────────────────────────────────── */
 
-function ProgressBar({ used, limit, label, sublabel }: { used: number; limit: number; label: string; sublabel: string }) {
+function ProgressBar({ used, limit, label, sublabel, unlimitedLabel = "Korlátlan" }: { used: number; limit: number; label: string; sublabel: string; unlimitedLabel?: string }) {
   const isUnlimited = limit === -1;
   const pct = isUnlimited ? 0 : limit > 0 ? Math.min(100, (used / limit) * 100) : 0;
   const barColor = pct >= 90 ? "bg-red-500" : pct >= 70 ? "bg-yellow-500" : "bg-green-500";
@@ -109,7 +112,7 @@ function ProgressBar({ used, limit, label, sublabel }: { used: number; limit: nu
         <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</p>
         <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
           {isUnlimited ? (
-            <>{used} / <span className="text-purple-600 dark:text-purple-400">Korlátlan</span></>
+            <>{used} / <span className="text-purple-600 dark:text-purple-400">{unlimitedLabel}</span></>
           ) : (
             <>{used} <span className="text-gray-400 font-normal">/ {limit}</span></>
           )}
@@ -163,6 +166,7 @@ function StatCard({ label, value, accent, href }: { label: string; value: string
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const [stats, setStats] = useState<Stats | null>(null);
   const [quoteStats, setQuoteStats] = useState<QuoteStats | null>(null);
   const [widgetData, setWidgetData] = useState<WidgetData | null>(null);
@@ -189,7 +193,7 @@ export default function DashboardPage() {
       setQuoteStats(quoteStatsRes.data.data);
       setAlerts(alertsRes.data.data);
     } catch {
-      toast.error("Hiba az adatok betöltésekor");
+      toast.error(t("dashboard.loadError"));
     } finally {
       setLoading(false);
     }
@@ -239,10 +243,10 @@ export default function DashboardPage() {
             <div>
               <div className="flex items-center gap-2.5">
                 <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-                  Üdvözöllek, {user?.name ?? "Felhasználó"}
+                  {t("dashboard.welcome", { name: user?.name ?? "Felhasználó" })}
                 </h1>
                 <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wide ${tierBadgeColors[tier] ?? tierBadgeColors.free}`}>
-                  {tierLabels[tier] ?? tier}
+                  {t(`dashboard.tiers.${tier}`) !== `dashboard.tiers.${tier}` ? t(`dashboard.tiers.${tier}`) : tier}
                 </span>
               </div>
               {user?.companyName && (
@@ -258,7 +262,7 @@ export default function DashboardPage() {
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
               </svg>
-              Új szerződés
+              {t("dashboard.newContract")}
             </Link>
             <Link
               href="/quotes/new"
@@ -267,7 +271,7 @@ export default function DashboardPage() {
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
               </svg>
-              Új ajánlat
+              {t("dashboard.newQuote")}
             </Link>
             {tier !== "enterprise" && (
               <Link
@@ -277,7 +281,7 @@ export default function DashboardPage() {
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>
-                Csomag váltás
+                {t("dashboard.upgradePlan")}
               </Link>
             )}
           </div>
@@ -295,14 +299,14 @@ export default function DashboardPage() {
                 </svg>
               </div>
               <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                Figyelmeztetések ({alerts.totalAlerts})
+                {t("dashboard.alerts.title")} ({alerts.totalAlerts})
               </h2>
             </div>
             <Link
               href="/reminders"
               className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium"
             >
-              Összes megtekintése &rarr;
+              {t("dashboard.alerts.viewAll")} &rarr;
             </Link>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -312,7 +316,7 @@ export default function DashboardPage() {
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30 transition"
               >
                 <span className="w-2 h-2 rounded-full bg-red-500" />
-                {alerts.expiringIn7Days.length} szerződés 7 napon belül lejár
+                {t("dashboard.alerts.expiring7", { count: alerts.expiringIn7Days.length })}
               </Link>
             )}
             {alerts.expiringIn30Days.length > 0 && (
@@ -321,7 +325,7 @@ export default function DashboardPage() {
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-800 hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition"
               >
                 <span className="w-2 h-2 rounded-full bg-yellow-500" />
-                {alerts.expiringIn30Days.length} szerződés 30 napon belül lejár
+                {t("dashboard.alerts.expiring30", { count: alerts.expiringIn30Days.length })}
               </Link>
             )}
             {alerts.staleUnsigned.length > 0 && (
@@ -330,7 +334,7 @@ export default function DashboardPage() {
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition"
               >
                 <span className="w-2 h-2 rounded-full bg-blue-500" />
-                {alerts.staleUnsigned.length} szerződés 3+ napja aláíratlan
+                {t("dashboard.alerts.unsigned", { count: alerts.staleUnsigned.length })}
               </Link>
             )}
           </div>

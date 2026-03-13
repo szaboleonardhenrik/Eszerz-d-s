@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-store";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
+import { useI18n } from "@/lib/i18n";
 
 type BillingCycle = "monthly" | "yearly";
 
@@ -152,6 +153,7 @@ interface UsageData {
 }
 
 export default function BillingSettings() {
+  const { t } = useI18n();
   const user = useAuth((s) => s.user);
   const currentPlan = user?.subscriptionTier ?? "free";
   const [usage, setUsage] = useState<UsageData | null>(null);
@@ -444,7 +446,7 @@ export default function BillingSettings() {
                     </button>
                   ) : isCurrent ? (
                     <div className="w-full text-center py-2.5 text-sm font-medium text-brand-teal-dark bg-brand-teal/10 rounded-lg">
-                      Jelenlegi csomag
+                      {t("billing.currentPlan")}
                     </div>
                   ) : (
                     <button
@@ -479,7 +481,7 @@ export default function BillingSettings() {
       {/* Usage */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Használat (aktuális hónap)
+          {t("billing.usage")}
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <UsageMeter
@@ -530,6 +532,7 @@ interface CreditTransaction {
 }
 
 function CreditSection() {
+  const { t } = useI18n();
   const [balance, setBalance] = useState<number | null>(null);
   const [packs, setPacks] = useState<CreditPack[]>([]);
   const [history, setHistory] = useState<CreditTransaction[]>([]);
@@ -576,7 +579,7 @@ function CreditSection() {
     <div className="bg-white rounded-xl border border-gray-200 p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">Kreditek</h2>
+          <h2 className="text-lg font-semibold text-gray-900">{t("billing.credits")}</h2>
           <p className="text-sm text-gray-500 mt-1">
             Szerződés kiküldésekor 1 kredit kerül levonásra. Vásárolj kredit csomagot, ha elfogy.
           </p>
