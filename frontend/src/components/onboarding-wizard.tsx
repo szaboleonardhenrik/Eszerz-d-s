@@ -100,7 +100,8 @@ export default function OnboardingWizard() {
 
   if (!visible) return null;
 
-  const totalSteps = 4;
+  const isPersonal = (user as any)?.accountType === "personal";
+  const totalSteps = isPersonal ? 3 : 4;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
@@ -140,8 +141,8 @@ export default function OnboardingWizard() {
             </div>
           )}
 
-          {/* Step 1: Company info */}
-          {step === 1 && (
+          {/* Step 1: Company info (skip for personal accounts) */}
+          {step === 1 && !isPersonal && (
             <div>
               <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2 text-center">
                 {t("onboarding.companyTitle")}
@@ -190,8 +191,8 @@ export default function OnboardingWizard() {
             </div>
           )}
 
-          {/* Step 2: First template */}
-          {step === 2 && (
+          {/* Step 2: First template (step 1 for personal) */}
+          {step === (isPersonal ? 1 : 2) && (
             <div>
               <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2 text-center">
                 {t("onboarding.templateTitle")}
@@ -252,8 +253,8 @@ export default function OnboardingWizard() {
             </div>
           )}
 
-          {/* Step 3: Done */}
-          {step === 3 && (
+          {/* Step 3: Done (step 2 for personal) */}
+          {step === (isPersonal ? 2 : 3) && (
             <div>
               <div className="text-center mb-6">
                 <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4">
