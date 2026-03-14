@@ -31,7 +31,13 @@ export default function RegisterPage() {
     }
     setLoading(true);
     try {
-      await register(form);
+      const payload: any = { name: form.name, email: form.email, password: form.password, accountType: form.accountType, acceptTerms: form.acceptTerms };
+      if (form.accountType === "company") {
+        if (form.companyName) payload.companyName = form.companyName;
+        if (form.taxNumber) payload.taxNumber = form.taxNumber;
+        if (form.companyAddress) payload.companyAddress = form.companyAddress;
+      }
+      await register(payload);
       toast.success(t("auth.success.register"));
       router.push("/dashboard");
     } catch (err: any) {
