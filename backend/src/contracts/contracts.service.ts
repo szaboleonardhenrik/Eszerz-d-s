@@ -244,9 +244,11 @@ export class ContractsService {
   async updateContent(contractId: string, userId: string, contentHtml: string, changeNote?: string) {
     const contract = await this.findOneOwned(contractId, userId);
 
-    if (contract.status !== 'draft') {
-      throw new BadRequestException('Csak piszkozat státuszú szerződés szerkeszthető');
+    if (!['draft', 'sent', 'partially_signed'].includes(contract.status)) {
+      throw new BadRequestException('Csak piszkozat vagy elküldött szerződés szerkeszthető');
     }
+
+    const wasSent = contract.status === 'sent' || contract.status === 'partially_signed';
 
     // Sanitize user-provided HTML
     contentHtml = this.sanitizeHtml(contentHtml);
@@ -256,6 +258,7 @@ export class ContractsService {
     const pdfBuffer = await this.pdfService.generatePdf(contentHtml, contract.title, branding, contract.verificationHash ?? undefined);
     const pdfKey = `contracts/${userId}/${randomBytes(16).toString('hex')}.pdf`;
     await this.storageService.uploadPdf(pdfKey, pdfBuffer);
+    const documentHash = this.pdfService.hashDocument(pdfBuffer);
 
     const lastVersion = await this.prisma.contractVersion.findFirst({
       where: { contractId },
@@ -276,7 +279,7 @@ export class ContractsService {
 
     const updated = await this.prisma.contract.update({
       where: { id: contractId },
-      data: { contentHtml, pdfUrl: pdfKey },
+      data: { contentHtml, pdfUrl: pdfKey, documentHash },
       include: { signers: true },
     });
 
@@ -285,6 +288,44 @@ export class ContractsService {
       eventType: 'contract_updated',
       eventData: { version: nextVersion, changeNote },
     });
+
+    // If contract was already sent, notify pending signers about the update
+    if (wasSent) {
+      const frontendUrl = this.config.get<string>('FRONTEND_URL', 'http://localhost:3000');
+      for (const signer of updated.signers.filter(s => s.status === 'pending')) {
+        const newToken = randomBytes(32).toString('hex');
+        await this.prisma.signer.update({
+          where: { id: signer.id },
+          data: {
+            signToken: newToken,
+            tokenExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          },
+        });
+
+        await this.notificationsService.sendSigningInvitation({
+          to: signer.email,
+          signerName: signer.name,
+          senderName: user?.name ?? 'Ismeretlen',
+          senderEmail: user?.email ?? '',
+          senderPhone: user?.phone ?? undefined,
+          contractTitle: updated.title,
+          signUrl: `${frontendUrl}/sign/${newToken}`,
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('hu-HU'),
+          registrationNumber: updated.registrationNumber ?? undefined,
+          documentType: updated.title,
+          documentHash,
+          variablesHash: undefined,
+          totalSigners: updated.signers.length,
+        });
+
+        await this.auditService.log({
+          contractId,
+          signerId: signer.id,
+          eventType: 'email_sent',
+          eventData: { action: 'contract_modified_resend', email: signer.email, version: nextVersion },
+        });
+      }
+    }
 
     return updated;
   }

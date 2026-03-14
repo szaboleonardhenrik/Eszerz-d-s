@@ -62,6 +62,8 @@ export class AuthService {
         name: dto.name,
         companyName: dto.companyName,
         taxNumber: dto.taxNumber,
+        accountType: dto.accountType ?? 'company',
+        companyAddress: dto.companyAddress,
         subscriptionTier: 'pro_trial',
         trialEndsAt,
         consentGivenAt: new Date(),
@@ -327,6 +329,8 @@ export class AuthService {
         emailDigest: true,
         consentVersion: true,
         trialEndsAt: true,
+        accountType: true,
+        companyAddress: true,
         onboardingCompleted: true,
         createdAt: true,
       },
@@ -345,6 +349,8 @@ export class AuthService {
     notifyOnComplete?: boolean;
     notifyMarketing?: boolean;
     emailDigest?: string;
+    companyAddress?: string;
+    accountType?: string;
   }) {
     return this.prisma.user.update({
       where: { id: userId },
@@ -915,6 +921,41 @@ export class AuthService {
         metadata: metadata ? JSON.stringify(metadata) : null,
       },
     });
+  }
+
+  async changeEmail(userId: string, newEmail: string, password: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('Felhasználó nem található');
+
+    if (!user.passwordHash) {
+      throw new BadRequestException('Google fiók esetén az e-mail cím nem módosítható.');
+    }
+    const valid = await bcrypt.compare(password, user.passwordHash);
+    if (!valid) throw new UnauthorizedException('Hibás jelszó');
+
+    const existing = await this.prisma.user.findUnique({ where: { email: newEmail } });
+    if (existing) throw new ConflictException('Ez az email cím már használatban van');
+
+    const emailVerifyToken = crypto.randomBytes(32).toString('hex');
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        email: newEmail,
+        emailVerified: false,
+        emailVerifyToken,
+        emailVerifyExp: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      },
+    });
+
+    await this.notificationsService.sendVerificationEmail({
+      to: newEmail,
+      name: user.name,
+      verifyUrl: `${this.frontendUrl}/verify-email/${emailVerifyToken}`,
+    });
+
+    this.logAuthEvent(userId, 'email_changed', undefined, undefined, { oldEmail: user.email, newEmail }).catch(() => {});
+
+    return { message: 'Az új e-mail címre megerősítő linket küldtünk.' };
   }
 
   async logLogout(userId: string, ip?: string, userAgent?: string) {

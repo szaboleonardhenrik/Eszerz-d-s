@@ -1,4 +1,4 @@
-import { IsEmail, IsString, MinLength, IsOptional, IsBoolean, Matches } from 'class-validator';
+import { IsEmail, IsString, MinLength, IsOptional, IsBoolean, Matches, IsIn } from 'class-validator';
 
 export class RegisterDto {
   @IsEmail({}, { message: 'Érvényes email címet adj meg' })
@@ -15,12 +15,20 @@ export class RegisterDto {
   name: string;
 
   @IsOptional()
+  @IsIn(['personal', 'company'], { message: 'Érvénytelen fiók típus' })
+  accountType?: string;
+
+  @IsOptional()
   @IsString()
   companyName?: string;
 
   @IsOptional()
-  @IsString()
+  @Matches(/^\d{8}-\d{1,2}-\d{2}$/, { message: 'Érvénytelen adószám formátum (helyes: 12345678-1-23)' })
   taxNumber?: string;
+
+  @IsOptional()
+  @IsString()
+  companyAddress?: string;
 
   @IsBoolean({ message: 'Az ÁSZF és Adatvédelmi tájékoztató elfogadása kötelező' })
   acceptTerms: boolean;

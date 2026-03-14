@@ -69,7 +69,8 @@ const templates = [
 <p>A munkaszerződésben nem szabályozott kérdésekben a Munka Törvénykönyvéről szóló 2012. évi I. törvény rendelkezései az irányadók.</p>
 <p>Jelen szerződést a felek elolvasás és értelmezés után, mint akaratukkal mindenben megegyezőt írják alá.</p>
 
-<p style="margin-top:40px;">Kelt: ............, {{kezdesDatuma}}</p>
+<p style="margin-top:40px;">Kelt: ............, .............. év .............. hó .............. nap</p>
+<p style="font-style:italic;color:#666;font-size:0.9em;">(A szerződés kelte az aláírás pillanata.)</p>
 `,
   },
   {
@@ -1106,6 +1107,99 @@ const templates = [
   },
 ];
 
+const defaultClauses = [
+  {
+    title: 'Titoktartási záradék',
+    category: 'titoktartás',
+    tags: ['NDA', 'bizalmas', 'titoktartás'],
+    content: `<h3>Titoktartási kötelezettség</h3>
+<p>A Felek kötelezettséget vállalnak arra, hogy a jelen szerződés teljesítése során tudomásukra jutott üzleti titkokat, bizalmas információkat harmadik személyek számára nem teszik hozzáférhetővé, azokat kizárólag a szerződés teljesítéséhez szükséges mértékben használják fel.</p>
+<p>A titoktartási kötelezettség a szerződés megszűnését követően további 5 (öt) évig fennáll.</p>
+<p>A titoktartási kötelezettség megsértése esetén a vétkes fél köteles a másik félnek okozott kárt megtéríteni.</p>`,
+  },
+  {
+    title: 'Vis major záradék',
+    category: 'vis major',
+    tags: ['vis major', 'force majeure', 'mentesülés'],
+    content: `<h3>Vis major</h3>
+<p>Egyik fél sem felel a szerződésben foglalt kötelezettség teljesítéséért azon esetekben, amikor a felek érdekkörén kívül eső, előre nem látható körülmények (vis major) merülnek fel, ideértve különösen: természeti katasztrófákat, háborút, járványt, sztrájkot, hatósági intézkedéseket.</p>
+<p>A vis major eseményt az érintett fél köteles a másik félnek haladéktalanul, de legkésőbb 5 munkanapon belül írásban bejelenteni. A vis major időtartamára a teljesítési határidők meghosszabbodnak.</p>`,
+  },
+  {
+    title: 'Kötbér záradék',
+    category: 'kötbér',
+    tags: ['kötbér', 'szankció', 'késedelem'],
+    content: `<h3>Kötbér</h3>
+<p>Amennyiben bármelyik Fél a jelen szerződésben foglalt lényeges kötelezettségét megszegi, a másik Fél kötbér megfizetését követelheti.</p>
+<p><strong>Késedelmi kötbér:</strong> A késedelmesen teljesítő Fél a késedelem minden megkezdett napjára a szerződéses érték 0,5%-ának, de összesen legfeljebb 20%-ának megfelelő kötbért köteles fizetni.</p>
+<p><strong>Meghiúsulási kötbér:</strong> Ha a szerződés a kötelezett hibájából meghiúsul, a jogosult fél a szerződéses érték 30%-ának megfelelő meghiúsulási kötbér megfizetését követelheti.</p>
+<p>A kötbér megfizetése nem mentesít a kötbért meghaladó kár megtérítése alól.</p>`,
+  },
+  {
+    title: 'Szavatossági záradék',
+    category: 'szavatosság',
+    tags: ['szavatosság', 'garancia', 'jótállás'],
+    content: `<h3>Szavatosság és jótállás</h3>
+<p>A Szolgáltató/Eladó szavatol azért, hogy a szolgáltatás/termék a teljesítés időpontjában megfelel a szerződésben meghatározott tulajdonságoknak, valamint a jogszabályban meghatározott minőségi követelményeknek.</p>
+<p>A szavatossági igény érvényesítésére a Ptk. 6:163-6:167. §-ai irányadóak. A szavatossági jog érvényesítésének határideje a teljesítéstől számított 1 (egy) év.</p>
+<p>A Felek megállapodnak, hogy a szavatossági kötelezettség teljesítése keretében a Szolgáltató/Eladó elsősorban kijavítással vagy kicseréléssel orvosolja a hibát.</p>`,
+  },
+  {
+    title: 'Felelősségkorlátozás',
+    category: 'felelősség',
+    tags: ['felelősség', 'korlátozás', 'kártérítés'],
+    content: `<h3>Felelősségkorlátozás</h3>
+<p>A Felek megállapodnak, hogy a jelen szerződés teljesítése során okozott károkért való felelősségük mértéke nem haladhatja meg a szerződés szerinti éves díj összegét, kivéve a szándékosan vagy súlyos gondatlansággal okozott károkat.</p>
+<p>Egyik Fél sem felel a másik Fél közvetett vagy következményes káraiért, ideértve különösen az elmaradt hasznot, az adatvesztésből eredő károkat és a harmadik felek igényeit.</p>
+<p>A felelősségkorlátozás nem vonatkozik a személyi sérülésből eredő károkra.</p>`,
+  },
+  {
+    title: 'GDPR adatkezelési záradék',
+    category: 'GDPR',
+    tags: ['GDPR', 'adatvédelem', 'személyes adat'],
+    content: `<h3>Adatkezelési rendelkezések</h3>
+<p>A Felek kötelezettséget vállalnak arra, hogy a jelen szerződés teljesítése során a személyes adatokat az Európai Parlament és a Tanács (EU) 2016/679 rendeletének (GDPR), valamint az információs önrendelkezési jogról szóló 2011. évi CXII. törvény rendelkezéseinek megfelelően kezelik.</p>
+<p>A személyes adatok kezelésének jogalapja a szerződés teljesítése (GDPR 6. cikk (1) bek. b) pont). Az adatkezelés időtartama a szerződés hatálya alatt és a szerződéses igények elévüléséig tart.</p>
+<p>Az adatkezelő köteles megfelelő technikai és szervezési intézkedéseket tenni a személyes adatok védelme érdekében. Adatvédelmi incidens esetén az adatkezelő köteles a NAIH-t és az érintetteket a jogszabályban meghatározott határidőn belül értesíteni.</p>`,
+  },
+  {
+    title: 'Fizetési feltételek',
+    category: 'fizetés',
+    tags: ['fizetés', 'díj', 'számla', 'határidő'],
+    content: `<h3>Fizetési feltételek</h3>
+<p>A Megrendelő a szolgáltatás ellenértékét a Szolgáltató által kiállított számla alapján, a számla kézhezvételétől számított 15 (tizenöt) napon belül köteles megfizetni átutalással a Szolgáltató számlán megjelölt bankszámlájára.</p>
+<p>Késedelmes fizetés esetén a Megrendelő a Ptk. 6:155. § szerinti késedelmi kamatot köteles fizetni. A késedelmi kamat mértéke a jegybanki alapkamat nyolc százalékponttal növelt értéke.</p>
+<p>A Szolgáltató jogosult a szolgáltatás teljesítését felfüggeszteni, amennyiben a Megrendelő fizetési késedelme meghaladja a 30 napot.</p>`,
+  },
+  {
+    title: 'Szellemi tulajdon záradék',
+    category: 'szellemi tulajdon',
+    tags: ['szellemi tulajdon', 'szerzői jog', 'licenc'],
+    content: `<h3>Szellemi tulajdonjogok</h3>
+<p>A jelen szerződés teljesítése során létrejött szellemi alkotások (szoftver, dokumentáció, design, know-how) szerzői joga a Szolgáltatót/létrehozót illeti meg, kivéve ha a felek írásban másként állapodnak meg.</p>
+<p>A Megrendelő nem kizárólagos, nem átruházható, időben korlátlan felhasználási jogot szerez a szerződés teljesítése során átadott szellemi alkotások tekintetében, a szerződésben meghatározott célra.</p>
+<p>A Felek kötelesek tartózkodni a másik fél szellemi tulajdonjogainak megsértésétől. A szellemi tulajdonjogok megsértéséből eredő károkért a jogsértő fél teljes körű felelősséggel tartozik.</p>`,
+  },
+  {
+    title: 'Felmondási záradék',
+    category: 'felmondás',
+    tags: ['felmondás', 'megszüntetés', 'határidő'],
+    content: `<h3>A szerződés felmondása</h3>
+<p><strong>Rendes felmondás:</strong> A határozatlan idejű szerződést bármelyik Fél jogosult 30 (harminc) napos felmondási idővel, írásban felmondani. A felmondási idő a felmondás kézbesítését követő napon kezdődik.</p>
+<p><strong>Rendkívüli felmondás:</strong> Bármelyik Fél jogosult a szerződést azonnali hatállyal felmondani, ha a másik Fél a szerződésben foglalt lényeges kötelezettségét súlyosan megszegi, és azt írásbeli felszólítás ellenére 15 napon belül nem orvosolja.</p>
+<p>A szerződés megszűnése nem érinti a felek azon jogait és kötelezettségeit, amelyek természetüknél fogva a szerződés megszűnését követően is fennmaradnak (titoktartás, elszámolás, szellemi tulajdon).</p>`,
+  },
+  {
+    title: 'Jogvita rendezése',
+    category: 'jogvita',
+    tags: ['jogvita', 'bíróság', 'egyeztetés', 'választottbíróság'],
+    content: `<h3>Jogviták rendezése</h3>
+<p>A Felek megállapodnak, hogy a jelen szerződésből eredő vagy azzal kapcsolatos jogvitáikat elsősorban békés úton, közvetlen tárgyalás útján kísérlik meg rendezni.</p>
+<p>Amennyiben a közvetlen tárgyalás a vita felmerülésétől számított 30 napon belül nem vezet eredményre, a Felek alávetik magukat a Szolgáltató székhelye szerint illetékes bíróság kizárólagos illetékességének.</p>
+<p>A jelen szerződésre a magyar jog az irányadó, ideértve különösen a Polgári Törvénykönyvről szóló 2013. évi V. törvény rendelkezéseit.</p>`,
+  },
+];
+
 async function main() {
   console.log('Seeding database...');
 
@@ -1128,6 +1222,28 @@ async function main() {
       console.log(`Created template: ${t.name}`);
     } else {
       console.log(`Template already exists: ${t.name}`);
+    }
+  }
+
+  // Seed default clauses
+  for (const c of defaultClauses) {
+    const existing = await prisma.clause.findFirst({
+      where: { title: c.title, isDefault: true },
+    });
+    if (!existing) {
+      await prisma.clause.create({
+        data: {
+          title: c.title,
+          content: c.content,
+          category: c.category,
+          tags: c.tags,
+          userId: 'system', // system-owned default clauses
+          isDefault: true,
+        },
+      });
+      console.log(`Created default clause: ${c.title}`);
+    } else {
+      console.log(`Default clause already exists: ${c.title}`);
     }
   }
 

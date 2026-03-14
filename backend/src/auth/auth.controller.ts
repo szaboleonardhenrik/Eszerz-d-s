@@ -186,6 +186,16 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Post('change-email')
+  async changeEmail(
+    @Req() req: any,
+    @Body() body: { newEmail: string; password: string },
+  ) {
+    const result = await this.authService.changeEmail(req.user.userId, body.newEmail, body.password);
+    return ApiResponse.ok(result);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Post('change-password')
   async changePassword(
     @Req() req: any,

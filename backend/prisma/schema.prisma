@@ -75,6 +75,8 @@ model User {
   sendCredits     Int        @default(0) @map("send_credits")
   creditTransactions CreditTransaction[]
   authAuditLogs   AuthAuditLog[]
+  accountType     String     @default("company") @map("account_type") // "personal" or "company"
+  companyAddress  String?    @map("company_address")
 
   @@map("users")
 }
@@ -212,6 +214,9 @@ model Contract {
   documentHash     String?   @map("document_hash") // SHA-256 hash of the PDF
   variablesHash    String?   @map("variables_hash") // SHA-256 hash of variables data
   expiresAt        DateTime? @map("expires_at")
+  renewalDate      DateTime? @map("renewal_date")
+  renewalType      String?   @map("renewal_type") // auto | manual | none
+  renewalNotifiedAt DateTime? @map("renewal_notified_at")
   tsaToken         String?   @map("tsa_token") // RFC 3161 timestamp token (base64 DER)
   tsaTimestamp     DateTime? @map("tsa_timestamp") // Verified timestamp from TSA
   tsaAuthority     String?   @map("tsa_authority") // TSA server used
@@ -219,9 +224,12 @@ model Contract {
   createdAt        DateTime  @default(now()) @map("created_at")
   updatedAt        DateTime  @updatedAt @map("updated_at")
 
+  workflowId  String?   @map("workflow_id")
+
   template  Template?          @relation(fields: [templateId], references: [id])
   owner     User               @relation(fields: [ownerId], references: [id])
   folder    Folder?            @relation(fields: [folderId], references: [id])
+  workflow  ApprovalWorkflow?  @relation(fields: [workflowId], references: [id])
   signers   Signer[]
   auditLogs AuditLog[]
   comments  Comment[]
@@ -229,6 +237,10 @@ model Contract {
   versions  ContractVersion[]
   reminders ContractReminder[]
   creditTransactions CreditTransaction[]
+  approvals Approval[]
+  invoices  Invoice[]
+  bulkOperation   BulkOperation? @relation(fields: [bulkOperationId], references: [id])
+  bulkOperationId String?        @map("bulk_operation_id")
 
   @@index([ownerId])
   @@index([status])
@@ -478,6 +490,7 @@ model Notification {
   title     String
   message   String
   link      String?
+  data      String?  // JSON extra data
   read      Boolean  @default(false)
   createdAt DateTime @default(now()) @map("created_at")
 
@@ -618,23 +631,31 @@ model Invoice {
   userId          String    @map("user_id")
   quoteId         String?   @map("quote_id")
   contractId      String?   @map("contract_id")
-  invoiceNumber   String?   @map("invoice_number") // Számlázz.hu számla szám
+  contract        Contract? @relation(fields: [contractId], references: [id])
+  provider        String    @default("szamlazzhu") // billingo | szamlazzhu
+  externalId      String?   @map("external_id") // provider-side ID
+  invoiceNumber   String?   @map("invoice_number")
   amount          Float
   currency        String    @default("HUF")
   taxRate         Float     @default(27) @map("tax_rate")
+  partnerName     String    @map("partner_name")
+  partnerEmail    String?   @map("partner_email")
   buyerName       String    @map("buyer_name")
   buyerEmail      String    @map("buyer_email")
   buyerTaxNumber  String?   @map("buyer_tax_number")
-  status          String    @default("pending") // pending | issued | failed | cancelled
+  status          String    @default("draft") // draft | pending | issued | sent | paid | failed | cancelled
+  issuedAt        DateTime? @map("issued_at")
+  dueAt           DateTime? @map("due_at")
   pdfUrl          String?   @map("pdf_url")
   errorMessage    String?   @map("error_message")
-  szamlazzId      String?   @map("szamlazz_id") // external reference
+  szamlazzId      String?   @map("szamlazz_id") // legacy external reference
   createdAt       DateTime  @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([quoteId])
+  @@index([contractId])
   @@map("invoices")
 }
 
@@ -786,4 +807,95 @@ model AuthAuditLog {
   @@index([action])
   @@index([createdAt])
   @@map("auth_audit_logs")
+}
+
+model ApprovalWorkflow {
+  id          String   @id @default(uuid())
+  name        String
+  teamId      String   @map("team_id")
+  steps       ApprovalStep[]
+  contracts   Contract[]
+  createdBy   String   @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("approval_workflows")
+}
+
+model ApprovalStep {
+  id            String   @id @default(uuid())
+  workflowId    String   @map("workflow_id")
+  workflow      ApprovalWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  order         Int
+  name          String
+  approverEmail String   @map("approver_email")
+  approverName  String?  @map("approver_name")
+  approvals     Approval[]
+
+  @@map("approval_steps")
+}
+
+model Approval {
+  id          String    @id @default(uuid())
+  contractId  String    @map("contract_id")
+  contract    Contract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  stepId      String    @map("step_id")
+  step        ApprovalStep @relation(fields: [stepId], references: [id])
+  status      String    @default("pending") // pending | approved | rejected | skipped
+  comment     String?
+  decidedBy   String?   @map("decided_by")
+  decidedAt   DateTime? @map("decided_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@map("approvals")
+}
+
+model Clause {
+  id          String   @id @default(uuid())
+  title       String
+  content     String   // HTML content
+  category    String   // e.g. "titoktartás", "felelősség", "fizetés", "GDPR"
+  tags        String[] @default([])
+  teamId      String?  @map("team_id")
+  userId      String   @map("user_id")
+  isDefault   Boolean  @default(false) @map("is_default") // system-provided clauses
+  usageCount  Int      @default(0) @map("usage_count")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([category])
+  @@map("clauses")
+}
+
+model PortalInvitation {
+  id          String   @id @default(uuid())
+  email       String
+  token       String   @unique
+  teamId      String   @map("team_id")
+  invitedBy   String   @map("invited_by")
+  status      String   @default("pending") // pending, accepted, revoked
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([email])
+  @@index([token])
+  @@map("portal_invitations")
+}
+
+model BulkOperation {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  templateId    String   @map("template_id")
+  totalCount    Int      @map("total_count")
+  successCount  Int      @default(0) @map("success_count")
+  failCount     Int      @default(0) @map("fail_count")
+  status        String   @default("pending") // pending | processing | completed | failed
+  errorLog      String?  @map("error_log") // JSON array of errors
+  createdAt     DateTime @default(now()) @map("created_at")
+  completedAt   DateTime? @map("completed_at")
+
+  contracts Contract[]
+
+  @@index([userId])
+  @@map("bulk_operations")
 }

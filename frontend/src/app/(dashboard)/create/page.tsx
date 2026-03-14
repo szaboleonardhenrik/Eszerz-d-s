@@ -446,6 +446,25 @@ function CreateWizardInner() {
             </div>
           ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Blank contract card */}
+            <div
+              className="group bg-white dark:bg-gray-800 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-600 overflow-hidden hover:shadow-lg hover:border-blue-400 dark:hover:border-blue-500 hover:-translate-y-0.5 transition-all cursor-pointer"
+              onClick={() => {
+                setUploadMode(true);
+                if (!uploadedHtml) setUploadedHtml("<p></p>");
+              }}
+            >
+              <div className="p-5 flex flex-col items-center justify-center text-center min-h-[140px]">
+                <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-3 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition">
+                  <svg className="w-6 h-6 text-gray-400 group-hover:text-blue-500 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                </div>
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-[.95rem]">{t("create.blankContract")}</h3>
+                <p className="text-xs text-gray-400 mt-1">{t("create.blankContractDesc")}</p>
+              </div>
+            </div>
+
             {templates.map((tpl, idx) => (
               <div
                 key={tpl.id}

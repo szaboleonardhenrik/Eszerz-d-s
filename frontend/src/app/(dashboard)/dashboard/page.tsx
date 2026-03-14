@@ -341,43 +341,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* ── 2. Usage & Limits Row ──────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Link href="/contracts" className="hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer rounded-xl">
-          <ProgressBar
-            used={contractsUsed}
-            limit={limits.contracts}
-            label="Szerződések"
-            sublabel="Aktív szerződések száma"
-          />
-        </Link>
-        <Link href="/settings/team" className="hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer rounded-xl">
-          <ProgressBar
-            used={teamUsed}
-            limit={limits.team}
-            label="Csapattagok"
-            sublabel="Meghívott felhasználók"
-          />
-        </Link>
-        <Link href="/settings/api" className="hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer rounded-xl">
-          <ProgressBar
-            used={apiUsed}
-            limit={limits.api}
-            label="API hívások"
-            sublabel="Mai napi hívások"
-          />
-        </Link>
-        <Link href="/settings" className="hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer rounded-xl">
-          <ProgressBar
-            used={storageUsed}
-            limit={limits.storage}
-            label="Tárolás"
-            sublabel={`${storageUsed} MB használva`}
-          />
-        </Link>
-      </div>
-
-      {/* ── 3. Stats Overview Row ──────────────────────────────── */}
+      {/* ── 2. Stats Overview Row ──────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="Összes szerződés"
@@ -459,7 +423,43 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ── 5. Quote Stats Row ─────────────────────────────────── */}
+      {/* ── 5. Usage & Limits Row ──────────────────────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Link href="/contracts" className="hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer rounded-xl">
+          <ProgressBar
+            used={contractsUsed}
+            limit={limits.contracts}
+            label="Szerződések"
+            sublabel="Aktív szerződések száma"
+          />
+        </Link>
+        <Link href="/settings/team" className="hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer rounded-xl">
+          <ProgressBar
+            used={teamUsed}
+            limit={limits.team}
+            label="Csapattagok"
+            sublabel="Meghívott felhasználók"
+          />
+        </Link>
+        <Link href="/settings/api" className="hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer rounded-xl">
+          <ProgressBar
+            used={apiUsed}
+            limit={limits.api}
+            label="API hívások"
+            sublabel="Mai napi hívások"
+          />
+        </Link>
+        <Link href="/settings" className="hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer rounded-xl">
+          <ProgressBar
+            used={storageUsed}
+            limit={limits.storage}
+            label="Tárolás"
+            sublabel={`${storageUsed} MB használva`}
+          />
+        </Link>
+      </div>
+
+      {/* ── 6. Quote Stats Row ─────────────────────────────────── */}
       {quoteStats && quoteStats.total > 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
           <div className="flex items-center justify-between mb-4">

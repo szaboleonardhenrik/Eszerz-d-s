@@ -170,6 +170,40 @@ export class ResendWebhookController {
     if (updated.count === 0) {
       this.logger.debug(`No EmailLog found for resendId: ${resendId}`);
     }
+
+    // Notify contract owner about the bounce
+    try {
+      const bouncedEmails = event.data.to ?? [];
+      if (bouncedEmails.length > 0) {
+        const signer = await this.prisma.signer.findFirst({
+          where: { email: { in: bouncedEmails } },
+          include: { contract: { select: { id: true, title: true, ownerId: true } } },
+        });
+
+        if (signer?.contract) {
+          await this.prisma.notification.create({
+            data: {
+              userId: signer.contract.ownerId,
+              type: 'email_bounced',
+              title: 'E-mail kézbesítési hiba',
+              message: `A(z) "${signer.contract.title}" szerződés aláírási felkérése nem érkezett meg ${signer.name} (${signer.email}) részére. Kérjük, ellenőrizze az e-mail címet.`,
+              data: JSON.stringify({ contractId: signer.contract.id, signerEmail: signer.email }),
+            },
+          });
+
+          await this.prisma.auditLog.create({
+            data: {
+              contractId: signer.contract.id,
+              signerId: signer.id,
+              eventType: 'email_bounced',
+              eventData: JSON.stringify({ email: signer.email, bouncedAt: event.created_at }),
+            },
+          });
+        }
+      }
+    } catch (err) {
+      this.logger.error(`Failed to create bounce notification: ${err}`);
+    }
   }
 
   private async handleComplained(

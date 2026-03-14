@@ -12,8 +12,10 @@ export default function RegisterPage() {
     name: "",
     email: "",
     password: "",
+    accountType: "company" as "company" | "personal",
     companyName: "",
     taxNumber: "",
+    companyAddress: "",
     acceptTerms: false,
   });
   const [loading, setLoading] = useState(false);
@@ -23,6 +25,10 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (form.accountType === "company" && form.taxNumber && !/^\d{8}-\d{1,2}-\d{2}$/.test(form.taxNumber)) {
+      toast.error("Érvénytelen adószám formátum (helyes: 12345678-1-23)");
+      return;
+    }
     setLoading(true);
     try {
       await register(form);
@@ -36,8 +42,15 @@ export default function RegisterPage() {
     }
   };
 
+  const formatTaxNumber = (raw: string): string => {
+    const digits = raw.replace(/\D/g, "").slice(0, 11);
+    if (digits.length <= 8) return digits;
+    if (digits.length <= 9) return `${digits.slice(0, 8)}-${digits.slice(8)}`;
+    return `${digits.slice(0, 8)}-${digits.slice(8, 9)}-${digits.slice(9)}`;
+  };
+
   const update = (field: string, value: string) =>
-    setForm((f) => ({ ...f, [field]: value }));
+    setForm((f) => ({ ...f, [field]: field === "taxNumber" ? formatTaxNumber(value) : value }));
 
   return (
     <div className="min-h-screen flex">
@@ -97,6 +110,24 @@ export default function RegisterPage() {
             onSubmit={handleSubmit}
             className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border dark:border-gray-700 p-8 space-y-4"
           >
+            {/* Account type toggle */}
+            <div className="flex rounded-xl border dark:border-gray-600 overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setForm(f => ({ ...f, accountType: "company" }))}
+                className={`flex-1 py-2.5 text-sm font-medium transition ${form.accountType === "company" ? "bg-brand-teal-dark text-white" : "bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"}`}
+              >
+                Cég / Egyéni vállalkozó
+              </button>
+              <button
+                type="button"
+                onClick={() => setForm(f => ({ ...f, accountType: "personal", companyName: "", taxNumber: "", companyAddress: "" }))}
+                className={`flex-1 py-2.5 text-sm font-medium transition ${form.accountType === "personal" ? "bg-brand-teal-dark text-white" : "bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"}`}
+              >
+                Magánszemély
+              </button>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("auth.name")} {t("auth.required")}</label>
               <input
@@ -139,28 +170,54 @@ export default function RegisterPage() {
               )}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("auth.companyName")}</label>
-                <input
-                  type="text"
-                  value={form.companyName}
-                  onChange={(e) => update("companyName", e.target.value)}
-                  className="w-full px-4 py-2.5 border dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-brand-teal/50 focus:border-brand-teal outline-none transition dark:bg-gray-700 dark:text-gray-100"
-                  placeholder="Példa Kft."
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("auth.taxNumber")}</label>
-                <input
-                  type="text"
-                  value={form.taxNumber}
-                  onChange={(e) => update("taxNumber", e.target.value)}
-                  className="w-full px-4 py-2.5 border dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-brand-teal/50 focus:border-brand-teal outline-none transition dark:bg-gray-700 dark:text-gray-100"
-                  placeholder="12345678-1-23"
-                />
-              </div>
-            </div>
+            {/* Company fields — only for company accounts */}
+            {form.accountType === "company" && (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("auth.companyName")}</label>
+                    <input
+                      type="text"
+                      value={form.companyName}
+                      onChange={(e) => update("companyName", e.target.value)}
+                      className="w-full px-4 py-2.5 border dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-brand-teal/50 focus:border-brand-teal outline-none transition dark:bg-gray-700 dark:text-gray-100"
+                      placeholder="Példa Kft."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("auth.taxNumber")}</label>
+                    <input
+                      type="text"
+                      value={form.taxNumber}
+                      onChange={(e) => update("taxNumber", e.target.value)}
+                      maxLength={13}
+                      className="w-full px-4 py-2.5 border dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-brand-teal/50 focus:border-brand-teal outline-none transition dark:bg-gray-700 dark:text-gray-100"
+                      placeholder="12345678-1-23"
+                    />
+                    {form.taxNumber && (
+                      <div className="flex items-center justify-between mt-1">
+                        <p className={`text-xs ${/^\d{8}-\d{1,2}-\d{2}$/.test(form.taxNumber) ? "text-green-500 dark:text-green-400" : "text-red-500 dark:text-red-400"}`}>
+                          {/^\d{8}-\d{1,2}-\d{2}$/.test(form.taxNumber) ? "Érvényes adószám" : "Érvénytelen formátum (helyes: 12345678-1-23)"}
+                        </p>
+                        <span className={`text-xs ${form.taxNumber.replace(/\D/g, "").length === 11 ? "text-green-500" : "text-gray-400"}`}>
+                          {form.taxNumber.replace(/\D/g, "").length}/11 számjegy
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Székhely</label>
+                  <input
+                    type="text"
+                    value={form.companyAddress}
+                    onChange={(e) => update("companyAddress", e.target.value)}
+                    className="w-full px-4 py-2.5 border dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-brand-teal/50 focus:border-brand-teal outline-none transition dark:bg-gray-700 dark:text-gray-100"
+                    placeholder="1234 Budapest, Példa utca 1."
+                  />
+                </div>
+              </>
+            )}
 
             <label className="flex items-start gap-3 cursor-pointer">
               <input
