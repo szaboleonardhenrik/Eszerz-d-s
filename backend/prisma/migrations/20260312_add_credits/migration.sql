@@ -23,5 +23,9 @@ UPDATE users SET send_credits = 50 WHERE subscription_tier = 'medium';
 UPDATE users SET send_credits = 150 WHERE subscription_tier = 'premium';
 UPDATE users SET send_credits = 500 WHERE subscription_tier = 'enterprise';
 
--- Grant permissions
-GRANT ALL ON TABLE credit_transactions TO legitas;
+-- Grant permissions (only if role exists)
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'legitas') THEN
+    GRANT ALL ON TABLE credit_transactions TO legitas;
+  END IF;
+END $$;

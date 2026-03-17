@@ -1,14 +1,16 @@
 "use client";
 
-import { useRef, useCallback, useEffect } from "react";
+import { useRef, useCallback, useEffect, useState } from "react";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { useI18n } from "@/lib/i18n";
+import ClauseInsertPanel from "./clause-insert-panel";
 
 interface WysiwygEditorProps {
   value: string;
   onChange: (html: string) => void;
   placeholder?: string;
   variables?: string[];
+  showClauseInsert?: boolean;
 }
 
 const toolbarButtons = [
@@ -46,10 +48,20 @@ function plainTextToHtml(text: string): string {
     .join("");
 }
 
-export default function WysiwygEditor({ value, onChange, placeholder, variables }: WysiwygEditorProps) {
+export default function WysiwygEditor({ value, onChange, placeholder, variables, showClauseInsert = true }: WysiwygEditorProps) {
   const { t } = useI18n();
   const editorRef = useRef<HTMLDivElement>(null);
   const isInternalChange = useRef(false);
+  const [clausePanelOpen, setClausePanelOpen] = useState(false);
+
+  const insertClauseHtml = useCallback((html: string) => {
+    if (editorRef.current) {
+      editorRef.current.focus();
+      document.execCommand("insertHTML", false, html);
+      isInternalChange.current = true;
+      onChange(editorRef.current.innerHTML);
+    }
+  }, [onChange]);
 
   // Sync value prop to editor only when it changes externally
   useEffect(() => {
@@ -168,6 +180,23 @@ export default function WysiwygEditor({ value, onChange, placeholder, variables 
             </select>
           </>
         )}
+
+        {showClauseInsert && (
+          <>
+            <div className="w-px h-6 bg-gray-200 dark:bg-gray-600 mx-0.5" />
+            <button
+              type="button"
+              onClick={() => setClausePanelOpen(true)}
+              title={t("clauses.insertTitle")}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer hover:border-[#198296] hover:text-[#198296] transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+              </svg>
+              {t("clauses.insertBtn")}
+            </button>
+          </>
+        )}
       </div>
 
       {/* Editor area */}
@@ -181,6 +210,14 @@ export default function WysiwygEditor({ value, onChange, placeholder, variables 
         data-placeholder={placeholder || t("wysiwyg.defaultPlaceholder")}
         className="min-h-[350px] max-h-[600px] overflow-y-auto px-6 py-5 text-sm leading-relaxed text-gray-800 dark:text-gray-100 outline-none focus:ring-2 focus:ring-[#198296]/20 focus:ring-inset empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400 empty:before:pointer-events-none prose prose-sm max-w-none [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mb-3 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:mb-2 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mb-2 [&_p]:mb-2 [&_ul]:pl-5 [&_ol]:pl-5 [&_li]:mb-1"
       />
+
+      {showClauseInsert && (
+        <ClauseInsertPanel
+          open={clausePanelOpen}
+          onClose={() => setClausePanelOpen(false)}
+          onInsert={insertClauseHtml}
+        />
+      )}
     </div>
   );
 }

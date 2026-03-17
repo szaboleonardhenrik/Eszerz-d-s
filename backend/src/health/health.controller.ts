@@ -1,12 +1,19 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Post, Body, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { S3Client, HeadBucketCommand } from '@aws-sdk/client-s3';
 
 @Controller('health')
 export class HealthController {
   private readonly startTime = Date.now();
+  private readonly logger = new Logger('ClientError');
 
   constructor(private readonly prisma: PrismaService) {}
+
+  @Post('client-error')
+  logClientError(@Body() body: { message?: string; stack?: string; url?: string; type?: string }) {
+    this.logger.error(`[CLIENT] ${body.url} — ${body.message}\n${body.stack ?? ''}`);
+    return { ok: true };
+  }
 
   @Get()
   async check() {

@@ -15,7 +15,7 @@ export default function Error({
     console.error('Application error:', error);
     Sentry.captureException(error);
     // Send error to backend for debugging
-    fetch('/api/log-error', {
+    fetch('/api/health/client-error', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

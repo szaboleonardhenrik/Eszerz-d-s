@@ -12,6 +12,18 @@ export default function GlobalError({
 }) {
   useEffect(() => {
     Sentry.captureException(error);
+    console.error('[GLOBAL_ERROR]', error.message, error.stack);
+    fetch('/api/health/client-error', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'global',
+        message: error.message,
+        stack: error.stack,
+        digest: error.digest,
+        url: typeof window !== 'undefined' ? window.location.href : '',
+      }),
+    }).catch(() => {});
   }, [error]);
 
   return (
