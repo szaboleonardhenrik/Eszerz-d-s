@@ -763,26 +763,36 @@ function CreateWizardInner() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Main signing mode: 3 options */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {([
-                  { value: "partner_only" as SigningMode, label: t("create.signerMode.partnerOnly"), desc: t("create.signerMode.partnerOnlyDesc"), icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z", color: "blue" },
-                  { value: "owner_only" as SigningMode, label: t("create.signerMode.ownerOnly"), desc: t("create.signerMode.ownerOnlyDesc"), icon: "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4", color: "teal" },
-                  { value: "both_partner_first" as SigningMode, label: t("create.signerMode.bothPartnerFirst"), desc: t("create.signerMode.bothPartnerFirstDesc"), icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z", color: "violet" },
-                  { value: "both_owner_first" as SigningMode, label: t("create.signerMode.bothOwnerFirst"), desc: t("create.signerMode.bothOwnerFirstDesc"), icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4", color: "amber" },
-                ]).map((opt) => {
+                  { value: "owner_only" as const, label: t("create.signerMode.ownerOnly"), desc: t("create.signerMode.ownerOnlyDesc"), icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z", color: "teal" },
+                  { value: "partner_only" as const, label: t("create.signerMode.partnerOnly"), desc: t("create.signerMode.partnerOnlyDesc"), icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z", color: "blue" },
+                  { value: "both" as const, label: t("create.signerMode.both"), desc: t("create.signerMode.bothDesc"), icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z", color: "violet" },
+                ] as const).map((opt) => {
                   const colorMap: Record<string, { active: string; icon: string }> = {
-                    blue: { active: "border-blue-500 bg-blue-50 dark:bg-blue-900/20", icon: "bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-400" },
                     teal: { active: "border-teal-500 bg-teal-50 dark:bg-teal-900/20", icon: "bg-teal-100 dark:bg-teal-800 text-teal-600 dark:text-teal-400" },
+                    blue: { active: "border-blue-500 bg-blue-50 dark:bg-blue-900/20", icon: "bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-400" },
                     violet: { active: "border-violet-500 bg-violet-50 dark:bg-violet-900/20", icon: "bg-violet-100 dark:bg-violet-800 text-violet-600 dark:text-violet-400" },
-                    amber: { active: "border-amber-500 bg-amber-50 dark:bg-amber-900/20", icon: "bg-amber-100 dark:bg-amber-800 text-amber-600 dark:text-amber-400" },
                   };
                   const c = colorMap[opt.color];
-                  const isSelected = signingMode === opt.value;
+                  const isBoth = opt.value === "both";
+                  const isSelected = isBoth
+                    ? signingMode === "both_partner_first" || signingMode === "both_owner_first"
+                    : signingMode === opt.value;
                   return (
                     <button
                       key={opt.value}
                       type="button"
-                      onClick={() => setSigningMode(opt.value)}
+                      onClick={() => {
+                        if (isBoth) {
+                          if (signingMode !== "both_partner_first" && signingMode !== "both_owner_first") {
+                            setSigningMode("both_partner_first");
+                          }
+                        } else {
+                          setSigningMode(opt.value as SigningMode);
+                        }
+                      }}
                       className={`text-left p-4 rounded-xl border-2 transition-all ${
                         isSelected ? c.active : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
                       }`}
@@ -804,6 +814,36 @@ function CreateWizardInner() {
                   );
                 })}
               </div>
+
+              {/* Signing order sub-selector (only when "Mindkét fél" is selected) */}
+              {(signingMode === "both_partner_first" || signingMode === "both_owner_first") && (
+                <div className="mt-4 p-4 bg-violet-50 dark:bg-violet-900/10 rounded-xl border border-violet-200 dark:border-violet-700">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400 mb-3">{t("create.signerMode.orderTitle")}</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {([
+                      { value: "both_partner_first" as SigningMode, label: t("create.signerMode.bothPartnerFirst"), desc: t("create.signerMode.bothPartnerFirstDesc") },
+                      { value: "both_owner_first" as SigningMode, label: t("create.signerMode.bothOwnerFirst"), desc: t("create.signerMode.bothOwnerFirstDesc") },
+                    ]).map((opt) => {
+                      const isSelected = signingMode === opt.value;
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => setSigningMode(opt.value)}
+                          className={`text-left p-3 rounded-lg border-2 transition-all ${
+                            isSelected
+                              ? "border-violet-500 bg-white dark:bg-gray-800"
+                              : "border-transparent bg-white/60 dark:bg-gray-800/40 hover:bg-white dark:hover:bg-gray-800"
+                          }`}
+                        >
+                          <p className={`text-sm font-semibold ${isSelected ? "text-violet-700 dark:text-violet-300" : "text-gray-600 dark:text-gray-300"}`}>{opt.label}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{opt.desc}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* Owner signer info - with authorized signer selection */}
               {signingMode !== "partner_only" && (
