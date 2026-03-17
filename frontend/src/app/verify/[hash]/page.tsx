@@ -24,13 +24,13 @@ interface VerificationData {
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; darkBg: string; darkColor: string }> = {
   draft: { label: "Piszkozat", color: "text-gray-700", bg: "bg-gray-100", darkBg: "dark:bg-gray-700", darkColor: "dark:text-gray-300" },
-  sent: { label: "Elkuldve", color: "text-blue-700", bg: "bg-blue-100", darkBg: "dark:bg-blue-900/30", darkColor: "dark:text-blue-400" },
-  partially_signed: { label: "Reszben alairt", color: "text-yellow-700", bg: "bg-yellow-100", darkBg: "dark:bg-yellow-900/30", darkColor: "dark:text-yellow-400" },
-  completed: { label: "Teljesitve", color: "text-green-700", bg: "bg-green-100", darkBg: "dark:bg-green-900/30", darkColor: "dark:text-green-400" },
-  declined: { label: "Visszautasitva", color: "text-red-700", bg: "bg-red-100", darkBg: "dark:bg-red-900/30", darkColor: "dark:text-red-400" },
-  expired: { label: "Lejart", color: "text-orange-700", bg: "bg-orange-100", darkBg: "dark:bg-orange-900/30", darkColor: "dark:text-orange-400" },
+  sent: { label: "Elküldve", color: "text-blue-700", bg: "bg-blue-100", darkBg: "dark:bg-blue-900/30", darkColor: "dark:text-blue-400" },
+  partially_signed: { label: "Részben aláírt", color: "text-yellow-700", bg: "bg-yellow-100", darkBg: "dark:bg-yellow-900/30", darkColor: "dark:text-yellow-400" },
+  completed: { label: "Teljesítve", color: "text-green-700", bg: "bg-green-100", darkBg: "dark:bg-green-900/30", darkColor: "dark:text-green-400" },
+  declined: { label: "Visszautasítva", color: "text-red-700", bg: "bg-red-100", darkBg: "dark:bg-red-900/30", darkColor: "dark:text-red-400" },
+  expired: { label: "Lejárt", color: "text-orange-700", bg: "bg-orange-100", darkBg: "dark:bg-orange-900/30", darkColor: "dark:text-orange-400" },
   cancelled: { label: "Visszavonva", color: "text-gray-700", bg: "bg-gray-100", darkBg: "dark:bg-gray-700", darkColor: "dark:text-gray-300" },
-  archived: { label: "Archivalt", color: "text-gray-700", bg: "bg-gray-100", darkBg: "dark:bg-gray-700", darkColor: "dark:text-gray-300" },
+  archived: { label: "Archivált", color: "text-gray-700", bg: "bg-gray-100", darkBg: "dark:bg-gray-700", darkColor: "dark:text-gray-300" },
 };
 
 export default function VerifyPage() {
@@ -72,7 +72,7 @@ export default function VerifyPage() {
             </svg>
           </div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            Ervenytelen hivatkozas
+            Érvénytelen hivatkozás
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mb-6">
             Ez a szerződés nem található vagy érvénytelen.
@@ -81,7 +81,7 @@ export default function VerifyPage() {
             href="/"
             className="inline-flex items-center gap-2 text-[#198296] hover:underline text-sm font-medium"
           >
-            Vissza a fooldara
+            Vissza a főoldalra
           </Link>
         </div>
       </div>
@@ -130,7 +130,7 @@ export default function VerifyPage() {
             {/* Title */}
             <div>
               <label className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-                Szerzodes cime
+                Szerződés címe
               </label>
               <p className="text-lg font-semibold text-gray-900 dark:text-gray-100 mt-1">
                 {data.title}

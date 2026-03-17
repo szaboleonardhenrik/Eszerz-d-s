@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import api from "@/lib/api";
 
@@ -10,20 +11,27 @@ interface PortalContract {
   contractStatus: string;
   createdAt: string;
   verificationHash: string | null;
+  hasPdf: boolean;
   ownerName: string;
   ownerCompany: string | null;
   signerStatus: string;
   signedAt: string | null;
-  signToken: string | null;
+}
+
+interface AuditEntry {
+  id: string;
+  eventType: string;
+  createdAt: string;
+  signer: { name: string; email: string } | null;
 }
 
 const statusLabels: Record<string, string> = {
   draft: "Piszkozat",
-  sent: "Elkuldve",
-  partially_signed: "Reszben alairt",
-  completed: "Teljesitve",
-  declined: "Visszautasitva",
-  expired: "Lejart",
+  sent: "Elküldve",
+  partially_signed: "Részben aláírt",
+  completed: "Teljesítve",
+  declined: "Visszautasítva",
+  expired: "Lejárt",
   cancelled: "Visszavonva",
 };
 
@@ -37,30 +45,65 @@ const statusColors: Record<string, string> = {
   cancelled: "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400",
 };
 
+const eventTypeLabels: Record<string, string> = {
+  contract_created: "Szerződés létrehozva",
+  email_sent: "Email elküldve",
+  contract_viewed: "Szerződés megtekintve",
+  contract_signed: "Aláírás megtörtént",
+  contract_declined: "Visszautasítva",
+  contract_completed: "Minden fél aláírt",
+  pdf_generated: "PDF generálva",
+};
+
 export default function PortalPage() {
+  const searchParams = useSearchParams();
+  const tokenFromUrl = searchParams.get("token");
+
   const [email, setEmail] = useState("");
-  const [token, setToken] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(tokenFromUrl);
   const [contracts, setContracts] = useState<PortalContract[]>([]);
   const [portalEmail, setPortalEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [requestSent, setRequestSent] = useState(false);
+
+  // Audit log state
+  const [auditContractId, setAuditContractId] = useState<string | null>(null);
+  const [auditLogs, setAuditLogs] = useState<AuditEntry[]>([]);
+  const [auditLoading, setAuditLoading] = useState(false);
+
+  // If token in URL, load contracts immediately
+  useEffect(() => {
+    if (tokenFromUrl) {
+      loadContracts(tokenFromUrl);
+    }
+  }, [tokenFromUrl]);
+
+  const loadContracts = async (t: string) => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await api.get(`/portal/contracts?token=${t}`);
+      setContracts(res.data.data.contracts);
+      setPortalEmail(res.data.data.email);
+      setToken(t);
+    } catch (err: any) {
+      setError(err.response?.data?.error?.message ?? "Hiba történt. Próbáld újra.");
+      setToken(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleRequestAccess = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      const res = await api.post("/portal/request-access", { email });
-      const t = res.data.data.token;
-      setToken(t);
-      // Immediately fetch contracts
-      const contractsRes = await api.get(`/portal/contracts?token=${t}`);
-      setContracts(contractsRes.data.data.contracts);
-      setPortalEmail(contractsRes.data.data.email);
+      await api.post("/portal/request-access", { email });
+      setRequestSent(true);
     } catch (err: any) {
-      setError(
-        err.response?.data?.error?.message ?? "Hiba történt. Próbáld újra."
-      );
+      setError(err.response?.data?.error?.message ?? "Hiba történt. Próbáld újra.");
     } finally {
       setLoading(false);
     }
@@ -72,6 +115,26 @@ export default function PortalPage() {
     setPortalEmail("");
     setEmail("");
     setError("");
+    setRequestSent(false);
+    // Clear token from URL
+    window.history.replaceState({}, "", "/portal");
+  };
+
+  const loadAuditLog = async (contractId: string) => {
+    if (auditContractId === contractId) {
+      setAuditContractId(null);
+      return;
+    }
+    setAuditContractId(contractId);
+    setAuditLoading(true);
+    try {
+      const res = await api.get(`/portal/audit-log/${contractId}?token=${token}`);
+      setAuditLogs(res.data.data);
+    } catch {
+      setAuditLogs([]);
+    } finally {
+      setAuditLoading(false);
+    }
   };
 
   return (
@@ -88,7 +151,7 @@ export default function PortalPage() {
                 Legitas
               </span>
               <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
-                Ugyfelportal
+                Ügyfélportál
               </span>
             </div>
           </Link>
@@ -100,7 +163,7 @@ export default function PortalPage() {
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
-              Kijelentkezes
+              Kijelentkezés
             </button>
           )}
         </div>
@@ -108,7 +171,7 @@ export default function PortalPage() {
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         {!token ? (
-          /* State 1: Email entry */
+          /* State 1: Email entry / request sent */
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="w-full max-w-md">
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 sm:p-10">
@@ -121,55 +184,76 @@ export default function PortalPage() {
                   <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                     Ügyfélportál
                   </h1>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
-                    Adja meg az email címét a szerződések megtekintéséhez
-                  </p>
+                  {requestSent ? (
+                    <div className="space-y-3">
+                      <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto">
+                        <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                        Ha ez az email cím szerepel aláíróként, a hozzáférési linket elküldtük emailben. A link 24 óráig érvényes.
+                      </p>
+                      <button
+                        onClick={() => { setRequestSent(false); setEmail(""); }}
+                        className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                      >
+                        Új email megadása
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
+                      Adja meg az email címét a szerződések megtekintéséhez
+                    </p>
+                  )}
                 </div>
 
-                <form onSubmit={handleRequestAccess} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                      Email cím
-                    </label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      placeholder="pelda@ceg.hu"
-                      className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition"
-                    />
-                  </div>
-
-                  {error && (
-                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3 text-sm text-red-700 dark:text-red-400">
-                      {error}
+                {!requestSent && (
+                  <form onSubmit={handleRequestAccess} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                        Email cím
+                      </label>
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        placeholder="pelda@ceg.hu"
+                        className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition"
+                      />
                     </div>
-                  )}
 
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition flex items-center justify-center gap-2"
-                  >
-                    {loading ? (
-                      <>
-                        <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                        </svg>
-                        Betöltés...
-                      </>
-                    ) : (
-                      <>
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                        </svg>
-                        Hozzáférés kérése
-                      </>
+                    {error && (
+                      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3 text-sm text-red-700 dark:text-red-400">
+                        {error}
+                      </div>
                     )}
-                  </button>
-                </form>
+
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition flex items-center justify-center gap-2"
+                    >
+                      {loading ? (
+                        <>
+                          <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                          Betoltes...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                          </svg>
+                          Hozzáférés kérése
+                        </>
+                      )}
+                    </button>
+                  </form>
+                )}
 
                 <p className="text-center text-xs text-gray-400 dark:text-gray-500 mt-6">
                   Csak azok a szerződések jelennek meg, amelyeknél Ön aláíróként szerepel.
@@ -181,9 +265,16 @@ export default function PortalPage() {
                   href="/login"
                   className="text-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition"
                 >
-                  Van fiokja? Bejelentkezes
+                  Van fiókja? Bejelentkezés
                 </Link>
               </div>
+            </div>
+          </div>
+        ) : loading ? (
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto" />
+              <p className="mt-4 text-sm text-gray-400">Betoltes...</p>
             </div>
           </div>
         ) : (
@@ -206,6 +297,12 @@ export default function PortalPage() {
               </div>
             </div>
 
+            {error && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3 text-sm text-red-700 dark:text-red-400 mb-6">
+                {error}
+              </div>
+            )}
+
             {contracts.length === 0 ? (
               /* Empty state */
               <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-12 text-center">
@@ -225,89 +322,121 @@ export default function PortalPage() {
               /* Contract cards */
               <div className="space-y-4">
                 {contracts.map((c) => (
-                  <div
-                    key={c.contractId}
-                    className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 sm:p-6 hover:border-blue-200 dark:hover:border-blue-700 transition-all"
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start gap-3 mb-2">
-                          <div className="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center shrink-0 mt-0.5">
-                            <svg className="w-4.5 h-4.5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
+                  <div key={c.contractId}>
+                    <div
+                      className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 sm:p-6 hover:border-blue-200 dark:hover:border-blue-700 transition-all"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start gap-3 mb-2">
+                            <div className="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center shrink-0 mt-0.5">
+                              <svg className="w-4.5 h-4.5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                            </div>
+                            <div className="min-w-0">
+                              <h3 className="font-semibold text-gray-900 dark:text-white truncate">
+                                {c.title}
+                              </h3>
+                              <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                                {c.ownerCompany ?? c.ownerName}
+                              </p>
+                            </div>
                           </div>
-                          <div className="min-w-0">
-                            <h3 className="font-semibold text-gray-900 dark:text-white truncate">
-                              {c.title}
-                            </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                              {c.ownerCompany ?? c.ownerName}
-                            </p>
+
+                          <div className="flex flex-wrap items-center gap-2 mt-3 ml-12">
+                            {/* Contract status */}
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[c.contractStatus] ?? statusColors.draft}`}>
+                              {statusLabels[c.contractStatus] ?? c.contractStatus}
+                            </span>
+
+                            {/* Signer status */}
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              c.signerStatus === "signed"
+                                ? "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300"
+                                : c.signerStatus === "declined"
+                                ? "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300"
+                                : "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300"
+                            }`}>
+                              {c.signerStatus === "signed"
+                                ? "Aláírt"
+                                : c.signerStatus === "declined"
+                                ? "Visszautasítva"
+                                : "Függőben"}
+                            </span>
+
+                            {/* Date */}
+                            <span className="text-xs text-gray-400 dark:text-gray-500">
+                              {new Date(c.createdAt).toLocaleDateString("hu-HU", {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                              })}
+                            </span>
                           </div>
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-2 mt-3 ml-12">
-                          {/* Contract status */}
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[c.contractStatus] ?? statusColors.draft}`}>
-                            {statusLabels[c.contractStatus] ?? c.contractStatus}
-                          </span>
+                        {/* Action buttons */}
+                        <div className="sm:ml-4 shrink-0 flex items-center gap-2">
+                          {/* Audit log toggle */}
+                          <button
+                            onClick={() => loadAuditLog(c.contractId)}
+                            className="inline-flex items-center gap-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 text-sm font-medium px-3 py-2 rounded-xl transition"
+                            title="Napló"
+                          >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Napló
+                          </button>
 
-                          {/* Signer status */}
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            c.signerStatus === "signed"
-                              ? "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300"
-                              : c.signerStatus === "declined"
-                              ? "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300"
-                              : "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300"
-                          }`}>
-                            {c.signerStatus === "signed"
-                              ? "Alairt"
-                              : c.signerStatus === "declined"
-                              ? "Visszautasitva"
-                              : "Fuggeben"}
-                          </span>
-
-                          {/* Date */}
-                          <span className="text-xs text-gray-400 dark:text-gray-500">
-                            {new Date(c.createdAt).toLocaleDateString("hu-HU", {
-                              year: "numeric",
-                              month: "short",
-                              day: "numeric",
-                            })}
-                          </span>
+                          {c.verificationHash && (
+                            <Link
+                              href={`/verify/${c.verificationHash}`}
+                              className="inline-flex items-center gap-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 text-sm font-medium px-4 py-2 rounded-xl transition"
+                            >
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              Megtekintés
+                            </Link>
+                          )}
                         </div>
-                      </div>
-
-                      {/* Action button */}
-                      <div className="sm:ml-4 shrink-0">
-                        {c.signerStatus === "pending" && c.signToken ? (
-                          <Link
-                            href={`/sign/${c.signToken}`}
-                            className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-xl transition"
-                          >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                            </svg>
-                            Alairas
-                          </Link>
-                        ) : c.verificationHash ? (
-                          <Link
-                            href={`/verify/${c.verificationHash}`}
-                            className="inline-flex items-center gap-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 text-sm font-medium px-4 py-2 rounded-xl transition"
-                          >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            Megtekintes
-                          </Link>
-                        ) : (
-                          <span className="text-xs text-gray-400 dark:text-gray-500 italic">
-                            Nincs elerheto muvelet
-                          </span>
-                        )}
                       </div>
                     </div>
+
+                    {/* Audit log panel */}
+                    {auditContractId === c.contractId && (
+                      <div className="mt-2 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+                        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                          Aláírás előrehaladás
+                        </h4>
+                        {auditLoading ? (
+                          <div className="flex items-center justify-center py-4">
+                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600" />
+                          </div>
+                        ) : auditLogs.length === 0 ? (
+                          <p className="text-sm text-gray-400">Nincs naplóbejegyzés.</p>
+                        ) : (
+                          <div className="space-y-2">
+                            {auditLogs.map((log) => (
+                              <div key={log.id} className="flex items-center gap-3 text-sm">
+                                <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
+                                <span className="text-gray-600 dark:text-gray-400">
+                                  {eventTypeLabels[log.eventType] ?? log.eventType}
+                                  {log.signer && (
+                                    <span className="text-gray-400"> - {log.signer.name}</span>
+                                  )}
+                                </span>
+                                <span className="text-xs text-gray-400 ml-auto shrink-0">
+                                  {new Date(log.createdAt).toLocaleString("hu-HU")}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -324,7 +453,7 @@ export default function PortalPage() {
           </p>
           <div className="flex items-center gap-4 text-xs text-gray-400 dark:text-gray-500">
             <Link href="/adatvedelem" className="hover:text-gray-600 dark:hover:text-gray-300 transition">
-              Adatvedelem
+              Adatvédelem
             </Link>
             <Link href="/aszf" className="hover:text-gray-600 dark:hover:text-gray-300 transition">
               ASZF

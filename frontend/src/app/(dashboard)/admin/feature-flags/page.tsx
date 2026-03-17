@@ -22,19 +22,19 @@ interface FeatureFlag {
 const tierOptions: { value: string | null; label: string }[] = [
   { value: null, label: "Mindenki" },
   { value: "free", label: "Ingyenes" },
-  { value: "starter", label: "Kezdo" },
-  { value: "medium", label: "Kozepes" },
-  { value: "premium", label: "Premium" },
-  { value: "enterprise", label: "Nagyvallalati" },
+  { value: "starter", label: "Kezdő" },
+  { value: "medium", label: "Közepes" },
+  { value: "premium", label: "Prémium" },
+  { value: "enterprise", label: "Nagyvállalati" },
 ];
 
 const tierLabelMap: Record<string, string> = {
   "": "Mindenki",
   free: "Ingyenes",
-  starter: "Kezdo",
-  medium: "Kozepes",
-  premium: "Premium",
-  enterprise: "Nagyvallalati",
+  starter: "Kezdő",
+  medium: "Közepes",
+  premium: "Prémium",
+  enterprise: "Nagyvállalati",
 };
 
 function getTierLabel(tier: string | null): string {
@@ -68,7 +68,7 @@ export default function AdminFeatureFlagsPage() {
 
   const handleToggle = async (flag: FeatureFlag) => {
     if (!isSuperadmin) {
-      toast.error("Csak superadmin valtoztathatja!");
+      toast.error("Csak superadmin változtathatja!");
       return;
     }
     const prev = flag.enabled;
@@ -78,13 +78,13 @@ export default function AdminFeatureFlagsPage() {
       toast.success(`${flag.name} ${!prev ? "bekapcsolva" : "kikapcsolva"}`);
     } catch (err: any) {
       setFlags((f) => f.map((ff) => (ff.id === flag.id ? { ...ff, enabled: prev } : ff)));
-      toast.error(err.response?.data?.error?.message || "Hiba tortent");
+      toast.error(err.response?.data?.error?.message || "Hiba történt");
     }
   };
 
   const handleTierChange = async (flag: FeatureFlag, newTier: string) => {
     if (!isSuperadmin) {
-      toast.error("Csak superadmin valtoztathatja!");
+      toast.error("Csak superadmin változtathatja!");
       return;
     }
     const minTier = newTier === "" ? null : newTier;
@@ -95,13 +95,13 @@ export default function AdminFeatureFlagsPage() {
       toast.success(`${flag.name} szint: ${getTierLabel(minTier)}`);
     } catch (err: any) {
       setFlags((f) => f.map((ff) => (ff.id === flag.id ? { ...ff, minTier: prevTier } : ff)));
-      toast.error(err.response?.data?.error?.message || "Hiba tortent");
+      toast.error(err.response?.data?.error?.message || "Hiba történt");
     }
   };
 
   const handleCreate = async () => {
     if (!form.key.trim() || !form.name.trim()) {
-      toast.error("Kulcs es nev kotelezo!");
+      toast.error("Kulcs és név kötelező!");
       return;
     }
     setCreating(true);
@@ -112,12 +112,12 @@ export default function AdminFeatureFlagsPage() {
         description: form.description.trim(),
         minTier: form.minTier || null,
       });
-      toast.success("Feature flag letrehozva!");
+      toast.success("Feature flag létrehozva!");
       setForm({ key: "", name: "", description: "", minTier: "" });
       setShowForm(false);
       loadFlags();
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || "Hiba tortent");
+      toast.error(err.response?.data?.error?.message || "Hiba történt");
     } finally {
       setCreating(false);
     }
@@ -127,7 +127,7 @@ export default function AdminFeatureFlagsPage() {
     new Date(d).toLocaleDateString("hu-HU", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
 
   if (!ADMIN_ROLES.includes(user?.role ?? "")) {
-    return <div className="min-h-[60vh] flex items-center justify-center"><p className="text-gray-400">Nincs jogosultsagod.</p></div>;
+    return <div className="min-h-[60vh] flex items-center justify-center"><p className="text-gray-400">Nincs jogosultságod.</p></div>;
   }
 
   return (
@@ -145,7 +145,7 @@ export default function AdminFeatureFlagsPage() {
             className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-medium transition flex items-center gap-2"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-            Uj flag
+            Új flag
           </button>
         )}
       </div>
@@ -153,7 +153,7 @@ export default function AdminFeatureFlagsPage() {
       {/* Create form */}
       {showForm && isSuperadmin && (
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Uj feature flag</h3>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Új feature flag</h3>
           <div className="space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <input
@@ -163,14 +163,14 @@ export default function AdminFeatureFlagsPage() {
                 className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm outline-none focus:ring-2 focus:ring-violet-500 font-mono"
               />
               <input
-                placeholder="Nev *"
+                placeholder="Név *"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm outline-none focus:ring-2 focus:ring-violet-500"
               />
             </div>
             <input
-              placeholder="Leiras (opcionalis)"
+              placeholder="Leírás (opcionális)"
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm outline-none focus:ring-2 focus:ring-violet-500"
@@ -186,14 +186,14 @@ export default function AdminFeatureFlagsPage() {
             </select>
             <div className="flex justify-end gap-2 pt-2">
               <button onClick={() => setShowForm(false)} className="px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
-                Megse
+                Mégse
               </button>
               <button
                 onClick={handleCreate}
                 disabled={creating}
                 className="px-5 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-sm font-medium transition disabled:opacity-50"
               >
-                {creating ? "Letrehozas..." : "Letrehozas"}
+                {creating ? "Létrehozás..." : "Létrehozás"}
               </button>
             </div>
           </div>
@@ -205,7 +205,7 @@ export default function AdminFeatureFlagsPage() {
         {loading ? (
           <div className="p-12 text-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600 mx-auto" /></div>
         ) : flags.length === 0 ? (
-          <div className="p-12 text-center text-sm text-gray-400">Meg nincs feature flag.</div>
+          <div className="p-12 text-center text-sm text-gray-400">Még nincs feature flag.</div>
         ) : (
           <>
             {/* Desktop table */}
@@ -213,12 +213,12 @@ export default function AdminFeatureFlagsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-                    <th className="text-left px-5 py-3 font-medium text-gray-500 dark:text-gray-400">Statusz</th>
-                    <th className="text-left px-5 py-3 font-medium text-gray-500 dark:text-gray-400">Nev</th>
+                    <th className="text-left px-5 py-3 font-medium text-gray-500 dark:text-gray-400">Státusz</th>
+                    <th className="text-left px-5 py-3 font-medium text-gray-500 dark:text-gray-400">Név</th>
                     <th className="text-left px-5 py-3 font-medium text-gray-500 dark:text-gray-400">Kulcs</th>
-                    <th className="text-left px-5 py-3 font-medium text-gray-500 dark:text-gray-400">Leiras</th>
+                    <th className="text-left px-5 py-3 font-medium text-gray-500 dark:text-gray-400">Leírás</th>
                     <th className="text-left px-5 py-3 font-medium text-gray-500 dark:text-gray-400">Min. szint</th>
-                    <th className="text-left px-5 py-3 font-medium text-gray-500 dark:text-gray-400">Modositva</th>
+                    <th className="text-left px-5 py-3 font-medium text-gray-500 dark:text-gray-400">Módosítva</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
