@@ -103,7 +103,7 @@ export default function WebhooksSettings() {
   const startEdit = (webhook: Webhook) => {
     setEditingId(webhook.id);
     setEditUrl(webhook.url);
-    setEditEvents(webhook.events.split(","));
+    setEditEvents((webhook.events || "").split(","));
   };
 
   const cancelEdit = () => {

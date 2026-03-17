@@ -158,7 +158,7 @@ export default function PartnerDetailPage() {
           <div className="bg-white dark:bg-gray-800 rounded-xl border p-6">
             <div className="flex items-center gap-4 mb-4">
               <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#198296] to-[#41A5B9] flex items-center justify-center text-white font-bold text-xl">
-                {partner.name.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase()}
+                {(partner.name || "").split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase()}
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">{partner.name}</h1>
@@ -266,7 +266,7 @@ export default function PartnerDetailPage() {
               ) : (
                 <div className="divide-y dark:divide-gray-700">
                   {partner.contracts.map(c => {
-                    const signerStatus = c.signers[0];
+                    const signerStatus = c.signers?.[0];
                     return (
                       <Link key={c.id} href={`/contracts/${c.id}`}
                         className="flex items-center justify-between px-5 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">

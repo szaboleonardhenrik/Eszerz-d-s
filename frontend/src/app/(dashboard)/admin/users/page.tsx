@@ -401,7 +401,7 @@ export default function AdminUsersPage() {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white text-xs font-semibold shrink-0">
-                            {u.name.split(" ").map((n) => n[0]).join("").substring(0, 2).toUpperCase()}
+                            {(u.name || "").split(" ").map((n) => n[0]).join("").substring(0, 2).toUpperCase()}
                           </div>
                           <div className="min-w-0">
                             <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{u.name}</p>

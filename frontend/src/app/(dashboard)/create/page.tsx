@@ -894,7 +894,7 @@ function CreateWizardInner() {
                             }`}
                           >
                             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center shrink-0 text-white text-xs font-bold">
-                              {as.name.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase()}
+                              {(as.name || "").split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase()}
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">

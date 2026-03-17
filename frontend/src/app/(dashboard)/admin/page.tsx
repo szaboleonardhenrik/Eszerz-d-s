@@ -547,7 +547,7 @@ export default function AdminDashboard() {
               {authSigners.map((s) => (
                 <div key={s.id} className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 dark:border-gray-700 hover:border-teal-200 dark:hover:border-teal-700 transition group">
                   <div className="w-11 h-11 rounded-full bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center text-white text-sm font-bold shrink-0">
-                    {s.name.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase()}
+                    {(s.name || "").split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">

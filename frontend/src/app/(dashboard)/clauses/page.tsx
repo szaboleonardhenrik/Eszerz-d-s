@@ -104,7 +104,7 @@ export default function ClausesPage() {
         title: formTitle,
         content: formContent,
         category: formCategory,
-        tags: formTags.split(",").map((t) => t.trim()).filter(Boolean),
+        tags: (formTags || "").split(",").map((t) => t.trim()).filter(Boolean),
       };
       if (editingClause) {
         await api.put(`/clauses/${editingClause.id}`, data);

@@ -129,7 +129,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   aria-expanded={menuOpen}
                 >
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-semibold">
-                    {user.name.split(" ").map((n) => n[0]).join("").substring(0, 2).toUpperCase()}
+                    {(user.name || "").split(" ").map((n) => n[0]).join("").substring(0, 2).toUpperCase()}
                   </div>
                   <div className="hidden sm:block text-left">
                     <p className="text-sm font-medium text-white leading-none">{user.name}</p>
