@@ -14,6 +14,17 @@ export default function Error({
   useEffect(() => {
     console.error('Application error:', error);
     Sentry.captureException(error);
+    // Send error to backend for debugging
+    fetch('/api/log-error', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: error.message,
+        stack: error.stack,
+        digest: error.digest,
+        url: window.location.href,
+      }),
+    }).catch(() => {});
   }, [error]);
 
   return (
