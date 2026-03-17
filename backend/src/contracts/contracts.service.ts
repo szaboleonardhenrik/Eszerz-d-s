@@ -114,8 +114,8 @@ export class ContractsService {
     const tier = user?.subscriptionTier ?? 'free';
 
     // ── Tier limits ──
-    const contractLimits: Record<string, number> = { free: 3, starter: 10, medium: 12, premium: 35, enterprise: 500 };
-    const signerLimits: Record<string, number> = { free: 2, starter: 5, medium: 10, premium: 10, enterprise: 10 };
+    const contractLimits: Record<string, number> = { free: 3, starter: 10, medium: 12, premium: 35, enterprise: 500, pro_trial: 35 };
+    const signerLimits: Record<string, number> = { free: 2, starter: 5, medium: 10, premium: 10, enterprise: 10, pro_trial: 10 };
 
     // Admins bypass limits
     const isAdmin = ['superadmin', 'employee'].includes(user?.role ?? '');
