@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import toast from "react-hot-toast";
 import { useI18n } from "@/lib/i18n";
 
 interface CookiePreferences {
@@ -53,6 +54,7 @@ export default function CookieConsent() {
     setVisible(false);
     setShowSettings(false);
     setHasConsent(true);
+    toast.success("Cookie beállítások mentve");
   };
 
   const acceptAll = () => savePreferences(ALL_ACCEPTED);
