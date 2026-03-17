@@ -495,6 +495,8 @@ export class QuotesService {
           quoteId: quote.id,
           amount: totalNetto,
           currency: quote.currency ?? 'HUF',
+          partnerName: quote.clientName,
+          partnerEmail: quote.clientEmail,
           buyerName: quote.clientName,
           buyerEmail: quote.clientEmail,
           buyerTaxNumber: quote.clientTaxNumber,
