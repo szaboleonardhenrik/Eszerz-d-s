@@ -486,7 +486,7 @@ export default function AdminUsersPage() {
                                   }`}
                                   title={u.isActive === false ? "Aktiválás" : "Inaktiválás"}
                                 >
-                                  {u.isActive === false ? "Aktiválás" : "Tiltás"}
+                                  {u.isActive === false ? "Aktiválás" : "Inaktiválás"}
                                 </button>
                                 <button
                                   onClick={() => handleImpersonate(u.id)}

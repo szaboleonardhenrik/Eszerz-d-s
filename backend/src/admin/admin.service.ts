@@ -489,6 +489,7 @@ export class AdminService {
       contractCount: u._count.contracts,
       quoteCount: u._count.quotes,
       sendCredits: u.sendCredits,
+      isActive: u.isActive,
       lastLogin: lastLoginMap[u.id] || null,
     }));
 
