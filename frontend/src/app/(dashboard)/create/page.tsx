@@ -96,7 +96,7 @@ function CreateWizardInner() {
   const [selectedAuthSigner, setSelectedAuthSigner] = useState<string>("self");
 
   useEffect(() => {
-    api.get("/auth/me").then((res) => {
+    api.get("/auth/profile").then((res) => {
       const u = res.data.data;
       setOwnerName(u.name || "");
       setOwnerEmail(u.email || "");
@@ -114,7 +114,7 @@ function CreateWizardInner() {
   // When authorized signer selection changes, update owner fields
   useEffect(() => {
     if (selectedAuthSigner === "self") {
-      api.get("/auth/me").then((res) => {
+      api.get("/auth/profile").then((res) => {
         const u = res.data.data;
         setOwnerName(u.name || "");
         setOwnerEmail(u.email || "");
@@ -666,11 +666,11 @@ function CreateWizardInner() {
 
                 // Build ordered groups
                 const groups: { key: string | null; label: string | null; vars: TemplateVar[] }[] = [];
-                let currentGroup: string | null = null;
+                let currentGroup: string | null | undefined = undefined;
 
                 for (const v of selectedTemplate.variables) {
                   const g = getGroup(v.name);
-                  if (g !== currentGroup) {
+                  if (g !== currentGroup || groups.length === 0) {
                     currentGroup = g;
                     groups.push({ key: g, label: g ? groupLabels[g] ?? null : null, vars: [v] });
                   } else {
