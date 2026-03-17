@@ -8,7 +8,6 @@ import { useAuth } from "@/lib/auth-store";
 import api from "@/lib/api";
 import NotificationBell from "@/components/notification-bell";
 import ThemeToggle from "@/components/theme-toggle";
-import LanguageSwitcher from "@/components/language-switcher";
 import KeyboardShortcutsHelp, { useKeyboardShortcuts } from "@/components/keyboard-shortcuts";
 import ConsentUpdateModal from "@/components/consent-update-modal";
 import { useI18n } from "@/lib/i18n";
@@ -98,7 +97,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </Link>
             <div className="flex items-center gap-1.5 sm:gap-2">
               <GlobalSearch />
-              <LanguageSwitcher />
               <ThemeToggle />
               <NotificationBell />
               {creditBalance !== null && (
