@@ -34,7 +34,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Beállítások</h1>
-      <div className="flex gap-1 border-b mb-8 overflow-x-auto">
+      <div className="flex flex-wrap gap-1 border-b mb-8">
         {tabs.map((tab) => {
           const locked = !hasAccess(tier, tab.minTier);
           return (
