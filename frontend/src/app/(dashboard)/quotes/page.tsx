@@ -137,15 +137,9 @@ export default function QuotesPage() {
       if (statusFilter) params.status = statusFilter;
       const res = await api.get("/quotes", { params });
       const data = res.data.data;
-      if (Array.isArray(data)) {
-        setQuotes(data);
-        setTotalPages(1);
-        setTotal(data.length);
-      } else {
-        setQuotes(data.quotes ?? data.items ?? []);
-        setTotalPages(data.totalPages ?? 1);
-        setTotal(data.total ?? 0);
-      }
+      setQuotes(data?.quotes ?? []);
+      setTotalPages(data?.totalPages ?? 1);
+      setTotal(data?.total ?? 0);
     } catch {
       toast.error(t("quotes.loadError"));
     } finally {

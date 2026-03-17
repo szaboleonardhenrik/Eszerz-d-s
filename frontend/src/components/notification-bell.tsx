@@ -71,7 +71,7 @@ export default function NotificationBell() {
   const loadUnreadCount = async () => {
     try {
       const res = await api.get("/notifications/unread-count");
-      setUnreadCount(res.data.data.count ?? 0);
+      setUnreadCount(res.data.data?.count ?? 0);
     } catch {}
   };
 

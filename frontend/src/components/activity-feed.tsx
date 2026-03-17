@@ -154,7 +154,7 @@ export default function ActivityFeed({ limit = 10 }: ActivityFeedProps) {
     api
       .get("/contracts", { params: { limit: 20, sort: "updatedAt" } })
       .then((res) => {
-        const items: Contract[] = res.data.data.items ?? [];
+        const items: Contract[] = res.data.data?.items ?? [];
         setContracts(items.slice(0, limit));
       })
       .catch(() => {

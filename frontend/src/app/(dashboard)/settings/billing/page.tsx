@@ -540,14 +540,14 @@ function CreditSection() {
   const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
-    api.get("/credits/balance").then((res) => setBalance(res.data.data.balance ?? 0)).catch(() => {});
-    api.get("/credits/packs").then((res) => setPacks(res.data.data.packs ?? [])).catch(() => {});
+    api.get("/credits/balance").then((res) => setBalance(res.data.data?.balance ?? 0)).catch(() => {});
+    api.get("/credits/packs").then((res) => setPacks(res.data.data?.packs ?? [])).catch(() => {});
   }, []);
 
   const loadHistory = async () => {
     try {
       const res = await api.get("/credits/history?limit=20");
-      setHistory(res.data.data.transactions ?? []);
+      setHistory(res.data.data?.transactions ?? []);
       setShowHistory(true);
     } catch {
       toast.error("Nem sikerült betölteni az előzményeket");
