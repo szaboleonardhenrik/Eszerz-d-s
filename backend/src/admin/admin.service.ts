@@ -138,6 +138,33 @@ export class AdminService {
     };
   }
 
+  // ── Toggle User Active ──
+
+  async toggleUserActive(targetUserId: string, adminUserId: string) {
+    const target = await this.prisma.user.findUnique({ where: { id: targetUserId } });
+    if (!target) throw new NotFoundException('Felhasználó nem található');
+    if (target.role === 'superadmin') throw new ForbiddenException('Superadmin nem inaktiválható');
+
+    const newActive = !target.isActive;
+    await this.prisma.user.update({
+      where: { id: targetUserId },
+      data: {
+        isActive: newActive,
+        deactivatedAt: newActive ? null : new Date(),
+      },
+    });
+
+    // If deactivating, invalidate all sessions
+    if (!newActive) {
+      await this.prisma.session.deleteMany({ where: { userId: targetUserId } });
+    }
+
+    return {
+      isActive: newActive,
+      message: newActive ? 'Felhasználó aktiválva' : 'Felhasználó inaktiválva',
+    };
+  }
+
   // ── User Impersonation ──
 
   async impersonateUser(targetUserId: string, adminUserId: string, adminRole: string, ip?: string) {
@@ -425,6 +452,7 @@ export class AdminService {
           createdAt: true,
           phone: true,
           sendCredits: true,
+          isActive: true,
           _count: {
             select: {
               contracts: true,

@@ -77,6 +77,8 @@ model User {
   authAuditLogs   AuthAuditLog[]
   accountType     String     @default("company") @map("account_type") // "personal" or "company"
   companyAddress  String?    @map("company_address")
+  isActive        Boolean    @default(true) @map("is_active")
+  deactivatedAt   DateTime?  @map("deactivated_at")
 
   @@map("users")
 }

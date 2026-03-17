@@ -19,6 +19,7 @@ interface AdminUser {
   contractCount: number;
   quoteCount: number;
   lastLogin: string | null;
+  isActive?: boolean;
 }
 
 interface UsersResponse {
@@ -156,6 +157,18 @@ export default function AdminUsersPage() {
       toast.error(err.response?.data?.error?.message || "Hiba történt");
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleToggleActive = async (u: AdminUser) => {
+    const action = u.isActive === false ? "aktiválni" : "inaktiválni";
+    if (!confirm(`Biztosan szeretnéd ${action} ${u.name} fiókját?`)) return;
+    try {
+      const res = await api.post(`/admin/users/${u.id}/toggle-active`);
+      toast.success(res.data.data.message);
+      loadUsers();
+    } catch (err: any) {
+      toast.error(err.response?.data?.error?.message || "Hiba történt");
     }
   };
 
@@ -463,13 +476,26 @@ export default function AdminUsersPage() {
                         ) : (
                           <div className="flex items-center justify-end gap-1">
                             {isSuperadmin && u.role !== "superadmin" && (
-                              <button
-                                onClick={() => handleImpersonate(u.id)}
-                                className="px-2 py-1.5 text-xs text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition"
-                                title="Belépés felhasználóként"
-                              >
-                                {t("admin.users.impersonate")}
-                              </button>
+                              <>
+                                <button
+                                  onClick={() => handleToggleActive(u)}
+                                  className={`px-2 py-1.5 text-xs rounded-lg transition ${
+                                    u.isActive === false
+                                      ? "text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
+                                      : "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                  }`}
+                                  title={u.isActive === false ? "Aktiválás" : "Inaktiválás"}
+                                >
+                                  {u.isActive === false ? "Aktiválás" : "Tiltás"}
+                                </button>
+                                <button
+                                  onClick={() => handleImpersonate(u.id)}
+                                  className="px-2 py-1.5 text-xs text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition"
+                                  title="Belépés felhasználóként"
+                                >
+                                  {t("admin.users.impersonate")}
+                                </button>
+                              </>
                             )}
                             <button
                               onClick={() => startEdit(u)}

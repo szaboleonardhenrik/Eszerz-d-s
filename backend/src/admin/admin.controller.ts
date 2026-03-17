@@ -108,6 +108,13 @@ export class AdminController {
     });
   }
 
+  @Post('users/:id/toggle-active')
+  @SuperAdminOnly()
+  async toggleUserActive(@Param('id') id: string, @Req() req: any) {
+    const result = await this.adminService.toggleUserActive(id, req.user.userId);
+    return ApiResponse.ok(result);
+  }
+
   @Get('activity')
   async getRecentActivity(@Query('limit') limit?: string) {
     const l = Math.min(100, Math.max(1, parseInt(limit || '20', 10) || 20));

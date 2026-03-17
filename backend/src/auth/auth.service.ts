@@ -97,6 +97,11 @@ export class AuthService {
       throw new UnauthorizedException('Hibás email vagy jelszó');
     }
 
+    // Check if account is deactivated
+    if (user.isActive === false) {
+      throw new UnauthorizedException('Ez a fiók inaktiválva lett. Lépj kapcsolatba az adminisztrátorral.');
+    }
+
     // Check account lockout
     if (user.lockedUntil && user.lockedUntil > new Date()) {
       const remainingMin = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000);
