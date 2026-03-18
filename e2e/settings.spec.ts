@@ -46,28 +46,24 @@ test.describe('Settings Pages', () => {
   // For a free-tier test user, redirect to login or an upgrade prompt is expected.
   test('referral page loads or requires upgrade', async ({ page }) => {
     await page.goto('/settings/referral');
-    const url = page.url();
-    const isLoaded = !url.includes('/login');
-    if (isLoaded) {
+    await page.waitForTimeout(3000);
+    if (!page.url().includes('/login')) {
       await expect(page.locator('body')).toContainText(/Ajánl|referral|meghívó/i);
     }
-    // If redirected to login, that's also valid for free tier
   });
 
   test('branding page loads or requires upgrade', async ({ page }) => {
     await page.goto('/settings/branding');
-    const url = page.url();
-    const isLoaded = !url.includes('/login');
-    if (isLoaded) {
+    await page.waitForTimeout(3000);
+    if (!page.url().includes('/login')) {
       await expect(page.locator('body')).toContainText(/Branding|logó|arculat|cég/i);
     }
   });
 
   test('tags page loads or requires upgrade', async ({ page }) => {
     await page.goto('/settings/tags');
-    const url = page.url();
-    const isLoaded = !url.includes('/login');
-    if (isLoaded) {
+    await page.waitForTimeout(3000);
+    if (!page.url().includes('/login')) {
       await expect(page.locator('body')).toContainText(/Címke|tag/i);
     }
   });
