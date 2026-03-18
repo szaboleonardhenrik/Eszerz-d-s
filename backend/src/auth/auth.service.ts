@@ -380,6 +380,69 @@ export class AuthService {
     });
   }
 
+  async getSavedSignature(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { savedSignatureUrl: true, savedStampUrl: true },
+    });
+    if (!user) throw new NotFoundException('Felhasználó nem található');
+
+    let signatureBase64: string | null = null;
+    let stampBase64: string | null = null;
+
+    if (user.savedSignatureUrl) {
+      try {
+        const buf = await this.storageService.downloadFile(user.savedSignatureUrl);
+        signatureBase64 = `data:image/png;base64,${buf.toString('base64')}`;
+      } catch { /* file missing */ }
+    }
+    if (user.savedStampUrl) {
+      try {
+        const buf = await this.storageService.downloadFile(user.savedStampUrl);
+        stampBase64 = `data:image/png;base64,${buf.toString('base64')}`;
+      } catch { /* file missing */ }
+    }
+
+    return { hasSignature: !!user.savedSignatureUrl, hasStamp: !!user.savedStampUrl, signatureBase64, stampBase64 };
+  }
+
+  async saveSavedSignature(userId: string, data: { signatureImageBase64?: string; stampImageBase64?: string }) {
+    const updates: { savedSignatureUrl?: string; savedStampUrl?: string } = {};
+
+    if (data.signatureImageBase64) {
+      const buf = Buffer.from(data.signatureImageBase64.replace(/^data:image\/\w+;base64,/, ''), 'base64');
+      const key = `saved-signatures/${userId}/signature.png`;
+      await this.storageService.uploadImage(key, buf);
+      updates.savedSignatureUrl = key;
+    }
+    if (data.stampImageBase64) {
+      const buf = Buffer.from(data.stampImageBase64.replace(/^data:image\/\w+;base64,/, ''), 'base64');
+      const key = `saved-signatures/${userId}/stamp.png`;
+      await this.storageService.uploadImage(key, buf);
+      updates.savedStampUrl = key;
+    }
+
+    await this.prisma.user.update({ where: { id: userId }, data: updates });
+    return { saved: true };
+  }
+
+  async deleteSavedSignature(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { savedSignatureUrl: true, savedStampUrl: true },
+    });
+    if (user?.savedSignatureUrl) {
+      try { await this.storageService.deleteFile(user.savedSignatureUrl); } catch { /* ok */ }
+    }
+    if (user?.savedStampUrl) {
+      try { await this.storageService.deleteFile(user.savedStampUrl); } catch { /* ok */ }
+    }
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { savedSignatureUrl: null, savedStampUrl: null },
+    });
+  }
+
   async changePassword(userId: string, oldPassword: string, newPassword: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },

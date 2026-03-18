@@ -52,6 +52,7 @@ export default function SignPage() {
   const [typedName, setTypedName] = useState("");
   const [uploadedSignature, setUploadedSignature] = useState<string | null>(null);
   const [stampImage, setStampImage] = useState<string | null>(null);
+  const [savedSig, setSavedSig] = useState<{ signatureBase64: string; stampBase64?: string | null } | null>(null);
   const signatureUploadRef = useRef<HTMLInputElement>(null);
   const stampUploadRef = useRef<HTMLInputElement>(null);
   const [declining, setDeclining] = useState(false);
@@ -142,6 +143,13 @@ export default function SignPage() {
       if (signerData.otpVerified) {
         setCurrentStep("details");
       }
+      // Load saved signature if available
+      try {
+        const sigRes = await publicApi.get(`/sign/${token}/saved-signature`);
+        if (sigRes.data.data.hasSaved) {
+          setSavedSig(sigRes.data.data);
+        }
+      } catch { /* no saved signature */ }
     } catch (err: unknown) {
       const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
       setError(axiosMsg ?? t("sign.invalidLink"));
@@ -822,6 +830,24 @@ export default function SignPage() {
 
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
               <div className="p-6 sm:p-8">
+                {/* Saved signature shortcut */}
+                {savedSig && !uploadedSignature && signMethod !== "upload" && (
+                  <button
+                    onClick={() => {
+                      setUploadedSignature(savedSig.signatureBase64);
+                      if (savedSig.stampBase64) setStampImage(savedSig.stampBase64);
+                      setSignMethod("upload");
+                      toast.success("Mentett aláírás betöltve!");
+                    }}
+                    className="w-full mb-4 py-3 px-4 bg-gradient-to-r from-[#198296] to-[#1a6b7a] text-white rounded-xl font-medium text-sm flex items-center justify-center gap-2 hover:shadow-lg transition-all"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Mentett aláírás használata
+                  </button>
+                )}
+
                 {/* Signature method tabs */}
                 <div className="flex gap-1.5 p-1 bg-gray-100 rounded-xl mb-6 w-fit">
                   <button

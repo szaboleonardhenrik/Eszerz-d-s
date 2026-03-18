@@ -176,6 +176,30 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Post('saved-signature')
+  async saveSavedSignature(
+    @Req() req: any,
+    @Body() body: { signatureImageBase64?: string; stampImageBase64?: string },
+  ) {
+    const result = await this.authService.saveSavedSignature(req.user.userId, body);
+    return ApiResponse.ok(result);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('saved-signature')
+  async deleteSavedSignature(@Req() req: any) {
+    await this.authService.deleteSavedSignature(req.user.userId);
+    return ApiResponse.ok({ message: 'Mentett aláírás törölve' });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('saved-signature')
+  async getSavedSignature(@Req() req: any) {
+    const result = await this.authService.getSavedSignature(req.user.userId);
+    return ApiResponse.ok(result);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Patch('onboarding')
   async completeOnboarding(
     @Req() req: any,

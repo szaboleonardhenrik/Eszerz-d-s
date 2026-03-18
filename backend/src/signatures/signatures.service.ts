@@ -31,6 +31,37 @@ export class SignaturesService {
     private readonly config: ConfigService,
   ) {}
 
+  async getSavedSignatureByToken(token: string) {
+    const signer = await this.prisma.signer.findUnique({
+      where: { signToken: token },
+      include: { contract: { select: { ownerId: true } } },
+    });
+    if (!signer) throw new NotFoundException('Token nem található');
+
+    // Check if signer's email matches a user with saved signature
+    const user = await this.prisma.user.findFirst({
+      where: { email: signer.email, savedSignatureUrl: { not: null } },
+      select: { savedSignatureUrl: true, savedStampUrl: true },
+    });
+
+    if (!user?.savedSignatureUrl) return { hasSaved: false };
+
+    let signatureBase64: string | null = null;
+    let stampBase64: string | null = null;
+    try {
+      const buf = await this.storageService.downloadFile(user.savedSignatureUrl);
+      signatureBase64 = `data:image/png;base64,${buf.toString('base64')}`;
+    } catch { /* missing file */ }
+    if (user.savedStampUrl) {
+      try {
+        const buf = await this.storageService.downloadFile(user.savedStampUrl);
+        stampBase64 = `data:image/png;base64,${buf.toString('base64')}`;
+      } catch { /* missing file */ }
+    }
+
+    return { hasSaved: !!signatureBase64, signatureBase64, stampBase64 };
+  }
+
   async getContractByToken(token: string) {
     const signer = await this.prisma.signer.findUnique({
       where: { signToken: token },

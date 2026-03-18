@@ -50,6 +50,12 @@ export class SignaturesController {
     return ApiResponse.ok(result);
   }
 
+  @Get(':token/saved-signature')
+  async getSavedSignature(@Param('token') token: string) {
+    const result = await this.signaturesService.getSavedSignatureByToken(token);
+    return ApiResponse.ok(result);
+  }
+
   @Post(':token/decline')
   async decline(
     @Param('token') token: string,
