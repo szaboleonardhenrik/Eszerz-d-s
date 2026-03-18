@@ -78,10 +78,12 @@ export class TestingController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('screenshot/:key(*)')
+  @Get('screenshot')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async getScreenshot(@Param('key') key: string, @Req() req: any) {
+  async getScreenshot(@Req() req: any) {
     await this.checkAccess(req.user.userId);
+    const key = req.query.key as string;
+    if (!key) throw new ForbiddenException('Missing key');
     const url = await this.storageService.getSignedDownloadUrl(key);
     return ApiResponse.ok({ url });
   }

@@ -387,7 +387,7 @@ function ScreenshotThumb({ storageKey }: { storageKey: string }) {
   const [fullscreen, setFullscreen] = useState(false);
 
   useEffect(() => {
-    api.get(`/admin/testing/screenshot/${storageKey}`)
+    api.get(`/admin/testing/screenshot`, { params: { key: storageKey } })
       .then((res) => setUrl(res.data.data.url))
       .catch(() => {});
   }, [storageKey]);
