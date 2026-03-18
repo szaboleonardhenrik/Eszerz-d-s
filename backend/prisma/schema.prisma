@@ -264,6 +264,7 @@ model Signer {
   userAgent         String?   @map("user_agent")
   signatureMethod   String?   @map("signature_method")
   signatureImageUrl String?   @map("signature_image_url")
+  stampImageUrl     String?   @map("stamp_image_url")
   typedName         String?   @map("typed_name")
   certificateData   String?   @map("certificate_data")
   signerNote        String?   @map("signer_note")

@@ -48,8 +48,12 @@ export default function SignPage() {
   const [signing, setSigning] = useState(false);
   const [signed, setSigned] = useState(false);
   const [hasRead, setHasRead] = useState(false);
-  const [signMethod, setSignMethod] = useState<"draw" | "type">("draw");
+  const [signMethod, setSignMethod] = useState<"draw" | "type" | "upload">("draw");
   const [typedName, setTypedName] = useState("");
+  const [uploadedSignature, setUploadedSignature] = useState<string | null>(null);
+  const [stampImage, setStampImage] = useState<string | null>(null);
+  const signatureUploadRef = useRef<HTMLInputElement>(null);
+  const stampUploadRef = useRef<HTMLInputElement>(null);
   const [declining, setDeclining] = useState(false);
   const [declineReason, setDeclineReason] = useState("");
   const [signerNote, setSignerNote] = useState("");
@@ -237,6 +241,16 @@ export default function SignPage() {
     }
   };
 
+  const handleFileUpload = (setter: (val: string | null) => void) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { toast.error("Maximum 2MB méretű kép engedélyezett"); return; }
+    if (!file.type.startsWith("image/")) { toast.error("Csak képfájl (PNG, JPG) tölthető fel"); return; }
+    const reader = new FileReader();
+    reader.onload = () => setter(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
   const handleSign = async () => {
     let signatureImageBase64: string | undefined;
     if (signMethod === "draw") {
@@ -245,6 +259,12 @@ export default function SignPage() {
         return;
       }
       signatureImageBase64 = padRef.current?.toDataURL("image/png");
+    } else if (signMethod === "upload") {
+      if (!uploadedSignature) {
+        toast.error("Kérjük, tölts fel egy aláírás képet");
+        return;
+      }
+      signatureImageBase64 = uploadedSignature;
     } else {
       if (!typedName.trim()) {
         toast.error(t("sign.signature.pleaseTypeName"));
@@ -257,6 +277,7 @@ export default function SignPage() {
       await publicApi.post(`/sign/${token}`, {
         signatureMethod: "simple",
         signatureImageBase64,
+        stampImageBase64: stampImage || undefined,
         typedName: signMethod === "type" ? typedName : undefined,
         note: signerNote || undefined,
         signerFullName,
@@ -833,6 +854,21 @@ export default function SignPage() {
                       {t("sign.signature.typeMethod")}
                     </span>
                   </button>
+                  <button
+                    onClick={() => setSignMethod("upload")}
+                    className={`px-4 sm:px-5 py-2 rounded-lg text-sm font-medium transition-all ${
+                      signMethod === "upload"
+                        ? "bg-white text-[#198296] shadow-sm"
+                        : "text-gray-500 hover:text-gray-700"
+                    }`}
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                      </svg>
+                      Feltöltés
+                    </span>
+                  </button>
                 </div>
 
                 {signMethod === "draw" ? (
@@ -853,7 +889,7 @@ export default function SignPage() {
                       </button>
                     </div>
                   </div>
-                ) : (
+                ) : signMethod === "type" ? (
                   <div className="mb-5">
                     <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
                       {t("sign.signature.typeLabel")}
@@ -872,7 +908,83 @@ export default function SignPage() {
                       </div>
                     )}
                   </div>
-                )}
+                ) : signMethod === "upload" ? (
+                  <div className="mb-5">
+                    <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+                      Aláírás feltöltése
+                    </label>
+                    <div
+                      onClick={() => signatureUploadRef.current?.click()}
+                      className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center cursor-pointer hover:border-[#198296]/40 transition-colors"
+                    >
+                      {uploadedSignature ? (
+                        <div className="relative inline-block">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={uploadedSignature} alt="Aláírás" className="max-h-32 mx-auto" />
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setUploadedSignature(null); }}
+                            className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs flex items-center justify-center shadow hover:bg-red-600"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ) : (
+                        <div>
+                          <svg className="w-8 h-8 mx-auto text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                          </svg>
+                          <p className="text-sm text-gray-500">Kattints vagy húzd ide az aláírás képét</p>
+                          <p className="text-xs text-gray-400 mt-1">PNG, JPG — max 2MB</p>
+                        </div>
+                      )}
+                      <input
+                        ref={signatureUploadRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        className="hidden"
+                        onChange={handleFileUpload(setUploadedSignature)}
+                      />
+                    </div>
+                  </div>
+                ) : null}
+
+                {/* Stamp / Seal upload (optional, all methods) */}
+                <div className="mb-5">
+                  <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+                    Pecsét / Bélyegző <span className="normal-case font-normal">(opcionális)</span>
+                  </label>
+                  <div
+                    onClick={() => stampUploadRef.current?.click()}
+                    className="border border-dashed border-gray-200 rounded-xl p-4 text-center cursor-pointer hover:border-[#198296]/40 transition-colors"
+                  >
+                    {stampImage ? (
+                      <div className="relative inline-block">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={stampImage} alt="Pecsét" className="max-h-20 mx-auto" />
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setStampImage(null); }}
+                          className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center shadow hover:bg-red-600"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center gap-2 py-1">
+                        <svg className="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                        <span className="text-sm text-gray-400">Pecsét feltöltése (opcionális)</span>
+                      </div>
+                    )}
+                    <input
+                      ref={stampUploadRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      className="hidden"
+                      onChange={handleFileUpload(setStampImage)}
+                    />
+                  </div>
+                </div>
 
                 {/* Note */}
                 <div className="mb-5">

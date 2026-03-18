@@ -326,6 +326,18 @@ export class SignaturesService {
       signatureImageUrl = imageKey;
     }
 
+    // Handle stamp image upload
+    let stampImageUrl: string | undefined;
+    if (dto.stampImageBase64) {
+      const stampBuffer = Buffer.from(
+        dto.stampImageBase64.replace(/^data:image\/\w+;base64,/, ''),
+        'base64',
+      );
+      const stampKey = `stamps/${signer.contractId}/${randomUUID()}.png`;
+      await this.storageService.uploadImage(stampKey, stampBuffer);
+      stampImageUrl = stampKey;
+    }
+
     // Save/update partner as Contact + Company (only if signer consented)
     let contactId: string | undefined;
     if (dto.partnerConsent) try {
@@ -404,6 +416,7 @@ export class SignaturesService {
         userAgent,
         signatureMethod: dto.signatureMethod,
         signatureImageUrl,
+        stampImageUrl: stampImageUrl ?? null,
         typedName: dto.typedName,
         signerNote: dto.note ?? null,
         companyName: dto.companyName,
@@ -446,6 +459,7 @@ export class SignaturesService {
         name: s.id === signer.id ? dto.signerFullName : s.name,
         role: s.role ?? 'Aláíró',
         signatureImageUrl: s.signatureImageUrl ?? undefined,
+        stampImageUrl: s.id === signer.id ? stampImageUrl : s.stampImageUrl ?? undefined,
         typedName: s.id === signer.id ? dto.typedName : s.typedName ?? undefined,
         signedAt:
           (s.id === signer.id ? new Date() : s.signedAt)?.toLocaleDateString(
@@ -470,10 +484,20 @@ export class SignaturesService {
               // If download fails, skip the image
             }
           }
+          let stampImageBase64: string | undefined;
+          if (s.stampImageUrl) {
+            try {
+              const stampBuffer = await this.storageService.downloadFile(s.stampImageUrl);
+              stampImageBase64 = `data:image/png;base64,${stampBuffer.toString('base64')}`;
+            } catch {
+              // If download fails, skip the stamp
+            }
+          }
           return {
             name: s.name,
             role: s.role,
             signatureImageBase64,
+            stampImageBase64,
             typedName: s.typedName,
             signedAt: s.signedAt,
             method: s.method,

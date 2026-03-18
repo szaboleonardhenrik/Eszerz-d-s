@@ -82,6 +82,7 @@ export class PdfService {
       name: string;
       role: string;
       signatureImageBase64?: string;
+      stampImageBase64?: string;
       typedName?: string;
       signedAt: string;
       method: string;
@@ -110,9 +111,17 @@ export class PdfService {
       const methodLabel = sig.method === 'simple' ? 'Egyszerű e-aláírás' : sig.method === 'dap' ? 'DÁP eAláírás' : 'Minősített aláírás';
       let signatureVisual = '';
       if (sig.signatureImageBase64) {
-        signatureVisual = `<img src="${sig.signatureImageBase64}" style="height:60px;margin:8px 0;display:block;" />`;
+        signatureVisual = `<div style="display:flex;align-items:flex-end;gap:12px;margin:8px 0;">
+          <img src="${sig.signatureImageBase64}" style="height:60px;display:block;" />
+          ${sig.stampImageBase64 ? `<img src="${sig.stampImageBase64}" style="height:50px;display:block;opacity:0.85;" />` : ''}
+        </div>`;
       } else if (sig.typedName) {
-        signatureVisual = `<p style="font-family:Georgia,'Times New Roman',serif;font-size:24px;font-style:italic;margin:8px 0;color:#1a1a1a;">${this.escapeHtml(sig.typedName)}</p>`;
+        signatureVisual = `<div style="display:flex;align-items:flex-end;gap:12px;margin:8px 0;">
+          <p style="font-family:Georgia,'Times New Roman',serif;font-size:24px;font-style:italic;margin:0;color:#1a1a1a;">${this.escapeHtml(sig.typedName)}</p>
+          ${sig.stampImageBase64 ? `<img src="${sig.stampImageBase64}" style="height:50px;display:block;opacity:0.85;" />` : ''}
+        </div>`;
+      } else if (sig.stampImageBase64) {
+        signatureVisual = `<img src="${sig.stampImageBase64}" style="height:50px;margin:8px 0;display:block;opacity:0.85;" />`;
       }
 
       let companyBlock = '';

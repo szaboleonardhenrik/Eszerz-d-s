@@ -18,6 +18,10 @@ export class SignContractDto {
 
   @IsOptional()
   @IsString()
+  stampImageBase64?: string;
+
+  @IsOptional()
+  @IsString()
   note?: string;
 
   @IsString()
