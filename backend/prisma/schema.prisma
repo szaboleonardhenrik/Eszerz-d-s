@@ -904,3 +904,16 @@ model BulkOperation {
   @@index([userId])
   @@map("bulk_operations")
 }
+
+model TestResult {
+  id         String   @id @default(uuid())
+  testId     String   @unique @map("test_id")
+  status     String   @default("pending") // pending | in_progress | pass | fail | blocked
+  assignedTo String?  @map("assigned_to")
+  notes      String?
+  updatedBy  String?  @map("updated_by")
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@index([assignedTo])
+  @@map("test_results")
+}
