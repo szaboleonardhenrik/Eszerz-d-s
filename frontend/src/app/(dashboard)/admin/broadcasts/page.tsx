@@ -41,6 +41,7 @@ export default function AdminBroadcastsPage() {
   useEffect(() => {
     if (!ADMIN_ROLES.includes(user?.role ?? "")) return;
     loadBroadcasts();
+     
   }, [user]);
 
   const loadBroadcasts = async () => {
@@ -71,8 +72,9 @@ export default function AdminBroadcastsPage() {
       setForm({ title: "", message: "", type: "info", expiresAt: "" });
       setShowForm(false);
       loadBroadcasts();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || "Hiba történt");
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg || "Hiba történt");
     } finally {
       setSending(false);
     }

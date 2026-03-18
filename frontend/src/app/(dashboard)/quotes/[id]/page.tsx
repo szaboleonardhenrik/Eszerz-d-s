@@ -86,6 +86,7 @@ export default function QuoteDetailPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [pdfLoading, setPdfLoading] = useState(false);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { loadQuote(); }, [id]);
 
   const loadQuote = async () => {
@@ -112,8 +113,9 @@ export default function QuoteDetailPage() {
       toast.success(successMsg);
       if (action === "delete" || method === "delete") router.push("/quotes");
       else loadQuote();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? t("quoteDetail.genericError"));
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? t("quoteDetail.genericError"));
     } finally {
       setActionLoading(null);
     }
@@ -125,8 +127,9 @@ export default function QuoteDetailPage() {
       const res = await api.post(`/quotes/${id}/duplicate`);
       toast.success(t("quoteDetail.duplicateSuccess"));
       router.push(`/quotes/${res.data.data?.id ?? ""}`);
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? t("quoteDetail.duplicateError"));
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? t("quoteDetail.duplicateError"));
     } finally {
       setActionLoading(null);
     }
@@ -266,8 +269,9 @@ export default function QuoteDetailPage() {
                   const res = await api.post(`/quotes/${id}/convert-to-contract`);
                   toast.success(t("quoteDetail.convertSuccess"));
                   router.push(`/contracts/${res.data.data?.id}`);
-                } catch (err: any) {
-                  toast.error(err.response?.data?.error?.message ?? t("quoteDetail.convertError"));
+                } catch (err: unknown) {
+                  const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+                  toast.error(axiosMsg ?? t("quoteDetail.convertError"));
                 } finally {
                   setActionLoading(null);
                 }

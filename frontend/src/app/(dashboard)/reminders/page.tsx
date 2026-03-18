@@ -78,7 +78,7 @@ export default function RemindersPage() {
       setAlerts(alertsRes.data.data);
       setReminders(remindersRes.data.data);
       const items = contractsRes.data.data?.items ?? [];
-      setContracts(items.map((c: any) => ({ id: c.id, title: c.title })));
+      setContracts(items.map((c: { id: string; title: string }) => ({ id: c.id, title: c.title })));
     } catch {
       toast.error("Hiba az adatok betöltésekor");
     } finally {

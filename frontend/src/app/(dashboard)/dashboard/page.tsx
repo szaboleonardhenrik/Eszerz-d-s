@@ -26,7 +26,8 @@ const tierBadgeColors: Record<string, string> = {
   enterprise: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
 };
 
-const STATUS_KEYS: Record<string, string> = {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _STATUS_KEYS: Record<string, string> = {
   draft: "contracts.status.draft",
   sent: "contracts.status.sent",
   partially_signed: "contracts.status.partially_signed",
@@ -197,6 +198,7 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

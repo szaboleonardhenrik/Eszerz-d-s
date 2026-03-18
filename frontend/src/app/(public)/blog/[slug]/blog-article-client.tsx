@@ -49,6 +49,7 @@ export default function BlogArticleClient({ article }: BlogArticleProps) {
         <p className="text-sm text-gray-400">{article.date}</p>
       </div>
 
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={article.image} alt={article.title} className="w-full rounded-2xl mb-8" />
 
       <div

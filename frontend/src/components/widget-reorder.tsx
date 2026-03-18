@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useI18n } from "@/lib/i18n";
 
 interface WidgetReorderProps {
@@ -33,13 +33,15 @@ export default function WidgetReorder({
 
   // Reset items when the modal opens with a new order
   const prevOpenRef = useRef(open);
-  if (open && !prevOpenRef.current) {
-    // fresh open – sync state
-    if (JSON.stringify(items) !== JSON.stringify(order)) {
-      setItems(order);
+  useEffect(() => {
+    if (open && !prevOpenRef.current) {
+      if (JSON.stringify(items) !== JSON.stringify(order)) {
+        setItems(order);
+      }
     }
-  }
-  prevOpenRef.current = open;
+    prevOpenRef.current = open;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, order]);
 
   const handleDragStart = useCallback(
     (e: React.DragEvent<HTMLLIElement>, index: number) => {

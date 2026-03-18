@@ -45,13 +45,6 @@ interface QuoteStats {
   totalRevenue: number;
 }
 
-interface Pagination {
-  items: Quote[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
 
 const STATUS_KEYS = ["draft", "sent", "accepted", "declined", "expired"];
 
@@ -116,9 +109,11 @@ export default function QuotesPage() {
     loadStats();
   }, []);
 
+  /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
     loadQuotes();
   }, [search, statusFilter, page]);
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   const loadStats = async () => {
     try {
@@ -158,8 +153,9 @@ export default function QuotesPage() {
         loadQuotes();
         loadStats();
       }
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? t("quotes.duplicateError"));
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? t("quotes.duplicateError"));
     }
   };
 

@@ -45,8 +45,9 @@ export default function PortalSettingsPage() {
       setSuccess(t("portal.inviteSent"));
       setEmail("");
       loadInvitations();
-    } catch (err: any) {
-      setError(err.response?.data?.error?.message ?? t("portal.inviteError"));
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      setError(axiosMsg ?? t("portal.inviteError"));
     } finally {
       setSending(false);
     }

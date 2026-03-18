@@ -57,6 +57,7 @@ export default function Analytics({ gaId }: { gaId: string }) {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     check();
 
     // Re-check when cookie consent changes across tabs

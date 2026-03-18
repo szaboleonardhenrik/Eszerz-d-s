@@ -22,10 +22,12 @@ export function ABTestProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const existing = getCookie("ab_variant");
     if (existing === "A" || existing === "B") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setVariant(existing);
     } else {
       const picked: Variant = Math.random() < 0.5 ? "A" : "B";
       setCookie("ab_variant", picked, 30);
+       
       setVariant(picked);
     }
   }, []);

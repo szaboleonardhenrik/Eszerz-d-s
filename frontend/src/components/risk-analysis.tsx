@@ -68,8 +68,9 @@ export default function RiskAnalysis({ contractId }: { contractId: string }) {
     try {
       const res = await api.post(`/ai/risk-analysis/${contractId}`);
       setData(res.data.data);
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? t("riskAnalysis.errorFallback"));
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? t("riskAnalysis.errorFallback"));
     } finally {
       setLoading(false);
     }

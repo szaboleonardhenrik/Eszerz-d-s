@@ -21,14 +21,13 @@ export default function LoginPage() {
     try {
       const result = await login(email, password);
       if (result?.requiresMfa) {
-        router.push(`/2fa-verify?t=${encodeURIComponent(result.mfaToken)}`);
+        router.push(`/2fa-verify?t=${encodeURIComponent(result.mfaToken ?? '')}`);
       } else {
         router.push("/dashboard");
       }
-    } catch (err: any) {
-      toast.error(
-        err.response?.data?.error?.message ?? t("auth.error.login")
-      );
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? t("auth.error.login"));
     } finally {
       setLoading(false);
     }

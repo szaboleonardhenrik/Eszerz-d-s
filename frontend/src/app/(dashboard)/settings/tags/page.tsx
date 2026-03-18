@@ -53,8 +53,9 @@ export default function TagsSettingsPage() {
       setNewColor("#3B82F6");
       toast.success("Címke létrehozva!");
       loadTags();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba a létrehozáskor");
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? "Hiba a létrehozáskor");
     } finally {
       setCreating(false);
     }
@@ -66,8 +67,9 @@ export default function TagsSettingsPage() {
       setEditingId(null);
       toast.success("Címke frissítve!");
       loadTags();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba a frissítéskor");
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? "Hiba a frissítéskor");
     }
   };
 

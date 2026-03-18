@@ -15,13 +15,6 @@ export default function QrSigningModal({ open, onClose, signerName, signToken }:
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [signUrl, setSignUrl] = useState("");
 
-  useEffect(() => {
-    if (!open || !signToken) return;
-    const url = `${window.location.origin}/sign/${signToken}`;
-    setSignUrl(url);
-    drawQr(url);
-  }, [open, signToken]);
-
   const drawQr = (text: string) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -84,6 +77,15 @@ export default function QrSigningModal({ open, onClose, signerName, signToken }:
       }
     }
   };
+
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    if (!open || !signToken) return;
+    const url = `${window.location.origin}/sign/${signToken}`;
+    setSignUrl(url);
+    drawQr(url);
+  }, [open, signToken]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   if (!open) return null;
 

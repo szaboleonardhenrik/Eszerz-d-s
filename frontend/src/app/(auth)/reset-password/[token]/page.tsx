@@ -24,8 +24,9 @@ export default function ResetPasswordPage() {
       await api.post("/auth/reset-password", { token, password });
       toast.success("Jelszó sikeresen módosítva! Most már bejelentkezhetsz.");
       router.push("/login");
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Érvénytelen vagy lejárt link");
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? "Érvénytelen vagy lejárt link");
     } finally {
       setLoading(false);
     }

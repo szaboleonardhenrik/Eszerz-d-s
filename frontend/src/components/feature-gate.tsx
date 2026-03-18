@@ -53,7 +53,9 @@ export default function FeatureGate({
   useEffect(() => {
     if (!user) return;
     if (flagsCache) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFlags(flagsCache);
+       
       setLoading(false);
       return;
     }

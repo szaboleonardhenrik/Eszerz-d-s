@@ -129,8 +129,9 @@ export default function QuoteTemplatesPage() {
       resetForm();
       setShowForm(false);
       loadTemplates();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba a mentés során");
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? "Hiba a mentés során");
     } finally {
       setSaving(false);
     }

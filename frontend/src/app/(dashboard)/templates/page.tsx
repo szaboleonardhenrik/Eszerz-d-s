@@ -29,6 +29,7 @@ interface PreviewData {
   category: string;
   description: string;
   contentHtml: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   variables: any[];
   legalBasis: string;
 }
@@ -71,9 +72,11 @@ export default function TemplatesPage() {
     setFavs(initial);
   }, [templates]);
 
+  /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
     loadTemplates();
   }, [filter]);
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   const loadTemplates = async () => {
     setLoading(true);
@@ -360,6 +363,7 @@ export default function TemplatesPage() {
                   <div className="mb-4">
                     <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Kitöltendő mezők:</h3>
                     <div className="flex flex-wrap gap-2">
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                       {preview.variables.map((v: any, i: number) => (
                         <span key={i} className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-1 rounded">
                           {v.label} {v.required && "*"}

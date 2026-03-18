@@ -143,7 +143,7 @@ function CreateWizardInner() {
   }, [templateIdParam]);
 
   const [uploadingPdf, setUploadingPdf] = useState(false);
-  const [pdfFileName, setPdfFileName] = useState("");
+  const [, setPdfFileName] = useState("");
 
   const handleFileUpload = async (file: File) => {
     if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
@@ -158,8 +158,9 @@ function CreateWizardInner() {
         setUploadedHtml(`<!-- PDF:${res.data.data.key} --><div style="text-align:center;padding:40px;background:#f8f9fa;border-radius:8px;"><p style="font-size:18px;font-weight:bold;color:#198296;">${t("create.upload.pdfUploaded")}</p><p style="color:#666;">${file.name} (${(file.size / 1024).toFixed(0)} KB)</p></div>`);
         if (!title) setTitle(file.name.replace(/\.pdf$/i, ""));
         toast.success(t("create.upload.pdfSuccess"));
-      } catch (err: any) {
-        toast.error(err.response?.data?.error?.message ?? t("create.upload.pdfError"));
+      } catch (err: unknown) {
+        const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+        toast.error(axiosMsg ?? t("create.upload.pdfError"));
       } finally {
         setUploadingPdf(false);
       }
@@ -232,7 +233,7 @@ function CreateWizardInner() {
         allSigners = partnerSigners;
       }
 
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         title,
         signers: allSigners,
         expiresAt: expiresAt || undefined,
@@ -246,10 +247,9 @@ function CreateWizardInner() {
       const res = await api.post("/contracts", payload);
       toast.success(t("create.summary.success"));
       router.push(`/contracts/${res.data.data.id}`);
-    } catch (err: any) {
-      toast.error(
-        err.response?.data?.error?.message ?? t("create.summary.error")
-      );
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? t("create.summary.error"));
     } finally {
       setLoading(false);
     }
@@ -649,7 +649,8 @@ function CreateWizardInner() {
                   ar: "pl. 50 000",
                 };
 
-                const getPlaceholder = (name: string, label: string): string => {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const getPlaceholder = (name: string, _label: string): string => {
                   const lower = name.toLowerCase();
                   for (const [key, val] of Object.entries(placeholders)) {
                     if (lower.endsWith(key) || lower.includes(key)) return val;

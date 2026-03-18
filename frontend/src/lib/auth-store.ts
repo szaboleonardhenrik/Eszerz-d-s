@@ -25,7 +25,7 @@ interface AuthState {
   loading: boolean;
   requiresConsentUpdate: boolean;
   consentVersion: string | null;
-  login: (email: string, password: string) => Promise<any>;
+  login: (email: string, password: string) => Promise<{ requiresMfa?: boolean; mfaToken?: string } | undefined>;
   register: (data: {
     email: string;
     password: string;
@@ -59,7 +59,7 @@ export const useAuth = create<AuthState>((set) => ({
       requiresConsentUpdate: !!data.requiresConsentUpdate,
       consentVersion: data.consentVersion || null,
     });
-    return null;
+    return undefined;
   },
 
   register: async (data) => {

@@ -28,7 +28,7 @@ interface Signer {
 interface AuditEntry {
   id: string;
   eventType: string;
-  eventData: any;
+  eventData: Record<string, unknown>;
   ipAddress: string;
   createdAt: string;
   signer?: { name: string; email: string };
@@ -104,18 +104,6 @@ const statusDotColors: Record<string, string> = {
   cancelled: "bg-gray-500",
 };
 
-const eventIcons: Record<string, string> = {
-  contract_created: "M12 4v16m8-8H4",
-  contract_updated: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z",
-  email_sent: "M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z",
-  document_viewed: "M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z",
-  signed: "M5 13l4 4L19 7",
-  declined: "M6 18L18 6M6 6l12 12",
-  reminder_sent: "M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9",
-  expired: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z",
-  downloaded: "M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4",
-  contract_duplicated: "M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z",
-};
 
 /* ── Signing Timeline Component ──────────────────────────────────── */
 
@@ -274,11 +262,13 @@ export default function ContractDetailPage() {
     contract_duplicated: t("contractDetail.eventDuplicated"),
   };
 
+  /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
     loadContract();
     loadComments();
     api.get("/tags").then((res) => setAllTags(res.data.data ?? [])).catch(() => {});
   }, [id]);
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   const loadContract = async () => {
     try {
@@ -317,8 +307,9 @@ export default function ContractDetailPage() {
       await api.post(`/contracts/${id}/remind/${signerId}`);
       toast.success(t("contractDetail.reminderSuccess"));
       loadContract();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? t("contractDetail.reminderError"));
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? t("contractDetail.reminderError"));
     } finally {
       setReminderLoading(null);
     }
@@ -345,8 +336,9 @@ export default function ContractDetailPage() {
       setNewComment("");
       await loadComments();
       toast.success(t("contractDetail.commentAdded"));
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? t("contractDetail.commentError"));
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? t("contractDetail.commentError"));
     } finally {
       setCommentLoading(false);
     }
@@ -357,8 +349,9 @@ export default function ContractDetailPage() {
       await api.delete(`/comments/${commentId}`);
       await loadComments();
       toast.success(t("contractDetail.commentDeleted"));
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? t("contractDetail.commentDeleteError"));
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? t("contractDetail.commentDeleteError"));
     }
   };
 
@@ -367,8 +360,9 @@ export default function ContractDetailPage() {
       await api.post(`/contracts/${id}/send`);
       toast.success(t("contractDetail.sendSuccess"));
       loadContract();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? t("contractDetail.sendError"));
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? t("contractDetail.sendError"));
     }
   };
 
@@ -378,8 +372,9 @@ export default function ContractDetailPage() {
       await api.post(`/contracts/${id}/cancel`);
       toast.success(t("contractDetail.cancelSuccess"));
       loadContract();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? t("contractDetail.cancelError"));
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? t("contractDetail.cancelError"));
     }
   };
 
@@ -389,8 +384,9 @@ export default function ContractDetailPage() {
       const res = await api.post(`/contracts/${id}/duplicate`);
       toast.success(t("contractDetail.duplicateSuccess"));
       router.push(`/contracts/${res.data.data.id}`);
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? t("contractDetail.duplicateError"));
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? t("contractDetail.duplicateError"));
     } finally {
       setDuplicating(false);
     }
@@ -417,8 +413,9 @@ export default function ContractDetailPage() {
       } else {
         toast.error(res.data.error?.message ?? t("contractDetail.aiError"));
       }
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? t("contractDetail.aiError"));
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? t("contractDetail.aiError"));
     } finally {
       setAiLoading(false);
     }
@@ -456,8 +453,9 @@ export default function ContractDetailPage() {
       await api.post(`/contracts/${id}/add-self-signer`);
       toast.success(t("contractDetail.addSelfSuccess"));
       loadContract();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? err.response?.data?.message ?? t("contractDetail.addSelfError"));
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { message?: string; error?: { message?: string } } } };
+      toast.error(axiosErr?.response?.data?.error?.message ?? axiosErr?.response?.data?.message ?? t("contractDetail.addSelfError"));
     } finally {
       setAddingSelf(false);
     }
@@ -887,7 +885,7 @@ export default function ContractDetailPage() {
                             <p className="text-xs text-blue-600 dark:text-blue-400">{t("contractDetail.yourSignatureDesc")}</p>
                           </div>
                           <a
-                            href={`/sign/${(ownerSigner as any).signToken}`}
+                            href={`/sign/${(ownerSigner as { signToken?: string }).signToken}`}
                             className="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition shrink-0"
                           >
                             {t("contractDetail.signNow")}
@@ -946,7 +944,7 @@ export default function ContractDetailPage() {
                               {reminderLoading === signer.id ? t("contractDetail.reminderSending") : `${t("contractDetail.reminderPrefix")}: ${signer.name}`}
                             </button>
                             <button
-                              onClick={() => setQrSigner({ name: signer.name, token: (signer as any).signToken })}
+                              onClick={() => setQrSigner({ name: signer.name, token: (signer as { signToken?: string }).signToken ?? "" })}
                               className="inline-flex items-center p-1.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                               title={t("contractDetail.qrCode")}
                             >

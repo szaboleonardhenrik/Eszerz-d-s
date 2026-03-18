@@ -22,8 +22,8 @@ export default function CookiePage() {
         <h3>1.1. Cookie hozzájárulás kezelése</h3>
         <p>
           A Platform első látogatásakor egy cookie banner jelenik meg, amely két lehetőséget kínál:
-          „Elfogadom" (minden cookie engedélyezése) és „Csak szükségesek" (csak a szükséges cookie-k).
-          A nem szükséges cookie-k (funkcionális) kizárólag az „Elfogadom" gombra kattintás után kerülnek
+          {"\u201EElfogadom\u201D"} (minden cookie engedélyezése) és {"\u201ECsak sz\u00FCks\u00E9gesek\u201D"} (csak a szükséges cookie-k).
+          A nem szükséges cookie-k (funkcionális) kizárólag az {"\u201EElfogadom\u201D"} gombra kattintás után kerülnek
           elhelyezésre.
         </p>
 
@@ -136,7 +136,7 @@ export default function CookiePage() {
         </p>
         <p>
           Hozzájárulás visszavonása: A cookie-beállítások bármikor módosíthatók a böngésző beállításaiban
-          a fent leírt módon, illetve a sütik törölhetők. A „cookie_consent" elem a böngésző
+          a fent leírt módon, illetve a sütik törölhetők. A {"\u201Ecookie_consent\u201D"} elem a böngésző
           localStorage-ából való törlésével a cookie banner újra megjelenik a következő látogatáskor.
         </p>
 

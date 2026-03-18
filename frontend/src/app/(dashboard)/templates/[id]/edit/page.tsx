@@ -82,9 +82,11 @@ export default function EditTemplatePage() {
     contract: t("templateEdit.contractFields"),
   };
 
+  /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
     loadTemplate();
   }, [id]);
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   const loadTemplate = async () => {
     try {
@@ -97,6 +99,7 @@ export default function EditTemplatePage() {
       setContentHtmlEn(tpl.contentHtmlEn ?? "");
       setLegalBasis(tpl.legalBasis ?? "");
       // Migrate old variables without group
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const vars = (tpl.variables ?? []).map((v: any) => ({
         ...v,
         group: v.group || "contract",
@@ -155,9 +158,9 @@ export default function EditTemplatePage() {
       });
       toast.success(t("templateEdit.saveSuccess"));
       router.push("/templates");
-    } catch (err: any) {
-      const msg = err?.response?.data?.error?.message ?? t("templateEdit.saveError");
-      toast.error(msg);
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? t("templateEdit.saveError"));
     } finally {
       setSaving(false);
     }

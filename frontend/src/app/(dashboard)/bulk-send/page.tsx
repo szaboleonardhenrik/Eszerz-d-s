@@ -148,12 +148,10 @@ export default function BulkSendPage() {
 
         await api.post(`/contracts/${contractId}/send`);
         successCount++;
-      } catch (err: any) {
+      } catch (err: unknown) {
         failCount++;
-        const msg =
-          err.response?.data?.error?.message ??
-          err.message ??
-          "Ismeretlen hiba";
+        const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+        const msg = axiosMsg ?? (err instanceof Error ? err.message : "Ismeretlen hiba");
         toast.error(`${recipient.name} (${recipient.email}): ${msg}`);
       }
     }

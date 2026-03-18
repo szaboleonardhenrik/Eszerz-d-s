@@ -177,8 +177,9 @@ export default function BillingSettings() {
       if (url) {
         window.location.href = url;
       }
-    } catch (err: any) {
-      const msg = err?.response?.data?.error?.message || err?.message || "";
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      const msg = axiosMsg || (err instanceof Error ? err.message : "");
       if (
         msg.includes("Invalid API Key") ||
         msg.includes("placeholder") ||
@@ -201,8 +202,9 @@ export default function BillingSettings() {
       if (url) {
         window.location.href = url;
       }
-    } catch (err: any) {
-      const msg = err?.response?.data?.error?.message || err?.message || "";
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      const msg = axiosMsg || (err instanceof Error ? err.message : "");
       if (
         msg.includes("Invalid API Key") ||
         msg.includes("placeholder") ||
@@ -561,8 +563,9 @@ function CreditSection() {
       const { balance: newBalance, added } = res.data.data;
       setBalance(newBalance);
       toast.success(`${added} kredit jóváírva! Új egyenleg: ${newBalance}`);
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba a vásárlás során");
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? "Hiba a vásárlás során");
     } finally {
       setPurchasing(null);
     }
@@ -694,8 +697,9 @@ function PromoCodeSection() {
       setCode("");
       setInfo(null);
       window.location.reload();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba a kód beváltásakor");
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? "Hiba a kód beváltásakor");
     } finally {
       setApplying(false);
     }

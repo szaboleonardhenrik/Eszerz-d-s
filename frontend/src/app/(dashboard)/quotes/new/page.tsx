@@ -125,11 +125,13 @@ export default function NewQuotePage() {
   // Sections
   const [showSections, setShowSections] = useState(false);
 
+  /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
     loadTemplates();
     loadContacts();
     if (editId) loadExisting();
   }, [editId]);
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   useEffect(() => {
     const hasSections = items.some((i) => i.sectionName);
@@ -193,7 +195,7 @@ export default function NewQuotePage() {
         try { setVariablesData(JSON.parse(q.variablesData)); } catch { /* ignore */ }
       }
       setItems(
-        (q.items ?? []).map((item: any) => ({
+        (q.items ?? []).map((item: Record<string, unknown>) => ({
           description: item.description,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
@@ -259,7 +261,7 @@ export default function NewQuotePage() {
     setItems((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const addItem = (sectionName = "") => {
+  const addItem = (sectionName: string = "") => {
     setItems((prev) => [...prev, { ...emptyItem, sectionName, sortOrder: prev.length }]);
   };
 
@@ -354,8 +356,9 @@ export default function NewQuotePage() {
         toast.success("Ajánlat létrehozva!");
         router.push(`/quotes/${res.data.data.id}`);
       }
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba az ajánlat mentésekor");
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? "Hiba az ajánlat mentésekor");
     } finally {
       setSaving(false);
     }

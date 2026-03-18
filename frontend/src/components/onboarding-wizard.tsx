@@ -47,7 +47,7 @@ export default function OnboardingWizard() {
   const [address, setAddress] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [templates, setTemplates] = useState<any[]>([]);
+  const [templates, setTemplates] = useState<{ id: string; name: string; category?: string }[]>([]);
 
   useEffect(() => {
     if (user && user.onboardingCompleted === false) {
@@ -100,7 +100,7 @@ export default function OnboardingWizard() {
 
   if (!visible) return null;
 
-  const isPersonal = (user as any)?.accountType === "personal";
+  const isPersonal = (user as { accountType?: string })?.accountType === "personal";
   const totalSteps = isPersonal ? 3 : 4;
 
   return (
@@ -201,7 +201,8 @@ export default function OnboardingWizard() {
                 {t("onboarding.templateDesc")}
               </p>
               <div className="space-y-3">
-                {(templates.length > 0 ? templates : POPULAR_TEMPLATES).map((tmpl) => {
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                {(templates.length > 0 ? templates : POPULAR_TEMPLATES).map((tmpl: any) => {
                   const isApiTemplate = !!tmpl.name;
                   const templateId = isApiTemplate ? tmpl.id : tmpl.id;
                   const templateName = isApiTemplate

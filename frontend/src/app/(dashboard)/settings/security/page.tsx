@@ -102,8 +102,9 @@ export default function SecuritySettings() {
     try {
       const res = await api.post("/auth/2fa/setup");
       setTwoFaSetup(res.data.data);
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba a 2FA beállításkor");
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? "Hiba a 2FA beállításkor");
     } finally {
       setTwoFaLoading(false);
     }
@@ -119,8 +120,9 @@ export default function SecuritySettings() {
       setTwoFaSetup(null);
       setTwoFaCode("");
       toast.success("Kétfaktoros hitelesítés bekapcsolva!");
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Érvénytelen kód");
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? "Érvénytelen kód");
     } finally {
       setTwoFaLoading(false);
     }
@@ -134,8 +136,9 @@ export default function SecuritySettings() {
       setTwoFaEnabled(false);
       setDisablePassword("");
       toast.success("Kétfaktoros hitelesítés kikapcsolva");
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba");
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? "Hiba");
     } finally {
       setTwoFaLoading(false);
     }
@@ -161,11 +164,9 @@ export default function SecuritySettings() {
       setOldPassword("");
       setNewPassword("");
       setConfirmPassword("");
-    } catch (err: any) {
-      const message =
-        err.response?.data?.error?.message ??
-        err.response?.data?.message ??
-        "Hiba a jelszó módosításakor";
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { message?: string; error?: { message?: string } } } };
+      const message = axiosErr?.response?.data?.error?.message ?? axiosErr?.response?.data?.message ?? "Hiba a jelszó módosításakor";
       toast.error(message);
     } finally {
       setSaving(false);
@@ -207,9 +208,9 @@ export default function SecuritySettings() {
       toast.success("Fiók sikeresen törölve");
       localStorage.clear();
       window.location.href = "/login";
-    } catch (err: any) {
-      const msg = err.response?.data?.error?.message ?? "Hiba a fiók törlésekor";
-      toast.error(msg);
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? "Hiba a fiók törlésekor");
     } finally {
       setDeleting(false);
     }
@@ -454,6 +455,7 @@ export default function SecuritySettings() {
                   Szkenneld be a QR kódot egy hitelesítő alkalmazással (pl. Google Authenticator, Authy):
                 </p>
                 <div className="flex justify-center">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={twoFaSetup.qrCode} alt="2FA QR kód" className="w-48 h-48 rounded-lg border" />
                 </div>
                 <details className="text-sm">

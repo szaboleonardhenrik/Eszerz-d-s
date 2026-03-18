@@ -132,6 +132,7 @@ export default function ActivityFeed({ limit = 10 }: ActivityFeedProps) {
   const [loading, setLoading] = useState(true);
 
   const relativeTime = (dateStr: string): string => {
+    // eslint-disable-next-line react-hooks/purity
     const now = Date.now();
     const then = new Date(dateStr).getTime();
     const diffMs = now - then;

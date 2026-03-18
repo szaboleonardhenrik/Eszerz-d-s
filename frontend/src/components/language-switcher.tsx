@@ -1,6 +1,6 @@
 "use client";
 
-import { useI18n, Locale } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
 
 export default function LanguageSwitcher({ variant = "dark" }: { variant?: "dark" | "light" }) {
   const { locale, setLocale, t } = useI18n();

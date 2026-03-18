@@ -89,9 +89,12 @@ export default function SignPage() {
     companyAddress.trim() !== "" &&
     signerFields.filter(f => f.required).every(f => (signerVariables[f.name] ?? "").trim() !== "");
 
+   
+  /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
     loadContract();
   }, [token]);
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   useEffect(() => {
     if (canvasRef.current && signMethod === "draw" && currentStep === "sign") {
@@ -135,11 +138,9 @@ export default function SignPage() {
       if (signerData.otpVerified) {
         setCurrentStep("details");
       }
-    } catch (err: any) {
-      setError(
-        err.response?.data?.error?.message ??
-          t("sign.invalidLink")
-      );
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      setError(axiosMsg ?? t("sign.invalidLink"));
     } finally {
       setLoading(false);
     }
@@ -163,11 +164,13 @@ export default function SignPage() {
       toast.success(t("sign.otp.codeSent"));
       // Focus first input
       setTimeout(() => otpInputRefs.current[0]?.focus(), 100);
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? t("sign.otp.sendError"));
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? t("sign.otp.sendError"));
     } finally {
       setOtpSending(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   const verifyOtp = async () => {
@@ -182,8 +185,9 @@ export default function SignPage() {
       setSigner((s) => s ? { ...s, otpVerified: true } : s);
       toast.success(t("sign.otp.emailVerified"));
       setCurrentStep("details");
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? t("sign.otp.invalidCode"));
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? t("sign.otp.invalidCode"));
       setOtpCode(["", "", "", "", "", ""]);
       otpInputRefs.current[0]?.focus();
     } finally {
@@ -263,8 +267,9 @@ export default function SignPage() {
         ...(Object.keys(signerVariables).length > 0 ? { signerVariables } : {}),
       });
       setSigned(true);
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? t("sign.signature.signError"));
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? t("sign.signature.signError"));
     } finally {
       setSigning(false);
     }
@@ -278,8 +283,9 @@ export default function SignPage() {
         note: signerNote || undefined,
       });
       setError(t("sign.decline.declinedMessage"));
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? t("sign.signature.signError"));
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? t("sign.signature.signError"));
     } finally {
       setSigning(false);
     }

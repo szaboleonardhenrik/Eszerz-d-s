@@ -31,6 +31,7 @@ export default function RegisterPage() {
     }
     setLoading(true);
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const payload: any = { name: form.name, email: form.email, password: form.password, accountType: form.accountType, acceptTerms: form.acceptTerms };
       if (form.accountType === "company") {
         if (form.companyName) payload.companyName = form.companyName;
@@ -40,8 +41,9 @@ export default function RegisterPage() {
       await register(payload);
       toast.success(t("auth.success.register"));
       router.push("/dashboard");
-    } catch (err: any) {
-      const msg = err.response?.data?.message || err.response?.data?.error?.message || t("auth.error.register");
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { message?: string | string[]; error?: { message?: string } } } };
+      const msg = axiosErr.response?.data?.message || axiosErr.response?.data?.error?.message || t("auth.error.register");
       toast.error(Array.isArray(msg) ? msg[0] : msg);
     } finally {
       setLoading(false);

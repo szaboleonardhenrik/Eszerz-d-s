@@ -23,6 +23,7 @@ interface PreviewData {
   category: string;
   description: string;
   contentHtml: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   variables: any[];
   legalBasis: string;
 }
@@ -541,6 +542,7 @@ export default function MarketplacePage() {
                       {"Kit\u00f6ltend\u0151 mez\u0151k:"}
                     </h3>
                     <div className="flex flex-wrap gap-2">
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                       {preview.variables.map((v: any, i: number) => (
                         <span
                           key={i}

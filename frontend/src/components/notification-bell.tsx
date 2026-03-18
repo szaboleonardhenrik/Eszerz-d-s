@@ -46,28 +46,6 @@ export default function NotificationBell() {
     },
   });
 
-  // Polling fallback (longer interval when WS is connected)
-  useEffect(() => {
-    loadUnreadCount();
-    const interval = setInterval(
-      loadUnreadCount,
-      wsConnected.current ? 120000 : 30000
-    );
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    if (open) loadNotifications();
-  }, [open]);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
   const loadUnreadCount = async () => {
     try {
       const res = await api.get("/notifications/unread-count");
@@ -81,6 +59,30 @@ export default function NotificationBell() {
       setNotifications(res.data.data ?? []);
     } catch {}
   };
+
+  // Polling fallback (longer interval when WS is connected)
+  useEffect(() => {
+    loadUnreadCount();
+    const interval = setInterval(
+      loadUnreadCount,
+      wsConnected.current ? 120000 : 30000
+    );
+    return () => clearInterval(interval);
+     
+  }, []);
+
+  useEffect(() => {
+    if (open) loadNotifications();
+     
+  }, [open]);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   const markAllRead = async () => {
     try {
@@ -118,6 +120,7 @@ export default function NotificationBell() {
     system: "text-gray-500",
   };
 
+  /* eslint-disable react-hooks/purity */
   const timeAgo = (date: string) => {
     const diff = Date.now() - new Date(date).getTime();
     const mins = Math.floor(diff / 60000);
@@ -128,6 +131,7 @@ export default function NotificationBell() {
     const days = Math.floor(hours / 24);
     return t("notificationBell.timeDays", { count: String(days) });
   };
+  /* eslint-enable react-hooks/purity */
 
   return (
     <div className="relative" ref={ref}>

@@ -30,12 +30,14 @@ export default function ProfileSettings() {
 
   useEffect(() => {
     if (user) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const u = user as any;
       setForm({
         name: user.name ?? "",
-        companyName: (user as any).companyName ?? "",
-        taxNumber: (user as any).taxNumber ?? "",
-        phone: (user as any).phone ?? "",
-        companyAddress: (user as any).companyAddress ?? "",
+        companyName: u.companyName ?? "",
+        taxNumber: u.taxNumber ?? "",
+        phone: u.phone ?? "",
+        companyAddress: u.companyAddress ?? "",
       });
     }
   }, [user]);
@@ -65,8 +67,9 @@ export default function ProfileSettings() {
       setShowEmailChange(false);
       setEmailChangeForm({ newEmail: "", password: "" });
       await loadProfile();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || err.response?.data?.message || "Hiba az e-mail módosításkor");
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { message?: string; error?: { message?: string } } } };
+      toast.error(axiosErr?.response?.data?.error?.message || axiosErr?.response?.data?.message || "Hiba az e-mail módosításkor");
     } finally {
       setEmailChangeSaving(false);
     }
@@ -113,6 +116,7 @@ export default function ProfileSettings() {
               Módosítás
             </button>
           </div>
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           {(user as any)?.emailVerified === false && (
             <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">Az e-mail cím nincs megerősítve. Ellenőrizd a postaládádat.</p>
           )}

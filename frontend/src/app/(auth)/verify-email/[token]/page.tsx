@@ -11,18 +11,18 @@ export default function VerifyEmailPage() {
   const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
-    verify();
+    const doVerify = async () => {
+      try {
+        await api.post("/auth/verify-email", { token });
+        setStatus("success");
+      } catch (err: unknown) {
+        const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+        setErrorMsg(axiosMsg ?? "Érvénytelen vagy lejárt link");
+        setStatus("error");
+      }
+    };
+    doVerify();
   }, [token]);
-
-  const verify = async () => {
-    try {
-      await api.post("/auth/verify-email", { token });
-      setStatus("success");
-    } catch (err: any) {
-      setErrorMsg(err.response?.data?.error?.message ?? "Érvénytelen vagy lejárt link");
-      setStatus("error");
-    }
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-gray-50 dark:bg-gray-900">

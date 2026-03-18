@@ -21,8 +21,8 @@ export default function BrandingSettings() {
 
   useEffect(() => {
     if (user) {
-      setLogoUrl((user as any).brandLogoUrl ?? "");
-      setBrandColor((user as any).brandColor ?? "#198296");
+      setLogoUrl((user as { brandLogoUrl?: string }).brandLogoUrl ?? "");
+      setBrandColor((user as { brandColor?: string }).brandColor ?? "#198296");
     }
   }, [user]);
 
@@ -73,6 +73,7 @@ export default function BrandingSettings() {
         {logoUrl && (
           <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
             <span className="text-sm text-gray-500 dark:text-gray-400">{t("branding.preview")}:</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={logoUrl}
               alt="Logo"
@@ -125,12 +126,13 @@ export default function BrandingSettings() {
           <div className="border dark:border-gray-600 rounded-lg p-6 bg-white dark:bg-gray-900">
             <div className="flex items-center justify-between pb-3 mb-4" style={{ borderBottom: `2px solid ${brandColor}` }}>
               {logoUrl ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
                 <img src={logoUrl} alt="Logo" className="max-h-8 max-w-[160px] object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
               ) : (
                 <div className="w-8 h-8 rounded" style={{ backgroundColor: brandColor, opacity: 0.2 }} />
               )}
               <span className="text-sm font-semibold" style={{ color: brandColor }}>
-                {(user as any)?.companyName || "Céged neve"}
+                {(user as { companyName?: string })?.companyName || "Céged neve"}
               </span>
             </div>
             <h3 className="text-base font-bold mb-2" style={{ color: brandColor }}>
@@ -144,7 +146,7 @@ export default function BrandingSettings() {
             </div>
             <div className="mt-4 pt-3 border-t dark:border-gray-700 text-center">
               <span className="text-[10px] text-gray-400">
-                {(user as any)?.companyName || "Legitas"} — Elektronikusan generált dokumentum — 1/1. oldal
+                {(user as { companyName?: string })?.companyName || "Legitas"} — Elektronikusan generált dokumentum — 1/1. oldal
               </span>
             </div>
           </div>

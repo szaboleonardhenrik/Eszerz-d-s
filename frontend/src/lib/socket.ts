@@ -3,8 +3,8 @@
 import { useEffect, useRef, useCallback } from "react";
 
 type SocketLike = {
-  on: (event: string, handler: (...args: any[]) => void) => void;
-  off: (event: string, handler: (...args: any[]) => void) => void;
+  on: (event: string, handler: (...args: unknown[]) => void) => void;
+  off: (event: string, handler: (...args: unknown[]) => void) => void;
   disconnect: () => void;
   connected: boolean;
 };

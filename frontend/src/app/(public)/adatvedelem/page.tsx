@@ -138,7 +138,7 @@ export default function AdatvedelemPage() {
         <ul>
           <li><strong>Hozzáférés joga</strong> — tájékoztatást kérhet a kezelt adatokról</li>
           <li><strong>Helyesbítés joga</strong> — pontatlan adatok javítását kérheti</li>
-          <li><strong>Törlés joga</strong> — adatai törlését kérheti („elfeledtetéshez való jog")</li>
+          <li><strong>Törlés joga</strong> — adatai törlését kérheti ({"\u201Eelfeledtet\u00E9shez val\u00F3 jog\u201D"})</li>
           <li><strong>Korlátozás joga</strong> — az adatkezelés korlátozását kérheti</li>
           <li><strong>Adathordozhatóság</strong> — adatait géppel olvasható formátumban kérheti</li>
           <li><strong>Tiltakozás joga</strong> — jogos érdek alapú adatkezelés ellen tiltakozhat</li>

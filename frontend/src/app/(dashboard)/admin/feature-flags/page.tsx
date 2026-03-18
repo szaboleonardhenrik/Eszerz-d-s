@@ -54,6 +54,7 @@ export default function AdminFeatureFlagsPage() {
   useEffect(() => {
     if (!ADMIN_ROLES.includes(user?.role ?? "")) return;
     loadFlags();
+     
   }, [user]);
 
   const loadFlags = async () => {
@@ -76,9 +77,10 @@ export default function AdminFeatureFlagsPage() {
     try {
       await api.patch(`/admin/feature-flags/${flag.id}`, { enabled: !prev });
       toast.success(`${flag.name} ${!prev ? "bekapcsolva" : "kikapcsolva"}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setFlags((f) => f.map((ff) => (ff.id === flag.id ? { ...ff, enabled: prev } : ff)));
-      toast.error(err.response?.data?.error?.message || "Hiba történt");
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg || "Hiba történt");
     }
   };
 
@@ -93,9 +95,10 @@ export default function AdminFeatureFlagsPage() {
     try {
       await api.patch(`/admin/feature-flags/${flag.id}`, { minTier });
       toast.success(`${flag.name} szint: ${getTierLabel(minTier)}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setFlags((f) => f.map((ff) => (ff.id === flag.id ? { ...ff, minTier: prevTier } : ff)));
-      toast.error(err.response?.data?.error?.message || "Hiba történt");
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg || "Hiba történt");
     }
   };
 
@@ -116,8 +119,9 @@ export default function AdminFeatureFlagsPage() {
       setForm({ key: "", name: "", description: "", minTier: "" });
       setShowForm(false);
       loadFlags();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || "Hiba történt");
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg || "Hiba történt");
     } finally {
       setCreating(false);
     }

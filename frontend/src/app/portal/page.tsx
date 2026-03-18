@@ -87,8 +87,9 @@ export default function PortalPage() {
       setContracts(res.data.data.contracts);
       setPortalEmail(res.data.data.email);
       setToken(t);
-    } catch (err: any) {
-      setError(err.response?.data?.error?.message ?? "Hiba történt. Próbáld újra.");
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      setError(axiosMsg ?? "Hiba történt. Próbáld újra.");
       setToken(null);
     } finally {
       setLoading(false);
@@ -102,8 +103,9 @@ export default function PortalPage() {
     try {
       await api.post("/portal/request-access", { email });
       setRequestSent(true);
-    } catch (err: any) {
-      setError(err.response?.data?.error?.message ?? "Hiba történt. Próbáld újra.");
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      setError(axiosMsg ?? "Hiba történt. Próbáld újra.");
     } finally {
       setLoading(false);
     }

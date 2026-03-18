@@ -24,6 +24,7 @@ export default function BlogPage() {
             className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-lg hover:border-brand-teal/20 transition-all group flex flex-col"
           >
             <div className="h-48 bg-gray-100 rounded-t-2xl overflow-hidden -mx-6 -mt-6 mb-4">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={post.image} alt={post.title} className="w-full h-full object-cover" />
             </div>
             <div className="flex items-center justify-between mb-4">

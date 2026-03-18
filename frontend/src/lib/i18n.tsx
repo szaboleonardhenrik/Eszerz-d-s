@@ -38,9 +38,9 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     (key: string, params?: Record<string, string | number>) => {
       const dict = dictionaries[locale];
       const keys = key.split(".");
-      let val: any = dict;
+      let val: unknown = dict;
       for (const k of keys) {
-        val = val?.[k];
+        val = (val as Record<string, unknown>)?.[k];
         if (val === undefined) return key;
       }
       if (typeof val !== "string") return key;

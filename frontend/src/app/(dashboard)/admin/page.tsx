@@ -39,7 +39,7 @@ interface SubscriptionData {
 interface ActivityEntry {
   id: string;
   eventType: string;
-  eventData: any;
+  eventData: Record<string, unknown>;
   contractTitle: string | null;
   ownerName: string | null;
   ownerEmail: string | null;
@@ -157,6 +157,7 @@ export default function AdminDashboard() {
     if (!ADMIN_ROLES.includes(user?.role ?? "")) return;
     loadData();
     loadAuthSigners();
+     
   }, [user]);
 
   const loadAuthSigners = async () => {
@@ -180,8 +181,9 @@ export default function AdminDashboard() {
       setEditingSignerId(null);
       setSignerFormOpen(false);
       loadAuthSigners();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba");
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? "Hiba");
     }
   };
 

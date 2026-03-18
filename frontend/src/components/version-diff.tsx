@@ -19,8 +19,6 @@ function stripHtml(html: string): string[] {
 
 function diffLines(oldLines: string[], newLines: string[]): { type: "same" | "add" | "remove"; text: string }[] {
   const result: { type: "same" | "add" | "remove"; text: string }[] = [];
-  const maxLen = Math.max(oldLines.length, newLines.length);
-
   // Simple line-by-line diff
   let oi = 0, ni = 0;
   while (oi < oldLines.length || ni < newLines.length) {

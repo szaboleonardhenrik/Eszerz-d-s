@@ -125,14 +125,15 @@ export default function AdminUsersPage() {
   const saveEdit = async (userId: string) => {
     setSaving(true);
     try {
-      const payload: any = { subscriptionTier: editTier };
+      const payload: Record<string, string> = { subscriptionTier: editTier };
       if (isSuperadmin) payload.role = editRole;
       await api.patch(`/admin/users/${userId}`, payload);
       toast.success("Felhasználó frissítve");
       setEditingId(null);
       loadUsers();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || "Hiba történt");
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg || "Hiba történt");
     } finally {
       setSaving(false);
     }
@@ -153,8 +154,9 @@ export default function AdminUsersPage() {
       setShowCreate(false);
       setCreateForm({ name: "", email: "", role: "user", subscriptionTier: "free", companyName: "" });
       loadUsers();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || "Hiba történt");
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg || "Hiba történt");
     } finally {
       setCreating(false);
     }
@@ -167,8 +169,9 @@ export default function AdminUsersPage() {
       const res = await api.post(`/admin/users/${u.id}/toggle-active`);
       toast.success(res.data.data.message);
       loadUsers();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || "Hiba történt");
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg || "Hiba történt");
     }
   };
 
@@ -179,8 +182,9 @@ export default function AdminUsersPage() {
       toast.success(res.data.data.message);
       // Reload the page to pick up the new session cookie
       window.location.href = "/dashboard";
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || "Hiba az imperszonálásnál");
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg || "Hiba az imperszonálásnál");
     }
   };
 

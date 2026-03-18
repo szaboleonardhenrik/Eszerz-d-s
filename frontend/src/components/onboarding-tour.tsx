@@ -76,6 +76,7 @@ export default function OnboardingTour() {
   const [validSteps, setValidSteps] = useState<number[]>([]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
@@ -142,6 +143,7 @@ export default function OnboardingTour() {
 
   useEffect(() => {
     if (!active) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     updatePosition();
 
     const onResize = () => updatePosition();

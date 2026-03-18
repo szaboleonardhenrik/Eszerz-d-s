@@ -31,11 +31,13 @@ export default function AdminApiUsagePage() {
 
   useEffect(() => {
     if (!ADMIN_ROLES.includes(user?.role ?? "")) return;
+    let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     api.get(`/admin/api-usage?days=${days}`).then((res) => {
-      setData(res.data.data);
-      setLoading(false);
-    }).catch(() => setLoading(false));
+      if (!cancelled) { setData(res.data.data); setLoading(false); }
+    }).catch(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, [user, days]);
 
   if (!ADMIN_ROLES.includes(user?.role ?? "")) {

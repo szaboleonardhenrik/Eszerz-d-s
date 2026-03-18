@@ -72,11 +72,9 @@ export default function ChatWidget() {
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, aiMessage]);
-    } catch (err: any) {
-      const errorMsg =
-        err?.response?.status === 429
-          ? t("chat.rateLimitError")
-          : t("chat.genericError");
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      const errorMsg = status === 429 ? t("chat.rateLimitError") : t("chat.genericError");
 
       setMessages((prev) => [
         ...prev,

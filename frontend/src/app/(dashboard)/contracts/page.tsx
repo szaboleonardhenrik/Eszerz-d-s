@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
@@ -70,6 +70,7 @@ export default function ContractsListPage() {
     } finally {
       setLoading(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, statusFilter, search]);
 
   useEffect(() => {

@@ -88,14 +88,16 @@ export default function QuoteViewPage() {
   const [sendingComment, setSendingComment] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { loadQuote(); loadComments(); }, [token]);
 
   const loadQuote = async () => {
     try {
       const res = await axios.get(`${API}/quote-view/${token}`);
       setQuote(res.data.data);
-    } catch (err: any) {
-      setError(err.response?.data?.error?.message ?? "Az ajánlat nem található vagy már nem érvényes.");
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      setError(axiosMsg ?? "Az ajánlat nem található vagy már nem érvényes.");
     } finally {
       setLoading(false);
     }
@@ -106,8 +108,9 @@ export default function QuoteViewPage() {
     try {
       await axios.post(`${API}/quote-view/${token}/accept`);
       setActionDone("accepted");
-    } catch (err: any) {
-      setError(err.response?.data?.error?.message ?? "Hiba történt");
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      setError(axiosMsg ?? "Hiba történt");
     } finally {
       setActing(false);
     }
@@ -118,8 +121,9 @@ export default function QuoteViewPage() {
     try {
       await axios.post(`${API}/quote-view/${token}/decline`, { reason: declineReason });
       setActionDone("declined");
-    } catch (err: any) {
-      setError(err.response?.data?.error?.message ?? "Hiba történt");
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      setError(axiosMsg ?? "Hiba történt");
     } finally {
       setActing(false);
     }
@@ -254,6 +258,7 @@ export default function QuoteViewPage() {
         <div className="max-w-4xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
             {quote.owner?.brandLogoUrl && (
+              /* eslint-disable-next-line @next/next/no-img-element */
               <img src={quote.owner.brandLogoUrl} alt="Logo" className="h-8 object-contain" />
             )}
             <span className="text-white font-semibold text-lg">

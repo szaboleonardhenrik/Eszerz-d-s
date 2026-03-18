@@ -32,8 +32,10 @@ function TwoFactorVerifyContent() {
       const { user } = res.data.data;
       useAuth.setState({ user, token: null });
       router.push("/dashboard");
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Érvénytelen kód");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Érvénytelen kód";
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? message);
     } finally {
       setLoading(false);
     }

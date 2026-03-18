@@ -62,13 +62,15 @@ export default function PartnersPage() {
   const [linkCompanyId, setLinkCompanyId] = useState("");
   const [linkRole, setLinkRole] = useState("");
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { load(); }, [search, groupFilter]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { loadGroups(); loadCompanies(); }, []);
 
   const load = async () => {
     setLoading(true);
     try {
-      const params: any = { withStats: "true" };
+      const params: Record<string, string> = { withStats: "true" };
       if (search) params.search = search;
       if (groupFilter) params.group = groupFilter;
       const res = await api.get("/contacts", { params });
@@ -86,13 +88,14 @@ export default function PartnersPage() {
 
   const loadCompanies = async () => {
     try {
-      const params: any = {};
+      const params: Record<string, string> = {};
       if (companySearch) params.search = companySearch;
       const res = await api.get("/contacts/companies/list", { params });
       setCompanies(res.data.data ?? []);
     } catch {}
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (tab === "companies") loadCompanies(); }, [companySearch, tab]);
 
   const handleSubmit = async () => {
@@ -111,8 +114,9 @@ export default function PartnersPage() {
       setEditingId(null);
       load();
       loadGroups();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? t("contacts.genericError"));
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? t("contacts.genericError"));
     } finally { setSaving(false); }
   };
 
@@ -131,8 +135,9 @@ export default function PartnersPage() {
       setShowCompanyForm(false);
       setEditingCompanyId(null);
       loadCompanies();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? t("contacts.genericError"));
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? t("contacts.genericError"));
     } finally { setSaving(false); }
   };
 
@@ -146,8 +151,9 @@ export default function PartnersPage() {
       setLinkRole("");
       load();
       loadCompanies();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? t("contacts.genericError"));
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? t("contacts.genericError"));
     }
   };
 
@@ -192,7 +198,7 @@ export default function PartnersPage() {
 
   const handleExport = async (format: "csv" | "json") => {
     try {
-      const params: any = { format };
+      const params: Record<string, string> = { format };
       if (groupFilter) params.group = groupFilter;
       const res = await api.get("/contacts/export", { params, responseType: "blob" });
       const blob = new Blob([res.data], { type: format === "json" ? "application/json" : "text/csv" });

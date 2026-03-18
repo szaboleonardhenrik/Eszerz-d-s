@@ -19,6 +19,7 @@ export default function AdminMaintenancePage() {
   useEffect(() => {
     if (!ADMIN_ROLES.includes(user?.role ?? "")) return;
     loadStatus();
+     
   }, [user]);
 
   const loadStatus = async () => {
@@ -47,8 +48,9 @@ export default function AdminMaintenancePage() {
           ? "Karbantartási mód bekapcsolva."
           : "Karbantartási mód kikapcsolva."
       );
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || "Hiba történt a mentés során.");
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg || "Hiba történt a mentés során.");
     } finally {
       setSaving(false);
     }

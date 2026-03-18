@@ -69,6 +69,7 @@ export default function AdminPromoCodesPage() {
   useEffect(() => {
     if (!ADMIN_ROLES.includes(user?.role ?? "")) return;
     loadPromoCodes();
+     
   }, [user]);
 
   const loadPromoCodes = async () => {
@@ -108,8 +109,9 @@ export default function AdminPromoCodesPage() {
       setForm(defaultForm);
       setShowForm(false);
       loadPromoCodes();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || "Hiba t\u00f6rt\u00e9nt a l\u00e9trehoz\u00e1s sor\u00e1n");
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg || "Hiba t\u00f6rt\u00e9nt a l\u00e9trehoz\u00e1s sor\u00e1n");
     } finally {
       setSubmitting(false);
     }

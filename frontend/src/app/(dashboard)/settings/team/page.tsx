@@ -20,11 +20,7 @@ interface Team {
   members: TeamMember[];
 }
 
-const roleLabels: Record<string, string> = {
-  admin: "Admin",
-  member: "Tag",
-  viewer: "Megtekintő",
-};
+
 
 export default function TeamSettings() {
   const { t } = useI18n();
@@ -54,8 +50,9 @@ export default function TeamSettings() {
       toast.success("Tag meghívva!");
       setEmail("");
       loadTeam();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba a meghívásnál");
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? "Hiba a meghívásnál");
     } finally {
       setInviting(false);
     }
@@ -67,8 +64,9 @@ export default function TeamSettings() {
       await api.delete(`/teams/members/${memberId}`);
       toast.success("Tag eltávolítva");
       loadTeam();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba");
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? "Hiba");
     }
   };
 
@@ -77,8 +75,9 @@ export default function TeamSettings() {
       await api.patch(`/teams/members/${memberId}`, { role: newRole });
       toast.success("Szerepkör frissítve");
       loadTeam();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message ?? "Hiba");
+    } catch (err: unknown) {
+      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(axiosMsg ?? "Hiba");
     }
   };
 
