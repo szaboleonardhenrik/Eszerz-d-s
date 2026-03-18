@@ -1,0 +1,42 @@
+#!/bin/bash
+echo "🔍 Pre-push: Running full test suite before push..."
+
+# 1. Frontend build (catches TypeScript errors)
+echo "📦 Building frontend..."
+npm run build --workspace=frontend
+if [ $? -ne 0 ]; then
+  echo "❌ Frontend build failed! Fix TypeScript/build errors before pushing."
+  exit 1
+fi
+
+# 2. Backend unit tests
+echo "🧪 Running backend tests..."
+npm test --workspace=backend
+if [ $? -ne 0 ]; then
+  echo "❌ Backend tests failed! Fix failing tests before pushing."
+  exit 1
+fi
+
+# 3. Frontend unit tests (if vitest is installed)
+if [ -f "frontend/vitest.config.ts" ]; then
+  echo "🧪 Running frontend tests..."
+  npm test --workspace=frontend
+  if [ $? -ne 0 ]; then
+    echo "❌ Frontend tests failed! Fix failing tests before pushing."
+    exit 1
+  fi
+fi
+
+# 4. Playwright E2E tests (with auth if .env.e2e exists)
+echo "🎭 Running E2E tests..."
+if [ -f ".env.e2e" ]; then
+  echo "   (with authenticated tests)"
+  set -a && source .env.e2e && set +a
+fi
+npx playwright test
+if [ $? -ne 0 ]; then
+  echo "❌ E2E tests failed! Fix failing tests before pushing."
+  exit 1
+fi
+
+echo "✅ All checks passed. Pushing..."

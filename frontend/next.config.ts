@@ -58,7 +58,10 @@ const finalConfig = process.env.NEXT_PUBLIC_SENTRY_DSN
       // Disable source map upload unless auth token is provided
       sourcemaps: {
         disable: !process.env.SENTRY_AUTH_TOKEN,
+        deleteSourcemapsAfterUpload: true,
       },
+      // Don't expose source maps to end users
+      hideSourceMaps: true,
       // Disable telemetry
       telemetry: false,
     })

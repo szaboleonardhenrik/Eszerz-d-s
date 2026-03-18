@@ -8,6 +8,8 @@ import { TIER_MONTHLY_CREDITS } from '../credits/credits.service';
 @Injectable()
 export class SchedulerService {
   private readonly logger = new Logger(SchedulerService.name);
+  private lastAlertSentAt: number = 0;
+  private static readonly ALERT_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
 
   constructor(
     private readonly prisma: PrismaService,
@@ -609,5 +611,72 @@ export class SchedulerService {
     }
 
     this.logger.log(`Monthly credit grant complete: ${totalGranted} users received credits`);
+  }
+
+  /** Every 5 minutes - uptime monitoring via health endpoint */
+  @Cron('*/5 * * * *')
+  async checkHealth() {
+    const healthUrl = 'http://localhost:3001/api/health';
+    const alertEmail = 'info@legitas.hu';
+
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10_000);
+
+      const response = await fetch(healthUrl, { signal: controller.signal });
+      clearTimeout(timeout);
+
+      if (!response.ok) {
+        this.logger.error(`Health check failed: HTTP ${response.status}`);
+        await this.sendHealthAlert(alertEmail, `Health endpoint returned HTTP ${response.status}`);
+        return;
+      }
+
+      const data = await response.json() as {
+        status: string;
+        services: Record<string, string>;
+      };
+
+      if (data.status !== 'ok') {
+        const downServices = Object.entries(data.services)
+          .filter(([, v]) => v !== 'ok')
+          .map(([k, v]) => `${k}: ${v}`)
+          .join(', ');
+
+        this.logger.warn(`Health check degraded: ${downServices}`);
+        await this.sendHealthAlert(
+          alertEmail,
+          `Rendszer állapot: ${data.status}\nLeállt szolgáltatások: ${downServices}`,
+        );
+      } else {
+        this.logger.debug('Health check passed - all services OK');
+      }
+    } catch (error: any) {
+      const message = error?.name === 'AbortError'
+        ? 'Health check timed out (10s)'
+        : `Health check error: ${error?.message || 'Unknown error'}`;
+
+      this.logger.error(message);
+      await this.sendHealthAlert(alertEmail, message);
+    }
+  }
+
+  private async sendHealthAlert(to: string, details: string) {
+    const now = Date.now();
+    if (now - this.lastAlertSentAt < SchedulerService.ALERT_COOLDOWN_MS) {
+      this.logger.warn('Health alert suppressed (cooldown active)');
+      return;
+    }
+
+    try {
+      await this.notificationsService.sendSystemAlert({
+        to,
+        subject: '[Legitas] Rendszerriasztás - szolgáltatás leállás',
+        body: details,
+      });
+      this.lastAlertSentAt = now;
+    } catch (error) {
+      this.logger.error('Failed to send health alert email', error);
+    }
   }
 }

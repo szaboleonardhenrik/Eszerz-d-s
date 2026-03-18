@@ -1,5 +1,7 @@
 import { defineConfig } from '@playwright/test';
 
+const isLocalhost = process.env.E2E_BASE_URL?.includes('localhost');
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: false,
@@ -7,6 +9,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: 1,
   reporter: [['html'], ['list']],
+  timeout: 30000,
   use: {
     baseURL: process.env.E2E_BASE_URL || 'https://legitas.hu',
     trace: 'on-first-retry',
@@ -24,4 +27,22 @@ export default defineConfig({
       dependencies: ['setup'],
     },
   ],
+  ...(isLocalhost && {
+    webServer: [
+      {
+        command: 'npm run start:dev',
+        cwd: './backend',
+        port: 3001,
+        reuseExistingServer: true,
+        timeout: 30000,
+      },
+      {
+        command: 'npm run dev',
+        cwd: './frontend',
+        port: 3000,
+        reuseExistingServer: true,
+        timeout: 30000,
+      },
+    ],
+  }),
 });

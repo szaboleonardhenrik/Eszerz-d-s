@@ -12,8 +12,12 @@
     "dev:backend": "npm run start:dev --workspace=backend",
     "build": "npm run build --workspace=frontend && npm run build --workspace=backend",
     "lint": "npm run lint --workspace=frontend && npm run lint --workspace=backend",
+    "test": "npm test --workspace=backend",
     "test:e2e": "npx playwright test",
-    "test:e2e:ui": "npx playwright test --ui"
+    "test:e2e:auth": "source .env.e2e && npx playwright test",
+    "test:e2e:ui": "npx playwright test --ui",
+    "precheck": "npm run build --workspace=frontend && npm test --workspace=backend && npx playwright test",
+    "prepare": "git config core.hooksPath .githooks"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",

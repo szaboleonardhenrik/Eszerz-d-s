@@ -37,6 +37,6 @@ test.describe('Contract Creation Flow', () => {
 
   test('compare page loads', async ({ page }) => {
     await page.goto('/contracts/compare');
-    await expect(page.locator('body')).toContainText(/Összehasonlít|compare|verzió/i);
+    await expect(page.locator('body')).toContainText(/sszehasonl|compare|verzió/i);
   });
 });

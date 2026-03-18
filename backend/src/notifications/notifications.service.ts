@@ -1144,4 +1144,26 @@ export class NotificationsService {
       this.logger.error(`Failed to send payment failed email to ${params.to}`, error);
     }
   }
+
+  async sendSystemAlert(params: { to: string; subject: string; body: string }) {
+    try {
+      await this.sendAndLog({
+        from: this.fromEmail,
+        to: params.to,
+        subject: params.subject,
+        html: this.wrap(`
+          <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
+            <h2 style="color:#dc2626;">Rendszerriasztás</h2>
+            <div style="background:#fef2f2;border:1px solid #fecaca;padding:16px;border-radius:8px;margin:16px 0;">
+              <pre style="white-space:pre-wrap;font-size:14px;margin:0;">${params.body}</pre>
+            </div>
+            <p style="font-size:12px;color:#999;">Ez egy automatikus rendszerértesítés a Legitas monitoringtól.</p>
+          </div>
+        `),
+      }, { type: 'system_alert' });
+      this.logger.log(`System alert sent to ${params.to}: ${params.subject}`);
+    } catch (error) {
+      this.logger.error(`Failed to send system alert to ${params.to}`, error);
+    }
+  }
 }

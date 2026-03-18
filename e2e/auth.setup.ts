@@ -8,6 +8,14 @@ setup('authenticate', async ({ page }) => {
   setup.skip(!process.env.E2E_PASSWORD, 'Set E2E_PASSWORD to run authenticated tests');
 
   await page.goto('/login');
+
+  // Dismiss cookie banner if present (it can block the login button)
+  const cookieAccept = page.locator('button:has-text("Elfogadom")');
+  if (await cookieAccept.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await cookieAccept.click();
+    await page.waitForTimeout(500);
+  }
+
   await page.fill('input[type="email"]', TEST_EMAIL);
   await page.fill('input[type="password"]', TEST_PASSWORD);
   await page.click('button[type="submit"]');

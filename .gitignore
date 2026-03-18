@@ -11,5 +11,6 @@ coverage/
 *.db
 *.db-journal
 .auth/
+.env.e2e
 test-results/
 playwright-report/

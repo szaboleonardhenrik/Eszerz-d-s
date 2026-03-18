@@ -1,0 +1,16 @@
+#!/bin/bash
+echo "🔍 Pre-commit: Quick checks..."
+
+# Only lint staged frontend files (not the whole project)
+STAGED_FRONTEND=$(git diff --cached --name-only --diff-filter=ACM | grep '^frontend/src/.*\.\(ts\|tsx\)$' | sed 's|^frontend/||' || true)
+
+if [ -n "$STAGED_FRONTEND" ]; then
+  echo "📝 Linting staged frontend files..."
+  cd frontend && npx eslint $STAGED_FRONTEND && cd ..
+  if [ $? -ne 0 ]; then
+    echo "❌ Frontend lint failed on staged files! Fix ESLint errors before committing."
+    exit 1
+  fi
+fi
+
+echo "✅ Pre-commit checks passed."
