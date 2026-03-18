@@ -607,6 +607,7 @@ function CreateWizardInner() {
                 <input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
+                  data-testid="create-title"
                   className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-violet-500 outline-none shadow-sm"
                 />
               </div>
@@ -738,7 +739,7 @@ function CreateWizardInner() {
               <button onClick={() => setStep(1)} className="px-5 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium">
                 {t("common.back")}
               </button>
-              <button onClick={() => setStep(3)} className={`px-6 py-3 text-white rounded-xl font-semibold transition-all hover:shadow-lg bg-gradient-to-r ${theme.bg}`}>
+              <button onClick={() => setStep(3)} data-testid="create-step2-next" className={`px-6 py-3 text-white rounded-xl font-semibold transition-all hover:shadow-lg bg-gradient-to-r ${theme.bg}`}>
                 {t("common.next")}
               </button>
             </div>
@@ -1009,7 +1010,7 @@ function CreateWizardInner() {
                   ))}
                 </div>
 
-                <button onClick={addSigner} className="mt-4 flex items-center gap-2 text-sm text-violet-600 hover:text-violet-700 font-semibold">
+                <button onClick={addSigner} data-testid="create-add-signer" className="mt-4 flex items-center gap-2 text-sm text-violet-600 hover:text-violet-700 font-semibold">
                   <Ico d="M12 4v16m8-8H4" className="w-4 h-4" />
                   {t("create.partner.addSigner")}
                 </button>
@@ -1067,7 +1068,7 @@ function CreateWizardInner() {
               <button onClick={() => setStep(2)} className="px-5 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium">
                 {t("common.back")}
               </button>
-              <button onClick={() => setStep(4)} className={`px-6 py-3 text-white rounded-xl font-semibold transition-all hover:shadow-lg bg-gradient-to-r ${theme.bg}`}>
+              <button onClick={() => setStep(4)} data-testid="create-step3-next" className={`px-6 py-3 text-white rounded-xl font-semibold transition-all hover:shadow-lg bg-gradient-to-r ${theme.bg}`}>
                 {t("common.next")}
               </button>
             </div>
@@ -1187,6 +1188,7 @@ function CreateWizardInner() {
               <button
                 onClick={handleSubmit}
                 disabled={loading}
+                data-testid="create-submit"
                 className={`px-8 py-3 text-white rounded-xl font-bold transition-all hover:shadow-xl bg-gradient-to-r ${theme.bg} disabled:opacity-50 flex items-center gap-2`}
               >
                 {loading ? (

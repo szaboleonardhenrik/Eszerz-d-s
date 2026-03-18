@@ -96,6 +96,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                data-testid="login-email"
                 className="w-full px-4 py-2.5 border dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-brand-teal/50 focus:border-brand-teal outline-none transition dark:bg-gray-700 dark:text-gray-100"
                 placeholder="pelda@ceg.hu"
               />
@@ -108,6 +109,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                data-testid="login-password"
                 className="w-full px-4 py-2.5 border dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-brand-teal/50 focus:border-brand-teal outline-none transition dark:bg-gray-700 dark:text-gray-100"
                 placeholder="••••••••"
               />
@@ -116,6 +118,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
+              data-testid="login-submit"
               className="w-full bg-brand-teal-dark text-white py-3 rounded-xl font-semibold hover:bg-brand-teal-darker disabled:opacity-50 transition"
             >
               {loading ? t("auth.loggingIn") : t("auth.loginBtn")}
@@ -135,6 +138,7 @@ export default function LoginPage() {
 
             <a
               href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/auth/google`}
+              data-testid="login-google"
               className="w-full flex items-center justify-center gap-3 bg-white dark:bg-gray-700 border dark:border-gray-600 py-2.5 rounded-xl font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">

@@ -91,6 +91,7 @@ export default function GlobalSearch() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(true)}
+        data-testid="search-button"
         className="flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-lg border border-white/20 bg-white/10 hover:bg-white/20 text-white/80 text-sm transition min-w-[120px] sm:min-w-[180px]"
       >
         <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -113,6 +114,7 @@ export default function GlobalSearch() {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder={t("globalSearch.placeholder")}
+                  data-testid="search-input"
                   className="flex-1 bg-transparent outline-none text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400"
                   autoFocus
                 />

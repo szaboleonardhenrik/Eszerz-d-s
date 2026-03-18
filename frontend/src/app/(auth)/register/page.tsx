@@ -141,6 +141,7 @@ export default function RegisterPage() {
                 value={form.name}
                 onChange={(e) => update("name", e.target.value)}
                 required
+                data-testid="register-name"
                 className="w-full px-4 py-2.5 border dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-brand-teal/50 focus:border-brand-teal outline-none transition dark:bg-gray-700 dark:text-gray-100"
                 placeholder="Kovács János"
               />
@@ -153,6 +154,7 @@ export default function RegisterPage() {
                 value={form.email}
                 onChange={(e) => update("email", e.target.value)}
                 required
+                data-testid="register-email"
                 className="w-full px-4 py-2.5 border dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-brand-teal/50 focus:border-brand-teal outline-none transition dark:bg-gray-700 dark:text-gray-100"
                 placeholder="kovacs@ceg.hu"
               />
@@ -166,6 +168,7 @@ export default function RegisterPage() {
                 onChange={(e) => update("password", e.target.value)}
                 required
                 minLength={8}
+                data-testid="register-password"
                 className="w-full px-4 py-2.5 border dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-brand-teal/50 focus:border-brand-teal outline-none transition dark:bg-gray-700 dark:text-gray-100"
                 placeholder="Min. 8 karakter, kis- és nagybetű, szám, speciális karakter"
               />
@@ -251,6 +254,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading || !form.acceptTerms}
+              data-testid="register-submit"
               className="w-full bg-brand-gold text-white py-3 rounded-xl font-semibold hover:bg-brand-gold-dark disabled:opacity-50 transition shadow-sm"
             >
               {loading ? t("auth.registering") : t("auth.registerFree")}

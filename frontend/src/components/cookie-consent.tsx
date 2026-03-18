@@ -121,6 +121,7 @@ export default function CookieConsent() {
                 <div className="pt-2">
                   <button
                     onClick={saveSelected}
+                    data-testid="cookie-save"
                     className="w-full py-2.5 rounded-xl text-sm font-semibold bg-brand-teal-dark hover:bg-brand-teal-darker text-white transition"
                   >
                     {t("cookie.save")}
@@ -133,18 +134,21 @@ export default function CookieConsent() {
               <div className="flex gap-2">
                 <button
                   onClick={() => setShowSettings(true)}
+                  data-testid="cookie-settings"
                   className="flex-1 py-2.5 rounded-xl text-sm font-medium border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
                 >
                   {t("cookie.settings")}
                 </button>
                 <button
                   onClick={essentialOnly}
+                  data-testid="cookie-essential-only"
                   className="flex-1 py-2.5 rounded-xl text-sm font-medium border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
                 >
                   {t("cookie.essentialOnly")}
                 </button>
                 <button
                   onClick={acceptAll}
+                  data-testid="cookie-accept-all"
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-brand-teal-dark hover:bg-brand-teal-darker text-white transition"
                 >
                   {t("cookie.acceptAll")}
@@ -158,6 +162,7 @@ export default function CookieConsent() {
       {hasConsent && !visible && (
         <button
           onClick={resetConsent}
+          data-testid="cookie-withdrawal"
           className="fixed bottom-4 left-4 z-50 px-3 py-1.5 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm hover:shadow transition"
         >
           {t("cookie.cookieSettings")}
