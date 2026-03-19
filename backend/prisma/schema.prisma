@@ -908,7 +908,7 @@ model BulkOperation {
 model TestResult {
   id          String   @id @default(uuid())
   testId      String   @unique @map("test_id")
-  status      String   @default("pending") // pending | in_progress | pass | fail | blocked
+  status      String   @default("pending")
   assignedTo  String?  @map("assigned_to")
   notes       String?
   screenshots String[] @default([])
@@ -921,10 +921,10 @@ model TestResult {
 
 model ManualTestCase {
   id         String   @id @default(uuid())
-  module     String                          // pl. "Auth", "Signing", stb.
-  task       String                          // feladat leírása
-  priority   String   @default("medium")     // critical | high | medium | low
-  status     String   @default("pending")    // pending | in_progress | pass | fail | blocked
+  module     String
+  task       String
+  priority   String   @default("medium")
+  status     String   @default("pending")
   assignedTo String?  @map("assigned_to")
   notes      String?
   createdBy  String?  @map("created_by")
@@ -933,4 +933,41 @@ model ManualTestCase {
 
   @@index([module])
   @@map("manual_test_cases")
+}
+
+model TestSection {
+  id        String     @id @default(uuid())
+  title     String
+  icon      String     @default("📋")
+  category  String     @default("General") // Sales | Back office | Dev | QA | General
+  sortOrder Int        @default(0) @map("sort_order")
+  createdBy String?    @map("created_by")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+  cases     TestCase[]
+
+  @@map("test_sections")
+}
+
+model TestCase {
+  id          String      @id @default(uuid())
+  sectionId   String      @map("section_id")
+  section     TestSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  title       String
+  description String      @default("")
+  steps       String[]    @default([])
+  expected    String      @default("")
+  priority    String      @default("medium") // critical | high | medium | low
+  sortOrder   Int         @default(0) @map("sort_order")
+  status      String      @default("pending") // pending | in_progress | pass | fail | blocked
+  assignedTo  String?     @map("assigned_to")
+  notes       String?
+  screenshots String[]    @default([])
+  createdBy   String?     @map("created_by")
+  updatedBy   String?     @map("updated_by")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  @@index([sectionId])
+  @@map("test_cases")
 }

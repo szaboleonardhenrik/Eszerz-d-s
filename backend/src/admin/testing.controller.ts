@@ -23,59 +23,157 @@ export class TestingController {
     return user;
   }
 
+  // ─── Sections ───
+
   @UseGuards(JwtAuthGuard)
-  @Get()
+  @Get('sections')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async getAll(@Req() req: any) {
+  async getSections(@Req() req: any) {
     await this.checkAccess(req.user.userId);
-    const results = await this.prisma.testResult.findMany();
-    return ApiResponse.ok(results);
+    const sections = await this.prisma.testSection.findMany({
+      include: { cases: { orderBy: { sortOrder: 'asc' } } },
+      orderBy: { sortOrder: 'asc' },
+    });
+    return ApiResponse.ok(sections);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Put(':testId')
-  async update(
-    @Param('testId') testId: string,
+  @Post('sections')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async createSection(
+    @Req() req: any,
+    @Body() body: { title: string; icon?: string; category?: string },
+  ) {
+    const user = await this.checkAccess(req.user.userId);
+    const maxOrder = await this.prisma.testSection.aggregate({ _max: { sortOrder: true } });
+    const section = await this.prisma.testSection.create({
+      data: {
+        title: body.title,
+        icon: body.icon || '📋',
+        category: body.category || 'General',
+        sortOrder: (maxOrder._max.sortOrder ?? -1) + 1,
+        createdBy: user.name,
+      },
+      include: { cases: true },
+    });
+    return ApiResponse.ok(section);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('sections/:id')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async updateSection(
+    @Param('id') id: string,
+    @Req() req: any,
+    @Body() body: { title?: string; icon?: string; category?: string; sortOrder?: number },
+  ) {
+    await this.checkAccess(req.user.userId);
+    const section = await this.prisma.testSection.update({
+      where: { id },
+      data: {
+        ...(body.title !== undefined ? { title: body.title } : {}),
+        ...(body.icon !== undefined ? { icon: body.icon } : {}),
+        ...(body.category !== undefined ? { category: body.category } : {}),
+        ...(body.sortOrder !== undefined ? { sortOrder: body.sortOrder } : {}),
+      },
+      include: { cases: { orderBy: { sortOrder: 'asc' } } },
+    });
+    return ApiResponse.ok(section);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('sections/:id')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async deleteSection(@Param('id') id: string, @Req() req: any) {
+    await this.checkAccess(req.user.userId);
+    await this.prisma.testSection.delete({ where: { id } });
+    return ApiResponse.ok({ deleted: true });
+  }
+
+  // ─── Cases ───
+
+  @UseGuards(JwtAuthGuard)
+  @Post('cases')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async createCase(
+    @Req() req: any,
+    @Body() body: { sectionId: string; title: string; description?: string; steps?: string[]; expected?: string; priority?: string },
+  ) {
+    const user = await this.checkAccess(req.user.userId);
+    const maxOrder = await this.prisma.testCase.aggregate({
+      where: { sectionId: body.sectionId },
+      _max: { sortOrder: true },
+    });
+    const tc = await this.prisma.testCase.create({
+      data: {
+        sectionId: body.sectionId,
+        title: body.title,
+        description: body.description || '',
+        steps: body.steps || [],
+        expected: body.expected || '',
+        priority: body.priority || 'medium',
+        sortOrder: (maxOrder._max.sortOrder ?? -1) + 1,
+        createdBy: user.name,
+      },
+    });
+    return ApiResponse.ok(tc);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('cases/:id')
+  async updateCase(
+    @Param('id') id: string,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     @Req() req: any,
-    @Body() body: { status?: string; assignedTo?: string; notes?: string; screenshotBase64?: string },
+    @Body() body: {
+      title?: string; description?: string; steps?: string[]; expected?: string;
+      priority?: string; sortOrder?: number; status?: string; assignedTo?: string;
+      notes?: string; screenshotBase64?: string;
+    },
   ) {
     const user = await this.checkAccess(req.user.userId);
 
-    // Upload screenshot if provided
     let screenshotUrl: string | undefined;
     if (body.screenshotBase64) {
       const buf = Buffer.from(body.screenshotBase64.replace(/^data:image\/\w+;base64,/, ''), 'base64');
-      const key = `test-screenshots/${testId}/${randomUUID()}.png`;
+      const key = `test-screenshots/${id}/${randomUUID()}.png`;
       await this.storageService.uploadImage(key, buf);
       screenshotUrl = key;
     }
 
-    // Get existing screenshots to append
-    const existing = await this.prisma.testResult.findUnique({ where: { testId }, select: { screenshots: true } });
-    const currentScreenshots = existing?.screenshots || [];
+    const existing = screenshotUrl
+      ? await this.prisma.testCase.findUnique({ where: { id }, select: { screenshots: true } })
+      : null;
 
-    const result = await this.prisma.testResult.upsert({
-      where: { testId },
-      create: {
-        testId,
-        status: body.status || 'pending',
-        assignedTo: body.assignedTo,
-        notes: body.notes,
-        screenshots: screenshotUrl ? [screenshotUrl] : [],
-        updatedBy: user.name,
-      },
-      update: {
+    const tc = await this.prisma.testCase.update({
+      where: { id },
+      data: {
+        ...(body.title !== undefined ? { title: body.title } : {}),
+        ...(body.description !== undefined ? { description: body.description } : {}),
+        ...(body.steps !== undefined ? { steps: body.steps } : {}),
+        ...(body.expected !== undefined ? { expected: body.expected } : {}),
+        ...(body.priority !== undefined ? { priority: body.priority } : {}),
+        ...(body.sortOrder !== undefined ? { sortOrder: body.sortOrder } : {}),
         ...(body.status !== undefined ? { status: body.status } : {}),
         ...(body.assignedTo !== undefined ? { assignedTo: body.assignedTo } : {}),
         ...(body.notes !== undefined ? { notes: body.notes } : {}),
-        ...(screenshotUrl ? { screenshots: [...currentScreenshots, screenshotUrl] } : {}),
+        ...(screenshotUrl ? { screenshots: [...(existing?.screenshots || []), screenshotUrl] } : {}),
         updatedBy: user.name,
       },
     });
-
-    return ApiResponse.ok(result);
+    return ApiResponse.ok(tc);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('cases/:id')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async deleteCase(@Param('id') id: string, @Req() req: any) {
+    await this.checkAccess(req.user.userId);
+    await this.prisma.testCase.delete({ where: { id } });
+    return ApiResponse.ok({ deleted: true });
+  }
+
+  // ─── Utils ───
 
   @UseGuards(JwtAuthGuard)
   @Get('screenshot')
@@ -93,74 +191,10 @@ export class TestingController {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async getTeam(@Req() req: any) {
     await this.checkAccess(req.user.userId);
-
     const members = await this.prisma.user.findMany({
       where: { role: { in: ['superadmin', 'employee'] } },
       select: { id: true, name: true, email: true, role: true },
     });
     return ApiResponse.ok(members);
-  }
-
-  // --- Manual test cases ---
-
-  @UseGuards(JwtAuthGuard)
-  @Get('manual')
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async getManualCases(@Req() req: any) {
-    await this.checkAccess(req.user.userId);
-    const cases = await this.prisma.manualTestCase.findMany({ orderBy: [{ module: 'asc' }, { createdAt: 'asc' }] });
-    return ApiResponse.ok(cases);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Post('manual')
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async createManualCase(
-    @Req() req: any,
-    @Body() body: { module: string; task: string; priority?: string; assignedTo?: string },
-  ) {
-    const user = await this.checkAccess(req.user.userId);
-    const tc = await this.prisma.manualTestCase.create({
-      data: {
-        module: body.module,
-        task: body.task,
-        priority: body.priority || 'medium',
-        assignedTo: body.assignedTo,
-        createdBy: user.name,
-      },
-    });
-    return ApiResponse.ok(tc);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Put('manual/:id')
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async updateManualCase(
-    @Param('id') id: string,
-    @Req() req: any,
-    @Body() body: { module?: string; task?: string; priority?: string; status?: string; assignedTo?: string; notes?: string },
-  ) {
-    await this.checkAccess(req.user.userId);
-    const tc = await this.prisma.manualTestCase.update({
-      where: { id },
-      data: {
-        ...(body.module !== undefined ? { module: body.module } : {}),
-        ...(body.task !== undefined ? { task: body.task } : {}),
-        ...(body.priority !== undefined ? { priority: body.priority } : {}),
-        ...(body.status !== undefined ? { status: body.status } : {}),
-        ...(body.assignedTo !== undefined ? { assignedTo: body.assignedTo } : {}),
-        ...(body.notes !== undefined ? { notes: body.notes } : {}),
-      },
-    });
-    return ApiResponse.ok(tc);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Delete('manual/:id')
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async deleteManualCase(@Param('id') id: string, @Req() req: any) {
-    await this.checkAccess(req.user.userId);
-    await this.prisma.manualTestCase.delete({ where: { id } });
-    return ApiResponse.ok({ deleted: true });
   }
 }
