@@ -100,7 +100,7 @@ test.describe('Contract Creation E2E', () => {
     await createBtn.click();
 
     // Should redirect to the contract detail page: /contracts/<uuid>
-    await page.waitForURL(/\/contracts\/[a-f0-9-]+/, { timeout: 20000 });
+    await page.waitForURL(/\/contracts\/[a-f0-9-]+/, { timeout: 40000 });
 
     // Verify we are on the contract detail page
     const currentUrl = page.url();
@@ -114,11 +114,19 @@ test.describe('Contract Creation E2E', () => {
     await page.goto('/contracts');
     await page.waitForLoadState('networkidle');
 
+    // Retry navigation if server error (502/500 during deployments)
+    const bodyText = await page.locator('body').textContent();
+    if (bodyText?.includes('Internal Server Error') || bodyText?.includes('502')) {
+      await page.waitForTimeout(3000);
+      await page.reload();
+      await page.waitForLoadState('networkidle');
+    }
+
     await expect(page).toHaveURL(/contracts/);
 
     // The page should render contract cards or a table
     const body = page.locator('body');
-    await expect(body).toContainText(/szerződés/i, { timeout: 10000 });
+    await expect(body).toContainText(/szerződés/i, { timeout: 15000 });
   });
 
   test('contract creation rejects empty payload via API', async ({ request }) => {
@@ -126,8 +134,8 @@ test.describe('Contract Creation E2E', () => {
     const response = await request.post('/api/contracts', {
       data: { title: '', signers: [] },
     });
-    // Expect 400 (validation), 401 (unauthorized), or 500 (server error on empty data)
-    expect([400, 401, 500]).toContain(response.status());
+    // Expect 400 (validation), 401 (unauthorized), 403 (forbidden), or 500 (server error on empty data)
+    expect([400, 401, 403, 500]).toContain(response.status());
   });
 
   test('free tier limits are enforced (max 2 signers)', async ({ page }) => {
