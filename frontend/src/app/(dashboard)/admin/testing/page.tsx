@@ -22,6 +22,19 @@ interface TeamMember {
   role: string;
 }
 
+interface ManualTestCase {
+  id: string;
+  module: string;
+  task: string;
+  priority: string;
+  status: string;
+  assignedTo: string | null;
+  notes: string | null;
+  createdBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
   pending: { label: "Várakozik", color: "text-gray-500", bg: "bg-gray-100" },
   in_progress: { label: "Folyamatban", color: "text-blue-600", bg: "bg-blue-100" },
@@ -40,10 +53,12 @@ const priorityConfig: Record<string, { label: string; color: string }> = {
 export default function TestingPage() {
   const [results, setResults] = useState<Record<string, TestResult>>({});
   const [team, setTeam] = useState<TeamMember[]>([]);
+  const [manualCases, setManualCases] = useState<ManualTestCase[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedSection, setExpandedSection] = useState<string | null>("auth");
   const [expandedCase, setExpandedCase] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>("all"); // all | my | pending | fail
+  const [activeTab, setActiveTab] = useState<"auto" | "manual">("auto");
 
   useEffect(() => {
     loadData();
@@ -51,18 +66,49 @@ export default function TestingPage() {
 
   const loadData = async () => {
     try {
-      const [resultsRes, teamRes] = await Promise.all([
+      const [resultsRes, teamRes, manualRes] = await Promise.all([
         api.get("/admin/testing"),
         api.get("/admin/testing/team"),
+        api.get("/admin/testing/manual"),
       ]);
       const resultsMap: Record<string, TestResult> = {};
       for (const r of resultsRes.data.data) resultsMap[r.testId] = r;
       setResults(resultsMap);
       setTeam(teamRes.data.data);
+      setManualCases(manualRes.data.data);
     } catch {
       toast.error("Hiba a betöltéskor");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const createManualCase = async (module: string, task: string) => {
+    try {
+      const res = await api.post("/admin/testing/manual", { module, task });
+      setManualCases((prev) => [...prev, res.data.data]);
+      toast.success("Teszt eset hozzáadva");
+    } catch {
+      toast.error("Hiba a létrehozáskor");
+    }
+  };
+
+  const updateManualCase = async (id: string, data: Partial<ManualTestCase>) => {
+    try {
+      const res = await api.put(`/admin/testing/manual/${id}`, data);
+      setManualCases((prev) => prev.map((c) => (c.id === id ? res.data.data : c)));
+    } catch {
+      toast.error("Hiba a mentéskor");
+    }
+  };
+
+  const deleteManualCase = async (id: string) => {
+    try {
+      await api.delete(`/admin/testing/manual/${id}`);
+      setManualCases((prev) => prev.filter((c) => c.id !== id));
+      toast.success("Törölve");
+    } catch {
+      toast.error("Hiba a törléskor");
     }
   };
 
@@ -132,6 +178,38 @@ export default function TestingPage() {
         {inProgress > 0 && <div className="bg-blue-400 transition-all" style={{ width: `${(inProgress / totalCases) * 100}%` }} />}
       </div>
 
+      {/* Tab switcher */}
+      <div className="flex gap-1 bg-gray-100 dark:bg-gray-700 rounded-xl p-1">
+        <button
+          onClick={() => setActiveTab("auto")}
+          className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition ${
+            activeTab === "auto" ? "bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm" : "text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          Rendszer tesztek ({totalCases})
+        </button>
+        <button
+          onClick={() => setActiveTab("manual")}
+          className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition ${
+            activeTab === "manual" ? "bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm" : "text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          Manuális tesztek ({manualCases.length})
+        </button>
+      </div>
+
+      {activeTab === "manual" && (
+        <ManualTestTable
+          cases={manualCases}
+          team={team}
+          onCreate={createManualCase}
+          onUpdate={updateManualCase}
+          onDelete={deleteManualCase}
+        />
+      )}
+
+      {activeTab === "auto" && (
+        <>
       {/* Filters */}
       <div className="flex gap-2 flex-wrap">
         {[
@@ -196,6 +274,254 @@ export default function TestingPage() {
           </div>
         );
       })}
+        </>
+      )}
+    </div>
+  );
+}
+
+function ManualTestTable({
+  cases,
+  team,
+  onCreate,
+  onUpdate,
+  onDelete,
+}: {
+  cases: ManualTestCase[];
+  team: TeamMember[];
+  onCreate: (module: string, task: string) => void;
+  onUpdate: (id: string, data: Partial<ManualTestCase>) => void;
+  onDelete: (id: string) => void;
+}) {
+  const [newModule, setNewModule] = useState("");
+  const [newTask, setNewTask] = useState("");
+  const [editingCell, setEditingCell] = useState<{ id: string; field: string } | null>(null);
+  const [editValue, setEditValue] = useState("");
+  const editRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+
+  const startEdit = (id: string, field: string, value: string) => {
+    setEditingCell({ id, field });
+    setEditValue(value);
+    setTimeout(() => editRef.current?.focus(), 0);
+  };
+
+  const commitEdit = () => {
+    if (editingCell) {
+      onUpdate(editingCell.id, { [editingCell.field]: editValue });
+      setEditingCell(null);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); commitEdit(); }
+    if (e.key === "Escape") setEditingCell(null);
+  };
+
+  // Group by module
+  const modules = [...new Set(cases.map((c) => c.module))];
+
+  const sc = statusConfig;
+  const pc = priorityConfig;
+
+  return (
+    <div className="space-y-4">
+      {/* Add new */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
+        <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Új teszt eset hozzáadása</p>
+        <div className="flex gap-3 items-end">
+          <div className="flex-1 min-w-0">
+            <label className="text-xs text-gray-400 mb-1 block">Modul</label>
+            <input
+              value={newModule}
+              onChange={(e) => setNewModule(e.target.value)}
+              placeholder="pl. Auth, Aláírás, Dashboard..."
+              className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 dark:text-white"
+              list="module-suggestions"
+            />
+            <datalist id="module-suggestions">
+              {modules.map((m) => <option key={m} value={m} />)}
+            </datalist>
+          </div>
+          <div className="flex-[2] min-w-0">
+            <label className="text-xs text-gray-400 mb-1 block">Feladat</label>
+            <input
+              value={newTask}
+              onChange={(e) => setNewTask(e.target.value)}
+              placeholder="Mit kell tesztelni..."
+              className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 dark:text-white"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && newModule.trim() && newTask.trim()) {
+                  onCreate(newModule.trim(), newTask.trim());
+                  setNewModule("");
+                  setNewTask("");
+                }
+              }}
+            />
+          </div>
+          <button
+            onClick={() => {
+              if (newModule.trim() && newTask.trim()) {
+                onCreate(newModule.trim(), newTask.trim());
+                setNewModule("");
+                setNewTask("");
+              }
+            }}
+            disabled={!newModule.trim() || !newTask.trim()}
+            className="px-4 py-2 bg-[#198296] text-white rounded-lg text-sm font-medium hover:bg-[#146d7d] transition disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+          >
+            + Hozzáadás
+          </button>
+        </div>
+      </div>
+
+      {/* Table */}
+      {cases.length === 0 ? (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+          <p className="text-gray-400 text-sm">Még nincs manuális teszt eset. Add hozzá az elsőt fent!</p>
+        </div>
+      ) : (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-[140px]">Modul</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Feladat</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-[100px]">Prioritás</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-[120px]">Státusz</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-[130px]">Felelős</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Megjegyzés</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-[50px]"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {cases.map((tc) => (
+                  <tr key={tc.id} className="border-b border-gray-50 dark:border-gray-700/50 hover:bg-gray-50/50 dark:hover:bg-gray-700/20 transition">
+                    {/* Module */}
+                    <td className="px-4 py-2.5">
+                      {editingCell?.id === tc.id && editingCell.field === "module" ? (
+                        <input
+                          ref={editRef as React.RefObject<HTMLInputElement>}
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          onBlur={commitEdit}
+                          onKeyDown={handleKeyDown}
+                          className="w-full px-2 py-1 border border-[#198296] rounded text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#198296]/30"
+                        />
+                      ) : (
+                        <span
+                          onClick={() => startEdit(tc.id, "module", tc.module)}
+                          className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 px-2 py-1 rounded block text-gray-700 dark:text-gray-300 font-medium"
+                          title="Kattints a szerkesztéshez"
+                        >
+                          {tc.module}
+                        </span>
+                      )}
+                    </td>
+
+                    {/* Task */}
+                    <td className="px-4 py-2.5">
+                      {editingCell?.id === tc.id && editingCell.field === "task" ? (
+                        <input
+                          ref={editRef as React.RefObject<HTMLInputElement>}
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          onBlur={commitEdit}
+                          onKeyDown={handleKeyDown}
+                          className="w-full px-2 py-1 border border-[#198296] rounded text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#198296]/30"
+                        />
+                      ) : (
+                        <span
+                          onClick={() => startEdit(tc.id, "task", tc.task)}
+                          className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 px-2 py-1 rounded block text-gray-700 dark:text-gray-300"
+                          title="Kattints a szerkesztéshez"
+                        >
+                          {tc.task}
+                        </span>
+                      )}
+                    </td>
+
+                    {/* Priority */}
+                    <td className="px-4 py-2.5 text-center">
+                      <select
+                        value={tc.priority}
+                        onChange={(e) => onUpdate(tc.id, { priority: e.target.value })}
+                        className={`text-xs px-2 py-1 rounded border font-medium cursor-pointer ${pc[tc.priority]?.color || ""} bg-transparent`}
+                      >
+                        {Object.entries(pc).map(([key, cfg]) => (
+                          <option key={key} value={key}>{cfg.label}</option>
+                        ))}
+                      </select>
+                    </td>
+
+                    {/* Status */}
+                    <td className="px-4 py-2.5 text-center">
+                      <select
+                        value={tc.status}
+                        onChange={(e) => onUpdate(tc.id, { status: e.target.value })}
+                        className={`text-xs px-2 py-1 rounded-full font-medium cursor-pointer ${sc[tc.status]?.bg || ""} ${sc[tc.status]?.color || ""} border-0`}
+                      >
+                        {Object.entries(sc).map(([key, cfg]) => (
+                          <option key={key} value={key}>{cfg.label}</option>
+                        ))}
+                      </select>
+                    </td>
+
+                    {/* Assignee */}
+                    <td className="px-4 py-2.5">
+                      <select
+                        value={tc.assignedTo || ""}
+                        onChange={(e) => onUpdate(tc.id, { assignedTo: e.target.value || undefined })}
+                        className="w-full text-xs px-2 py-1 border border-gray-200 dark:border-gray-600 rounded bg-white dark:bg-gray-700 dark:text-white cursor-pointer"
+                      >
+                        <option value="">—</option>
+                        {team.map((m) => (
+                          <option key={m.id} value={m.name}>{m.name}</option>
+                        ))}
+                      </select>
+                    </td>
+
+                    {/* Notes */}
+                    <td className="px-4 py-2.5">
+                      {editingCell?.id === tc.id && editingCell.field === "notes" ? (
+                        <input
+                          ref={editRef as React.RefObject<HTMLInputElement>}
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          onBlur={commitEdit}
+                          onKeyDown={handleKeyDown}
+                          className="w-full px-2 py-1 border border-[#198296] rounded text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#198296]/30"
+                        />
+                      ) : (
+                        <span
+                          onClick={() => startEdit(tc.id, "notes", tc.notes || "")}
+                          className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 px-2 py-1 rounded block text-gray-400 dark:text-gray-500 text-xs min-h-[24px]"
+                          title="Kattints a szerkesztéshez"
+                        >
+                          {tc.notes || "—"}
+                        </span>
+                      )}
+                    </td>
+
+                    {/* Delete */}
+                    <td className="px-4 py-2.5 text-center">
+                      <button
+                        onClick={() => { if (confirm("Biztosan törlöd?")) onDelete(tc.id); }}
+                        className="text-gray-300 hover:text-red-500 transition"
+                        title="Törlés"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

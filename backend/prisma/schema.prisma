@@ -918,3 +918,19 @@ model TestResult {
   @@index([assignedTo])
   @@map("test_results")
 }
+
+model ManualTestCase {
+  id         String   @id @default(uuid())
+  module     String                          // pl. "Auth", "Signing", stb.
+  task       String                          // feladat leírása
+  priority   String   @default("medium")     // critical | high | medium | low
+  status     String   @default("pending")    // pending | in_progress | pass | fail | blocked
+  assignedTo String?  @map("assigned_to")
+  notes      String?
+  createdBy  String?  @map("created_by")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([module])
+  @@map("manual_test_cases")
+}

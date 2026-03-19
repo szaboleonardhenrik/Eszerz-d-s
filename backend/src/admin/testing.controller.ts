@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Post, Param, Body, UseGuards, Req, ForbiddenException } from '@nestjs/common';
+import { Controller, Get, Put, Post, Delete, Param, Body, UseGuards, Req, ForbiddenException } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
@@ -99,5 +99,68 @@ export class TestingController {
       select: { id: true, name: true, email: true, role: true },
     });
     return ApiResponse.ok(members);
+  }
+
+  // --- Manual test cases ---
+
+  @UseGuards(JwtAuthGuard)
+  @Get('manual')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async getManualCases(@Req() req: any) {
+    await this.checkAccess(req.user.userId);
+    const cases = await this.prisma.manualTestCase.findMany({ orderBy: [{ module: 'asc' }, { createdAt: 'asc' }] });
+    return ApiResponse.ok(cases);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('manual')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async createManualCase(
+    @Req() req: any,
+    @Body() body: { module: string; task: string; priority?: string; assignedTo?: string },
+  ) {
+    const user = await this.checkAccess(req.user.userId);
+    const tc = await this.prisma.manualTestCase.create({
+      data: {
+        module: body.module,
+        task: body.task,
+        priority: body.priority || 'medium',
+        assignedTo: body.assignedTo,
+        createdBy: user.name,
+      },
+    });
+    return ApiResponse.ok(tc);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('manual/:id')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async updateManualCase(
+    @Param('id') id: string,
+    @Req() req: any,
+    @Body() body: { module?: string; task?: string; priority?: string; status?: string; assignedTo?: string; notes?: string },
+  ) {
+    await this.checkAccess(req.user.userId);
+    const tc = await this.prisma.manualTestCase.update({
+      where: { id },
+      data: {
+        ...(body.module !== undefined ? { module: body.module } : {}),
+        ...(body.task !== undefined ? { task: body.task } : {}),
+        ...(body.priority !== undefined ? { priority: body.priority } : {}),
+        ...(body.status !== undefined ? { status: body.status } : {}),
+        ...(body.assignedTo !== undefined ? { assignedTo: body.assignedTo } : {}),
+        ...(body.notes !== undefined ? { notes: body.notes } : {}),
+      },
+    });
+    return ApiResponse.ok(tc);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('manual/:id')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async deleteManualCase(@Param('id') id: string, @Req() req: any) {
+    await this.checkAccess(req.user.userId);
+    await this.prisma.manualTestCase.delete({ where: { id } });
+    return ApiResponse.ok({ deleted: true });
   }
 }
