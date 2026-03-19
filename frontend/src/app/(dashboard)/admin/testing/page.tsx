@@ -459,7 +459,11 @@ function CaseRow({
 }) {
   const [editTitle, setEditTitle] = useState(tc.title);
   const [editDesc, setEditDesc] = useState(tc.description);
-  const [editSteps, setEditSteps] = useState(tc.steps.join("\n"));
+  const numberSteps = (steps: string[]) => steps.map((s, i) => {
+    const stripped = s.replace(/^\d+\.\s*/, "");
+    return `${i + 1}. ${stripped}`;
+  }).join("\n");
+  const [editSteps, setEditSteps] = useState(numberSteps(tc.steps));
   const [editExpected, setEditExpected] = useState(tc.expected);
   const [notes, setNotes] = useState(tc.notes || "");
   const [editingTitle, setEditingTitle] = useState(false);
@@ -524,8 +528,9 @@ function CaseRow({
             <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 block">Lépések (soronként egy)</label>
             <textarea value={editSteps} onChange={(e) => setEditSteps(e.target.value)}
               onBlur={() => {
-                const newSteps = editSteps.split("\n").filter((s) => s.trim());
+                const newSteps = editSteps.split("\n").filter((s) => s.trim()).map((s) => s.replace(/^\d+\.\s*/, ""));
                 if (JSON.stringify(newSteps) !== JSON.stringify(tc.steps)) onUpdate({ steps: newSteps });
+                setEditSteps(numberSteps(newSteps));
               }}
               rows={Math.max(3, editSteps.split("\n").length)} placeholder="1. Nyisd meg az oldalt&#10;2. Kattints a gombra&#10;3. Ellenőrizd..."
               className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 dark:text-white resize-none font-mono focus:border-[#198296] focus:ring-1 focus:ring-[#198296]/30" />
