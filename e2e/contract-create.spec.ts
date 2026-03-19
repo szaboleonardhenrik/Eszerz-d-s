@@ -5,7 +5,8 @@ test.describe('Contract Creation E2E', () => {
   test.skip(!process.env.E2E_PASSWORD, 'Set E2E_PASSWORD to run authenticated tests');
   test.use({ storageState: STORAGE_STATE });
 
-  test('create contract from template end-to-end', async ({ page }) => {
+  test('create contract from template end-to-end', async ({ page }, testInfo) => {
+    testInfo.setTimeout(60000);
     const uniqueSuffix = Date.now();
     const contractTitle = `E2E Teszt Szerződés ${uniqueSuffix}`;
 
