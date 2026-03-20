@@ -13,6 +13,7 @@ import ConsentUpdateModal from "@/components/consent-update-modal";
 import { useI18n } from "@/lib/i18n";
 import GlobalSearch from "@/components/global-search";
 import MaintenanceBanner from "@/components/maintenance-banner";
+import Logo from "@/components/logo";
 
 // Lazy-load heavy components (code-splitting)
 const OnboardingWizard = dynamic(() => import("@/components/onboarding-wizard"), { ssr: false });
@@ -88,12 +89,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {/* Top row: logo + actions */}
           <div className="flex justify-between items-center h-14">
             <Link href="/dashboard" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">L</span>
-              </div>
-              <span className="text-lg font-bold text-white hidden sm:inline">
-                Legitas
-              </span>
+              <Logo />
             </Link>
             <div className="flex items-center gap-1.5 sm:gap-2">
               <GlobalSearch />
@@ -243,12 +239,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="fixed inset-y-0 left-0 w-64 sm:w-72 bg-white dark:bg-gray-800 border-r dark:border-gray-700 shadow-xl z-50 lg:hidden overflow-y-auto">
             <div className="flex items-center justify-between px-4 h-16 border-b border-gray-100 dark:border-gray-700">
               <Link href="/dashboard" className="flex items-center gap-2" onClick={() => setMobileNav(false)}>
-                <div className="w-8 h-8 rounded-lg bg-brand-teal-dark flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">L</span>
-                </div>
-                <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                  <span className="text-brand-teal-dark">Legitas</span>
-                </span>
+                <Logo />
               </Link>
               <button onClick={() => setMobileNav(false)} className="p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700" aria-label={t("a11y.closeMobileMenu")}>
                 <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">

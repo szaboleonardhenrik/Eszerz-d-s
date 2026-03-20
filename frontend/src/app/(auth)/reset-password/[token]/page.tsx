@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
+import Logo from "@/components/logo";
 
 export default function ResetPasswordPage() {
   const { token } = useParams<{ token: string }>();
@@ -37,12 +38,7 @@ export default function ResetPasswordPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/landing" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-8 h-8 rounded-lg bg-brand-teal-dark flex items-center justify-center">
-              <span className="text-white font-bold text-sm">L</span>
-            </div>
-            <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
-              Legitas
-            </span>
+            <Logo />
           </Link>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Új jelszó beállítása</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Add meg az új jelszavadat</p>

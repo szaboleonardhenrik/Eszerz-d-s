@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import api from "@/lib/api";
+import Logo from "@/components/logo";
 
 export default function VerifyEmailPage() {
   const { token } = useParams<{ token: string }>();
@@ -28,12 +29,7 @@ export default function VerifyEmailPage() {
     <div className="min-h-screen flex items-center justify-center px-4 bg-gray-50 dark:bg-gray-900">
       <div className="w-full max-w-md text-center">
         <Link href="/landing" className="inline-flex items-center gap-2 mb-8">
-          <div className="w-8 h-8 rounded-lg bg-brand-teal-dark flex items-center justify-center">
-            <span className="text-white font-bold text-sm">L</span>
-          </div>
-          <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
-            Legitas
-          </span>
+          <Logo />
         </Link>
 
         {status === "loading" && (

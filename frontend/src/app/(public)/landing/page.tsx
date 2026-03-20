@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import ThemeToggle from "@/components/theme-toggle";
 import { useI18n } from "@/lib/i18n";
+import Logo from "@/components/logo";
 
 /* ── Helpers ───────────────────────────────────────────────────────── */
 function Ico({ d, className = "", style }: { d: string; className?: string; style?: React.CSSProperties }) {
@@ -96,12 +97,7 @@ function Nav() {
       >
         <div className="h-[60px] px-6 md:px-8 flex items-center justify-between max-w-7xl mx-auto">
           <Link href="/landing" className="flex items-center gap-2.5 shrink-0">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#2F6482] to-[#46A0A0] flex items-center justify-center shadow-sm">
-              <span className="text-white font-bold text-sm">L</span>
-            </div>
-            <span className="font-semibold text-[1.1rem] tracking-tight text-[#1E2E38]">
-              Legit<span className="font-bold text-[#2F8A8A]">as</span>
-            </span>
+            <Logo />
           </Link>
 
           <div className="hidden md:flex items-center gap-1">
@@ -660,8 +656,7 @@ function Foot() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
           <div>
             <div className="flex items-center gap-2 mb-5">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#2F6482] to-[#46A0A0] flex items-center justify-center"><span className="text-white font-bold text-sm">L</span></div>
-              <span className="text-white font-semibold text-lg">Legit<span className="text-[#46A0A0]">as</span></span>
+              <Logo size="sm" />
             </div>
             <p className="text-[.85rem] leading-relaxed">A magyar KKV-k szerződéskezelő platformja.</p>
           </div>

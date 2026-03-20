@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Logo from "@/components/logo";
 
 interface HealthData {
   status: "ok" | "degraded" | "error";
@@ -82,10 +83,7 @@ export default function StatusPage() {
       <header className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
         <div className="max-w-3xl mx-auto px-4 py-6 flex items-center justify-between">
           <Link href="/landing" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">L</span>
-            </div>
-            <span className="font-semibold text-gray-900 dark:text-white">Legitas</span>
+            <Logo />
           </Link>
           <span className="text-sm text-gray-500 dark:text-gray-400">Rendszer állapot</span>
         </div>

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useAuth } from "@/lib/auth-store";
 import { useI18n } from "@/lib/i18n";
 import toast from "react-hot-toast";
+import Logo from "@/components/logo";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -42,8 +43,8 @@ export default function LoginPage() {
           <div className="absolute bottom-20 right-10 w-96 h-96 bg-white rounded-full blur-3xl" />
         </div>
         <div className="relative text-center max-w-md">
-          <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mx-auto mb-8">
-            <span className="text-white font-bold text-2xl">L</span>
+          <div className="mx-auto mb-8">
+            <Logo size="lg" />
           </div>
           <h2 className="text-3xl font-extrabold text-white mb-4">
             {t("auth.welcomeBack")}
@@ -73,12 +74,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <Link href="/landing" className="inline-flex items-center gap-2 mb-6">
-              <div className="w-8 h-8 rounded-lg bg-brand-teal-dark flex items-center justify-center">
-                <span className="text-white font-bold text-sm">L</span>
-              </div>
-              <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                Legitas
-              </span>
+              <Logo />
             </Link>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t("auth.login")}</h1>
             <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">{t("auth.loginSubtitle")}</p>

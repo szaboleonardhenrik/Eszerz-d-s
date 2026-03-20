@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useAuth } from "@/lib/auth-store";
 import { useI18n } from "@/lib/i18n";
 import toast from "react-hot-toast";
+import Logo from "@/components/logo";
 
 export default function RegisterPage() {
   const [form, setForm] = useState({
@@ -51,6 +52,18 @@ export default function RegisterPage() {
   };
 
   const formatTaxNumber = (raw: string): string => {
+    // Allow digits and hyphens typed by user, strip everything else
+    const cleaned = raw.replace(/[^\d-]/g, "");
+    // Check if user is manually typing with hyphens in correct positions
+    if (/^\d{0,8}(-\d{0,2}(-\d{0,2})?)?$/.test(cleaned)) {
+      // User-typed format looks valid, keep it but enforce max lengths
+      const parts = cleaned.split("-");
+      parts[0] = parts[0].slice(0, 8);
+      if (parts[1] !== undefined) parts[1] = parts[1].slice(0, 1);
+      if (parts[2] !== undefined) parts[2] = parts[2].slice(0, 2);
+      return parts.join("-");
+    }
+    // Fallback: strip all non-digits and auto-format
     const digits = raw.replace(/\D/g, "").slice(0, 11);
     if (digits.length <= 8) return digits;
     if (digits.length <= 9) return `${digits.slice(0, 8)}-${digits.slice(8)}`;
@@ -69,8 +82,8 @@ export default function RegisterPage() {
           <div className="absolute bottom-20 left-10 w-96 h-96 bg-white rounded-full blur-3xl" />
         </div>
         <div className="relative text-center max-w-md">
-          <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mx-auto mb-8">
-            <span className="text-white font-bold text-2xl">L</span>
+          <div className="mx-auto mb-8">
+            <Logo size="lg" />
           </div>
           <h2 className="text-3xl font-extrabold text-white mb-4">
             {t("auth.joinNow")}
@@ -103,12 +116,7 @@ export default function RegisterPage() {
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <Link href="/landing" className="inline-flex items-center gap-2 mb-6">
-              <div className="w-8 h-8 rounded-lg bg-brand-teal-dark flex items-center justify-center">
-                <span className="text-white font-bold text-sm">L</span>
-              </div>
-              <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                Legitas
-              </span>
+              <Logo />
             </Link>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t("auth.createAccount")}</h1>
             <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">{t("auth.registerSubtitle")}</p>

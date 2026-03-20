@@ -7,6 +7,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { useI18n } from "@/lib/i18n";
+import Logo from "@/components/logo";
 
 const publicApi = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api",
@@ -405,13 +406,7 @@ export default function SignPage() {
       <header className="bg-gradient-to-r from-[#1A4B5F] via-[#198296] to-[#0F766E] shadow-lg">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-white/15 rounded-lg flex items-center justify-center backdrop-blur-sm">
-              <span className="text-white font-bold text-sm">L</span>
-            </div>
-            <div>
-              <span className="text-white font-semibold text-lg tracking-tight">Legit</span>
-              <span className="text-[#46A0A0] font-bold text-lg">as</span>
-            </div>
+            <Logo />
           </div>
           <div className="text-right">
             <p className="text-white/90 text-sm font-medium">{signer.name}</p>

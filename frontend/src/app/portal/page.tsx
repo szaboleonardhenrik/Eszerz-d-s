@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import api from "@/lib/api";
+import Logo from "@/components/logo";
 
 interface PortalContract {
   contractId: string;
@@ -145,17 +146,10 @@ export default function PortalPage() {
       <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <Link href="/landing" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">L</span>
-            </div>
-            <div className="flex items-baseline gap-1">
-              <span className="font-bold text-gray-900 dark:text-white">
-                Legitas
-              </span>
-              <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
-                Ügyfélportál
-              </span>
-            </div>
+            <Logo />
+            <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
+              Ügyfélportál
+            </span>
           </Link>
           {token && (
             <button

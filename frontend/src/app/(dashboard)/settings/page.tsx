@@ -18,6 +18,14 @@ export default function ProfileSettings() {
   });
   const [saving, setSaving] = useState(false);
   const formatTaxNumber = (raw: string): string => {
+    const cleaned = raw.replace(/[^\d-]/g, "");
+    if (/^\d{0,8}(-\d{0,2}(-\d{0,2})?)?$/.test(cleaned)) {
+      const parts = cleaned.split("-");
+      parts[0] = parts[0].slice(0, 8);
+      if (parts[1] !== undefined) parts[1] = parts[1].slice(0, 1);
+      if (parts[2] !== undefined) parts[2] = parts[2].slice(0, 2);
+      return parts.join("-");
+    }
     const digits = raw.replace(/\D/g, "").slice(0, 11);
     if (digits.length <= 8) return digits;
     if (digits.length <= 9) return `${digits.slice(0, 8)}-${digits.slice(8)}`;
