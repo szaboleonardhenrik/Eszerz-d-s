@@ -62,12 +62,12 @@ test.describe('Cookie Consent (GDPR)', () => {
     const settingsButton = page.locator('[data-testid="cookie-withdrawal"]');
     await expect(settingsButton).toBeVisible({ timeout: 5000 });
 
-    // Clicking it should show the banner again
+    // Clicking it should show the settings panel with current preferences
     await settingsButton.click();
-    await expect(page.locator('[data-testid="cookie-accept-all"]')).toBeVisible();
+    await expect(page.locator('[data-testid="cookie-save"]')).toBeVisible();
 
-    // localStorage should be cleared
+    // localStorage should still contain the previous consent (not deleted on reopen)
     const consent = await page.evaluate(() => localStorage.getItem('cookie_consent'));
-    expect(consent).toBeNull();
+    expect(consent).not.toBeNull();
   });
 });
