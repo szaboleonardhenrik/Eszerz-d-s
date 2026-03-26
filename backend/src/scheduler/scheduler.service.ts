@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ConfigService } from '@nestjs/config';
 import { TIER_MONTHLY_CREDITS } from '../credits/credits.service';
+import { PartnerMonitorService } from '../partner-monitor/partner-monitor.service';
 
 @Injectable()
 export class SchedulerService {
@@ -15,6 +16,7 @@ export class SchedulerService {
     private readonly prisma: PrismaService,
     private readonly notificationsService: NotificationsService,
     private readonly config: ConfigService,
+    private readonly partnerMonitorService: PartnerMonitorService,
   ) {}
 
   /** Daily at 2:30 AM - downgrade expired trial users to free tier */
@@ -677,6 +679,96 @@ export class SchedulerService {
       this.lastAlertSentAt = now;
     } catch (error) {
       this.logger.error('Failed to send health alert email', error);
+    }
+  }
+
+  /** Daily at 6:00 AM - scan partners for new job listings on profession.hu */
+  @Cron('0 6 * * *')
+  async scanPartnerJobListings() {
+    this.logger.log('Running partner job listing scan...');
+
+    try {
+      const result = await this.partnerMonitorService.scanAllPartners();
+      this.logger.log(
+        `Partner scan complete: ${result?.partnersScanned} partners, ${result?.newListings} new listings`,
+      );
+
+      if (result && result.newListings > 0) {
+        await this.sendPartnerMonitorDigest();
+      }
+    } catch (error) {
+      this.logger.error('Partner scan failed', error);
+    }
+  }
+
+  /** Send daily digest email to users with new partner job listings */
+  private async sendPartnerMonitorDigest() {
+    const usersWithPartners = await this.prisma.user.findMany({
+      where: { partners: { some: { isActive: true } } },
+      select: { id: true, email: true, name: true },
+    });
+
+    const frontendUrl = this.config.get<string>('FRONTEND_URL', 'http://localhost:3000');
+
+    for (const user of usersWithPartners) {
+      try {
+        const newListings = await this.partnerMonitorService.getNewUnnotifiedListings(user.id);
+        if (newListings.length === 0) continue;
+
+        // Get configured recipients (user email + extra emails from digest config)
+        const recipients = await this.partnerMonitorService.getDigestRecipients(user.id);
+        if (recipients.length === 0) continue; // digest disabled
+
+        const listingsHtml = newListings
+          .map(
+            (l) => `
+              <tr>
+                <td style="padding:8px 12px;border-bottom:1px solid #eee;font-weight:bold;">${l.partner.companyName}</td>
+                <td style="padding:8px 12px;border-bottom:1px solid #eee;">
+                  <a href="${l.url}" style="color:#2563eb;text-decoration:none;">${l.title}</a>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:12px;color:#666;">
+                  ${l.firstSeenAt.toLocaleDateString('hu-HU')}
+                </td>
+              </tr>`,
+          )
+          .join('');
+
+        const html = `
+          <div style="font-family:sans-serif;max-width:700px;margin:0 auto;">
+            <h2>Partner Monitor - Napi riport</h2>
+            <p>Kedves ${user.name}!</p>
+            <p><strong>${newListings.length} új álláshirdetést</strong> találtunk a partnercégeinél a profession.hu-n:</p>
+            <table style="width:100%;border-collapse:collapse;margin:16px 0;">
+              <thead>
+                <tr style="background:#f5f5f5;">
+                  <th style="padding:8px 12px;text-align:left;">Cég</th>
+                  <th style="padding:8px 12px;text-align:left;">Pozíció</th>
+                  <th style="padding:8px 12px;text-align:left;">Dátum</th>
+                </tr>
+              </thead>
+              <tbody>${listingsHtml}</tbody>
+            </table>
+            <a href="${frontendUrl}/partners/monitor"
+               style="display:inline-block;background:#2563eb;color:white;padding:12px 32px;border-radius:6px;text-decoration:none;font-weight:bold;">
+              Partner Monitor megnyitása
+            </a>
+          </div>`;
+
+        // Send to all configured recipients
+        for (const email of recipients) {
+          await this.notificationsService.sendPartnerDigest({
+            to: email,
+            name: user.name,
+            subject: `[Legitas] ${newListings.length} új álláshirdetés a partnereinél`,
+            html,
+          });
+        }
+
+        await this.partnerMonitorService.markAsNotified(newListings.map((l) => l.id));
+      } catch (error) {
+        this.logger.error(`Failed to send partner digest to ${user.email}`, error);
+      }
     }
   }
 }

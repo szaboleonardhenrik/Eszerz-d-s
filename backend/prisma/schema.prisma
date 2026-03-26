@@ -77,6 +77,8 @@ model User {
   sendCredits     Int        @default(0) @map("send_credits")
   creditTransactions CreditTransaction[]
   authAuditLogs   AuthAuditLog[]
+  partners        Partner[]
+  partnerDigestConfig PartnerDigestConfig?
   accountType     String     @default("company") @map("account_type") // "personal" or "company"
   companyAddress  String?    @map("company_address")
   isActive        Boolean    @default(true) @map("is_active")
@@ -970,4 +972,75 @@ model TestCase {
 
   @@index([sectionId])
   @@map("test_cases")
+}
+
+// ─── PARTNER MONITOR ──────────────────────────────────────
+
+model Partner {
+  id                String       @id @default(uuid())
+  userId            String       @map("user_id")
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName       String       @map("company_name")
+  taxNumber         String?      @map("tax_number")
+  registrationNumber String?     @map("registration_number") // cégjegyzékszám
+  headquarters      String?      // székhely
+  representative    String?      // képviselő
+  isActive          Boolean      @default(true) @map("is_active")
+  lastCheckedAt     DateTime?    @map("last_checked_at")
+  notes             String?
+  createdAt         DateTime     @default(now()) @map("created_at")
+  updatedAt         DateTime     @updatedAt @map("updated_at")
+
+  jobListings       JobListing[]
+
+  @@unique([userId, companyName])
+  @@index([userId])
+  @@map("partners")
+}
+
+model JobListing {
+  id            String    @id @default(uuid())
+  partnerId     String    @map("partner_id")
+  partner       Partner   @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  title         String    // pozíció neve
+  url           String    // profession.hu link
+  snippet       String?   // rövid leírás a keresési találatból
+  firstSeenAt   DateTime  @default(now()) @map("first_seen_at")
+  lastSeenAt    DateTime  @default(now()) @map("last_seen_at")
+  status        String    @default("active") // active | expired | new
+  notified      Boolean   @default(false)
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@unique([partnerId, url])
+  @@index([partnerId])
+  @@index([status])
+  @@map("job_listings")
+}
+
+model ScrapeRun {
+  id              String   @id @default(uuid())
+  userId          String?  @map("user_id")
+  startedAt       DateTime @default(now()) @map("started_at")
+  finishedAt      DateTime? @map("finished_at")
+  partnersScanned Int      @default(0) @map("partners_scanned")
+  newListings     Int      @default(0) @map("new_listings")
+  errors          Int      @default(0)
+  status          String   @default("running") // running | completed | failed
+  errorLog        String?  @map("error_log")
+
+  @@index([userId])
+  @@map("scrape_runs")
+}
+
+model PartnerDigestConfig {
+  id            String   @id @default(uuid())
+  userId        String   @unique @map("user_id")
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enabled       Boolean  @default(true)
+  emails        String[] @default([]) // extra email címek (a user saját emailje mindig megy ha enabled)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("partner_digest_configs")
 }

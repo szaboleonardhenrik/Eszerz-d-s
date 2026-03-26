@@ -37,6 +37,7 @@ import { SearchModule } from './search/search.module';
 import { TsaModule } from './tsa/tsa.module';
 import { CreditsModule } from './credits/credits.module';
 import { ClausesModule } from './clauses/clauses.module';
+import { PartnerMonitorModule } from './partner-monitor/partner-monitor.module';
 import { FeatureFlagsController } from './common/feature-flags.controller';
 import { MaintenanceMiddleware } from './common/maintenance.middleware';
 
@@ -78,6 +79,7 @@ import { MaintenanceMiddleware } from './common/maintenance.middleware';
     TsaModule,
     CreditsModule,
     ClausesModule,
+    PartnerMonitorModule,
   ],
   controllers: [FeatureFlagsController],
   providers: [

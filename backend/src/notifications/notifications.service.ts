@@ -1145,6 +1145,28 @@ export class NotificationsService {
     }
   }
 
+  async sendPartnerDigest(params: {
+    to: string;
+    name: string;
+    subject: string;
+    html: string;
+  }) {
+    try {
+      await this.sendAndLog({
+        from: this.fromEmail,
+        headers: this.unsubscribeHeaders,
+        to: params.to,
+        subject: params.subject,
+        html: this.wrap(params.html, {
+          preheader: `${params.subject} - Legitas Partner Monitor`,
+        }),
+      }, { type: 'partner_digest' });
+      this.logger.log(`Partner digest sent to ${params.to}`);
+    } catch (error) {
+      this.logger.error(`Failed to send partner digest to ${params.to}`, error);
+    }
+  }
+
   async sendSystemAlert(params: { to: string; subject: string; body: string }) {
     try {
       await this.sendAndLog({

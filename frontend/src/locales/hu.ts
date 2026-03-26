@@ -34,6 +34,7 @@ const hu = {
     analytics: "Analitika",
     calendar: "Naptár",
     reminders: "Emlékeztetők",
+    partners: "Partner Monitor",
     kanban: "Kanban",
     quotes: "Ajánlatok",
     clauses: "Záradékok",

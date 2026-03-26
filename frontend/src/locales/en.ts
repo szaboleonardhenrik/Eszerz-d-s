@@ -36,6 +36,7 @@ const en: Translations = {
     analytics: "Analytics",
     calendar: "Calendar",
     reminders: "Reminders",
+    partners: "Partner Monitor",
     kanban: "Kanban",
     quotes: "Quotes",
     clauses: "Clauses",
