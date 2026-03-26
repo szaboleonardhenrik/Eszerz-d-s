@@ -246,6 +246,68 @@ export class PartnerMonitorService {
     }
   }
 
+  // ─── WEBSITE SCRAPING ───────────────────────────────────
+
+  async scrapeWebsiteJobCount(websiteUrl: string): Promise<number> {
+    if (!websiteUrl) return 0;
+    try {
+      let totalCount = 0;
+      let page = 1;
+      const maxPages = 10;
+
+      while (page <= maxPages) {
+        const url = page === 1 ? websiteUrl : `${websiteUrl}${websiteUrl.includes('?') ? '&' : '?'}page=${page}`;
+        const res = await fetch(url, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', 'Accept': 'text/html' },
+          signal: AbortSignal.timeout(15000),
+          redirect: 'follow',
+        });
+        if (!res.ok) break;
+
+        const html = await res.text();
+        const $ = cheerio.load(html);
+        $('script,style,nav,footer,header').remove();
+
+        // Count job cards using common selectors
+        const selectors = [
+          '.job-card', '.job-item', '[class*="job-card"]',
+          '[class*="job"] .card', '[class*="allas"]', '[class*="munka-"]',
+          '.diakmunka-blog', '.vacancy', '.opening', '.offer-item',
+        ];
+        let pageCount = 0;
+        for (const sel of selectors) {
+          const c = $(sel).length;
+          if (c > pageCount && c < 2000) pageCount = c;
+        }
+
+        // Fallback: count job-related links
+        if (pageCount === 0) {
+          const jobLinks = $('a[href]').filter((_, el) => {
+            const href = $(el).attr('href') || '';
+            return /(?:allas|munka|job|pozicio|diakmunka|vacancy)/.test(href.toLowerCase());
+          }).length;
+          if (jobLinks > 2) pageCount = Math.floor(jobLinks / 2);
+        }
+
+        if (pageCount === 0) break; // No more results
+        totalCount += pageCount;
+
+        // Check if there's a next page
+        const hasNext = $('a[href*="page=' + (page + 1) + '"]').length > 0 ||
+                        $('[class*="pagination"] a').filter((_, el) => $(el).text().trim() === String(page + 1)).length > 0;
+        if (!hasNext) break;
+        page++;
+        await new Promise(r => setTimeout(r, 1000));
+      }
+
+      this.logger.log(`Website scan "${websiteUrl}": ${totalCount} pozíció (${page} oldal)`);
+      return totalCount;
+    } catch (error: any) {
+      this.logger.warn(`Website scan hiba (${websiteUrl}): ${error.message}`);
+      return 0;
+    }
+  }
+
   // ─── SCAN LOGIC ────────────────────────────────────────
 
   private static readonly BATCH_SIZE = 200;
@@ -299,12 +361,15 @@ export class PartnerMonitorService {
           }
         }
 
-        // Save snapshot: how many active listings this partner has now
+        // Scrape website if URL is set
+        const websiteCount = partner.websiteUrl ? await this.scrapeWebsiteJobCount(partner.websiteUrl) : 0;
+
+        // Save snapshot: profession.hu + website counts
         const activeCount = await this.prisma.jobListing.count({
           where: { partnerId: partner.id, status: { in: ['active', 'new'] } },
         });
         await this.prisma.partnerSnapshot.create({
-          data: { partnerId: partner.id, scrapeRunId: run.id, activeListings: activeCount },
+          data: { partnerId: partner.id, scrapeRunId: run.id, activeListings: activeCount, websiteListings: websiteCount },
         });
 
         await this.prisma.partner.update({
