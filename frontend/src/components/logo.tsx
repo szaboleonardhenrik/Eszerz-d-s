@@ -2,6 +2,7 @@
 
 interface LogoProps {
   size?: "sm" | "md" | "lg";
+  variant?: "dark" | "light";
   className?: string;
 }
 
@@ -11,11 +12,11 @@ const sizes = {
   lg: "text-2xl",
 };
 
-export default function Logo({ size = "md", className = "" }: LogoProps) {
+export default function Logo({ size = "md", variant = "dark", className = "" }: LogoProps) {
   return (
     <span className={`font-bold tracking-tight ${sizes[size]} ${className}`}>
       <span className="text-brand-gold">L</span>
-      <span>egitas</span>
+      <span className={variant === "light" ? "text-white" : ""}>egitas</span>
     </span>
   );
 }

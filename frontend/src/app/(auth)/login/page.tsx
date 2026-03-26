@@ -57,7 +57,7 @@ export default function LoginPage() {
         </div>
         <div className="relative text-center max-w-md">
           <div className="mx-auto mb-8">
-            <Logo size="lg" />
+            <Logo size="lg" variant="light" />
           </div>
           <h2 className="text-3xl font-extrabold text-white mb-4">
             {t("auth.welcomeBack")}
