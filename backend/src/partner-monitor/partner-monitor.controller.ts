@@ -14,7 +14,7 @@ export class PartnerMonitorController {
 
   @Get('dashboard')
   getDashboard(@Req() req: any) {
-    return this.service.getDashboard(req.user.id);
+    return this.service.getDashboard(req.user.userId);
   }
 
   // ─── PARTNERS CRUD ──────────────────────────────────────
@@ -25,7 +25,7 @@ export class PartnerMonitorController {
     @Query('active') active?: string,
     @Query('search') search?: string,
   ) {
-    return this.service.getPartners(req.user.id, {
+    return this.service.getPartners(req.user.userId, {
       isActive: active === undefined ? undefined : active === 'true',
       search,
     });
@@ -33,27 +33,27 @@ export class PartnerMonitorController {
 
   @Get('partners/:id')
   getPartner(@Req() req: any, @Param('id') id: string) {
-    return this.service.getPartner(req.user.id, id);
+    return this.service.getPartner(req.user.userId, id);
   }
 
   @Post('partners')
   createPartner(@Req() req: any, @Body() dto: CreatePartnerDto) {
-    return this.service.createPartner(req.user.id, dto);
+    return this.service.createPartner(req.user.userId, dto);
   }
 
   @Post('partners/bulk')
   bulkCreatePartners(@Req() req: any, @Body() dto: BulkCreatePartnersDto) {
-    return this.service.bulkCreatePartners(req.user.id, dto.partners);
+    return this.service.bulkCreatePartners(req.user.userId, dto.partners);
   }
 
   @Put('partners/:id')
   updatePartner(@Req() req: any, @Param('id') id: string, @Body() dto: UpdatePartnerDto) {
-    return this.service.updatePartner(req.user.id, id, dto);
+    return this.service.updatePartner(req.user.userId, id, dto);
   }
 
   @Delete('partners/:id')
   deletePartner(@Req() req: any, @Param('id') id: string) {
-    return this.service.deletePartner(req.user.id, id);
+    return this.service.deletePartner(req.user.userId, id);
   }
 
   // ─── JOB LISTINGS ──────────────────────────────────────
@@ -66,7 +66,7 @@ export class PartnerMonitorController {
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
   ) {
-    return this.service.getJobListings(req.user.id, {
+    return this.service.getJobListings(req.user.userId, {
       partnerId,
       status,
       limit: limit ? parseInt(limit) : undefined,
@@ -78,12 +78,12 @@ export class PartnerMonitorController {
 
   @Post('scan')
   async triggerScan(@Req() req: any) {
-    return this.service.scanAllPartners(req.user.id);
+    return this.service.scanAllPartners(req.user.userId);
   }
 
   @Get('runs')
   getScrapeRuns(@Req() req: any) {
-    return this.service.getScrapeRuns(req.user.id);
+    return this.service.getScrapeRuns(req.user.userId);
   }
 
   // ─── VALIDATE COMPANY ───────────────────────────────────
@@ -97,12 +97,12 @@ export class PartnerMonitorController {
 
   @Get('digest-config')
   getDigestConfig(@Req() req: any) {
-    return this.service.getDigestConfig(req.user.id);
+    return this.service.getDigestConfig(req.user.userId);
   }
 
   @Put('digest-config')
   updateDigestConfig(@Req() req: any, @Body() dto: UpdateDigestConfigDto) {
-    return this.service.updateDigestConfig(req.user.id, dto);
+    return this.service.updateDigestConfig(req.user.userId, dto);
   }
 
   // ─── E-CÉGJEGYZÉK ───────────────────────────────────────
