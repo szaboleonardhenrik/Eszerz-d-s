@@ -78,6 +78,7 @@ model User {
   creditTransactions CreditTransaction[]
   authAuditLogs   AuthAuditLog[]
   partners        Partner[]
+  partnerLists    PartnerList[] @relation("UserPartnerLists")
   partnerDigestConfig PartnerDigestConfig?
   accountType     String     @default("company") @map("account_type") // "personal" or "company"
   companyAddress  String?    @map("company_address")
@@ -976,15 +977,37 @@ model TestCase {
 
 // ─── PARTNER MONITOR ──────────────────────────────────────
 
+model PartnerList {
+  id            String    @id @default(uuid())
+  userId        String    @map("user_id")
+  user          User      @relation("UserPartnerLists", fields: [userId], references: [id], onDelete: Cascade)
+  name          String    // pl. "Konkurencia elemzés", "Partner pozíció elemzés"
+  description   String?
+  emails        String[]  @default([]) // email címzettek ehhez a listához
+  emailEnabled  Boolean   @default(true) @map("email_enabled")
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  partners      Partner[]
+  scrapeRuns    ScrapeRun[]
+
+  @@unique([userId, name])
+  @@index([userId])
+  @@map("partner_lists")
+}
+
 model Partner {
   id                String       @id @default(uuid())
   userId            String       @map("user_id")
   user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listId            String?      @map("list_id")
+  list              PartnerList? @relation(fields: [listId], references: [id], onDelete: SetNull)
   companyName       String       @map("company_name")
   taxNumber         String?      @map("tax_number")
-  registrationNumber String?     @map("registration_number") // cégjegyzékszám
-  headquarters      String?      // székhely
-  representative    String?      // képviselő
+  registrationNumber String?     @map("registration_number")
+  headquarters      String?
+  representative    String?
   isActive          Boolean      @default(true) @map("is_active")
   lastCheckedAt     DateTime?    @map("last_checked_at")
   notes             String?
@@ -992,9 +1015,11 @@ model Partner {
   updatedAt         DateTime     @updatedAt @map("updated_at")
 
   jobListings       JobListing[]
+  snapshots         PartnerSnapshot[]
 
   @@unique([userId, companyName])
   @@index([userId])
+  @@index([listId])
   @@map("partners")
 }
 
@@ -1002,9 +1027,9 @@ model JobListing {
   id            String    @id @default(uuid())
   partnerId     String    @map("partner_id")
   partner       Partner   @relation(fields: [partnerId], references: [id], onDelete: Cascade)
-  title         String    // pozíció neve
-  url           String    // profession.hu link
-  snippet       String?   // rövid leírás a keresési találatból
+  title         String
+  url           String
+  snippet       String?
   firstSeenAt   DateTime  @default(now()) @map("first_seen_at")
   lastSeenAt    DateTime  @default(now()) @map("last_seen_at")
   status        String    @default("active") // active | expired | new
@@ -1019,18 +1044,39 @@ model JobListing {
 }
 
 model ScrapeRun {
-  id              String   @id @default(uuid())
-  userId          String?  @map("user_id")
-  startedAt       DateTime @default(now()) @map("started_at")
-  finishedAt      DateTime? @map("finished_at")
-  partnersScanned Int      @default(0) @map("partners_scanned")
-  newListings     Int      @default(0) @map("new_listings")
-  errors          Int      @default(0)
-  status          String   @default("running") // running | completed | failed
-  errorLog        String?  @map("error_log")
+  id              String       @id @default(uuid())
+  userId          String?      @map("user_id")
+  listId          String?      @map("list_id")
+  list            PartnerList? @relation(fields: [listId], references: [id], onDelete: SetNull)
+  startedAt       DateTime     @default(now()) @map("started_at")
+  finishedAt      DateTime?    @map("finished_at")
+  partnersScanned Int          @default(0) @map("partners_scanned")
+  newListings     Int          @default(0) @map("new_listings")
+  errors          Int          @default(0)
+  status          String       @default("running") // running | completed | failed
+  errorLog        String?      @map("error_log")
+
+  snapshots       PartnerSnapshot[]
 
   @@index([userId])
+  @@index([listId])
   @@map("scrape_runs")
+}
+
+model PartnerSnapshot {
+  id              String    @id @default(uuid())
+  partnerId       String    @map("partner_id")
+  partner         Partner   @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  scrapeRunId     String    @map("scrape_run_id")
+  scrapeRun       ScrapeRun @relation(fields: [scrapeRunId], references: [id], onDelete: Cascade)
+  activeListings  Int       @map("active_listings") // hány aktív hirdetés volt ennél a cégnél
+  date            DateTime  @default(now())
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@unique([partnerId, scrapeRunId])
+  @@index([partnerId])
+  @@index([scrapeRunId])
+  @@map("partner_snapshots")
 }
 
 model PartnerDigestConfig {
@@ -1038,7 +1084,7 @@ model PartnerDigestConfig {
   userId        String   @unique @map("user_id")
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   enabled       Boolean  @default(true)
-  emails        String[] @default([]) // extra email címek (a user saját emailje mindig megy ha enabled)
+  emails        String[] @default([])
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
