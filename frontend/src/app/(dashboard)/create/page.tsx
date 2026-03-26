@@ -248,8 +248,9 @@ function CreateWizardInner() {
       toast.success(t("create.summary.success"));
       router.push(`/contracts/${res.data.data.id}`);
     } catch (err: unknown) {
-      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
-      toast.error(axiosMsg ?? t("create.summary.error"));
+      const resp = (err as { response?: { data?: { message?: string; error?: string | { message?: string } } } })?.response?.data;
+      const msg = resp?.message ?? (typeof resp?.error === 'object' ? resp.error.message : undefined);
+      toast.error(msg ?? t("create.summary.error"));
     } finally {
       setLoading(false);
     }

@@ -67,7 +67,7 @@ export default function CookieConsent() {
     window.dispatchEvent(new Event("cookie_consent_changed"));
     setHasConsent(false);
     setShowSettings(false);
-    setPreferences(DEFAULT_PREFERENCES);
+    // Keep current preferences in state so user sees their previous choices
     setVisible(true);
   };
 

@@ -41,7 +41,7 @@ export default function RegisterPage() {
       }
       await register(payload);
       toast.success(t("auth.success.register"));
-      router.push("/dashboard");
+      router.push("/verify-email");
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string | string[]; error?: { message?: string } } } };
       const msg = axiosErr.response?.data?.message || axiosErr.response?.data?.error?.message || t("auth.error.register");

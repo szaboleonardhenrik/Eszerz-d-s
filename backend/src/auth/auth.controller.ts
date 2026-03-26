@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Patch, Delete, Body, Param, Res, UseGuards, Req, Headers } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Delete, Body, Param, Query, Res, UseGuards, Req, Headers } from '@nestjs/common';
 import type { Response, Request } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
@@ -65,16 +65,40 @@ export class AuthController {
   }
 
   @Get('google/callback')
-  @UseGuards(AuthGuard('google'))
-  async googleCallback(@Req() req: any, @Res() res: Response) {
-    const result = await this.authService.validateOrCreateOAuthUser(
-      req.user,
-      req.ip,
-      req.headers['user-agent'],
-    );
-    this.setTokenCookie(res, result.token);
+  async googleCallback(@Req() req: any, @Res() res: Response, @Query('error') error?: string) {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    return res.redirect(`${frontendUrl}/dashboard`);
+
+    // Handle Google OAuth cancel/error before Passport processes
+    if (error) {
+      const message = encodeURIComponent('Google bejelentkezés megszakítva');
+      return res.redirect(`${frontendUrl}/login?error=${message}`);
+    }
+
+    // Manually run Passport authenticate to catch errors gracefully
+    return new Promise<void>((resolve) => {
+      const passport = require('passport');
+      passport.authenticate('google', async (err: any, user: any) => {
+        try {
+          if (err || !user) {
+            const message = encodeURIComponent(err?.message || 'Google bejelentkezés sikertelen');
+            res.redirect(`${frontendUrl}/login?error=${message}`);
+            return resolve();
+          }
+          const result = await this.authService.validateOrCreateOAuthUser(
+            user,
+            req.ip,
+            req.headers['user-agent'],
+          );
+          this.setTokenCookie(res, result.token);
+          res.redirect(`${frontendUrl}/dashboard`);
+          resolve();
+        } catch (serviceErr: any) {
+          const message = encodeURIComponent(serviceErr?.message || 'Google bejelentkezés sikertelen');
+          res.redirect(`${frontendUrl}/login?error=${message}`);
+          resolve();
+        }
+      })(req, res);
+    });
   }
 
   @Post('logout')

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-store";
 import { useI18n } from "@/lib/i18n";
@@ -15,6 +15,15 @@ export default function LoginPage() {
   const login = useAuth((s) => s.login);
   const { t } = useI18n();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const error = searchParams.get("error");
+    if (error) {
+      toast.error(decodeURIComponent(error));
+      router.replace("/login", { scroll: false });
+    }
+  }, [searchParams, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,8 +36,12 @@ export default function LoginPage() {
         router.push("/dashboard");
       }
     } catch (err: unknown) {
-      const axiosMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
-      toast.error(axiosMsg ?? t("auth.error.login"));
+      const resp = (err as { response?: { data?: { message?: string; error?: string | { message?: string } } } })?.response?.data;
+      const backendMsg = resp?.message ?? (typeof resp?.error === 'object' ? resp.error.message : undefined);
+      // Security: don't reveal whether email or password was wrong (except lockout/deactivated)
+      const isLockout = backendMsg?.includes('zárolva') || backendMsg?.includes('inaktiválva') || backendMsg?.includes('Google');
+      toast.error(isLockout ? backendMsg! : "Hibás email vagy jelszó");
+      setPassword("");
     } finally {
       setLoading(false);
     }
