@@ -1,8 +1,63 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
+
+// ─── Auto-resize textarea hook ───
+
+function useAutoResize(value: string) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+  const resize = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, []);
+  useEffect(() => { resize(); }, [value, resize]);
+  return { ref, onInput: resize };
+}
+
+// ─── Animated collapsible wrapper ───
+
+function Collapsible({ open, children }: { open: boolean; children: React.ReactNode }) {
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState<number | undefined>(open ? undefined : 0);
+  const [isOpen, setIsOpen] = useState(open);
+
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    if (open) {
+      const h = el.scrollHeight;
+      setHeight(h);
+      const raf = requestAnimationFrame(() => {
+        setHeight(undefined);
+        setIsOpen(true);
+      });
+      return () => cancelAnimationFrame(raf);
+    } else {
+      setHeight(el.scrollHeight);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setHeight(0));
+      });
+      const timer = setTimeout(() => setIsOpen(false), 250);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
+
+  if (!isOpen && !open) return null;
+
+  return (
+    <div
+      ref={contentRef}
+      style={{ height: height !== undefined ? `${height}px` : "auto", overflow: "hidden" }}
+      className="transition-[height] duration-250 ease-in-out"
+    >
+      {children}
+    </div>
+  );
+}
 
 // ─── Types ───
 
@@ -253,7 +308,7 @@ export default function TestingPage() {
               onDelete={() => { if (confirm(`Biztosan törlöd: "${section.title}"? Minden benne lévő teszt is törlődik!`)) deleteSection(section.id); }}
             />
 
-            {expandedSection === section.id && (
+            <Collapsible open={expandedSection === section.id}>
               <div className="border-t border-gray-100 dark:border-gray-700">
                 {(filter === "all" ? section.cases : filteredCases).map((tc) => (
                   <CaseRow
@@ -269,7 +324,7 @@ export default function TestingPage() {
                 {/* Add case */}
                 <AddCaseInline sectionId={section.id} onCreate={createCase} />
               </div>
-            )}
+            </Collapsible>
           </div>
         );
       })}
@@ -467,6 +522,10 @@ function CaseRow({
   const [editExpected, setEditExpected] = useState(tc.expected);
   const [notes, setNotes] = useState(tc.notes || "");
   const [editingTitle, setEditingTitle] = useState(false);
+  const descAr = useAutoResize(editDesc);
+  const stepsAr = useAutoResize(editSteps);
+  const expectedAr = useAutoResize(editExpected);
+  const notesAr = useAutoResize(notes);
   const [uploading, setUploading] = useState(false);
   const screenshotRef = useRef<HTMLInputElement>(null);
 
@@ -498,7 +557,7 @@ function CaseRow({
       </div>
 
       {/* Expanded details — all editable */}
-      {expanded && (
+      <Collapsible open={expanded}>
         <div className="px-5 pb-5 ml-5 space-y-4">
           {/* Title (editable) */}
           {editingTitle ? (
@@ -517,32 +576,32 @@ function CaseRow({
           {/* Description */}
           <div>
             <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 block">Leírás</label>
-            <textarea value={editDesc} onChange={(e) => setEditDesc(e.target.value)}
+            <textarea ref={descAr.ref} value={editDesc} onChange={(e) => setEditDesc(e.target.value)} onInput={descAr.onInput}
               onBlur={() => { if (editDesc !== tc.description) onUpdate({ description: editDesc }); }}
               rows={2} placeholder="Rövid leírás..."
-              className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 dark:text-white resize-none focus:border-[#198296] focus:ring-1 focus:ring-[#198296]/30" />
+              className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 dark:text-white resize-none focus:border-[#198296] focus:ring-1 focus:ring-[#198296]/30 overflow-hidden" />
           </div>
 
           {/* Steps */}
           <div>
             <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 block">Lépések (soronként egy)</label>
-            <textarea value={editSteps} onChange={(e) => setEditSteps(e.target.value)}
+            <textarea ref={stepsAr.ref} value={editSteps} onChange={(e) => setEditSteps(e.target.value)} onInput={stepsAr.onInput}
               onBlur={() => {
                 const newSteps = editSteps.split("\n").filter((s) => s.trim()).map((s) => s.replace(/^\d+\.\s*/, ""));
                 if (JSON.stringify(newSteps) !== JSON.stringify(tc.steps)) onUpdate({ steps: newSteps });
                 setEditSteps(numberSteps(newSteps));
               }}
-              rows={Math.max(3, editSteps.split("\n").length)} placeholder="1. Nyisd meg az oldalt&#10;2. Kattints a gombra&#10;3. Ellenőrizd..."
-              className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 dark:text-white resize-none font-mono focus:border-[#198296] focus:ring-1 focus:ring-[#198296]/30" />
+              rows={3} placeholder="1. Nyisd meg az oldalt&#10;2. Kattints a gombra&#10;3. Ellenőrizd..."
+              className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 dark:text-white resize-none font-mono focus:border-[#198296] focus:ring-1 focus:ring-[#198296]/30 overflow-hidden" />
           </div>
 
           {/* Expected */}
           <div>
             <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 block">Elvárt eredmény</label>
-            <textarea value={editExpected} onChange={(e) => setEditExpected(e.target.value)}
+            <textarea ref={expectedAr.ref} value={editExpected} onChange={(e) => setEditExpected(e.target.value)} onInput={expectedAr.onInput}
               onBlur={() => { if (editExpected !== tc.expected) onUpdate({ expected: editExpected }); }}
               rows={2} placeholder="Mi az elvárt viselkedés?"
-              className="w-full px-3 py-2 border border-blue-200 dark:border-blue-800 rounded-lg text-sm bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 resize-none focus:ring-1 focus:ring-blue-300" />
+              className="w-full px-3 py-2 border border-blue-200 dark:border-blue-800 rounded-lg text-sm bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 resize-none focus:ring-1 focus:ring-blue-300 overflow-hidden" />
           </div>
 
           {/* Priority + Assignee row */}
@@ -583,8 +642,8 @@ function CaseRow({
           <div>
             <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 block">Megjegyzés</label>
             <div className="flex gap-2">
-              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Mi volt a hiba? Részletek..." rows={2}
-                className="flex-1 px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 dark:text-white resize-none" />
+              <textarea ref={notesAr.ref} value={notes} onChange={(e) => setNotes(e.target.value)} onInput={notesAr.onInput} placeholder="Mi volt a hiba? Részletek..." rows={2}
+                className="flex-1 px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 dark:text-white resize-none overflow-hidden" />
               <button onClick={() => { onUpdate({ notes }); toast.success("Mentve"); }}
                 className="px-3 py-2 bg-[#198296] text-white rounded-lg text-xs font-medium hover:bg-[#146d7d] transition self-end">Mentés</button>
             </div>
@@ -618,7 +677,7 @@ function CaseRow({
               }} />
           </div>
         </div>
-      )}
+      </Collapsible>
     </div>
   );
 }
