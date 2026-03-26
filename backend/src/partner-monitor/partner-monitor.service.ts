@@ -244,40 +244,95 @@ export class PartnerMonitorService {
 
   // ─── WEBSITE SCRAPING ───────────────────────────────────
 
-  async scrapeWebsiteJobCount(websiteUrl: string): Promise<number> {
-    if (!websiteUrl) return 0;
+  async scrapeWebsiteJobs(websiteUrl: string, partnerId: string): Promise<{ count: number; newListings: number }> {
+    if (!websiteUrl) return { count: 0, newListings: 0 };
     try {
-      let totalCount = 0;
-      let page = 1;
-      while (page <= 10) {
-        const url = page === 1 ? websiteUrl : `${websiteUrl}${websiteUrl.includes('?') ? '&' : '?'}page=${page}`;
-        const res = await fetch(url, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', 'Accept': 'text/html' },
-          signal: AbortSignal.timeout(15000), redirect: 'follow',
-        });
-        if (!res.ok) break;
-        const html = await res.text();
-        const $ = cheerio.load(html);
-        $('script,style,nav,footer,header').remove();
-        const sels = ['.job-card','[class*="job-card"]','[class*="job"] .card','[class*="allas"]','[class*="munka-"]','.diakmunka-blog','.vacancy','.opening'];
-        let pageCount = 0;
-        for (const sel of sels) { const c = $(sel).length; if (c > pageCount && c < 2000) pageCount = c; }
-        if (pageCount === 0) {
-          const jobLinks = $('a[href]').filter((_, el) => /(?:allas|munka|job|pozicio|diakmunka|vacancy)/.test(($(el).attr('href') || '').toLowerCase())).length;
-          if (jobLinks > 2) pageCount = Math.floor(jobLinks / 2);
-        }
-        if (pageCount === 0) break;
-        totalCount += pageCount;
-        const hasNext = $(`a[href*="page=${page + 1}"]`).length > 0;
-        if (!hasNext) break;
-        page++;
-        await new Promise(r => setTimeout(r, 1000));
+      const res = await fetch(websiteUrl, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', 'Accept': 'text/html' },
+        signal: AbortSignal.timeout(15000), redirect: 'follow',
+      });
+      if (!res.ok) {
+        this.logger.warn(`Website fetch hiba (${websiteUrl}): HTTP ${res.status}`);
+        return { count: 0, newListings: 0 };
       }
-      this.logger.log(`Website scan "${websiteUrl}": ${totalCount} pozíció`);
-      return totalCount;
+      const html = await res.text();
+      const $ = cheerio.load(html);
+      $('script,style').remove();
+
+      // Extract job links from the page using broad patterns
+      const jobPatterns = /(?:allas|állás|munka|job|pozicio|pozíció|diakmunka|diákmunka|vacancy|career|karrier|opening|work)/i;
+      const baseUrl = new URL(websiteUrl).origin;
+      const jobLinks: { title: string; url: string }[] = [];
+      const seenUrls = new Set<string>();
+
+      $('a[href]').each((_, el) => {
+        const href = $(el).attr('href') || '';
+        const text = $(el).text().trim().replace(/\s+/g, ' ');
+        if (!href || href === '#' || href.startsWith('javascript:') || text.length < 3 || text.length > 200) return;
+
+        // Check if the link or its parent has job-related classes/content
+        const classes = ($(el).attr('class') || '') + ' ' + ($(el).parent().attr('class') || '');
+        const isJobLink = jobPatterns.test(href) || jobPatterns.test(classes);
+        if (!isJobLink) return;
+
+        // Skip navigation/footer/social links
+        if (/facebook|instagram|tiktok|youtube|linkedin|twitter|mailto:|tel:|#section/i.test(href)) return;
+        if (/^\/?(en|hu|de)?\/?$/.test(href)) return;
+
+        let fullUrl: string;
+        try {
+          fullUrl = href.startsWith('http') ? href : new URL(href, baseUrl).href;
+        } catch { return; }
+        fullUrl = fullUrl.split('?')[0].split('#')[0];
+
+        // Skip if same as the page we're scraping or already seen
+        if (seenUrls.has(fullUrl) || fullUrl === websiteUrl.split('?')[0]) return;
+        seenUrls.add(fullUrl);
+
+        jobLinks.push({ title: text.substring(0, 150), url: fullUrl });
+      });
+
+      // Also count job card elements for snapshot (broader selectors)
+      const cardSelectors = [
+        '.job-card', '[class*="job-card"]', '.featured-job-card',
+        '.job-list > *', '[class*="joblist"] > *',
+        '.job-title', '[class*="job-title"]',
+        '[class*="allas"]', '[class*="munka-"]',
+        '.vacancy', '.opening', '.position-card',
+        '[class*="vacancy"]', '[class*="career-item"]',
+      ];
+      let cardCount = 0;
+      for (const sel of cardSelectors) {
+        const c = $(sel).length;
+        if (c > cardCount && c < 2000) cardCount = c;
+      }
+
+      const totalCount = Math.max(cardCount, jobLinks.length);
+      let newListings = 0;
+
+      // Save discovered job links as job listings
+      for (const job of jobLinks) {
+        const existing = await this.prisma.jobListing.findUnique({
+          where: { partnerId_url: { partnerId, url: job.url } },
+        });
+        if (existing) {
+          await this.prisma.jobListing.update({
+            where: { id: existing.id },
+            data: { lastSeenAt: new Date(), status: 'active' },
+          });
+        } else {
+          await this.prisma.jobListing.create({
+            data: { partnerId, title: job.title, url: job.url, snippet: 'Weboldal scan', status: 'new' },
+          });
+          newListings++;
+        }
+      }
+
+      this.logger.log(`Website scan "${websiteUrl}": ${totalCount} pozíció, ${jobLinks.length} link, ${newListings} új`);
+      return { count: totalCount, newListings };
     } catch (error: any) {
       this.logger.warn(`Website scan hiba (${websiteUrl}): ${error.message}`);
-      return 0;
+      return { count: 0, newListings: 0 };
     }
   }
 
@@ -335,14 +390,15 @@ export class PartnerMonitorService {
         }
 
         // Scrape website if URL is set
-        const websiteCount = partner.websiteUrl ? await this.scrapeWebsiteJobCount(partner.websiteUrl) : 0;
+        const websiteResult = partner.websiteUrl ? await this.scrapeWebsiteJobs(partner.websiteUrl, partner.id) : { count: 0, newListings: 0 };
+        newListingsTotal += websiteResult.newListings;
 
         // Save snapshot: profession.hu + website counts
         const activeCount = await this.prisma.jobListing.count({
           where: { partnerId: partner.id, status: { in: ['active', 'new'] } },
         });
         await this.prisma.partnerSnapshot.create({
-          data: { partnerId: partner.id, scrapeRunId: run.id, activeListings: activeCount, websiteListings: websiteCount },
+          data: { partnerId: partner.id, scrapeRunId: run.id, activeListings: activeCount, websiteListings: websiteResult.count },
         });
 
         await this.prisma.partner.update({
