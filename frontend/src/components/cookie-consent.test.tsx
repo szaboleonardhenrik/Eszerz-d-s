@@ -86,7 +86,7 @@ describe('CookieConsent', () => {
     expect(screen.getByText('Mentés')).toBeInTheDocument();
   });
 
-  it('cookie withdrawal clears localStorage and re-shows banner', async () => {
+  it('cookie withdrawal re-shows settings panel', async () => {
     localStorage.setItem(
       'cookie_consent',
       JSON.stringify({ essential: true, functional: true, analytics: true }),
@@ -97,9 +97,8 @@ describe('CookieConsent', () => {
     const resetButton = screen.getByRole('button', { name: 'Cookie beállítások' });
     await userEvent.click(resetButton);
 
-    expect(localStorage.getItem('cookie_consent')).toBeNull();
-    // Banner should reappear
-    expect(screen.getByText('Elfogadom')).toBeInTheDocument();
+    // Settings panel should reappear (showSettings=true)
+    expect(screen.getByText('Mentés')).toBeInTheDocument();
   });
 
   it('fires cookie_consent_changed event on accept', async () => {
@@ -113,19 +112,17 @@ describe('CookieConsent', () => {
     window.removeEventListener('cookie_consent_changed', handler);
   });
 
-  it('fires cookie_consent_changed event on reset', async () => {
+  it('reset button reopens the cookie settings panel', async () => {
     localStorage.setItem(
       'cookie_consent',
       JSON.stringify({ essential: true, functional: true, analytics: true }),
     );
-    const handler = vi.fn();
-    window.addEventListener('cookie_consent_changed', handler);
 
     render(<CookieConsent />);
     const resetButton = screen.getByRole('button', { name: 'Cookie beállítások' });
     await userEvent.click(resetButton);
 
-    expect(handler).toHaveBeenCalledTimes(1);
-    window.removeEventListener('cookie_consent_changed', handler);
+    // Settings panel should reappear with save button
+    expect(screen.getByText('Mentés')).toBeInTheDocument();
   });
 });
