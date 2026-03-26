@@ -253,54 +253,31 @@ export class PartnerMonitorService {
     try {
       let totalCount = 0;
       let page = 1;
-      const maxPages = 10;
-
-      while (page <= maxPages) {
+      while (page <= 10) {
         const url = page === 1 ? websiteUrl : `${websiteUrl}${websiteUrl.includes('?') ? '&' : '?'}page=${page}`;
         const res = await fetch(url, {
           headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', 'Accept': 'text/html' },
-          signal: AbortSignal.timeout(15000),
-          redirect: 'follow',
+          signal: AbortSignal.timeout(15000), redirect: 'follow',
         });
         if (!res.ok) break;
-
         const html = await res.text();
         const $ = cheerio.load(html);
         $('script,style,nav,footer,header').remove();
-
-        // Count job cards using common selectors
-        const selectors = [
-          '.job-card', '.job-item', '[class*="job-card"]',
-          '[class*="job"] .card', '[class*="allas"]', '[class*="munka-"]',
-          '.diakmunka-blog', '.vacancy', '.opening', '.offer-item',
-        ];
+        const sels = ['.job-card','[class*="job-card"]','[class*="job"] .card','[class*="allas"]','[class*="munka-"]','.diakmunka-blog','.vacancy','.opening'];
         let pageCount = 0;
-        for (const sel of selectors) {
-          const c = $(sel).length;
-          if (c > pageCount && c < 2000) pageCount = c;
-        }
-
-        // Fallback: count job-related links
+        for (const sel of sels) { const c = $(sel).length; if (c > pageCount && c < 2000) pageCount = c; }
         if (pageCount === 0) {
-          const jobLinks = $('a[href]').filter((_, el) => {
-            const href = $(el).attr('href') || '';
-            return /(?:allas|munka|job|pozicio|diakmunka|vacancy)/.test(href.toLowerCase());
-          }).length;
+          const jobLinks = $('a[href]').filter((_, el) => /(?:allas|munka|job|pozicio|diakmunka|vacancy)/.test(($(el).attr('href') || '').toLowerCase())).length;
           if (jobLinks > 2) pageCount = Math.floor(jobLinks / 2);
         }
-
-        if (pageCount === 0) break; // No more results
+        if (pageCount === 0) break;
         totalCount += pageCount;
-
-        // Check if there's a next page
-        const hasNext = $('a[href*="page=' + (page + 1) + '"]').length > 0 ||
-                        $('[class*="pagination"] a').filter((_, el) => $(el).text().trim() === String(page + 1)).length > 0;
+        const hasNext = $(`a[href*="page=${page + 1}"]`).length > 0;
         if (!hasNext) break;
         page++;
         await new Promise(r => setTimeout(r, 1000));
       }
-
-      this.logger.log(`Website scan "${websiteUrl}": ${totalCount} pozíció (${page} oldal)`);
+      this.logger.log(`Website scan "${websiteUrl}": ${totalCount} pozíció`);
       return totalCount;
     } catch (error: any) {
       this.logger.warn(`Website scan hiba (${websiteUrl}): ${error.message}`);
@@ -417,7 +394,7 @@ export class PartnerMonitorService {
     });
 
     // Group by date (day) and partner
-    const byDate: Record<string, Record<string, number>> = {};
+    const byDate: Record<string, Record<string, { profession: number; website: number }>> = {};
     const companies = new Set<string>();
 
     for (const snap of snapshots) {
@@ -425,20 +402,25 @@ export class PartnerMonitorService {
       const company = snap.partner.companyName;
       companies.add(company);
       if (!byDate[day]) byDate[day] = {};
-      byDate[day][company] = snap.activeListings;
+      byDate[day][company] = { profession: snap.activeListings, website: snap.websiteListings };
     }
 
     // Build chart-friendly array
     const dates = Object.keys(byDate).sort();
     const chartData = dates.map(date => {
       const entry: Record<string, any> = { date };
-      let total = 0;
+      let totalP = 0, totalW = 0;
       for (const company of companies) {
-        const count = byDate[date][company] || 0;
-        entry[company] = count;
-        total += count;
+        const d = byDate[date][company] || { profession: 0, website: 0 };
+        entry[company] = d.profession + d.website;
+        entry[`${company} (profession.hu)`] = d.profession;
+        entry[`${company} (weboldal)`] = d.website;
+        totalP += d.profession;
+        totalW += d.website;
       }
-      entry.total = total;
+      entry.total = totalP + totalW;
+      entry['Profession.hu'] = totalP;
+      entry['Saját weboldalak'] = totalW;
       return entry;
     });
 

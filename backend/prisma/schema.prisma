@@ -1069,7 +1069,8 @@ model PartnerSnapshot {
   partner         Partner   @relation(fields: [partnerId], references: [id], onDelete: Cascade)
   scrapeRunId     String    @map("scrape_run_id")
   scrapeRun       ScrapeRun @relation(fields: [scrapeRunId], references: [id], onDelete: Cascade)
-  activeListings  Int       @map("active_listings") // hány aktív hirdetés volt ennél a cégnél
+  activeListings  Int       @map("active_listings") // profession.hu aktív hirdetések
+  websiteListings Int       @default(0) @map("website_listings") // saját weboldalon hirdetések
   date            DateTime  @default(now())
   createdAt       DateTime  @default(now()) @map("created_at")
 
