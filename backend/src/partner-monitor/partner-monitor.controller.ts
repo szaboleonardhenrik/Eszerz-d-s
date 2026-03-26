@@ -117,7 +117,10 @@ export class PartnerMonitorController {
   // ─── SCAN ───────────────────────────────────────────────
 
   @Post('scan')
-  async triggerScan(@Req() req: any) {
+  async triggerScan(@Req() req: any, @Query('listId') listId?: string) {
+    if (listId) {
+      return this.service.scanList(req.user.userId, listId);
+    }
     return this.service.scanAllPartners(req.user.userId);
   }
 
