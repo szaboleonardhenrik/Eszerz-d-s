@@ -38,6 +38,93 @@ interface DigestConfig {
   emails: string[];
 }
 
+interface Listing {
+  id: string;
+  title: string;
+  url: string;
+  snippet: string | null;
+  status: string;
+  firstSeenAt: string;
+  partner: { companyName: string };
+}
+
+function CompanyAccordion({ listings }: { listings: Listing[] }) {
+  const [open, setOpen] = useState<Record<string, boolean>>({});
+
+  // Group by company
+  const grouped: Record<string, Listing[]> = {};
+  for (const l of listings) {
+    const key = l.partner.companyName;
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(l);
+  }
+
+  const companies = Object.entries(grouped).sort((a, b) => b[1].length - a[1].length);
+
+  return (
+    <div className="divide-y dark:divide-gray-700">
+      {companies.map(([company, items]) => (
+        <div key={company}>
+          <button
+            onClick={() => setOpen((prev) => ({ ...prev, [company]: !prev[company] }))}
+            className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition"
+          >
+            <div className="flex items-center gap-3">
+              <svg
+                className={`w-4 h-4 text-gray-400 transition-transform ${open[company] ? "rotate-90" : ""}`}
+                fill="none" viewBox="0 0 24 24" stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+              <span className="text-sm font-semibold text-gray-900 dark:text-white">{company}</span>
+            </div>
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
+              {items.length} pozíció
+            </span>
+          </button>
+          {open[company] && (
+            <div className="bg-gray-50/50 dark:bg-gray-900/30 border-t dark:border-gray-700">
+              {items.map((l) => (
+                <div key={l.id} className="px-4 py-2 pl-11 flex items-center justify-between gap-2 hover:bg-gray-100/50 dark:hover:bg-gray-700/30">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={l.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 truncate"
+                      >
+                        {l.title}
+                      </a>
+                      {l.status === "new" && (
+                        <span className="px-1.5 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-[10px] font-bold rounded uppercase shrink-0">
+                          Új
+                        </span>
+                      )}
+                    </div>
+                    {l.snippet && <p className="text-xs text-gray-500 mt-0.5 truncate">{l.snippet}</p>}
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-xs text-gray-400">{new Date(l.firstSeenAt).toLocaleDateString("hu-HU")}</span>
+                    <a
+                      href={l.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                    >
+                      Megnyitás
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function PartnerMonitorDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -243,11 +330,11 @@ export default function PartnerMonitorDashboard() {
         </div>
       )}
 
-      {/* Recent listings */}
+      {/* Listings grouped by company */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 overflow-hidden">
         <div className="px-4 py-3 border-b dark:border-gray-700">
           <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-            Legfrissebb álláshirdetések ({data.recentListings.length})
+            Álláshirdetések cégenként ({data.recentListings.length} pozíció)
           </h3>
         </div>
         {data.recentListings.length === 0 ? (
@@ -255,40 +342,7 @@ export default function PartnerMonitorDashboard() {
             Még nincsenek találatok. Indítson egy scant!
           </div>
         ) : (
-          <div className="divide-y dark:divide-gray-700">
-            {data.recentListings.map((l) => (
-              <div key={l.id} className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold text-brand-teal-dark dark:text-brand-teal bg-brand-teal-dark/10 dark:bg-brand-teal/10 px-2 py-0.5 rounded">
-                        {l.partner.companyName}
-                      </span>
-                      {l.status === "new" && (
-                        <span className="px-1.5 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-[10px] font-bold rounded uppercase">
-                          Új
-                        </span>
-                      )}
-                    </div>
-                    <a
-                      href={l.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 mt-1 block truncate"
-                    >
-                      {l.title}
-                    </a>
-                    {l.snippet && (
-                      <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{l.snippet}</p>
-                    )}
-                  </div>
-                  <span className="text-xs text-gray-400 whitespace-nowrap">
-                    {new Date(l.firstSeenAt).toLocaleDateString("hu-HU")}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+          <CompanyAccordion listings={data.recentListings} />
         )}
       </div>
     </div>
