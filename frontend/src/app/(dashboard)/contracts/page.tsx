@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
@@ -53,13 +53,23 @@ export default function ContractsListPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [exporting, setExporting] = useState(false);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  // Debounce search input
+  useEffect(() => {
+    debounceRef.current = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 400);
+    return () => clearTimeout(debounceRef.current);
+  }, [search]);
 
   const loadContracts = useCallback(async () => {
     setLoading(true);
     try {
       const params: Record<string, string> = { page: String(page), limit: "25" };
       if (statusFilter) params.status = statusFilter;
-      if (search.trim()) params.search = search.trim();
+      if (debouncedSearch.trim()) params.search = debouncedSearch.trim();
 
       const res = await api.get("/contracts", { params });
       const data = res.data.data;
@@ -71,7 +81,7 @@ export default function ContractsListPage() {
       setLoading(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, statusFilter, search]);
+  }, [page, statusFilter, debouncedSearch]);
 
   useEffect(() => {
     loadContracts();
@@ -80,7 +90,7 @@ export default function ContractsListPage() {
   // Reset page when filters change
   useEffect(() => {
     setPage(1);
-  }, [statusFilter, search]);
+  }, [statusFilter, debouncedSearch]);
 
   const allSelected = contracts.length > 0 && contracts.every((c) => selectedIds.has(c.id));
 
@@ -128,8 +138,10 @@ export default function ContractsListPage() {
       URL.revokeObjectURL(url);
 
       toast.success(t("contracts.exportSuccess", { count: ids.length }));
-    } catch {
-      toast.error(t("contracts.exportError"));
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { message?: string; error?: { message?: string } } } };
+      const msg = axiosErr?.response?.data?.error?.message ?? axiosErr?.response?.data?.message;
+      toast.error(msg ?? t("contracts.exportError"));
     } finally {
       setExporting(false);
     }
@@ -312,18 +324,25 @@ export default function ContractsListPage() {
                     {t("contracts.signerCount", { count: signerSummary })}
                   </span>
 
-                  {/* PDF indicator */}
-                  <span className="hidden sm:block">
-                    {contract.pdfUrl ? (
-                      <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
-                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                        PDF
-                      </span>
-                    ) : (
-                      <span className="text-xs text-gray-300 dark:text-gray-600">-</span>
-                    )}
+                  {/* Download button */}
+                  <span className="hidden sm:flex items-center">
+                    <button
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        try {
+                          const res = await api.get(`/contracts/${contract.id}/download`);
+                          window.open(res.data.data.url, "_blank");
+                        } catch {
+                          toast.error(t("contracts.downloadError") ?? "Hiba a letöltéskor");
+                        }
+                      }}
+                      className="inline-flex items-center gap-1 px-2 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-[#198296] dark:hover:text-[#198296] hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition"
+                      title="Letöltés"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                    </button>
                   </span>
                 </li>
               );
