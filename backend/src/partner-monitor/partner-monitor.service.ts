@@ -247,71 +247,93 @@ export class PartnerMonitorService {
   async scrapeWebsiteJobs(websiteUrl: string, partnerId: string): Promise<{ count: number; newListings: number }> {
     if (!websiteUrl) return { count: 0, newListings: 0 };
     try {
-      const res = await fetch(websiteUrl, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', 'Accept': 'text/html' },
-        signal: AbortSignal.timeout(15000), redirect: 'follow',
-      });
-      if (!res.ok) {
-        this.logger.warn(`Website fetch hiba (${websiteUrl}): HTTP ${res.status}`);
-        return { count: 0, newListings: 0 };
-      }
-      const html = await res.text();
-      const $ = cheerio.load(html);
-      $('script,style').remove();
-
-      // Extract job links from the page using broad patterns
-      const jobPatterns = /(?:allas|állás|munka|job|pozicio|pozíció|diakmunka|diákmunka|vacancy|career|karrier|opening|work)/i;
       const baseUrl = new URL(websiteUrl).origin;
-      const jobLinks: { title: string; url: string }[] = [];
+      const allJobLinks: { title: string; url: string }[] = [];
       const seenUrls = new Set<string>();
+      const visitedPages = new Set<string>();
+      const pagesToVisit = [websiteUrl];
+      let totalCardCount = 0;
 
-      $('a[href]').each((_, el) => {
-        const href = $(el).attr('href') || '';
-        const text = $(el).text().trim().replace(/\s+/g, ' ');
-        if (!href || href === '#' || href.startsWith('javascript:') || text.length < 3 || text.length > 200) return;
+      while (pagesToVisit.length > 0 && visitedPages.size < 10) {
+        const pageUrl = pagesToVisit.shift()!;
+        const normalizedPageUrl = pageUrl.split('#')[0];
+        if (visitedPages.has(normalizedPageUrl)) continue;
+        visitedPages.add(normalizedPageUrl);
 
-        // Check if the link or its parent has job-related classes/content
-        const classes = ($(el).attr('class') || '') + ' ' + ($(el).parent().attr('class') || '');
-        const isJobLink = jobPatterns.test(href) || jobPatterns.test(classes);
-        if (!isJobLink) return;
+        const res = await fetch(pageUrl, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', 'Accept': 'text/html' },
+          signal: AbortSignal.timeout(15000), redirect: 'follow',
+        });
+        if (!res.ok) {
+          this.logger.warn(`Website fetch hiba (${pageUrl}): HTTP ${res.status}`);
+          break;
+        }
+        const html = await res.text();
+        if (html.length < 500) break; // empty/tiny page = likely SPA
+        const $ = cheerio.load(html);
+        $('script,style').remove();
 
-        // Skip navigation/footer/social links
-        if (/facebook|instagram|tiktok|youtube|linkedin|twitter|mailto:|tel:|#section/i.test(href)) return;
-        if (/^\/?(en|hu|de)?\/?$/.test(href)) return;
+        const jobPatterns = /(?:allas|állás|munka|job|pozicio|pozíció|diakmunka|diákmunka|vacancy|career|karrier|opening|work)/i;
 
-        let fullUrl: string;
-        try {
-          fullUrl = href.startsWith('http') ? href : new URL(href, baseUrl).href;
-        } catch { return; }
-        fullUrl = fullUrl.split('?')[0].split('#')[0];
+        // Extract job links
+        $('a[href]').each((_, el) => {
+          const href = $(el).attr('href') || '';
+          const text = $(el).text().trim().replace(/\s+/g, ' ');
+          if (!href || href === '#' || href.startsWith('javascript:') || text.length < 3 || text.length > 200) return;
 
-        // Skip if same as the page we're scraping or already seen
-        if (seenUrls.has(fullUrl) || fullUrl === websiteUrl.split('?')[0]) return;
-        seenUrls.add(fullUrl);
+          const classes = ($(el).attr('class') || '') + ' ' + ($(el).parent().attr('class') || '');
+          const isJobLink = jobPatterns.test(href) || jobPatterns.test(classes);
+          if (!isJobLink) return;
+          if (/facebook|instagram|tiktok|youtube|linkedin|twitter|mailto:|tel:|#section|\.pdf$/i.test(href)) return;
+          if (/^\/?(en|hu|de)?\/?$/.test(href)) return;
 
-        jobLinks.push({ title: text.substring(0, 150), url: fullUrl });
-      });
+          let fullUrl: string;
+          try { fullUrl = href.startsWith('http') ? href : new URL(href, baseUrl).href; } catch { return; }
+          fullUrl = fullUrl.split('#')[0];
 
-      // Also count job card elements for snapshot (broader selectors)
-      const cardSelectors = [
-        '.job-card', '[class*="job-card"]', '.featured-job-card',
-        '.job-list > *', '[class*="joblist"] > *',
-        '.job-title', '[class*="job-title"]',
-        '[class*="allas"]', '[class*="munka-"]',
-        '.vacancy', '.opening', '.position-card',
-        '[class*="vacancy"]', '[class*="career-item"]',
-      ];
-      let cardCount = 0;
-      for (const sel of cardSelectors) {
-        const c = $(sel).length;
-        if (c > cardCount && c < 2000) cardCount = c;
+          // Skip category/filter links, only keep individual job detail links
+          if (seenUrls.has(fullUrl)) return;
+          seenUrls.add(fullUrl);
+          allJobLinks.push({ title: text.substring(0, 150), url: fullUrl });
+        });
+
+        // Count job card elements on this page
+        const cardSelectors = [
+          '.job-card', '[class*="job-card"]', '.featured-job-card',
+          '.job-list > *', '[class*="joblist"] > *',
+          '.job-title', '[class*="job-title"]',
+          '[class*="allas"]', '[class*="munka-"]',
+          '.vacancy', '.opening', '.position-card',
+          '[class*="vacancy"]', '[class*="career-item"]',
+        ];
+        for (const sel of cardSelectors) {
+          const c = $(sel).length;
+          if (c > totalCardCount && c < 2000) totalCardCount = c;
+        }
+
+        // Find pagination links for next pages
+        $('a[href]').each((_, el) => {
+          const href = $(el).attr('href') || '';
+          if (!href || href === '#') return;
+          // Match pagination patterns: ?page=N, /page/N, ?p=N, &oldal=N
+          if (!/[?&]page=\d|\/page\/\d|[?&]p=\d|[?&]oldal=\d/i.test(href)) return;
+          let fullPageUrl: string;
+          try { fullPageUrl = href.startsWith('http') ? href : new URL(href, baseUrl).href; } catch { return; }
+          fullPageUrl = fullPageUrl.split('#')[0];
+          if (!visitedPages.has(fullPageUrl) && !pagesToVisit.includes(fullPageUrl)) {
+            pagesToVisit.push(fullPageUrl);
+          }
+        });
+
+        // Small delay between pages
+        if (pagesToVisit.length > 0) await new Promise(r => setTimeout(r, 1000));
       }
 
-      const totalCount = Math.max(cardCount, jobLinks.length);
+      const totalCount = Math.max(totalCardCount, allJobLinks.length);
       let newListings = 0;
 
       // Save discovered job links as job listings
-      for (const job of jobLinks) {
+      for (const job of allJobLinks) {
         const existing = await this.prisma.jobListing.findUnique({
           where: { partnerId_url: { partnerId, url: job.url } },
         });
@@ -328,7 +350,7 @@ export class PartnerMonitorService {
         }
       }
 
-      this.logger.log(`Website scan "${websiteUrl}": ${totalCount} pozíció, ${jobLinks.length} link, ${newListings} új`);
+      this.logger.log(`Website scan "${websiteUrl}": ${visitedPages.size} oldal, ${totalCount} pozíció, ${allJobLinks.length} link, ${newListings} új`);
       return { count: totalCount, newListings };
     } catch (error: any) {
       this.logger.warn(`Website scan hiba (${websiteUrl}): ${error.message}`);
