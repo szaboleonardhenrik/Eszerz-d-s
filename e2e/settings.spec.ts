@@ -18,6 +18,7 @@ test.describe('Settings Pages', () => {
 
   test('billing page shows plans and credits', async ({ page }) => {
     await page.goto('/settings/billing');
+    await page.waitForTimeout(2000);
     await expect(page.locator('body')).toContainText(/Kreditek|kredit|előfizetés/i);
     await expect(page.locator('body')).toContainText(/szerződés/i);
   });
