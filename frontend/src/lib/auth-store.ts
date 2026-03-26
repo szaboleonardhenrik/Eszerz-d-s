@@ -17,6 +17,7 @@ interface User {
   emailDigest?: string;
   trialEndsAt?: string;
   onboardingCompleted?: boolean;
+  emailVerified?: boolean;
 }
 
 interface AuthState {

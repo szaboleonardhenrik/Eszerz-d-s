@@ -14,6 +14,7 @@ import { useI18n } from "@/lib/i18n";
 import GlobalSearch from "@/components/global-search";
 import MaintenanceBanner from "@/components/maintenance-banner";
 import Logo from "@/components/logo";
+import toast from "react-hot-toast";
 
 // Lazy-load heavy components (code-splitting)
 const OnboardingWizard = dynamic(() => import("@/components/onboarding-wizard"), { ssr: false });
@@ -92,6 +93,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Logo variant="light" />
             </Link>
             <div className="flex items-center gap-1.5 sm:gap-2">
+              <button
+                onClick={() => setMobileNav(!mobileNav)}
+                className="lg:hidden p-2 rounded-lg hover:bg-white/20 bg-white/10"
+                aria-label={t("a11y.toggleMobileMenu")}
+                aria-expanded={mobileNav}
+              >
+                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={mobileNav ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+                </svg>
+              </button>
               <GlobalSearch />
               <ThemeToggle />
               <NotificationBell />
@@ -107,16 +118,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   {creditBalance} {t("layout.credit")}
                 </Link>
               )}
-              <button
-                onClick={() => setMobileNav(!mobileNav)}
-                className="lg:hidden p-2 rounded-lg hover:bg-white/10"
-                aria-label={t("a11y.toggleMobileMenu")}
-                aria-expanded={mobileNav}
-              >
-                <svg className="w-5 h-5 text-white/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={mobileNav ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
-                </svg>
-              </button>
               <div className="relative">
                 <button
                   onClick={() => setMenuOpen(!menuOpen)}
@@ -276,6 +277,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
           </div>
         </>
+      )}
+      {/* Email verification banner */}
+      {user.emailVerified === false && (
+        <div className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center gap-3">
+            <svg className="w-5 h-5 text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            <p className="text-sm text-amber-800 dark:text-amber-200 flex-1">
+              <strong>Erősítsd meg az email címedet!</strong> Ellenőrizd a postaládádat ({user.email}) és kattints a megerősítő linkre.
+            </p>
+            <button
+              onClick={async () => {
+                try {
+                  await api.post("/auth/resend-verification");
+                  toast.success("Megerősítő email újraküldve!");
+                } catch {
+                  toast.error("Hiba az email újraküldésekor");
+                }
+              }}
+              className="text-sm font-medium text-amber-700 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-100 underline whitespace-nowrap"
+            >
+              Újraküldés
+            </button>
+          </div>
+        </div>
       )}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-4 sm:py-8 pb-20 lg:pb-8">
         {children}

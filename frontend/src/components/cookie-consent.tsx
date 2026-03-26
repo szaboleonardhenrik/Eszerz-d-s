@@ -63,11 +63,9 @@ export default function CookieConsent() {
   const saveSelected = () => savePreferences({ ...preferences, essential: true });
 
   const resetConsent = () => {
-    localStorage.removeItem("cookie_consent");
-    window.dispatchEvent(new Event("cookie_consent_changed"));
+    // Don't remove from localStorage — just show the settings panel with current preferences
     setHasConsent(false);
-    setShowSettings(false);
-    // Keep current preferences in state so user sees their previous choices
+    setShowSettings(true);
     setVisible(true);
   };
 

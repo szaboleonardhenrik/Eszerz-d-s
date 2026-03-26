@@ -9,10 +9,10 @@ import toast from "react-hot-toast";
 const ADMIN_ROLES = ["superadmin", "employee"];
 
 const discountTypeOptions = [
-  { value: "percent", label: "Szazalekos" },
-  { value: "fixed", label: "Fix osszeg" },
-  { value: "tier_upgrade", label: "Szint frissites" },
-  { value: "trial_days", label: "Proba napok" },
+  { value: "percent", label: "Százalékos" },
+  { value: "fixed", label: "Fix összeg" },
+  { value: "tier_upgrade", label: "Szint frissítés" },
+  { value: "trial_days", label: "Próba napok" },
 ];
 
 const discountTypeLabelMap: Record<string, string> = {

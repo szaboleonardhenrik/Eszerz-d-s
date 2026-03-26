@@ -35,7 +35,12 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401 && typeof window !== 'undefined') {
-      window.location.href = '/login';
+      // Don't redirect on auth endpoints — let the login/register page handle the error
+      const url = error.config?.url || '';
+      const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/register') || url.includes('/auth/verify');
+      if (!isAuthEndpoint) {
+        window.location.href = '/login';
+      }
     }
     if (error.response?.status === 503 && error.response?.data?.error?.code === 'MAINTENANCE') {
       setMaintenance(error.response.data.error.message);

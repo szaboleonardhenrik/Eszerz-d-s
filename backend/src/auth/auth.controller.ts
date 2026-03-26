@@ -68,37 +68,43 @@ export class AuthController {
   async googleCallback(@Req() req: any, @Res() res: Response, @Query('error') error?: string) {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 
-    // Handle Google OAuth cancel/error before Passport processes
-    if (error) {
-      const message = encodeURIComponent('Google bejelentkezés megszakítva');
+    try {
+      // Handle Google OAuth cancel/error before Passport processes
+      if (error) {
+        const message = encodeURIComponent('Google bejelentkezés megszakítva');
+        return res.redirect(`${frontendUrl}/login?error=${message}`);
+      }
+
+      // Manually run Passport authenticate to catch errors gracefully
+      return new Promise<void>((resolve) => {
+        const passport = require('passport');
+        passport.authenticate('google', async (err: any, user: any) => {
+          try {
+            if (err || !user) {
+              const message = encodeURIComponent(err?.message || 'Google bejelentkezés megszakítva');
+              res.redirect(`${frontendUrl}/login?error=${message}`);
+              return resolve();
+            }
+            const result = await this.authService.validateOrCreateOAuthUser(
+              user,
+              req.ip,
+              req.headers['user-agent'],
+            );
+            this.setTokenCookie(res, result.token);
+            res.redirect(`${frontendUrl}/dashboard`);
+            resolve();
+          } catch (serviceErr: any) {
+            const message = encodeURIComponent(serviceErr?.message || 'Google bejelentkezés sikertelen');
+            res.redirect(`${frontendUrl}/login?error=${message}`);
+            resolve();
+          }
+        })(req, res);
+      });
+    } catch {
+      // Catch-all: always redirect to login, never show raw JSON
+      const message = encodeURIComponent('Google bejelentkezés sikertelen');
       return res.redirect(`${frontendUrl}/login?error=${message}`);
     }
-
-    // Manually run Passport authenticate to catch errors gracefully
-    return new Promise<void>((resolve) => {
-      const passport = require('passport');
-      passport.authenticate('google', async (err: any, user: any) => {
-        try {
-          if (err || !user) {
-            const message = encodeURIComponent(err?.message || 'Google bejelentkezés sikertelen');
-            res.redirect(`${frontendUrl}/login?error=${message}`);
-            return resolve();
-          }
-          const result = await this.authService.validateOrCreateOAuthUser(
-            user,
-            req.ip,
-            req.headers['user-agent'],
-          );
-          this.setTokenCookie(res, result.token);
-          res.redirect(`${frontendUrl}/dashboard`);
-          resolve();
-        } catch (serviceErr: any) {
-          const message = encodeURIComponent(serviceErr?.message || 'Google bejelentkezés sikertelen');
-          res.redirect(`${frontendUrl}/login?error=${message}`);
-          resolve();
-        }
-      })(req, res);
-    });
   }
 
   @Post('logout')

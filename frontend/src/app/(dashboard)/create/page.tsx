@@ -84,6 +84,7 @@ function CreateWizardInner() {
   const [uploadMode, setUploadMode] = useState(false);
   const [uploadedHtml, setUploadedHtml] = useState("");
   const [dragOver, setDragOver] = useState(false);
+  const [errorModal, setErrorModal] = useState<string | null>(null);
 
   // Signing mode
   type SigningMode = "partner_only" | "owner_only" | "both_partner_first" | "both_owner_first";
@@ -155,7 +156,7 @@ function CreateWizardInner() {
           headers: { "Content-Type": "multipart/form-data" },
         });
         setPdfFileName(file.name);
-        setUploadedHtml(`<!-- PDF:${res.data.data.key} --><div style="text-align:center;padding:40px;background:#f8f9fa;border-radius:8px;"><p style="font-size:18px;font-weight:bold;color:#198296;">${t("create.upload.pdfUploaded")}</p><p style="color:#666;">${file.name} (${(file.size / 1024).toFixed(0)} KB)</p></div>`);
+        setUploadedHtml(`<!-- PDF:${res.data.data.key} --><div style="text-align:center;padding:40px;background:#f0fdf4;border:2px solid #86efac;border-radius:12px;"><p style="font-size:18px;font-weight:bold;color:#198296;margin-bottom:8px;">&#10003; ${t("create.upload.pdfUploaded")}</p><p style="color:#666;margin-bottom:4px;">${file.name} (${(file.size / 1024).toFixed(0)} KB)</p><p style="color:#999;font-size:13px;">A PDF tartalma megőrződik a szerződésben. A szerkesztő itt csak az előnézet.</p></div>`);
         if (!title) setTitle(file.name.replace(/\.pdf$/i, ""));
         toast.success(t("create.upload.pdfSuccess"));
       } catch (err: unknown) {
@@ -245,12 +246,23 @@ function CreateWizardInner() {
         payload.contentHtml = uploadedHtml;
       }
       const res = await api.post("/contracts", payload);
+      const contractId = res.data.data?.id;
+      if (!contractId) {
+        toast.error("Hiba: a szerver nem adott vissza szerződés azonosítót");
+        return;
+      }
       toast.success(t("create.summary.success"));
-      router.push(`/contracts/${res.data.data.id}`);
+      router.push(`/contracts/${contractId}`);
     } catch (err: unknown) {
-      const resp = (err as { response?: { data?: { message?: string; error?: string | { message?: string } } } })?.response?.data;
-      const msg = resp?.message ?? (typeof resp?.error === 'object' ? resp.error.message : undefined);
-      toast.error(msg ?? t("create.summary.error"));
+      const resp = (err as { response?: { data?: { message?: string; error?: string | { message?: string }; statusCode?: number } } })?.response?.data;
+      const msg = resp?.message ?? (typeof resp?.error === 'object' ? resp.error.message : typeof resp?.error === 'string' ? resp.error : undefined);
+      const errorMessage = msg ?? t("create.summary.error");
+      // Show modal for important errors (e.g. email verification), toast for generic
+      if (resp?.statusCode === 403 || (typeof msg === 'string' && msg.length > 40)) {
+        setErrorModal(errorMessage);
+      } else {
+        toast.error(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
@@ -362,8 +374,8 @@ function CreateWizardInner() {
         <>
           <div className="flex gap-2 mb-6">
             {[
-              { active: !uploadMode, label: t("create.tabs.selectTemplate"), icon: "M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5z", onClick: () => setUploadMode(false) },
-              { active: uploadMode && !uploadedHtml, label: t("create.tabs.uploadFile"), icon: "M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12", onClick: () => setUploadMode(true) },
+              { active: !uploadMode, label: t("create.tabs.selectTemplate"), icon: "M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5z", onClick: () => { setUploadMode(false); setSelectedTemplate(null); } },
+              { active: uploadMode && !uploadedHtml, label: t("create.tabs.uploadFile"), icon: "M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12", onClick: () => { setUploadMode(true); setUploadedHtml(""); } },
               { active: uploadMode && !!uploadedHtml, label: t("create.tabs.editor"), icon: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z", onClick: () => { setUploadMode(true); if (!uploadedHtml) setUploadedHtml("<p></p>"); } },
             ].map((tab, idx) => (
               <button
@@ -562,7 +574,7 @@ function CreateWizardInner() {
 
       {/* ══════════ Step 2: Fill variables ══════════ */}
       {step === 2 && selectedTemplate && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden max-w-2xl shadow-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden max-w-2xl mx-auto shadow-sm">
           <div className={`h-1.5 bg-gradient-to-r ${theme.bg}`} />
           <div className="p-6">
             <div className="flex items-center gap-3 mb-5">
@@ -1080,7 +1092,7 @@ function CreateWizardInner() {
 
       {/* ══════════ Step 4: Summary ══════════ */}
       {step === 4 && (selectedTemplate || uploadedHtml) && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden max-w-2xl shadow-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden max-w-2xl mx-auto shadow-sm">
           <div className={`h-1.5 bg-gradient-to-r ${theme.bg}`} />
           <div className="p-6">
             <div className="flex items-center gap-3 mb-6">
@@ -1122,7 +1134,7 @@ function CreateWizardInner() {
                           return (
                             <div key={key} className="flex text-sm">
                               <span className="text-gray-500 dark:text-gray-400 w-36 sm:w-48 shrink-0">{varDef?.label ?? key}:</span>
-                              <span className="text-gray-900 dark:text-gray-100 font-medium">{value}</span>
+                              <span className="text-gray-900 dark:text-gray-100 font-medium whitespace-pre-wrap">{value}</span>
                             </div>
                           );
                         })}
@@ -1206,6 +1218,29 @@ function CreateWizardInner() {
                 )}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Error Modal */}
+      {errorModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full shadow-2xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0">
+                <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Hiba</h3>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">{errorModal}</p>
+            <button
+              onClick={() => setErrorModal(null)}
+              className="w-full py-2.5 rounded-xl text-sm font-semibold bg-brand-teal-dark hover:bg-brand-teal-darker text-white transition"
+            >
+              Rendben
+            </button>
           </div>
         </div>
       )}

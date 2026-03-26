@@ -64,9 +64,11 @@ export default function WysiwygEditor({ value, onChange, placeholder, variables,
   }, [onChange]);
 
   // Sync value prop to editor only when it changes externally
+  // Skip sync when editor is focused (user is typing) to prevent cursor jumping
   useEffect(() => {
     if (editorRef.current && !isInternalChange.current) {
-      if (editorRef.current.innerHTML !== value) {
+      const isFocused = document.activeElement === editorRef.current || editorRef.current.contains(document.activeElement);
+      if (!isFocused && editorRef.current.innerHTML !== value) {
         editorRef.current.innerHTML = value;
       }
     }
