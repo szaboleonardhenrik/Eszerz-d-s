@@ -106,7 +106,7 @@ export default function PartnerMonitorDashboard() {
     );
   }
 
-  if (!data) return <p className="text-gray-500">Nem sikerult betolteni.</p>;
+  if (!data) return <p className="text-gray-500">Nem sikerült betölteni.</p>;
 
   return (
     <div>
@@ -114,22 +114,22 @@ export default function PartnerMonitorDashboard() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Partner Monitor Dashboard</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Partnercegei allashirdetesi aktivitasa a profession.hu-n
+            Partnercégei álláshirdetési aktivitása a profession.hu-n
           </p>
         </div>
         <div className="flex gap-2">
           <Link
-            href="/partners/manage"
+            href="/admin/partners/manage"
             className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-300 transition"
           >
-            Partnerek kezelese
+            Partnerek kezelése
           </Link>
           <button
             onClick={triggerScan}
             disabled={scanning}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition"
           >
-            {scanning ? "Scan fut..." : "Scan inditasa"}
+            {scanning ? "Scan fut..." : "Scan indítása"}
           </button>
         </div>
       </div>
@@ -137,10 +137,10 @@ export default function PartnerMonitorDashboard() {
       {/* Stats cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
-          { label: "Osszes partner", value: data.totalPartners, color: "blue" },
-          { label: "Aktiv partnerek", value: data.activePartners, color: "green" },
-          { label: "Hirdetoek", value: data.partnersWithActiveListings, color: "purple" },
-          { label: "Ma uj", value: data.newToday, color: "orange" },
+          { label: "Összes partner", value: data.totalPartners, color: "blue" },
+          { label: "Aktív partnerek", value: data.activePartners, color: "green" },
+          { label: "Hirdetők", value: data.partnersWithActiveListings, color: "purple" },
+          { label: "Ma új", value: data.newToday, color: "orange" },
         ].map((s) => (
           <div key={s.label} className="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 p-4">
             <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{s.label}</p>
@@ -152,13 +152,13 @@ export default function PartnerMonitorDashboard() {
       {/* Last scan info */}
       {data.lastRun && (
         <div className="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 p-4 mb-6">
-          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Utolso scan</h3>
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Utolsó scan</h3>
           <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
-            <span>Idopont: {new Date(data.lastRun.startedAt).toLocaleString("hu-HU")}</span>
-            <span>Allapot: <span className={data.lastRun.status === "completed" ? "text-green-600" : "text-red-600"}>{data.lastRun.status}</span></span>
+            <span>Időpont: {new Date(data.lastRun.startedAt).toLocaleString("hu-HU")}</span>
+            <span>Állapot: <span className={data.lastRun.status === "completed" ? "text-green-600" : "text-red-600"}>{data.lastRun.status}</span></span>
             <span>Partnerek: {data.lastRun.partnersScanned}</span>
-            <span>Uj hirdetesek: {data.lastRun.newListings}</span>
-            {data.lastRun.errors > 0 && <span className="text-red-500">Hibak: {data.lastRun.errors}</span>}
+            <span>Új hirdetések: {data.lastRun.newListings}</span>
+            {data.lastRun.errors > 0 && <span className="text-red-500">Hibák: {data.lastRun.errors}</span>}
           </div>
         </div>
       )}
@@ -166,7 +166,7 @@ export default function PartnerMonitorDashboard() {
       {/* Email digest settings */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 p-4 mb-6">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Email ertesitesek</h3>
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Email értesítések</h3>
           {digestSaved && <span className="text-xs text-green-600">Mentve!</span>}
         </div>
         <div className="space-y-3">
@@ -188,7 +188,7 @@ export default function PartnerMonitorDashboard() {
           {digestConfig.enabled && (
             <>
               <p className="text-xs text-gray-500">
-                A sajat email cimere automatikusan megy. Itt extra cimzetteket adhat hozza:
+                A saját email címére automatikusan megy. Itt extra címzetteket adhat hozzá:
               </p>
               <div className="flex gap-2">
                 <input
@@ -204,7 +204,7 @@ export default function PartnerMonitorDashboard() {
                   disabled={digestSaving}
                   className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition"
                 >
-                  Hozzaadas
+                  Hozzáadás
                 </button>
               </div>
               {digestConfig.emails.length > 0 && (
@@ -218,7 +218,7 @@ export default function PartnerMonitorDashboard() {
                       <button
                         onClick={() => removeEmail(email)}
                         className="text-gray-400 hover:text-red-500 ml-0.5"
-                        title="Eltavolitas"
+                        title="Eltávolítás"
                       >
                         &times;
                       </button>
@@ -247,12 +247,12 @@ export default function PartnerMonitorDashboard() {
       <div className="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 overflow-hidden">
         <div className="px-4 py-3 border-b dark:border-gray-700">
           <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-            Legfrissebb allashirdetesek ({data.recentListings.length})
+            Legfrissebb álláshirdetések ({data.recentListings.length})
           </h3>
         </div>
         {data.recentListings.length === 0 ? (
           <div className="p-8 text-center text-gray-400">
-            Meg nincsenek talalatok. Inditson egy scant!
+            Még nincsenek találatok. Indítson egy scant!
           </div>
         ) : (
           <div className="divide-y dark:divide-gray-700">
@@ -266,7 +266,7 @@ export default function PartnerMonitorDashboard() {
                       </span>
                       {l.status === "new" && (
                         <span className="px-1.5 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-[10px] font-bold rounded uppercase">
-                          Uj
+                          Új
                         </span>
                       )}
                     </div>

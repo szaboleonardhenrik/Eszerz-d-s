@@ -76,7 +76,7 @@ export default function PartnersPage() {
   };
 
   const deletePartner = async (id: string, name: string) => {
-    if (!confirm(`Biztosan torli: ${name}?`)) return;
+    if (!confirm(`Biztosan törli: ${name}?`)) return;
     try {
       await api.delete(`/partner-monitor/partners/${id}`);
       load();
@@ -88,11 +88,11 @@ export default function PartnersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Partner Monitor</h1>
-          <p className="text-sm text-gray-500 mt-1">Partnercegei allashirdeteseit figyeljuk a profession.hu-n</p>
+          <p className="text-sm text-gray-500 mt-1">Partnercégei álláshirdetéseit figyeljük a profession.hu-n</p>
         </div>
         <div className="flex gap-2">
           <Link
-            href="/partners"
+            href="/admin/partners"
             className="px-4 py-2 bg-brand-teal-dark text-white rounded-lg text-sm font-medium hover:bg-brand-teal-dark/90 transition"
           >
             Dashboard
@@ -101,7 +101,7 @@ export default function PartnersPage() {
             onClick={() => setShowAdd(true)}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition"
           >
-            + Partner hozzaadasa
+            + Partner hozzáadása
           </button>
         </div>
       </div>
@@ -110,7 +110,7 @@ export default function PartnersPage() {
       <div className="mb-4">
         <input
           type="text"
-          placeholder="Kereses cegnev alapjan..."
+          placeholder="Keresés cégnév alapján..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full sm:w-80 px-4 py-2 border rounded-lg text-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white"
@@ -121,10 +121,10 @@ export default function PartnersPage() {
       {showAdd && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => { setShowAdd(false); setValidation(null); }}>
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-lg font-bold mb-4 dark:text-white">Uj partner hozzaadasa</h2>
+            <h2 className="text-lg font-bold mb-4 dark:text-white">Új partner hozzáadása</h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cegnev *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cégnév *</label>
                 <input
                   type="text"
                   value={newPartner.companyName}
@@ -138,13 +138,13 @@ export default function PartnersPage() {
                     {validating ? (
                       <p className="text-xs text-gray-400 flex items-center gap-1">
                         <span className="inline-block w-3 h-3 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
-                        Ellenorzes a profession.hu-n...
+                        Ellenőrzés a profession.hu-n...
                       </p>
                     ) : validation ? (
                       validation.found ? (
                         <div className="p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                           <p className="text-xs text-green-700 dark:text-green-400 font-medium">
-                            Talalat a profession.hu-n: {validation.listingsCount} aktiv allashirdetes
+                            Találat a profession.hu-n: {validation.listingsCount} aktív álláshirdetés
                           </p>
                           <a
                             href={validation.url}
@@ -152,16 +152,16 @@ export default function PartnersPage() {
                             rel="noopener noreferrer"
                             className="text-xs text-green-600 dark:text-green-500 underline"
                           >
-                            Megnyitas &rarr;
+                            Megnyitás &rarr;
                           </a>
                         </div>
                       ) : (
                         <div className="p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                           <p className="text-xs text-yellow-700 dark:text-yellow-400">
-                            A ceg nem talalhato a profession.hu-n ({validation.slug}).
+                            A cég nem található a profession.hu-n ({validation.slug}).
                           </p>
                           <p className="text-xs text-yellow-600 dark:text-yellow-500 mt-1">
-                            Tipp: Probald a pontos cegnevet (pl. &quot;MOL Nyrt.&quot; a &quot;MOL&quot; helyett)
+                            Tipp: Próbáld a pontos cégnevet (pl. &quot;MOL Nyrt.&quot; a &quot;MOL&quot; helyett)
                           </p>
                         </div>
                       )
@@ -170,7 +170,7 @@ export default function PartnersPage() {
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Adoszam</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Adószám</label>
                 <input
                   type="text"
                   value={newPartner.taxNumber}
@@ -180,7 +180,7 @@ export default function PartnersPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Megjegyzes</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Megjegyzés</label>
                 <textarea
                   value={newPartner.notes}
                   onChange={(e) => setNewPartner({ ...newPartner, notes: e.target.value })}
@@ -195,13 +195,13 @@ export default function PartnersPage() {
                 disabled={!newPartner.companyName || saving}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition"
               >
-                {saving ? "Mentes..." : "Hozzaadas"}
+                {saving ? "Mentés..." : "Hozzáadás"}
               </button>
               <button
                 onClick={() => { setShowAdd(false); setValidation(null); }}
                 className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition"
               >
-                Megse
+                Mégse
               </button>
             </div>
           </div>
@@ -215,18 +215,18 @@ export default function PartnersPage() {
         </div>
       ) : partners.length === 0 ? (
         <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700">
-          <p className="text-gray-500 dark:text-gray-400">Meg nincsenek partnerek. Adja hozza az elsot!</p>
+          <p className="text-gray-500 dark:text-gray-400">Még nincsenek partnerek. Adja hozzá az elsőt!</p>
         </div>
       ) : (
         <div className="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 overflow-hidden">
           <table className="w-full">
             <thead>
               <tr className="border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Cegnev</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden sm:table-cell">Adoszam</th>
-                <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Aktiv hirdetesek</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">Utolso ellenorzes</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Muveletek</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Cégnév</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden sm:table-cell">Adószám</th>
+                <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Aktív hirdetések</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">Utolsó ellenőrzés</th>
+                <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Műveletek</th>
               </tr>
             </thead>
             <tbody>
@@ -238,7 +238,7 @@ export default function PartnersPage() {
                     </Link>
                     {!p.isActive && (
                       <span className="ml-2 px-1.5 py-0.5 bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-[10px] rounded font-medium">
-                        Inaktiv
+                        Inaktív
                       </span>
                     )}
                   </td>
@@ -253,15 +253,15 @@ export default function PartnersPage() {
                     )}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-500 hidden md:table-cell">
-                    {p.lastCheckedAt ? new Date(p.lastCheckedAt).toLocaleDateString("hu-HU") : "Meg nem"}
+                    {p.lastCheckedAt ? new Date(p.lastCheckedAt).toLocaleDateString("hu-HU") : "Még nem"}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <button
                       onClick={() => deletePartner(p.id, p.companyName)}
                       className="text-red-500 hover:text-red-700 text-sm"
-                      title="Torles"
+                      title="Törlés"
                     >
-                      Torles
+                      Törlés
                     </button>
                   </td>
                 </tr>
@@ -272,7 +272,7 @@ export default function PartnersPage() {
       )}
 
       <p className="text-xs text-gray-400 mt-4">
-        Osszesen: {partners.length} partner
+        Összesen: {partners.length} partner
       </p>
     </div>
   );

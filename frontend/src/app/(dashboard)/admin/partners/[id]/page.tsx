@@ -80,7 +80,7 @@ export default function PartnerDetailPage() {
   return (
     <div>
       <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-        <Link href="/partners" className="hover:text-blue-600">Partner Monitor</Link>
+        <Link href="/admin/partners" className="hover:text-blue-600">Partner Monitor</Link>
         <span>/</span>
         <span className="text-gray-900 dark:text-white font-medium">{partner.companyName}</span>
       </div>
@@ -89,22 +89,22 @@ export default function PartnerDetailPage() {
         {/* Left: partner info */}
         <div className="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white">Ceg adatai</h2>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white">Cég adatai</h2>
             <button
               onClick={() => setEditing(!editing)}
               className="text-sm text-blue-600 hover:text-blue-800"
             >
-              {editing ? "Megse" : "Szerkesztes"}
+              {editing ? "Mégse" : "Szerkesztés"}
             </button>
           </div>
 
           {editing ? (
             <div className="space-y-3">
               {[
-                { key: "companyName", label: "Cegnev" },
-                { key: "taxNumber", label: "Adoszam" },
-                { key: "registrationNumber", label: "Cegjegyzekszam" },
-                { key: "headquarters", label: "Szekhely" },
+                { key: "companyName", label: "Cégnév" },
+                { key: "taxNumber", label: "Adószám" },
+                { key: "registrationNumber", label: "Cégjegyzékszám" },
+                { key: "headquarters", label: "Székhely" },
               ].map(({ key, label }) => (
                 <div key={key}>
                   <label className="block text-xs font-medium text-gray-500 mb-1">{label}</label>
@@ -117,7 +117,7 @@ export default function PartnerDetailPage() {
                 </div>
               ))}
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Megjegyzes</label>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Megjegyzés</label>
                 <textarea
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
@@ -126,18 +126,18 @@ export default function PartnerDetailPage() {
                 />
               </div>
               <button onClick={save} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
-                Mentes
+                Mentés
               </button>
             </div>
           ) : (
             <div className="space-y-3 text-sm">
-              <div><span className="text-gray-500">Cegnev:</span> <span className="font-medium text-gray-900 dark:text-white">{partner.companyName}</span></div>
-              <div><span className="text-gray-500">Adoszam:</span> <span className="dark:text-gray-300">{partner.taxNumber || "-"}</span></div>
-              <div><span className="text-gray-500">Cegjegyzekszam:</span> <span className="dark:text-gray-300">{partner.registrationNumber || "-"}</span></div>
-              <div><span className="text-gray-500">Szekhely:</span> <span className="dark:text-gray-300">{partner.headquarters || "-"}</span></div>
-              {partner.notes && <div><span className="text-gray-500">Megjegyzes:</span> <span className="dark:text-gray-300">{partner.notes}</span></div>}
-              <div><span className="text-gray-500">Utolso ellenorzes:</span> <span className="dark:text-gray-300">{partner.lastCheckedAt ? new Date(partner.lastCheckedAt).toLocaleString("hu-HU") : "Meg nem"}</span></div>
-              <div><span className="text-gray-500">Osszes hirdetes:</span> <span className="font-medium dark:text-gray-300">{partner._count.jobListings}</span></div>
+              <div><span className="text-gray-500">Cégnév:</span> <span className="font-medium text-gray-900 dark:text-white">{partner.companyName}</span></div>
+              <div><span className="text-gray-500">Adószám:</span> <span className="dark:text-gray-300">{partner.taxNumber || "-"}</span></div>
+              <div><span className="text-gray-500">Cégjegyzékszám:</span> <span className="dark:text-gray-300">{partner.registrationNumber || "-"}</span></div>
+              <div><span className="text-gray-500">Székhely:</span> <span className="dark:text-gray-300">{partner.headquarters || "-"}</span></div>
+              {partner.notes && <div><span className="text-gray-500">Megjegyzés:</span> <span className="dark:text-gray-300">{partner.notes}</span></div>}
+              <div><span className="text-gray-500">Utolsó ellenőrzés:</span> <span className="dark:text-gray-300">{partner.lastCheckedAt ? new Date(partner.lastCheckedAt).toLocaleString("hu-HU") : "Még nem"}</span></div>
+              <div><span className="text-gray-500">Összes hirdetés:</span> <span className="font-medium dark:text-gray-300">{partner._count.jobListings}</span></div>
             </div>
           )}
 
@@ -146,7 +146,7 @@ export default function PartnerDetailPage() {
               onClick={lookupCeg}
               className="text-sm text-brand-teal-dark dark:text-brand-teal hover:underline"
             >
-              Kereses az e-cegjegyzekben
+              Keresés az e-cégjegyzékben
             </button>
             {lookupUrl && (
               <a
@@ -155,7 +155,7 @@ export default function PartnerDetailPage() {
                 rel="noopener noreferrer"
                 className="block mt-2 text-xs text-blue-600 hover:underline break-all"
               >
-                Megnyitas a cegjegyzekben
+                Megnyitás a cégjegyzékben
               </a>
             )}
           </div>
@@ -167,11 +167,11 @@ export default function PartnerDetailPage() {
           <div className="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 overflow-hidden">
             <div className="px-4 py-3 border-b dark:border-gray-700 bg-green-50 dark:bg-green-900/20">
               <h3 className="text-sm font-semibold text-green-700 dark:text-green-400">
-                Aktiv hirdetesek ({activeListings.length})
+                Aktív hirdetések ({activeListings.length})
               </h3>
             </div>
             {activeListings.length === 0 ? (
-              <div className="p-6 text-center text-sm text-gray-400">Nincs aktiv hirdetes</div>
+              <div className="p-6 text-center text-sm text-gray-400">Nincs aktív hirdetés</div>
             ) : (
               <div className="divide-y dark:divide-gray-700">
                 {activeListings.map((j) => (
@@ -182,7 +182,7 @@ export default function PartnerDetailPage() {
                           {j.title}
                         </a>
                         {j.status === "new" && (
-                          <span className="ml-2 px-1.5 py-0.5 bg-orange-100 text-orange-600 text-[10px] font-bold rounded uppercase">Uj</span>
+                          <span className="ml-2 px-1.5 py-0.5 bg-orange-100 text-orange-600 text-[10px] font-bold rounded uppercase">Új</span>
                         )}
                         {j.snippet && <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{j.snippet}</p>}
                       </div>
@@ -200,7 +200,7 @@ export default function PartnerDetailPage() {
           {expiredListings.length > 0 && (
             <div className="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 overflow-hidden">
               <div className="px-4 py-3 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-                <h3 className="text-sm font-semibold text-gray-500">Korabbi hirdetesek ({expiredListings.length})</h3>
+                <h3 className="text-sm font-semibold text-gray-500">Korábbi hirdetések ({expiredListings.length})</h3>
               </div>
               <div className="divide-y dark:divide-gray-700">
                 {expiredListings.map((j) => (
