@@ -1,5 +1,7 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
+import * as jwt from 'jsonwebtoken';
 
 // Cache maintenance status for 10 seconds to avoid DB hit on every request
 let cachedStatus: { enabled: boolean; message: string; fetchedAt: number } | null = null;
@@ -15,7 +17,14 @@ const BYPASS_PATHS = [
 
 @Injectable()
 export class MaintenanceMiddleware implements NestMiddleware {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly jwtSecret: string;
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly config: ConfigService,
+  ) {
+    this.jwtSecret = this.config.get<string>('JWT_SECRET') || '';
+  }
 
   async use(req: any, res: any, next: () => void) {
     const path: string = req.originalUrl || req.url || '';
@@ -30,9 +39,16 @@ export class MaintenanceMiddleware implements NestMiddleware {
       return next();
     }
 
-    // Allow admin/employee users through
-    if (req.user && ['superadmin', 'employee'].includes(req.user.role)) {
-      return next();
+    // Try to identify admin/employee users from JWT (auth guard hasn't run yet)
+    const userId = this.extractUserIdFromToken(req);
+    if (userId) {
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { role: true },
+      });
+      if (user && ['superadmin', 'employee'].includes(user.role)) {
+        return next();
+      }
     }
 
     res.status(503).json({
@@ -43,6 +59,18 @@ export class MaintenanceMiddleware implements NestMiddleware {
       },
       meta: { timestamp: new Date().toISOString(), version: '1.0' },
     });
+  }
+
+  private extractUserIdFromToken(req: any): string | null {
+    try {
+      const token = req.cookies?.token
+        || req.headers?.authorization?.replace('Bearer ', '');
+      if (!token || !this.jwtSecret) return null;
+      const payload = jwt.verify(token, this.jwtSecret) as any;
+      return payload.sub || null;
+    } catch {
+      return null;
+    }
   }
 
   private async getMaintenanceStatus(): Promise<{ enabled: boolean; message: string }> {
