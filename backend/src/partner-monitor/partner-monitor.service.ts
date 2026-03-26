@@ -4,7 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreatePartnerDto, UpdatePartnerDto } from './dto';
 import * as cheerio from 'cheerio';
 
-interface JobSearchResult {
+export interface JobSearchResult {
   title: string;
   link: string;
   snippet: string;
@@ -205,40 +205,36 @@ export class PartnerMonitorService {
     return { items, total };
   }
 
-  // ─── PROFESSION.HU KÖZVETLEN KERESÉS ────────────────────
-
-  private toSlug(name: string): string {
-    return name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-  }
+  // ─── PROFESSION.HU KERESÉS (Google Custom Search API) ───
 
   async searchProfessionHu(companyName: string): Promise<JobSearchResult[]> {
-    const slug = this.toSlug(companyName);
-    const searchUrl = `https://www.profession.hu/cegek/${slug}/allasok`;
+    const apiKey = this.config.get<string>('GOOGLE_SEARCH_API_KEY');
+    const cseId = this.config.get<string>('GOOGLE_CSE_ID');
+    if (!apiKey || !cseId) {
+      this.logger.warn('Google Custom Search API nincs konfigurálva');
+      return [];
+    }
+
     try {
-      const response = await fetch(searchUrl, {
-        headers: {
-          'Accept': 'text/html,application/xhtml+xml', 'Accept-Language': 'hu-HU,hu;q=0.9',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-        },
-      });
-      if (!response.ok) { this.logger.warn(`Profession.hu cég nem található: "${companyName}" (${slug})`); return []; }
-      const html = await response.text();
-      const $ = cheerio.load(html);
-      const results: JobSearchResult[] = [];
-      $('.job-card__title').each((_, el) => {
-        const h2 = $(el); const a = h2.find('a');
-        const title = a.text().trim(); const href = a.attr('href') || '';
-        const card = h2.closest('li, div').first();
-        const company = card.find('.job-card__company-name').text().trim();
-        const location = card.find('.job-card__company-address').text().trim().replace(/[\n\t•]+/g, ' ').replace(/\s+/g, ' ').trim();
-        if (href && title) {
-          const link = href.split('?')[0];
-          const fullLink = link.startsWith('http') ? link : `https://www.profession.hu${link}`;
-          results.push({ title, link: fullLink, snippet: [company, location].filter(Boolean).join(' · ') });
-        }
-      });
-      this.logger.log(`Profession.hu keresés "${companyName}" (${slug}): ${results.length} találat`);
+      const query = `"${companyName}" állás`;
+      const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cseId}&q=${encodeURIComponent(query)}&num=10`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        this.logger.error(`Google CSE hiba (${response.status}): ${err?.error?.message || 'ismeretlen'}`);
+        return [];
+      }
+
+      const data = await response.json() as any;
+      const results: JobSearchResult[] = (data.items || [])
+        .filter((item: any) => item.link?.includes('profession.hu/allas/'))
+        .map((item: any) => ({
+          title: item.title?.replace(/ \| Profession\.hu$/i, '').trim() || '',
+          link: item.link.split('?')[0],
+          snippet: item.snippet?.replace(/\s+/g, ' ').trim() || '',
+        }));
+
+      this.logger.log(`Profession.hu keresés "${companyName}": ${results.length} találat (Google CSE)`);
       return results;
     } catch (error: any) {
       this.logger.error(`Profession.hu keresés hiba: ${error.message}`);
@@ -479,19 +475,11 @@ export class PartnerMonitorService {
   // ─── VALIDATE COMPANY ON PROFESSION.HU ────────────────
 
   async validateCompany(companyName: string) {
-    const slug = this.toSlug(companyName);
-    const url = `https://www.profession.hu/cegek/${slug}/allasok`;
     try {
-      const response = await fetch(url, {
-        headers: { 'Accept': 'text/html', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-      });
-      if (!response.ok) return { found: false, slug, url, listingsCount: 0 };
-      const html = await response.text();
-      const cheerioLib = await import('cheerio');
-      const $ = cheerioLib.load(html);
-      return { found: true, slug, url, listingsCount: $('.job-card__title').length };
+      const results = await this.searchProfessionHu(companyName);
+      return { found: results.length > 0, listingsCount: results.length, listings: results.slice(0, 5) };
     } catch {
-      return { found: false, slug, url, listingsCount: 0 };
+      return { found: false, listingsCount: 0, listings: [] };
     }
   }
 
