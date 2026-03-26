@@ -395,6 +395,25 @@ export class PartnerMonitorService {
     });
   }
 
+  async getRunListings(userId: string, runId: string) {
+    const run = await this.prisma.scrapeRun.findFirst({
+      where: { id: runId, userId },
+    });
+    if (!run) return [];
+
+    return this.prisma.jobListing.findMany({
+      where: {
+        partner: { userId },
+        firstSeenAt: {
+          gte: run.startedAt,
+          ...(run.finishedAt ? { lte: run.finishedAt } : {}),
+        },
+      },
+      include: { partner: { select: { companyName: true } } },
+      orderBy: [{ partner: { companyName: 'asc' } }, { title: 'asc' }],
+    });
+  }
+
   // ─── VALIDATE COMPANY ON PROFESSION.HU ────────────────
 
   async validateCompany(companyName: string) {

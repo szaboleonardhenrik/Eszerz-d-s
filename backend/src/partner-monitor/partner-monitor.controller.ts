@@ -86,6 +86,11 @@ export class PartnerMonitorController {
     return this.service.getScrapeRuns(req.user.userId);
   }
 
+  @Get('runs/:id/listings')
+  getRunListings(@Req() req: any, @Param('id') id: string) {
+    return this.service.getRunListings(req.user.userId, id);
+  }
+
   // ─── VALIDATE COMPANY ───────────────────────────────────
 
   @Get('validate')

@@ -136,6 +136,89 @@ function CompanyAccordion({ listings }: { listings: Listing[] }) {
   );
 }
 
+function ScanHistoryList({ runs }: { runs: ScrapeRun[] }) {
+  const [openRun, setOpenRun] = useState<string | null>(null);
+  const [runListings, setRunListings] = useState<Record<string, Listing[]>>({});
+  const [loadingRun, setLoadingRun] = useState<string | null>(null);
+
+  const toggleRun = async (runId: string) => {
+    if (openRun === runId) { setOpenRun(null); return; }
+    setOpenRun(runId);
+    if (!runListings[runId]) {
+      setLoadingRun(runId);
+      try {
+        const res = await api.get(`/partner-monitor/runs/${runId}/listings`);
+        setRunListings((prev) => ({ ...prev, [runId]: res.data }));
+      } catch { /* ignore */ }
+      setLoadingRun(null);
+    }
+  };
+
+  return (
+    <div className="divide-y dark:divide-gray-700">
+      {runs.map((run) => {
+        const duration = run.finishedAt
+          ? Math.round((new Date(run.finishedAt).getTime() - new Date(run.startedAt).getTime()) / 1000)
+          : null;
+        const isOpen = openRun === run.id;
+        const listings = runListings[run.id] || [];
+
+        return (
+          <div key={run.id}>
+            <button
+              onClick={() => toggleRun(run.id)}
+              className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition text-sm"
+            >
+              <div className="flex items-center gap-3">
+                <svg
+                  className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? "rotate-90" : ""}`}
+                  fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+                <span className="text-gray-700 dark:text-gray-300">
+                  {new Date(run.startedAt).toLocaleString("hu-HU")}
+                </span>
+                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                  run.status === "completed" ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400" :
+                  run.status === "failed" ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400" :
+                  "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400"
+                }`}>
+                  {run.status === "completed" ? "Kész" : run.status === "failed" ? "Hiba" : "Fut..."}
+                </span>
+              </div>
+              <div className="flex items-center gap-4 text-xs text-gray-500">
+                <span>{run.partnersScanned} partner</span>
+                {run.newListings > 0 ? (
+                  <span className="font-semibold text-green-600">{run.newListings} új</span>
+                ) : (
+                  <span>0 új</span>
+                )}
+                {run.errors > 0 && <span className="text-red-500">{run.errors} hiba</span>}
+                {duration !== null && <span>{duration}s</span>}
+              </div>
+            </button>
+            {isOpen && (
+              <div className="bg-gray-50/50 dark:bg-gray-900/30 border-t dark:border-gray-700 px-4 py-3">
+                {loadingRun === run.id ? (
+                  <div className="flex items-center gap-2 text-xs text-gray-400 py-2">
+                    <span className="inline-block w-3 h-3 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
+                    Betöltés...
+                  </div>
+                ) : listings.length === 0 ? (
+                  <p className="text-xs text-gray-400 py-2">Nem találtunk új hirdetést ebben a keresésben.</p>
+                ) : (
+                  <CompanyAccordion listings={listings} />
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function PartnerMonitorDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -350,61 +433,7 @@ export default function PartnerMonitorDashboard() {
           <div className="px-4 py-3 border-b dark:border-gray-700">
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Korábbi keresések</h3>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-                  <th className="text-left px-4 py-2 text-xs font-semibold text-gray-500">Dátum</th>
-                  <th className="text-center px-4 py-2 text-xs font-semibold text-gray-500">Partnerek</th>
-                  <th className="text-center px-4 py-2 text-xs font-semibold text-gray-500">Új hirdetések</th>
-                  <th className="text-center px-4 py-2 text-xs font-semibold text-gray-500">Hibák</th>
-                  <th className="text-center px-4 py-2 text-xs font-semibold text-gray-500">Állapot</th>
-                  <th className="text-right px-4 py-2 text-xs font-semibold text-gray-500">Időtartam</th>
-                </tr>
-              </thead>
-              <tbody>
-                {runs.map((run) => {
-                  const duration = run.finishedAt
-                    ? Math.round((new Date(run.finishedAt).getTime() - new Date(run.startedAt).getTime()) / 1000)
-                    : null;
-                  return (
-                    <tr key={run.id} className="border-b dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                      <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
-                        {new Date(run.startedAt).toLocaleString("hu-HU")}
-                      </td>
-                      <td className="px-4 py-2 text-center text-gray-600 dark:text-gray-400">{run.partnersScanned}</td>
-                      <td className="px-4 py-2 text-center">
-                        {run.newListings > 0 ? (
-                          <span className="font-semibold text-green-600">{run.newListings}</span>
-                        ) : (
-                          <span className="text-gray-400">0</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-2 text-center">
-                        {run.errors > 0 ? (
-                          <span className="font-semibold text-red-500" title={run.errorLog || ""}>{run.errors}</span>
-                        ) : (
-                          <span className="text-gray-400">0</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-2 text-center">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                          run.status === "completed" ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400" :
-                          run.status === "failed" ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400" :
-                          "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400"
-                        }`}>
-                          {run.status === "completed" ? "Kész" : run.status === "failed" ? "Hiba" : "Fut..."}
-                        </span>
-                      </td>
-                      <td className="px-4 py-2 text-right text-gray-500 text-xs">
-                        {duration !== null ? `${duration}s` : "–"}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <ScanHistoryList runs={runs} />
         </div>
       )}
 
