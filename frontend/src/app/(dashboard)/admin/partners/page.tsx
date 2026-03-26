@@ -38,6 +38,17 @@ interface DigestConfig {
   emails: string[];
 }
 
+interface ScrapeRun {
+  id: string;
+  startedAt: string;
+  finishedAt: string | null;
+  partnersScanned: number;
+  newListings: number;
+  errors: number;
+  status: string;
+  errorLog: string | null;
+}
+
 interface Listing {
   id: string;
   title: string;
@@ -135,15 +146,18 @@ export default function PartnerMonitorDashboard() {
   const [newEmail, setNewEmail] = useState("");
   const [digestSaving, setDigestSaving] = useState(false);
   const [digestSaved, setDigestSaved] = useState(false);
+  const [runs, setRuns] = useState<ScrapeRun[]>([]);
 
   const load = () => {
     Promise.all([
       api.get("/partner-monitor/dashboard"),
       api.get("/partner-monitor/digest-config"),
+      api.get("/partner-monitor/runs"),
     ])
-      .then(([dashRes, configRes]) => {
+      .then(([dashRes, configRes, runsRes]) => {
         setData(dashRes.data);
         setDigestConfig({ enabled: configRes.data.enabled, emails: configRes.data.emails || [] });
+        setRuns(runsRes.data);
       })
       .catch(() => { /* ignore */ })
       .finally(() => setLoading(false));
@@ -326,6 +340,70 @@ export default function PartnerMonitorDashboard() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <span className="text-sm text-blue-700 dark:text-blue-300">{data.rotation.note}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Scan history */}
+      {runs.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 overflow-hidden mb-6">
+          <div className="px-4 py-3 border-b dark:border-gray-700">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Korábbi keresések</h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                  <th className="text-left px-4 py-2 text-xs font-semibold text-gray-500">Dátum</th>
+                  <th className="text-center px-4 py-2 text-xs font-semibold text-gray-500">Partnerek</th>
+                  <th className="text-center px-4 py-2 text-xs font-semibold text-gray-500">Új hirdetések</th>
+                  <th className="text-center px-4 py-2 text-xs font-semibold text-gray-500">Hibák</th>
+                  <th className="text-center px-4 py-2 text-xs font-semibold text-gray-500">Állapot</th>
+                  <th className="text-right px-4 py-2 text-xs font-semibold text-gray-500">Időtartam</th>
+                </tr>
+              </thead>
+              <tbody>
+                {runs.map((run) => {
+                  const duration = run.finishedAt
+                    ? Math.round((new Date(run.finishedAt).getTime() - new Date(run.startedAt).getTime()) / 1000)
+                    : null;
+                  return (
+                    <tr key={run.id} className="border-b dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                      <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
+                        {new Date(run.startedAt).toLocaleString("hu-HU")}
+                      </td>
+                      <td className="px-4 py-2 text-center text-gray-600 dark:text-gray-400">{run.partnersScanned}</td>
+                      <td className="px-4 py-2 text-center">
+                        {run.newListings > 0 ? (
+                          <span className="font-semibold text-green-600">{run.newListings}</span>
+                        ) : (
+                          <span className="text-gray-400">0</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-2 text-center">
+                        {run.errors > 0 ? (
+                          <span className="font-semibold text-red-500" title={run.errorLog || ""}>{run.errors}</span>
+                        ) : (
+                          <span className="text-gray-400">0</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-2 text-center">
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                          run.status === "completed" ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400" :
+                          run.status === "failed" ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400" :
+                          "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400"
+                        }`}>
+                          {run.status === "completed" ? "Kész" : run.status === "failed" ? "Hiba" : "Fut..."}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2 text-right text-gray-500 text-xs">
+                        {duration !== null ? `${duration}s` : "–"}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
