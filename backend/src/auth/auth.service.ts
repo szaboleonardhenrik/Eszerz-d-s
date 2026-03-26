@@ -94,7 +94,7 @@ export class AuthService {
       where: { email: dto.email },
     });
     if (!user) {
-      throw new UnauthorizedException('Nem található fiók ezzel az email címmel');
+      throw new UnauthorizedException('Hibás email vagy jelszó');
     }
 
     // Check if account is deactivated
@@ -131,7 +131,7 @@ export class AuthService {
           'Túl sok sikertelen próbálkozás. A fiók 15 percre zárolva.',
         );
       }
-      throw new UnauthorizedException('Hibás jelszó');
+      throw new UnauthorizedException('Hibás email vagy jelszó');
     }
 
     // Reset failed attempts on successful login
