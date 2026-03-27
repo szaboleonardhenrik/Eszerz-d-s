@@ -9,6 +9,7 @@ const PLAN_ORDER = ["free", "starter", "medium", "premium", "enterprise"];
 const tabs: { href: string; label: string; minTier?: string }[] = [
   { href: "/settings", label: "Profil" },
   { href: "/settings/security", label: "Biztonság" },
+  { href: "/settings/signature", label: "Aláírás" },
   { href: "/settings/team", label: "Csapat", minTier: "medium" },
   { href: "/settings/api", label: "API kulcsok", minTier: "premium" },
   { href: "/settings/tags", label: "Címkék" },
