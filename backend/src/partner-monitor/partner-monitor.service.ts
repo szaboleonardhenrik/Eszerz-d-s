@@ -242,10 +242,131 @@ export class PartnerMonitorService {
     }
   }
 
+  // ─── QDIAK.HU DIRECTUS API SCRAPING ────────────────────
+
+  private isQdiakUrl(url: string): boolean {
+    return /cloud\.qdiak\.hu/i.test(url);
+  }
+
+  async scrapeQdiak(partnerId: string): Promise<{ count: number; newListings: number; avgSalary: number | null; topLocations: { location: string; count: number }[] }> {
+    const apiUrl = 'https://cloud.qdiak.hu/-/items/toborzas';
+    const params = new URLSearchParams({
+      'filter[statusz][_eq]': 'aktiv',
+      'filter[kampanyok][kampany_tipus][_eq]': 'allasportal',
+      'filter[kampanyok][statusz][_eq]': 'aktiv',
+      'fields': 'id,pozicio_neve,telepules_szabad,berezes_megjeleno,oraszam_megjeleno,oraber_min,oraber_max,date_created',
+      'limit': '-1',
+      'meta': 'filter_count',
+    });
+
+    try {
+      const response = await fetch(`${apiUrl}?${params}`, {
+        headers: { 'Accept': 'application/json', 'User-Agent': 'Legitas/1.0' },
+        signal: AbortSignal.timeout(30000),
+      });
+      if (!response.ok) {
+        this.logger.error(`Qdiak API hiba: HTTP ${response.status}`);
+        return { count: 0, newListings: 0, avgSalary: null, topLocations: [] };
+      }
+
+      const json = await response.json() as any;
+      const items: any[] = json.data || [];
+      const totalCount = json.meta?.filter_count || items.length;
+
+      this.logger.log(`Qdiak API: ${totalCount} aktív pozíció`);
+
+      // Calculate average salary from oraber_min/oraber_max or parsed berezes_megjeleno
+      const salaries: number[] = [];
+      const locationMap = new Map<string, number>();
+
+      let newListings = 0;
+
+      for (const item of items) {
+        const jobUrl = `https://cloud.qdiak.hu/munkak/${item.id}`;
+        const location = item.telepules_szabad || 'N/A';
+        const salary = item.berezes_megjeleno || '';
+        const hours = item.oraszam_megjeleno || '';
+
+        // Parse salary for average calculation
+        const salaryNum = item.oraber_min && item.oraber_max
+          ? Math.round((item.oraber_min + item.oraber_max) / 2)
+          : this.parseSalary(salary);
+        if (salaryNum > 0) salaries.push(salaryNum);
+
+        // Track locations
+        const loc = location.trim();
+        if (loc && loc !== 'N/A') {
+          locationMap.set(loc, (locationMap.get(loc) || 0) + 1);
+        }
+
+        // Build snippet with structured data
+        const snippetParts = [];
+        if (loc !== 'N/A') snippetParts.push(`📍 ${loc}`);
+        if (salary) snippetParts.push(`💰 ${salary}`);
+        if (hours) snippetParts.push(`⏰ ${hours}`);
+        const snippet = snippetParts.join(' | ') || 'Qdiak álláshirdetés';
+
+        // Upsert listing
+        const existing = await this.prisma.jobListing.findUnique({
+          where: { partnerId_url: { partnerId, url: jobUrl } },
+        });
+        if (existing) {
+          await this.prisma.jobListing.update({
+            where: { id: existing.id },
+            data: { lastSeenAt: new Date(), status: 'active', title: item.pozicio_neve || existing.title, snippet },
+          });
+        } else {
+          await this.prisma.jobListing.create({
+            data: { partnerId, title: item.pozicio_neve || 'Ismeretlen pozíció', url: jobUrl, snippet, status: 'new' },
+          });
+          newListings++;
+        }
+      }
+
+      // Mark listings not returned by API as expired
+      const activeUrls = items.map(i => `https://cloud.qdiak.hu/munkak/${i.id}`);
+      if (activeUrls.length > 0) {
+        await this.prisma.jobListing.updateMany({
+          where: { partnerId, url: { notIn: activeUrls }, status: { not: 'expired' } },
+          data: { status: 'expired' },
+        });
+      }
+
+      const avgSalary = salaries.length > 0
+        ? Math.round(salaries.reduce((a, b) => a + b, 0) / salaries.length)
+        : null;
+
+      const topLocations = Array.from(locationMap.entries())
+        .map(([location, count]) => ({ location, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 20);
+
+      this.logger.log(`Qdiak összesítés: ${totalCount} pozíció, átlagbér: ${avgSalary || 'N/A'} Ft/óra, ${newListings} új`);
+      return { count: totalCount, newListings, avgSalary, topLocations };
+    } catch (error: any) {
+      this.logger.error(`Qdiak API hiba: ${error.message}`);
+      return { count: 0, newListings: 0, avgSalary: null, topLocations: [] };
+    }
+  }
+
+  private parseSalary(salaryStr: string): number {
+    if (!salaryStr) return 0;
+    // Match patterns like "2300 Ft/óra", "2 300 Ft/óra", "2300"
+    const match = salaryStr.replace(/\s/g, '').match(/(\d+)/);
+    return match ? parseInt(match[1], 10) : 0;
+  }
+
   // ─── WEBSITE SCRAPING ───────────────────────────────────
 
   async scrapeWebsiteJobs(websiteUrl: string, partnerId: string): Promise<{ count: number; newListings: number }> {
     if (!websiteUrl) return { count: 0, newListings: 0 };
+
+    // Use dedicated API scraper for known portals
+    if (this.isQdiakUrl(websiteUrl)) {
+      const result = await this.scrapeQdiak(partnerId);
+      return { count: result.count, newListings: result.newListings };
+    }
+
     try {
       const baseUrl = new URL(websiteUrl).origin;
       const allJobLinks: { title: string; url: string }[] = [];
@@ -559,6 +680,113 @@ export class PartnerMonitorService {
     } catch {
       return { found: false, listingsCount: 0, listings: [] };
     }
+  }
+
+  // ─── QDIAK STATS ─────────────────────────────────────
+
+  async getQdiakStats(userId: string, partnerId?: string) {
+    // Fetch fresh data from qdiak API
+    const apiUrl = 'https://cloud.qdiak.hu/-/items/toborzas';
+    const params = new URLSearchParams({
+      'filter[statusz][_eq]': 'aktiv',
+      'filter[kampanyok][kampany_tipus][_eq]': 'allasportal',
+      'filter[kampanyok][statusz][_eq]': 'aktiv',
+      'fields': 'id,pozicio_neve,telepules_szabad,berezes_megjeleno,oraszam_megjeleno,oraber_min,oraber_max',
+      'limit': '-1',
+      'meta': 'filter_count',
+    });
+
+    const response = await fetch(`${apiUrl}?${params}`, {
+      headers: { 'Accept': 'application/json' },
+      signal: AbortSignal.timeout(30000),
+    });
+    if (!response.ok) throw new Error(`Qdiak API hiba: HTTP ${response.status}`);
+
+    const json = await response.json() as any;
+    const items: any[] = json.data || [];
+
+    // Aggregate stats
+    const salaries: number[] = [];
+    const locationMap = new Map<string, number>();
+    const positionMap = new Map<string, number>();
+
+    for (const item of items) {
+      // Salary
+      const sal = item.oraber_min && item.oraber_max
+        ? Math.round((item.oraber_min + item.oraber_max) / 2)
+        : this.parseSalary(item.berezes_megjeleno || '');
+      if (sal > 0) salaries.push(sal);
+
+      // Location
+      const loc = (item.telepules_szabad || '').trim();
+      if (loc) locationMap.set(loc, (locationMap.get(loc) || 0) + 1);
+
+      // Position
+      const pos = (item.pozicio_neve || '').trim();
+      if (pos) positionMap.set(pos, (positionMap.get(pos) || 0) + 1);
+    }
+
+    const avgSalary = salaries.length > 0
+      ? Math.round(salaries.reduce((a, b) => a + b, 0) / salaries.length)
+      : null;
+
+    const minSalary = salaries.length > 0 ? Math.min(...salaries) : null;
+    const maxSalary = salaries.length > 0 ? Math.max(...salaries) : null;
+
+    return {
+      totalPositions: items.length,
+      filteredCount: json.meta?.filter_count || items.length,
+      avgSalary,
+      minSalary,
+      maxSalary,
+      salaryUnit: 'Ft/óra',
+      topLocations: Array.from(locationMap.entries())
+        .map(([location, count]) => ({ location, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 30),
+      topPositions: Array.from(positionMap.entries())
+        .map(([position, count]) => ({ position, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 30),
+      fetchedAt: new Date().toISOString(),
+    };
+  }
+
+  async testQdiakScrape() {
+    // Quick test: fetch qdiak API and return summary without saving anything
+    const apiUrl = 'https://cloud.qdiak.hu/-/items/toborzas';
+    const params = new URLSearchParams({
+      'filter[statusz][_eq]': 'aktiv',
+      'filter[kampanyok][kampany_tipus][_eq]': 'allasportal',
+      'filter[kampanyok][statusz][_eq]': 'aktiv',
+      'fields': 'id,pozicio_neve,telepules_szabad,berezes_megjeleno,oraszam_megjeleno,oraber_min,oraber_max',
+      'limit': '10',
+      'meta': 'filter_count',
+    });
+
+    const response = await fetch(`${apiUrl}?${params}`, {
+      headers: { 'Accept': 'application/json' },
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!response.ok) {
+      const body = await response.text();
+      return { success: false, status: response.status, body };
+    }
+
+    const json = await response.json() as any;
+    return {
+      success: true,
+      totalActivePositions: json.meta?.filter_count || 0,
+      sampleSize: json.data?.length || 0,
+      sample: (json.data || []).map((item: any) => ({
+        id: item.id,
+        position: item.pozicio_neve,
+        location: item.telepules_szabad,
+        salary: item.berezes_megjeleno,
+        hours: item.oraszam_megjeleno,
+        hourlyRateRange: item.oraber_min && item.oraber_max ? `${item.oraber_min}-${item.oraber_max} Ft/óra` : null,
+      })),
+    };
   }
 
   // ─── DIGEST CONFIG ────────────────────────────────────

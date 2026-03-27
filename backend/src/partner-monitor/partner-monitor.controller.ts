@@ -153,6 +153,18 @@ export class PartnerMonitorController {
     return this.service.updateDigestConfig(req.user.userId, dto);
   }
 
+  // ─── QDIAK STATS ───────────────────────────────────────
+
+  @Get('qdiak-stats')
+  getQdiakStats(@Req() req: any, @Query('partnerId') partnerId?: string) {
+    return this.service.getQdiakStats(req.user.userId, partnerId);
+  }
+
+  @Post('qdiak-test')
+  testQdiakScrape(@Req() req: any) {
+    return this.service.testQdiakScrape();
+  }
+
   // ─── E-CÉGJEGYZÉK ───────────────────────────────────────
 
   @Get('lookup')
