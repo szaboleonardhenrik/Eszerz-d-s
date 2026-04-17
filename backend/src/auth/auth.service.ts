@@ -200,24 +200,10 @@ export class AuthService {
           data: { googleId: profile.googleId, oauthProvider: 'google' },
         });
       } else {
-        // Create new user with consent fields set (OAuth login implies consent)
-        const oauthTrialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
-        user = await this.prisma.user.create({
-          data: {
-            email: profile.email,
-            name: profile.name,
-            googleId: profile.googleId,
-            oauthProvider: 'google',
-            passwordHash: '',
-            emailVerified: true,
-            avatarUrl: profile.avatarUrl || null,
-            subscriptionTier: 'pro_trial',
-            trialEndsAt: oauthTrialEndsAt,
-            consentGivenAt: new Date(),
-            consentVersion: CURRENT_CONSENT_VERSION,
-            consentIp: ip || null,
-          },
-        });
+        // Registration disabled — system inactive. Only existing users may sign in via Google.
+        throw new UnauthorizedException(
+          'Új regisztráció jelenleg nem lehetséges. A rendszer inaktív.',
+        );
       }
     }
 

@@ -30,18 +30,11 @@ export class AuthController {
 
   @Post('register')
   @Throttle({ default: { limit: 3, ttl: 60000 } })
-  async register(@Body() dto: RegisterDto, @Req() req: any, @Res({ passthrough: true }) res: Response) {
-    if (process.env.DISABLE_REGISTRATION === 'true') {
-      throw new ServiceUnavailableException({
-        code: 'MAINTENANCE',
-        message: 'A regisztráció jelenleg nem elérhető. A rendszer karbantartás alatt áll.',
-      });
-    }
-    const result = await this.authService.register(dto, req.ip, req.headers['user-agent']);
-    if (result.token) {
-      this.setTokenCookie(res, result.token);
-    }
-    return ApiResponse.ok(result);
+  async register(@Body() _dto: RegisterDto) {
+    throw new ServiceUnavailableException({
+      code: 'REGISTRATION_DISABLED',
+      message: 'Új regisztráció jelenleg nem lehetséges. A rendszer inaktív.',
+    });
   }
 
   @Post('login')
@@ -73,11 +66,6 @@ export class AuthController {
   @Get('google/callback')
   async googleCallback(@Req() req: any, @Res() res: Response, @Query('error') error?: string) {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-
-    if (process.env.DISABLE_REGISTRATION === 'true') {
-      const message = encodeURIComponent('A rendszer karbantartás alatt áll.');
-      return res.redirect(`${frontendUrl}/maintenance?error=${message}`);
-    }
 
     try {
       // Handle Google OAuth cancel/error before Passport processes
