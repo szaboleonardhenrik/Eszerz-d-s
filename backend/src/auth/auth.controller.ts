@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Patch, Delete, Body, Param, Query, Res, UseGuards, Req, Headers } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Delete, Body, Param, Query, Res, UseGuards, Req, Headers, ServiceUnavailableException } from '@nestjs/common';
 import type { Response, Request } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
@@ -31,6 +31,12 @@ export class AuthController {
   @Post('register')
   @Throttle({ default: { limit: 3, ttl: 60000 } })
   async register(@Body() dto: RegisterDto, @Req() req: any, @Res({ passthrough: true }) res: Response) {
+    if (process.env.DISABLE_REGISTRATION === 'true') {
+      throw new ServiceUnavailableException({
+        code: 'MAINTENANCE',
+        message: 'A regisztráció jelenleg nem elérhető. A rendszer karbantartás alatt áll.',
+      });
+    }
     const result = await this.authService.register(dto, req.ip, req.headers['user-agent']);
     if (result.token) {
       this.setTokenCookie(res, result.token);
@@ -67,6 +73,11 @@ export class AuthController {
   @Get('google/callback')
   async googleCallback(@Req() req: any, @Res() res: Response, @Query('error') error?: string) {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+    if (process.env.DISABLE_REGISTRATION === 'true') {
+      const message = encodeURIComponent('A rendszer karbantartás alatt áll.');
+      return res.redirect(`${frontendUrl}/maintenance?error=${message}`);
+    }
 
     try {
       // Handle Google OAuth cancel/error before Passport processes
