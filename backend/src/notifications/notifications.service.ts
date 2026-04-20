@@ -255,10 +255,7 @@ export class NotificationsService {
     ${label}
   </a>
 </div>
-<div style="text-align:center;">
-  <p style="margin:0;font-size:11px;color:#94a3b8;">vagy másolja be a böngészőbe:</p>
-  <p style="margin:4px 0 0;font-size:10px;color:#198296;word-break:break-all;max-width:400px;display:inline-block;">${href}</p>
-</div>`;
+`;
   }
 
   private btnSimple(href: string, label: string, color = '#198296'): string {
